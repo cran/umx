@@ -1,3 +1,4 @@
+# devtools::document("~/bin/umx"); devtools::install("~/bin/umx");
 # ========================================
 # = Not Typically used directly by users =
 # ========================================
@@ -5,34 +6,47 @@
 #' xmu_dot_make_residuals (not for end users)
 #'
 #'
-#' @param mxMat an MxMatrix
-#' @param showFixed to show fixed values or not
-#' @param digits how many digits to report
+#' @param mxMat An A or S MxMatrix 
+#' @param latents optional list of latents to alter location of circles (defaults to NULL)
+#' @param showFixed Whether to show fixed values or not
+#' @param digits How many digits to report
+#' @param resid How to show residuals and variances default is "circle". Other option is "line"
 #' @return - list of variance names and variances
 #' @export
 #' @family xmu internal not for end user
-xmu_dot_make_residuals <- function(mxMat, showFixed = TRUE, digits = 2) {
+xmu_dot_make_residuals <- function(mxMat, latents = NULL, showFixed = TRUE, digits = 2, resid = c("circle", "line")) {
 	mxMat_vals   = mxMat$values
 	mxMat_free   = mxMat$free
 	mxMat_labels = mxMat$labels
 	mxMat_rows = dimnames(mxMat_free)[[1]]
 	mxMat_cols = dimnames(mxMat_free)[[2]]
 
-	varianceNames = c()
 	variances = c()
-	for(target in mxMat_rows ) { # rows
-		lowerVars  = mxMat_rows[1:match(target, mxMat_rows)]
-		for(source in lowerVars) { # columns
-			thisPathLabel = mxMat_labels[target, source]
-			thisPathFree  = mxMat_free[target, source]
-			thisPathVal   = round(mxMat_vals[target, source], digits)
+	varianceNames = c()
+	for(to in mxMat_rows ) { # rows
+		lowerVars  = mxMat_rows[1:match(to, mxMat_rows)]
+		for(from in lowerVars) { # columns
+			thisPathLabel = mxMat_labels[to, from]
+			thisPathFree  = mxMat_free[to, from]
+			thisPathVal   = round(mxMat_vals[to, from], digits)
 
 			if(thisPathFree){ prefix = "" } else { prefix = "@" }
-
-			if(thisPathFree | (thisPathVal !=0 & showFixed)) {
-				if((target == source)) {
-					varianceNames = append(varianceNames, paste0(source, '_var'))
-					variances = append(variances, paste0(source, '_var [label="', prefix, thisPathVal, '", shape = plaintext]'))
+			# TODO currently all variances are labeled "a_with_a"
+			# Could diversify to "a_with_a", "var_a" & "resid_a"
+			if(thisPathFree | (thisPathVal !=0 && showFixed)) {
+				if((to == from)) {
+					if(resid =="circle"){
+						# TODO refactor based on mxGraphviz to support latents north
+						if(from %in% latents){
+							circleString = paste0(from, ' -> ', from, '[label="', prefix, thisPathVal, '", dir=both, headport=n, tailport=n]')
+						} else {
+							circleString = paste0(from, ' -> ', from, '[label="', prefix, thisPathVal, '", dir=both, headport=s, tailport=s]')
+						}
+						variances = append(variances, circleString)
+					} else if(resid =="line"){
+						varianceNames = append(varianceNames, paste0(from, '_var'))
+						variances = append(variances, paste0(from, '_var [label="', prefix, thisPathVal, '", shape = plaintext]'))
+					}					
 				}
 			}
 		}
@@ -42,6 +56,7 @@ xmu_dot_make_residuals <- function(mxMat, showFixed = TRUE, digits = 2) {
 
 #' xmu_dot_make_paths (not for end users)
 #'
+#' Makes graphviz paths
 #'
 #' @param mxMat an MxMatrix
 #' @param stringIn input string
@@ -98,8 +113,10 @@ xmu_dot_make_paths <- function(mxMat, stringIn, heads = NULL, showFixed = TRUE, 
 				if(thisPathFree){ prefix = "" } else { prefix = "@" }
 
 				if(thisPathFree | ((showFixed & (thisPathVal != 0))) ) {
-					if((target == source) & showResiduals) {
-						stringIn = paste0(stringIn, "\t", source, "_var -> ", target, ";\n")
+					if(target == source) {
+						if(showResiduals){
+							stringIn = paste0(stringIn, "\t", source, "_var -> ", target, ";\n")
+						}
 					} else {
 						if(pathLabels == "both"){
 							stringIn = paste0(stringIn, "\t", source, " -> ", target, ' [dir=both, label="', thisPathLabel, "=", prefix, thisPathVal, "\"];\n")
@@ -116,7 +133,6 @@ xmu_dot_make_paths <- function(mxMat, stringIn, heads = NULL, showFixed = TRUE, 
 	}
 	return(stringIn)
 }
-
 
 #' xmuLabel_MATRIX_Model (not a user function)
 #'
@@ -253,8 +269,8 @@ xmuLabel_RAM_Model <- function(model, suffix = "", labelFixedCells = TRUE, overR
 #' umx:::xmuLabel_Matrix(mxMatrix("Full" , 3, 3, values = 1, name = "a", byrow = TRUE));
 #' umx:::xmuLabel_Matrix(mxMatrix("Symm" , 3, 3, values = 1, name = "a", byrow = TRUE), jiggle = .05, boundDiag = NA);
 #' umx:::xmuLabel_Matrix(mxMatrix("Full" , 1, 1, values = 1, name = "a", labels= "data.a"));
-#' umx:::xmuLabel_Matrix(mxMatrix("Full" , 1, 1, values = 1, name = "a", labels= "data.a"), overRideExisting=TRUE);
-#' umx:::xmuLabel_Matrix(mxMatrix("Full" , 1, 1, values = 1, name = "a", labels= "test"), overRideExisting=TRUE);
+#' umx:::xmuLabel_Matrix(mxMatrix("Full" , 1, 1, values = 1, name = "a", labels= "data.a"), overRideExisting = TRUE);
+#' umx:::xmuLabel_Matrix(mxMatrix("Full" , 1, 1, values = 1, name = "a", labels= "test"), overRideExisting = TRUE);
 #' See also: fit2 = omxSetParameters(fit1, labels = "a_r1c1", free = FALSE, value = 0, name = "drop_a_row1_c1")
 #' 
 #' @param mx_matrix an mxMatrix

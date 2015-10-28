@@ -43,15 +43,14 @@ umx_show(m1, what = "labels")
 umx_show(m1, what = "free", "A")
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+- \url{http://tbates.github.io}
 }
 \seealso{
-- \code{\link{umxLabel}}, \code{\link{umxRun}}, \code{\link{umxStart}}
-
 Other Reporting Functions: \code{\link{umxStandardizeACE}};
-  \code{\link{umx_APA_CI}}; \code{\link{umx_APA_pval}};
-  \code{\link{umx_aggregate}}; \code{\link{umx_print}};
-  \code{\link{umx_time}}; \code{\link{umx}},
-  \code{\link{umx-package}}
+  \code{\link{umxSummary.MxModel.CP}},
+  \code{\link{umxSummaryCP}}; \code{\link{umx_APA_CI}};
+  \code{\link{umx_APA_pval}}; \code{\link{umx_aggregate}};
+  \code{\link{umx_print}}; \code{\link{umx_time}};
+  \code{\link{umx}}, \code{\link{umx-package}}
 }
 

@@ -4,32 +4,25 @@
 \alias{umxRAM}
 \title{umxRAM}
 \usage{
-umxRAM(name, data = NULL, ..., run = TRUE, exog.variances = FALSE,
-  endog.variances = FALSE, latentVars = NULL, setValues = TRUE,
-  independent = NA, remove_unused_manifests = TRUE, fix = "deprecated")
+umxRAM(model = NA, data = NULL, ..., run = TRUE, setValues = TRUE,
+  independent = NA, remove_unused_manifests = TRUE, name = NA)
 }
 \arguments{
-\item{name}{A friendly name for the model}
+\item{model}{A model to update (or set to string to use as name for new model)}
 
-\item{data}{the data for the model. Can be an \code{\link{mxData}} or a data.frame}
+\item{data}{data for the model. Can be an \code{\link{mxData}} or a data.frame}
 
-\item{...}{A list of mxPath, umxPath, or mxThreshold objects}
+\item{...}{mx or umxPaths, mxThreshold objects, etc.}
 
-\item{run}{Whether to mxRun the model (defaults to TRUE: the estimated model will be returned)}
+\item{run}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
 
-\item{exog.variances}{If TRUE, free variance parameters are added for exogenous variables that lack them (the default is FALSE).}
-
-\item{endog.variances}{If TRUE, free error-variance parameters are added for any endogenous variables that lack them (default is FALSE).}
-
-\item{latentVars}{Latents you want in your model (defaults to NULL, in which case any variable not in the data is assumed to be a latent variable)}
-
-\item{setValues}{Whether to try and guess good start values (Defults to TRUE, set them)}
+\item{setValues}{Whether to generate likely good start values (Defaults to TRUE)}
 
 \item{independent}{Whether the model is independent (default = NA)}
 
 \item{remove_unused_manifests}{Whether to remove variables in the data to which no path makes reference (defaults to TRUE)}
 
-\item{fix}{deprecated. use umxPath(fixedAt = etc.}
+\item{name}{A friendly name for the model}
 }
 \value{
 - \code{\link{mxModel}}
@@ -49,7 +42,7 @@ Like \code{\link{mxModel}}, you list the theoretical causal paths. Unlike mxMode
 
 \strong{Comparison with other software}
 
-Some software has massive behind-the-scenes defaulting and path addition. I've played with some
+Some software has massive behind-the-scenes defaulting and path addition. I've played with
 similar features (like auto-creating error and exogenous variances using \code{endog.variances = TRUE}
 and \code{exog.variances = TRUE}). Also identification helpers like \code{fix = "latents"}
 and \code{fix = "firstLoadings"}
@@ -83,13 +76,16 @@ umxSummary(m1, show = "std")
 
 # 6. Draw a nice path diagram (needs Graphviz)
 plot(m1)
+plot(m1, resid = "line") # I find it easier to work with stick-residuals
 }
 }
 \references{
 - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
-Other Model Building Functions: \code{\link{umxLabel}};
+Other Model Building Functions: \code{\link{umxCP}};
+  \code{\link{umxDiagnose}}; \code{\link{umxGxE}};
+  \code{\link{umxIP}}; \code{\link{umxLabel}};
   \code{\link{umxLatent}}; \code{\link{umxPath}};
   \code{\link{umxReRun}}; \code{\link{umxRun}};
   \code{\link{umxThresholdMatrix}};

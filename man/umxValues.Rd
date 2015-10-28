@@ -48,7 +48,9 @@ umxValues(14, sd = 1, n = 10) # Return vector of length 10, with mean 14 and sd 
 \seealso{
 - Core functions:
 
-Other Model Building Functions: \code{\link{umxLabel}};
+Other Model Building Functions: \code{\link{umxCP}};
+  \code{\link{umxDiagnose}}; \code{\link{umxGxE}};
+  \code{\link{umxIP}}; \code{\link{umxLabel}};
   \code{\link{umxLatent}}; \code{\link{umxPath}};
   \code{\link{umxRAM}}; \code{\link{umxReRun}};
   \code{\link{umxRun}}; \code{\link{umxThresholdMatrix}};

@@ -15,9 +15,15 @@ umxSummary(model, ...)
 Report the fit of a OpenMx model or specialized model class (such as ACE, CP etc.)
 in a compact form suitable for a journal. Because this same function is needed in umx,
 it gets defined twice currently.
-}
-\details{
-You can view documentation on the twin model subclass
-\code{\link{umxSummary.MxModel.ACE}},
+
+See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
+
+View documentation on the IP model subclass here: \code{\link{umxSummary.MxModel.IP}}.
+
+View documentation on the CP model subclass here: \code{\link{umxSummary.MxModel.CP}}.
+
+View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModel.GxE}}.
+
+View documentation on the twin model subclass here: \code{\link{umxSummary.MxModel.ACE}}.
 }
 

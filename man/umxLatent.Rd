@@ -74,7 +74,9 @@ plot(m2)
 - \url{http://www.github.com/tbates/umx}
 }
 \seealso{
-Other Model Building Functions: \code{\link{umxLabel}};
+Other Model Building Functions: \code{\link{umxCP}};
+  \code{\link{umxDiagnose}}; \code{\link{umxGxE}};
+  \code{\link{umxIP}}; \code{\link{umxLabel}};
   \code{\link{umxPath}}; \code{\link{umxRAM}};
   \code{\link{umxReRun}}; \code{\link{umxRun}};
   \code{\link{umxThresholdMatrix}};

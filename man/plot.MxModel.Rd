@@ -7,7 +7,8 @@
 \usage{
 \method{plot}{MxModel}(x = NA, std = TRUE, digits = 2,
   dotFilename = "name", pathLabels = c("none", "labels", "both"),
-  showFixed = FALSE, showMeans = TRUE, showError = TRUE, ...)
+  showFixed = FALSE, showMeans = TRUE, resid = c("circle", "line",
+  "none"), showError = "deprecated", ...)
 }
 \arguments{
 \item{x}{an \code{\link{mxModel}} from which to make a path diagram}
@@ -24,12 +25,20 @@
 
 \item{showMeans}{Whether to show means}
 
-\item{showError}{Whether to show errors}
+\item{resid}{how to show residuals and variances default is "circle". Options are "line" & "none"}
+
+\item{showError}{deprecated: use resid instead}
 
 \item{...}{Optional parameters}
 }
 \description{
 Create graphical path diagrams from your OpenMx models!
+\emph{Note:} On systems with Word installed, a \sQuote{.dot} file extension gets opened (uselessly) by M$ wurd.
+You may, therefore, need to set the default app for .dot to Graphviz.
+}
+\details{
+On mac, get info, choose \dQuote{open with}, select Graphviz.app (or omnigraffle professional),
+then set \dQuote{change all}.
 }
 \examples{
 \dontrun{
@@ -56,7 +65,6 @@ plot(m1)
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}};
   \code{\link{RMSEA.summary.mxmodel}}; \code{\link{RMSEA}};
-  \code{\link{coef.MxModel}};
   \code{\link{confint.MxModel}};
   \code{\link{extractAIC.MxModel}};
   \code{\link{logLik.MxModel}}; \code{\link{plot}},
