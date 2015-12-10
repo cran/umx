@@ -150,7 +150,7 @@ xmu_dot_make_paths <- function(mxMat, stringIn, heads = NULL, showFixed = TRUE, 
 #' @family xmu internal not for end user
 #' @export
 #' @examples
-#' require(OpenMx)
+#' require(umx)
 #' data(demoOneFactor)
 #' m2 <- mxModel("One Factor",
 #' 	mxMatrix("Full", 5, 1, values = 0.2, free = TRUE, name = "A"), 
@@ -204,7 +204,7 @@ xmuLabel_RAM_Model <- function(model, suffix = "", labelFixedCells = TRUE, overR
 	namesS = dimnames(freeS)[[1]]
 
 	# if(umx_has_means(model)){
-	# 	freeM  = model@matrices$M@free
+	# 	freeM  = model$matrices$M$free
 	# 	namesM = dimnames(freeM)[[1]]
 	# }
 
@@ -534,7 +534,7 @@ xmu_start_value_list <- function(mean = 1, sd = NA, n = 1) {
 #' @export
 #' @family xmu internal not for end user
 #' @examples
-#' require(OpenMx)
+#' require(umx)
 #' data(demoOneFactor)
 #' latents  = c("G")
 #' manifests = names(demoOneFactor)
