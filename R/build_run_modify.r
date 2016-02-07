@@ -2,29 +2,46 @@
 # devtools::release("~/bin/umx", check = TRUE)
 # devtools::build_win("~/bin/umx")
 # devtools::run_examples("~/bin/umx")
+# install.packages("curl")
+# install.packages("devtools")
+# install.packages("digest")
+# install.packages("git2r")
+# install.packages("httr")
+# install.packages("memoise")
+# install.packages("openssl")
+# install.packages("R6")
+# install.packages("Rcpp")
+# install.packages("rstudioapi")
+# install.packages("withr")
+
 # ===============================
 # = Highlevel models (ACE, GxE) =
 # ===============================
 .onAttach <- function(libname, pkgname){
+	# TODO remove mxCondenseMatrixSlots now that $ get and set are working properly
 	options('mxCondenseMatrixSlots'= FALSE)
+	options("umx_auto_run" = TRUE)
     packageStartupMessage("For an overview type '?umx'")
 }
 
-#' @importFrom graphics plot
-#' @importFrom methods as getSlots is slotNames
+#' @importFrom MASS mvrnorm
 #' @importFrom stats C aggregate as.formula coef complete.cases
 #' @importFrom stats confint cor cov cov.wt cov2cor df lm
 #' @importFrom stats logLik na.exclude na.omit pchisq pf qchisq
 #' @importFrom stats qnorm quantile residuals rnorm runif sd
-#' @importFrom stats setNames update var
+#' @importFrom stats setNames update var delete.response terms
 #' @importFrom utils combn data flush.console read.table txtProgressBar
-#' @importFrom utils globalVariables
+#' @importFrom utils globalVariables write.table
+#' @importFrom methods as getSlots is slotNames
+#' @importFrom graphics plot
 #' @importFrom numDeriv jacobian
+#' @importFrom methods setClass
+#' @importFrom polycor hetcor
+#' @importFrom parallel detectCores
 # methods::setClass is called during build not package source code.
 # suppress NOTE with a spurious importFrom in the namespace
-#' @importFrom methods setClass
 NULL
-
+	
 utils::globalVariables(c(
 	'A', 'E',
 	'a', 'c', 'e', 
@@ -77,6 +94,23 @@ utils::globalVariables(c(
 	'MZW', 'DZW',
 	'fmCOV','mfCOV',
 
+	# from umxACEcov
+	'varStarts',
+	'lowerB',
+	'lowerW',
+	'CovB',
+	'CovW',
+	'CovWB',
+	'tb_CovWB_b',
+	'tb_CovB_b',
+	'tb_CovWB',
+	'tb_CovB',
+	'CovWB_b',
+	'CovB_b',
+
+	'Iden',
+	'nDv',
+
 	'meanDZ', 'meanMZ',
 
 	'nFac_Unit', 'nVar', 'nVar2', 'nVarIdenMatrix', 'nVarUnit', 'betas', 
@@ -97,10 +131,11 @@ utils::globalVariables(c(
 # = Define some class containers to allow specialised model objects =
 # = plot, etc can then operate on these                             =
 # ===================================================================
-methods::setClass("MxModel.ACE", contains = "MxModel")
-methods::setClass("MxModel.GxE", contains = "MxModel")
-methods::setClass("MxModel.CP" , contains = "MxModel")
-methods::setClass("MxModel.IP" , contains = "MxModel")
+methods::setClass("MxModel.ACE"   , contains = "MxModel")
+methods::setClass("MxModel.GxE"   , contains = "MxModel")
+methods::setClass("MxModel.CP"    , contains = "MxModel")
+methods::setClass("MxModel.IP"    , contains = "MxModel")
+methods::setClass("MxModel.ACEcov", contains = "MxModel.ACE")
 
 #' umxRAM
 #'
@@ -129,12 +164,13 @@ methods::setClass("MxModel.IP" , contains = "MxModel")
 #' @param model A model to update (or set to string to use as name for new model)
 #' @param data data for the model. Can be an \code{\link{mxData}} or a data.frame
 #' @param ... mx or umxPaths, mxThreshold objects, etc.
-#' @param run Whether to mxRun the model (default TRUE: the estimated model will be returned)
 #' @param setValues Whether to generate likely good start values (Defaults to TRUE)
 #' @param name A friendly name for the model
 #' @param comparison Compare the new model to the old (if updating an existing model: default = TRUE)
 #' @param independent Whether the model is independent (default = NA)
 #' @param remove_unused_manifests Whether to remove variables in the data to which no path makes reference (defaults to TRUE)
+#' @param showEstimates Whether to show estimates. Defaults to no (alternatives = "raw", "std", etc.)
+#' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned)
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Model Building Functions
@@ -165,9 +201,26 @@ methods::setClass("MxModel.IP" , contains = "MxModel")
 #' # 5. Draw a nice path diagram (needs Graphviz)
 #' plot(m1)
 #' plot(m1, resid = "line") # I find it easier to work with stick-residuals
+#' 
+#' # =================================================
+#' # = This is an example of using your own labels:  =
+#' #   umxRAM will not over-ride them                =
+#' # =================================================
+#' m1 = umxRAM("tim", data = myCov,
+#' 	umxPath(c("wt", "disp"), to = "mpg"),
+#' 	umxPath(cov = c("wt", "disp"), labels = "b1"),
+#' 	umxPath(var = c("wt", "disp", "mpg"))
+#' )
+#' omxCheckEquals(m1$S$labels["disp", "wt"], "b1") # label preserved
+#' m1$S$labels
+#'#      mpg             wt            disp
+#'# mpg  "mpg_with_mpg"  "mpg_with_wt" "disp_with_mpg"
+#'# wt   "mpg_with_wt"   "wt_with_wt"  "b1"
+#'# disp "disp_with_mpg" "b1"          "disp_with_disp"
 #' }
-umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, run = TRUE, setValues = TRUE, independent = NA, remove_unused_manifests = TRUE) {
+umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, setValues = TRUE, independent = NA, remove_unused_manifests = TRUE, showEstimates = c("none", "raw", "std", "both", "list of column names"), autoRun = getOption("umx_auto_run")) {
 	dot.items = list(...) # grab all the dot items: mxPaths, etc...
+	showEstimates = umx_default_option(showEstimates, c("none", "raw", "std", "both", "list of column names"), check = FALSE)
 	if(typeof(model) == "character"){
 		if(is.na(name)){
 			name = model
@@ -184,7 +237,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, r
 			# if(setValues){
 			# 	newModel = umxValues(newModel)
 			# }
-			if(run){
+			if(autoRun){
 				newModel = mxRun(newModel)
 				umxSummary(newModel)
 				if(comparison){
@@ -248,8 +301,8 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, r
 			manifestVars = names(data@observed)
 			isRaw = TRUE
 		} else {
-			isRaw = FALSE
 			manifestVars = colnames(data@observed)
+			isRaw = FALSE
 		}
 		if(is.null(manifestVars)){
 			stop("There's something wrong with the mxData - I couldn't get the variable names from it. Did you set type correctly?")
@@ -321,9 +374,9 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, r
 	if(setValues){
 		m1 = umxValues(m1, onlyTouchZeros = TRUE)
 	}
-	if(run){
+	if(autoRun){
 		m1 = mxRun(m1)
-		umxSummary(m1)
+		umxSummary(m1, showEstimates = showEstimates)
 		return(m1)
 	} else {
 		return(m1)
@@ -343,12 +396,13 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, r
 #' @param name The name of the model (defaults to "G_by_E")
 #' @param selDVs The dependent variable (e.g. IQ)
 #' @param selDefs The definition variable (e.g. socio economic status)
-#' @param suffix (Optional) used to expand variable base names, i.e., "_T" makes var -> var_T1 and var_T2
-#' @param dzData The DZ dataframe containing the Twin 1 and Twin 2 DV and moderator
-#' @param mzData The MZ dataframe containing the Twin 1 and Twin 2 DV and moderator
+#' @param suffix Expand variable base names, i.e., "_T" makes var -> var_T1 and var_T2
+#' @param dzData The DZ dataframe containing the Twin 1 and Twin 2 DV and moderator (4 columns)
+#' @param mzData The MZ dataframe containing the Twin 1 and Twin 2 DV and moderator (4 columns)
 #' @param lboundACE = numeric: If !is.na, then lbound the main effects at this value (default = NA)
 #' @param lboundM   = numeric: If !is.na, then lbound the moderators at this value (default = NA)
-#' @param dropMissingDef whether to drop rows missing the definition variable (gives a warning) default = FALSE
+#' @param dropMissingDef Whether to automatically drop missing def var rows for the user (gives a warning) default = FALSE
+#' @param autoRun Whether to run the model, and return that (default), or just to create it and return without running.
 #' @return - GxE \code{\link{mxModel}}
 #' @export
 #' @family Twin Modeling Functions
@@ -370,9 +424,6 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, r
 #' selVars = c(selDVs, selDefs)
 #' mzData  = subset(twinData, ZYG == "MZFF", selVars)
 #' dzData  = subset(twinData, ZYG == "DZMM", selVars)
-#' # Exclude cases with missing Def
-#' mzData <- mzData[!is.na(mzData[selDefs[1]]) & !is.na(mzData[selDefs[2]]),]
-#' dzData <- dzData[!is.na(dzData[selDefs[1]]) & !is.na(dzData[selDefs[2]]),]
 #' m1 = umxGxE(selDVs = selDVs, selDefs = selDefs, dzData = dzData, mzData = mzData)
 #' m1 = umxRun(m1)
 #' # Plot Moderation
@@ -380,7 +431,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, r
 #' umxSummary(m1, location = "topright")
 #' umxSummary(m1, separateGraphs = FALSE)
 #' m2 = umxReRun(m1, "am_.*", regex=TRUE, comparison = TRUE)
-umxGxE <- function(name = "G_by_E", selDVs, selDefs, dzData, mzData, suffix = NULL, lboundACE = NA, lboundM = NA, dropMissingDef = FALSE) {
+umxGxE <- function(name = "G_by_E", selDVs, selDefs, dzData, mzData, suffix = NULL, lboundACE = NA, lboundM = NA, dropMissingDef = FALSE, autoRun = getOption("umx_auto_run")) {
 	nSib = 2;
 	if(!is.null(suffix)){
 		if(length(suffix) > 1){
@@ -565,7 +616,11 @@ umxGxE <- function(name = "G_by_E", selDVs, selDefs, dzData, mzData, suffix = NU
 		model = omxSetParameters(model, labels = c('am_r1c1', 'cm_r1c1', 'em_r1c1'), lbound = lboundM)
 	}
 	model = as(model, "MxModel.GxE")
-	return(model)
+	if(autoRun){
+		return(mxRun(model))
+	} else {
+		return(model)
+	}
 }
 
 #' umxGxE_window
@@ -806,6 +861,7 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' @param equateMeans Whether to equate the means across twins (defaults to TRUE)
 #' @param bVector Whether to compute row-wise likelihoods (defaults to FALSE)
 #' @param hint An analysis hint. Options include "none", (default) "left_censored". Default does nothing.
+#' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned)
 #' @return - \code{\link{mxModel}} of subclass mxModel.ACE
 #' @export
 #' @family Twin Modeling Functions
@@ -836,8 +892,7 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' mzData <- mzData[1:200,] # just top 200 so example runs in a couple of secs
 #' dzData <- dzData[1:200,]
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-#' m1 = umxRun(m1)
-#' umxSummary(m1)
+#' umxSummary(m1, showStd=TRUE)
 #' umxSummaryACE(m1)
 #' \dontrun{
 #' plot(m1)
@@ -877,10 +932,9 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' dzData <- dzData[1:200,]
 #' str(mzData)
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
-#' m1 = mxRun(m1)
-#' umxSummary(m1)
 #' \dontrun{
-#' # plot(m1)
+#' umxSummary(m1)
+#' plot(m1)
 #' }
 #' 
 #' # ============================================
@@ -948,18 +1002,17 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
 #' tmpTwin$zyg = factor(tmpTwin$zyg, levels = 1:5, labels = labList)
 #' selDVs = c("wt1", "wt2")
-#' dz = cov(tmpTwin[tmpTwin$zyg == "MZFF", selDVs], use = "complete")
-#' mz = cov(tmpTwin[tmpTwin$zyg == "DZFF", selDVs], use = "complete")
+#' mz = cov(tmpTwin[tmpTwin$zyg %in% "MZFF", selDVs], use = "complete")
+#' dz = cov(tmpTwin[tmpTwin$zyg %in% "DZFF", selDVs], use = "complete")
 #' m1 = umxACE(selDVs= selDVs, dzData=dz, mzData=mz, numObsDZ=nrow(dzData), numObsMZ=nrow(mzData))
-#' m1 = mxRun(m1)
 #' umxSummary(m1)
 #' \dontrun{
 #' plot(m1)
 #' }
 umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL, 
-	weightVar = NULL, equateMeans = TRUE, bVector = FALSE, hint = c("none", "left_censored")) {
-	if(nrow(dzData)==0){ stop("Your DZ dataset has no rows!") }
-	if(nrow(mzData)==0){ stop("Your DZ dataset has no rows!") }
+	weightVar = NULL, equateMeans = TRUE, bVector = FALSE, hint = c("none", "left_censored"), autoRun = getOption("umx_auto_run")) {
+	if(nrow(dzData) == 0){ stop("Your DZ dataset has no rows!") }
+	if(nrow(mzData) == 0){ stop("Your MZ dataset has no rows!") }
 	hint = match.arg(hint)
 	nSib = 2 # number of siblings in a twin pair
 	if(dzCr == .25 && name == "ACE"){
@@ -1103,8 +1156,8 @@ umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .
 			# threshMat is a three-item list of matrices and algebra
 			threshMat = umxThresholdMatrix(allData, suffixes = paste0(suffix, 1:2), verbose = FALSE, hint = hint)
 			# return(threshMat)
-			mzExpect  = mxExpectationNormal("top.expCovMZ", "top.expMean", thresholds = "top.threshMat")
-			dzExpect  = mxExpectationNormal("top.expCovDZ", "top.expMean", thresholds = "top.threshMat")			
+			mzExpect = mxExpectationNormal("top.expCovMZ", "top.expMean", thresholds = "top.threshMat")
+			dzExpect = mxExpectationNormal("top.expCovDZ", "top.expMean", thresholds = "top.threshMat")			
 			top = mxModel("top", umxLabel(meansMatrix), threshMat)
 			MZ  = mxModel("MZ", mzExpect, mxFitFunctionML(vector = bVector), mxData(mzData, type = "raw") )
 			DZ  = mxModel("DZ", dzExpect, mxFitFunctionML(vector = bVector), mxData(dzData, type = "raw") )
@@ -1209,12 +1262,12 @@ umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .
 		mxMatrix(name = "dzCr", type = "Full", 1, 1, free = FALSE, values = dzCr),
 		# Multiply by each path coefficient by its inverse to get variance component
 		# Quadratic multiplication to add common_loadings
-		mxAlgebra(a %*% t(a), name = "A"), # additive genetic variance
-		mxAlgebra(c %*% t(c), name = "C"), # common environmental variance
-		mxAlgebra(e %*% t(e), name = "E"), # unique environmental variance
-		mxAlgebra(A+C+E     , name = "ACE"),
-		mxAlgebra(A+C       , name = "AC" ),
-		mxAlgebra( (dzAr %x% A) + (dzCr %x% C),name = "hAC"),
+		mxAlgebra(name = "A", a %*% t(a)), # additive genetic variance
+		mxAlgebra(name = "C", c %*% t(c)), # common environmental variance
+		mxAlgebra(name = "E", e %*% t(e)), # unique environmental variance
+		mxAlgebra(name = "ACE", A+C+E),
+		mxAlgebra(name = "AC" , A+C  ),
+		mxAlgebra(name = "hAC", (dzAr %x% A) + (dzCr %x% C)),
 		mxAlgebra(rbind (cbind(ACE, AC),
 		                 cbind(AC , ACE)), dimnames = list(selDVs, selDVs), name = "expCovMZ"),
 		mxAlgebra(rbind (cbind(ACE, hAC),
@@ -1272,12 +1325,266 @@ umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .
 		  newlabels = paste0("expMean_r1c", 1:nVar)             # c("expMean11", "expMean12", "expMean13")
 		)
 	}
-	# Just trundle through and make sure values with the same label have the same start value... means for instance.
+	# Trundle through and make sure values with the same label have the same start value... means for instance.
 	model = omxAssignFirstParameters(model)
 	model = as(model, "MxModel.ACE") # set class so that S3 plot() dispatches.
-	return(model)
+	if(autoRun){
+		return(mxRun(model))
+	} else {
+		return(model)
+	}
 }
 
+
+# devtools::document("~/bin/umx"); devtools::install("~/bin/umx");
+# devtools::release("~/bin/umx", check = TRUE)
+# https://www.researchgate.net/publication/287346605_A_New_Approach_to_Handle_Missing_Covariate_Data_in_Twin_Research
+
+#' umxACEcov
+#'
+#' Make a 2-group ACE Cholesky Twin model with covariates modeled (see Details below)
+#' 
+#' A common task in twin modelling involves using the genetic and environmental differences 
+#' between large numbers of pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
+#' to model the genetic and environmental structure of one, or, typically, several phenotypes
+#' (measured behaviors).
+#' 
+#' umxACEcov supports a core model in behavior genetics, known as the ACE Cholesky model
+#' (Cardon and Neale, 1996), supplemented with covariates.
+#' The ACE model decomposes phenotypic variance into Additive genetic, 
+#' unique environmental (E) and, either common xor shared-environment (C) or 
+#' non-additive genetic effects (D). The following figure shows how the ACE model appears as a path diagram:
+#' 
+#' \figure{ACE.png}
+#' 
+#' \strong{Data Input}
+#' The function flexibly accepts raw data, and also summary covariance data 
+#' (in which case the user must also supple numbers of observations for the two input data sets).
+#' 
+#' \strong{Ordinal Data}
+#' In an important capability, the model transparently handles ordinal (binary or multi-level
+#' ordered factor data) inputs, and can handle mixtures of continuous, binary, and ordinal
+#' data in any combination. An experimental feature is under development to allow Tobit modelling. 
+#' 
+#' The function also supports weighting of individual data rows. In this case,
+#' the model is estimated for each row individually, then each row likelihood
+#' is multiplied by its weight, and these weighted likelyhoods summed to form
+#' the model-likelihood, which is to be minimised.
+#' This feature is used in the non-linear GxE model functions.
+#' 
+#' \strong{Additional features}
+#' The umxACE function supports varying the DZ genetic association (defaulting to .5)
+#' to allow exploring assortative mating effects, as well as varying the DZ \dQuote{C} factor
+#' from 1 (the default for modelling family-level effects shared 100% by twins in a pair),
+#' to .25 to model dominance effects.
+#'
+#' @param name The name of the model (defaults to"ACE")
+#' @param selDVs The variables to include from the data (do not include suffixes)
+#' @param selCovs The covariates to include from the data (do not include suffixes)
+#' @param dzData The DZ dataframe
+#' @param mzData The MZ dataframe
+#' @param suffix The suffix for twin 1 and twin 2, often "_T" (defaults to NULL) With this, you can
+#' omit suffixes from names in SelDV, i.e., just "dep" not c("dep_T1", "dep_T2")
+#' @param dzAr The DZ genetic correlation (defaults to .5, vary to examine assortative mating)
+#' @param dzCr The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model)
+#' @param addStd Whether to add the algebras to compute a std model (defaults to TRUE)
+#' @param addCI Whether to add intervals to compute CIs (defaults to TRUE)
+#' @param boundDiag = Whether to bound the diagonal of the a, c, and e matrices
+#' @param equateMeans Whether to equate the means across twins (defaults to TRUE)
+#' @param hint An analysis hint. Options include "none", (default) "left_censored". Default does nothing.
+#' @param bVector Whether to compute row-wise likelihoods (defaults to FALSE)
+#' @param autoRun Whether to run the model and return it, or just return it
+#' @return - \code{\link{mxModel}} of subclass mxModel.ACEcov
+#' @export
+#' @family Twin Modeling Functions
+#' @references - \url{http://www.github.com/tbates/umx}
+#' @examples
+#' # Height, weight, and BMI data from Australian twins. 
+#' # The total sample has been subdivided into a young cohort, aged 18-30 years,
+#' # and an older cohort aged 31 and above.
+#' # Cohort 1 Zygosity is coded as follows: 
+#' # 1 == MZ females 2 == MZ males 3 == DZ females 4 == DZ males 5 == DZ opposite sex pairs
+#' # tip: ?twinData to learn more about this data set
+#' require(umx)
+#' data(twinData)
+#' tmpTwin <- twinData
+#' # add age 1 and age 2 columns
+#' tmpTwin$age1 = tmpTwin$age2 = tmpTwin$age
+#' # Pick the variables. We will use base names (i.e., "bmi") and set suffix.
+# str(twinData)
+#' selDVs  = c("bmi")
+#' selCovs = c("age")
+#' selVars = umx_paste_names(c(selDVs, selCovs), textConstant = "", suffixes= 1:2)
+#' # just top 200 so example runs in a couple of secs
+#' mzData = subset(tmpTwin, zyg == 1, selVars)[1:200, ]
+#' dzData = subset(tmpTwin, zyg == 3, selVars)[1:200, ]
+#' # TODO update for new dataset variable zygosity
+#' # mzData = subset(tmpTwin, zygosity == "MZFF", selVars)[1:200, ]
+#' # dzData = subset(tmpTwin, zygosity == "DZFF", selVars)[1:200, ]
+#' m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs, dzData = dzData, mzData = mzData, 
+#' 	 suffix = "", autoRun = TRUE)
+#' umxSummary(m1)
+#' \dontrun{
+#' plot(m1)
+#' }
+umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, boundDiag = NULL, equateMeans = TRUE, bVector = FALSE, hint = c("none", "left_censored"), autoRun = getOption("umx_auto_run")) {
+	if(nrow(dzData)==0){ stop("Your DZ dataset has no rows!") }
+	if(nrow(mzData)==0){ stop("Your MZ dataset has no rows!") }
+	nSib = 2 # number of siblings in a twin pair
+	if(dzCr == .25 && name == "ACE"){
+		name = "ADEcov"
+	}
+	# look for name conflicts
+	badNames = umx_grep(selDVs, grepString = "^[ACDEacde][0-9]*$")
+	if(!identical(character(0), badNames)){
+		stop("The data contain variables that look like parts of the a, c, e model, i.e., a1 is illegal.\n",
+		"BadNames included: ", omxQuotes(badNames) )
+	}
+
+	if(is.null(suffix)){
+		stop("I need a suffix, like '_T'. I will add 1 and 2 afterwards... \n",
+		"i.e., selDVs should be 'bmi' etc, and I will re-name to 'bmi_T1' and 'bmi_T2' etc.")
+	}else if(length(suffix) > 1){
+			stop("suffix should be just one word, like '_T'. I will add 1 and 2 afterwards... \n",
+			"i.e., you have to name your variables 'obese_T1' and 'obese_T2' etc.")
+	}else{
+		# stash base names for use later
+		baseDVs = selDVs
+		baseCovs = selCovs
+		# fill out full trait names
+		selDVs  = umx_paste_names(selDVs, suffix, 1:2)
+		selCovs = umx_paste_names(selCovs, suffix, 1:2)
+	}
+
+	nDV  = length(baseDVs)
+	nCov = length(baseCovs)
+	nVar = nDV + nCov # Number of dependent variables ** per INDIVIDUAL ( so times-2 for a family)**
+
+	selVars = c(selDVs, selCovs)
+	umx_check_names(selVars, mzData)
+	umx_check_names(selVars, dzData)
+	# message("selVars: ", omxQuotes(selVars))
+
+	# Drop unused columns from mz and dzData
+	mzData = mzData[, selVars]
+	dzData = dzData[, selVars]
+
+	meanDimNames = list(NULL, selVars)
+	# meanDimNames= list("means", selVars)
+	# Equate means for twin1 and twin 2 by matching labels in the first and second halves of the means labels matrix
+	if(equateMeans){
+		meanLabels = c(rep(paste0("expMean_", baseDVs), nSib), paste0("expMean_", selCovs))
+	}else{
+		stop("Currently, means must be equated")
+		# meanLabels = c(paste0("expMean_", selDVs), paste0("expMean_", selCovs))
+	}
+	
+	obsMZmeans  = umx_means(mzData[, selVars], ordVar = 0, na.rm = TRUE)
+	meansMatrix = mxMatrix(name = "expMean", "Full" , nrow = 1, ncol = (nVar * nSib),
+			free = TRUE, values = obsMZmeans, labels = meanLabels, dimnames = meanDimNames)
+	# TODO this should be variance not correlation...
+	varStarts = diag(umxHetCor(mzData[,selDVs]))
+	if(nDV == 1){
+		varStarts = varStarts/3
+	} else {
+		varStarts = t(chol(diag(varStarts/3))) # divide variance up equally, and set to Cholesky form.
+	}
+	# TODO fix varStarts to include covs also
+	varStarts = matrix(varStarts, nDV, nDV)
+
+	top = mxModel("top",
+		# "top" defines the algebra of the twin model, which MZ and DZ slave off of.
+		# NB: top already has the means model and thresholds matrix added if necessary  - see above.
+		# Additive, Common, and Unique environmental paths.
+		# Matrices a, c, e to store a, c, e path coefficients.
+		umxLabel(mxMatrix(name = "a", type = "Full", nrow = nDV, ncol = nDV, free = TRUE, values = varStarts, byrow = TRUE, dimnames = list(baseDVs, baseDVs))),
+		umxLabel(mxMatrix(name = "c", type = "Full", nrow = nDV, ncol = nDV, free = TRUE, values = varStarts, byrow = TRUE)),
+		umxLabel(mxMatrix(name = "e", type = "Full", nrow = nDV, ncol = nDV, free = TRUE, values = varStarts, byrow = TRUE)),  
+
+		mxMatrix(name = "dzAr", type = "Full", nrow = 1, ncol = 1, free = FALSE, values = dzAr),
+		mxMatrix(name = "dzCr", type = "Full", nrow = 1, ncol = 1, free = FALSE, values = dzCr),
+
+		meansMatrix,
+		mxMatrix(name = "lowerB", 'Lower', nrow = nCov, ncol = nCov, values = 0.5, free = TRUE),
+		mxMatrix(name = "lowerW", 'Lower', nrow = nCov, ncol = nCov, values = 0.5, free = TRUE),
+		mxAlgebra(name= "CovB"  , lowerB %*% t(lowerB)),
+		mxAlgebra(name= "CovW"  , lowerW %*% t(lowerW)),
+		mxAlgebra(name= "CovWB" , CovW + CovB),
+		
+		# Matrices A, C,E + compute variance components
+		mxAlgebra(name = "A", a %*% t(a)),
+		mxAlgebra(name = "C", c %*% t(c)),
+		mxAlgebra(name = "E", e %*% t(e)),
+		# Declare a vector for the regression parameters
+		mxMatrix(name = "beta", type = "Full", nrow = nCov, ncol  = 1, free = TRUE, values = 0, labels = paste0("beta", 1:nCov)),
+		# Some handy component algebras
+		mxAlgebra(name = "ACE", A + C + E),
+		mxAlgebra(name = "AC" , A + C),
+		mxAlgebra(name = "hAC", (dzAr * A) + C),
+		mxAlgebra(name = "tb_CovWB_b", (t(beta) %*% CovWB) %*% beta),
+		mxAlgebra(name = "tb_CovB_b" , (t(beta) %*% CovB) %*% beta),
+		mxAlgebra(name = "tb_CovWB"  , t(beta) %*% CovWB),
+		mxAlgebra(name = "tb_CovB"   , t(beta) %*% CovB),
+		mxAlgebra(name = "CovWB_b"   ,   CovWB %*% beta),
+		mxAlgebra(name = "CovB_b"    ,   CovB  %*% beta),
+		# Algebra for expected variance/covariance matrix #in MZ twins
+		mxAlgebra(name = "expCovMZ", expression = rbind(
+			cbind(ACE + tb_CovWB_b, AC  + tb_CovB_b , tb_CovWB, tb_CovB),
+			cbind(AC  + tb_CovB_b , ACE + tb_CovWB_b, tb_CovB , tb_CovWB),
+			cbind(CovWB_b         , CovB_b          , CovWB   , CovB),
+			cbind(CovB_b          , CovWB_b         , CovB    , CovWB))
+		),
+		# Algebra for expected variance/covariance matrix #in DZ twins
+		mxAlgebra(name = "expCovDZ", expression = rbind(
+			cbind(ACE + tb_CovWB_b, hAC + tb_CovB_b , tb_CovWB, tb_CovB),
+			cbind(hAC + tb_CovB_b , ACE + tb_CovWB_b, tb_CovB , tb_CovWB),
+			cbind(CovWB_b         , CovB_b          , CovWB   , CovB),
+			cbind(CovB_b          , CovWB_b         , CovB    , CovWB))
+		)
+	) # end top
+
+	MZ  = mxModel("MZ", mxExpectationNormal("top.expCovMZ", "top.expMean"), mxFitFunctionML(vector = bVector), mxData(mzData, type = "raw") )
+	DZ  = mxModel("DZ", mxExpectationNormal("top.expCovDZ", "top.expMean"), mxFitFunctionML(vector = bVector), mxData(dzData, type = "raw") )
+
+	MZ = mxModel("MZ",
+		mxData(mzData , type = "raw"),
+		mxExpectationNormal("top.expCovMZ", means= "top.expMean", dimnames = names(mzData)),
+		mxFitFunctionML()
+	)
+
+	DZ = mxModel("DZ",
+		mxData(dzData, type = "raw"),
+		mxExpectationNormal("top.expCovDZ", means = "top.expMean", dimnames = names(dzData)),
+		mxFitFunctionML()
+	)
+	
+	model = mxModel(name, MZ, DZ, top,
+		mxFitFunctionMultigroup(c("MZ", "DZ"))
+	)
+	
+	if(addStd){
+		newTop = mxModel(model@submodels$top,
+			mxMatrix(name  = "Iden", "Iden", nDV, nDV), # nDV Identity matrix
+			mxAlgebra(name = "Vtot", A + C+ E),       # Total variance
+			mxAlgebra(name = "SD", solve(sqrt(Iden * Vtot))), # Total variance
+			mxAlgebra(name = "a_std", SD %*% a), # standardized a
+			mxAlgebra(name = "c_std", SD %*% c), # standardized c
+			mxAlgebra(name = "e_std", SD %*% e)  # standardized e
+		)
+		model = mxModel(model, newTop)
+		if(addCI){
+			model = mxModel(model, mxCI(c('top.a_std', 'top.c_std', 'top.e_std')))
+		}
+	}
+	# Just trundle through and make sure values with the same label have the same start value... means for instance.
+	model = omxAssignFirstParameters(model)
+	model = as(model, "MxModel.ACEcov") # set class so that S3 plot() dispatches.
+	if(autoRun){
+		return(mxRun(model))
+	} else {
+		return(model)
+	}
+}
 
 #' umxCP
 #'
@@ -1335,6 +1642,7 @@ umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .
 #' @param addCI Whether to add the interval requests for CIs (defaults to TRUE)
 #' @param numObsDZ = not yet implemented: Ordinal Number of DZ twins: Set this if you input covariance data
 #' @param numObsMZ = not yet implemented: Ordinal Number of MZ twins: Set this if you input covariance data
+#' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned)
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Twin Modeling Functions
@@ -1355,7 +1663,7 @@ umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .
 #' m2 = umxReRun(m1, update = "(cs_.*$)|(c_cp_)", regex = TRUE, name = "dropC")
 #' umxSummaryCP(m2, comparison = m1, dotFilename = NA)
 #' umxCompare(m1, m2)
-umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, correlatedA = FALSE, equateMeans=T, dzAr=.5, dzCr=1, addStd = T, addCI = T, numObsDZ = NULL, numObsMZ = NULL) {
+umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, correlatedA = FALSE, equateMeans=T, dzAr=.5, dzCr=1, addStd = T, addCI = T, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run")) {
 	nSib = 2
 	# expand var names
 	if(!is.null(suffix)){
@@ -1509,7 +1817,11 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 	}
 	model = omxAssignFirstParameters(model) # Just trundle through and make sure values with the same label have the same start value... means for instance.
 	model = as(model, "MxModel.CP")
-	return(model)
+	if(autoRun){
+		return(mxRun(model))
+	} else {
+		return(model)
+	}
 } # end umxCP
 
 #' umxIP
@@ -1538,6 +1850,7 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 #' @param addCI Whether to add the interval requests for CIs (defaults to TRUE)
 #' @param numObsDZ = todo: implement ordinal Number of DZ twins: Set this if you input covariance data
 #' @param numObsMZ = todo: implement ordinal Number of MZ twins: Set this if you input covariance data
+#' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned)
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Twin Modeling Functions
@@ -1554,7 +1867,7 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 #' m1 = umxIP(selDVs = selDVs, suffix = "", dzData = dzData, mzData = mzData)
 #' m1 = umxRun(m1)
 #' umxSummary(m1, dotFilename = NA) # dotFilename = NA to avoid opening a plot window during CRAN check
-umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, equateMeans = TRUE, dzAr = .5, dzCr = 1, correlatedA = FALSE, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL) {
+umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, equateMeans = TRUE, dzAr = .5, dzCr = 1, correlatedA = FALSE, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run")) {
 	# TODO implement correlatedA
 	if(correlatedA){
 		message("I have not implemented correlatedA yet...")
@@ -1702,7 +2015,11 @@ umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 	}
 	model  = omxAssignFirstParameters(model) # ensure parameters with the same label have the same start value... means, for instance.
 	model = as(model, "MxModel.IP")
-	return(model)
+	if(autoRun){
+		return(mxRun(model))
+	} else {
+		return(model)
+	}
 } # end umxIP
 
 #' umxACESexLim
@@ -1728,6 +2045,7 @@ umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 #' @param dzoData The DZ opposite-sex dataframe. (be sure and get in right order)
 #' @param suffix The suffix for twin 1 and twin 2, often "_T" (defaults to NULL) With this, you can
 #' omit suffixes from names in SelDV, i.e., just "dep" not c("dep_T1", "dep_T2")
+#' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned)
 #' @return - ACE sexlim model
 #' @export
 #' @family Twin Modeling Functions
@@ -1775,7 +2093,7 @@ umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 #' # does fit move on repeated execution?
 #' # for (i in 1:4) { m2 <- mxRun(m2); print(m2 $output$mi) }
 #' }
-umxACESexLim <- function(name = "ACE_sexlim", selDVs, mzmData, dzmData, mzfData, dzfData, dzoData, suffix = NULL){
+umxACESexLim <- function(name = "ACE_sexlim", selDVs, mzmData, dzmData, mzfData, dzfData, dzoData, suffix = NULL, autoRun = getOption("umx_auto_run")){
 	if(is.null(suffix)){
 		stop("umx functions now require the suffix parameter is set,
 		and selDVs is just a list of variable's base names")
@@ -1807,7 +2125,7 @@ umxACESexLim <- function(name = "ACE_sexlim", selDVs, mzmData, dzmData, mzfData,
 	colSZm = paste0(varList, rep(c('Asm','Csm')     , each = nVar))
 	colSZf = paste0(varList, rep(c('Asf','Csf')     , each = nVar))
 
-	m1 = mxModel(name,
+	model = mxModel(name,
 		mxModel("top",
 			# Matrices a, c, and e to store Path Coefficients
 			# Male & female parameters <- am cm em, Ram, Rcm, Rem, Am, Cm, Em, Vm, VarsZm, CorsZm
@@ -1907,8 +2225,12 @@ umxACESexLim <- function(name = "ACE_sexlim", selDVs, mzmData, dzmData, mzfData,
 		),
 		mxFitFunctionMultigroup(c("MZf", "DZf", "MZm", "DZm", "DZo"))
 	)
-	m1 = umxLabel(m1)
-	return(m1)
+	model = umxLabel(model)
+	if(autoRun){
+		return(mxRun(model))
+	} else {
+		return(model)
+	}
 }
 
 # ========================================
@@ -3580,9 +3902,9 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 	if(!is.null(v1m0)){
 		# TODO lbound ubound unlikely to be applied to two things, and can't affect result... error if they're not NULL?
 		if(!is.na(lbound)&&is.na(ubound)){
-			warning("don't use lbound or ubound with v1m0: it doesn't make sense...")
+			message("I lbounded var of ", v1m0, " @ 0")
 		}
-		a = mxPath(from = v1m0, arrows = 2, free = FALSE, values = 1, labels = labels, lbound = lbound, ubound = ubound)
+		a = mxPath(from = v1m0, arrows = 2, free = FALSE, values = 1, labels = labels, lbound = 0, ubound = ubound)
 		b = mxPath(from = "one", to = v1m0, free = FALSE, values = 0, labels = labels, lbound = lbound, ubound = ubound)
 		return(list(a,b))
 	}
@@ -3590,7 +3912,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 	if(!is.null(v.m.)){
 		# TODO lbound ubound unlikely to be applied to two things. lbound for var should be 0
 		if(!is.na(lbound)&&is.na(ubound)){
-			warning("Don't use lbound or ubound with v1m0: it doesn't make sense... + I lbound var @ 0")
+			message("I lbounded var of ", v.m. , " @ 0")
 		}
 		a = mxPath(from = v.m., arrows = 2, free = TRUE, values = 1, labels = labels, lbound = 0, ubound = ubound)
 		b = mxPath(from = "one", to = v.m., free = TRUE, values = 0, labels = labels, lbound = lbound, ubound = ubound)
@@ -3637,6 +3959,10 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 			to     = var
 			arrows = 2
 			connect = "single"
+			if(is.na(lbound)){
+				message("I lbounded var of ", var, " @ 0")			
+				lbound  = 0
+			}
 		}
 	} else if(!is.null(means)){
 		# ================
@@ -3656,7 +3982,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 		# = Handle unique.bivariate =
 		# ===========================
 		if(length(unique(unique.bivariate)) < 2){
-			stop("You have to have at least 2 uniuque variables to use unique.bivariate")
+			stop("You have to have at least 2 unique variables to use unique.bivariate")
 		}
 		if(!is.null(from)){
 			stop("To use unique.bivariate, 'from=' should be empty.\n",
@@ -3721,10 +4047,6 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 		free = TRUE
 		values = freeAt
 	}
-	# TODO check incoming value of connect
-	# if(!connect == "single"){
-	# 	message("Connect should be single, it was:", connect)
-	# }	
 	mxPath(from = from, to = to, connect = connect, arrows = arrows, free = free, values = values, labels = labels, lbound = lbound, ubound = ubound)
 }
 

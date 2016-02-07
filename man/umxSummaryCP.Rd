@@ -12,7 +12,7 @@ umxSummaryCP(model, digits = 2, dotFilename = "name", returnStd = FALSE,
 \arguments{
 \item{model}{A fitted \code{\link{umxCP}} model to summarize}
 
-\item{digits}{rounding (default = 2)}
+\item{digits}{round to how many digits (default = 2)}
 
 \item{dotFilename}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
@@ -63,11 +63,13 @@ umxSummaryCP(fit, dotFilename = "Figure 3", showStd = TRUE)
 - \code{\link{umxCP}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 
 Other Twin Modeling Functions: \code{\link{umxACESexLim}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxACEcov}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryGxE}},
-  \code{\link{umxSummaryIP}}, \code{\link{umx}}
+  \code{\link{umxSummaryIP}},
+  \code{\link{umx_make_TwinData}}, \code{\link{umx}}
 }
 

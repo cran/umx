@@ -13,11 +13,15 @@ umx_open(filepath = getwd())
 -
 }
 \description{
-Open a file or folder. So far only works on OS X
+Open a file or folder. Works on OS X, mostly on windows, and hopefully on unix.
+}
+\details{
+NOTE: Your filepath is shQuoted by this function.
 }
 \examples{
 \dontrun{
 umx_open(getwd())
+umx_open("~/bin/umx/R/misc_and_utility copy.r")
 }
 }
 \references{
@@ -25,6 +29,7 @@ umx_open(getwd())
 }
 \seealso{
 Other File Functions: \code{\link{dl_from_dropbox}},
+  \code{\link{umx_SQL_from_Excel}},
   \code{\link{umx_move_file}},
   \code{\link{umx_rename_file}}, \code{\link{umx}}
 }

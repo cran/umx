@@ -17,7 +17,7 @@ umxExpCov(object, latents = FALSE, manifests = TRUE, digits = NULL, ...)
 
 \item{manifests}{Whether to select the manifest variables (defaults to TRUE)}
 
-\item{digits}{precision of reporting. Leave NULL to do no rounding.}
+\item{digits}{precision of reporting. Deafult (NULL) is not not round at all.}
 
 \item{...}{extra parameters (to match \code{\link{vcov}})}
 }
@@ -58,9 +58,10 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
   \code{\link{umxCompare}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACE}},
+  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotACE}},
   \code{\link{umxStandardizeModel}},
   \code{\link{umxSummary.MxModel}},
-  \code{\link{umx_drop_ok}}
+  \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}}
 }
 

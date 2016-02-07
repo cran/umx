@@ -5,32 +5,32 @@
 \alias{umxSummaryACE}
 \title{umxSummaryACE}
 \usage{
-umxSummaryACE(model, digits = 2, dotFilename = NULL, returnStd = FALSE,
-  extended = FALSE, showRg = FALSE, showStd = TRUE, comparison = NULL,
-  CIs = TRUE, zero.print = ".", report = c("1", "2", "html"), ...)
+umxSummaryACE(model, digits = 2, dotFilename = NULL, comparison = NULL,
+  showStd = TRUE, showRg = FALSE, CIs = TRUE, report = c("1", "2",
+  "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...)
 }
 \arguments{
 \item{model}{an \code{\link{mxModel}} to summarize}
 
-\item{digits}{rounding (default = 2)}
+\item{digits}{round to how many digits (default = 2)}
 
 \item{dotFilename}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
-\item{returnStd}{Whether to return the standardized form of the model (default = F)}
-
-\item{extended}{how much to report (F)}
-
-\item{showRg}{= whether to show the genetic correlations (F)}
-
-\item{showStd}{= whether to show the standardized model (T)}
-
 \item{comparison}{you can run mxCompare on a comparison model (NULL)}
+
+\item{showStd}{Whether to standardize the output (defualt = TRUE)}
+
+\item{showRg}{= whether to show the genetic correlations (FALSE)}
 
 \item{CIs}{Whether to show Confidence intervals if they exist (T)}
 
-\item{zero.print}{How to show zeros (".")}
-
 \item{report}{If 3, then open an html table of the results}
+
+\item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
+
+\item{extended}{how much to report (FALSE)}
+
+\item{zero.print}{How to show zeros (".")}
 
 \item{...}{Other parameters to control model summary}
 }
@@ -38,7 +38,7 @@ umxSummaryACE(model, digits = 2, dotFilename = NULL, returnStd = FALSE,
 - optional \code{\link{mxModel}}
 }
 \description{
-Summarise a Cholesky model, as returned by umxACE
+Summarise a Cholesky model returned by \\code{\link{umxACE}}.
 }
 \examples{
 require(umx)
@@ -63,12 +63,28 @@ stdFit = umxSummaryACE(m1, returnStd = TRUE);
 \seealso{
 - \code{\link{umxACE}}
 
+Other Reporting functions: \code{\link{RMSEA.MxModel}},
+  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
+  \code{\link{confint.MxModel}},
+  \code{\link{extractAIC.MxModel}},
+  \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
+  \code{\link{residuals.MxModel}},
+  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
+  \code{\link{umxCompare}}, \code{\link{umxExpCov}},
+  \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
+  \code{\link{umxStandardizeModel}},
+  \code{\link{umxSummary.MxModel}},
+  \code{\link{umx_drop_ok}}
+
 Other Twin Modeling Functions: \code{\link{umxACESexLim}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxACEcov}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryCP}}, \code{\link{umxSummaryGxE}},
-  \code{\link{umxSummaryIP}}, \code{\link{umx}}
+  \code{\link{umxSummaryIP}},
+  \code{\link{umx_make_TwinData}}, \code{\link{umx}}
 }
 

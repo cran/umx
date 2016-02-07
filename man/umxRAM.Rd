@@ -5,8 +5,9 @@
 \title{umxRAM}
 \usage{
 umxRAM(model = NA, ..., data = NULL, name = NA, comparison = TRUE,
-  run = TRUE, setValues = TRUE, independent = NA,
-  remove_unused_manifests = TRUE)
+  setValues = TRUE, independent = NA, remove_unused_manifests = TRUE,
+  showEstimates = c("none", "raw", "std", "both", "list of column names"),
+  autoRun = getOption("umx_auto_run"))
 }
 \arguments{
 \item{model}{A model to update (or set to string to use as name for new model)}
@@ -19,13 +20,15 @@ umxRAM(model = NA, ..., data = NULL, name = NA, comparison = TRUE,
 
 \item{comparison}{Compare the new model to the old (if updating an existing model: default = TRUE)}
 
-\item{run}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
-
 \item{setValues}{Whether to generate likely good start values (Defaults to TRUE)}
 
 \item{independent}{Whether the model is independent (default = NA)}
 
 \item{remove_unused_manifests}{Whether to remove variables in the data to which no path makes reference (defaults to TRUE)}
+
+\item{showEstimates}{Whether to show estimates. Defaults to no (alternatives = "raw", "std", etc.)}
+
+\item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
 }
 \value{
 - \code{\link{mxModel}}
@@ -80,6 +83,22 @@ umxSummary(m1, show = "std")
 # 5. Draw a nice path diagram (needs Graphviz)
 plot(m1)
 plot(m1, resid = "line") # I find it easier to work with stick-residuals
+
+# =================================================
+# = This is an example of using your own labels:  =
+#   umxRAM will not over-ride them                =
+# =================================================
+m1 = umxRAM("tim", data = myCov,
+	umxPath(c("wt", "disp"), to = "mpg"),
+	umxPath(cov = c("wt", "disp"), labels = "b1"),
+	umxPath(var = c("wt", "disp", "mpg"))
+)
+omxCheckEquals(m1$S$labels["disp", "wt"], "b1") # label preserved
+m1$S$labels
+#      mpg             wt            disp
+# mpg  "mpg_with_mpg"  "mpg_with_wt" "disp_with_mpg"
+# wt   "mpg_with_wt"   "wt_with_wt"  "b1"
+# disp "disp_with_mpg" "b1"          "disp_with_disp"
 }
 }
 \references{

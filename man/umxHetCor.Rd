@@ -4,15 +4,15 @@
 \alias{umxHetCor}
 \title{umxHetCor}
 \usage{
-umxHetCor(data, ML = FALSE, use = "complete.obs",
-  treatAllAsFactor = FALSE, verbose = FALSE)
+umxHetCor(data, ML = FALSE, use = c("pairwise.complete.obs",
+  "complete.obs"), treatAllAsFactor = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{data}{A \code{\link{data.frame}} of columns for which to compute heterochoric correlations}
 
 \item{ML}{Whether to use Maximum likelihood computation of correlations (default = FALSE)}
 
-\item{use}{How to handle missing data: "complete.obs", "pairwise.complete.obs" Default is complete.obs}
+\item{use}{How to handle missing data: "complete.obs" (Default), "pairwise.complete.obs"}
 
 \item{treatAllAsFactor}{Whether to treat all columns as factors, whether they are or not.}
 
@@ -32,14 +32,13 @@ umxHetCor(mtcars[,c("mpg", "am")], treatAllAsFactor = FALSE, verbose = TRUE)
 -
 }
 \seealso{
-- \code{\link{umx_cor}}, \code{\link[polycor]{hetcor}}
-
 Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxFactor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
   \code{\link{umx_cont_2_ordinal}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_fake_data}},
+  \code{\link{umx_lower2full}},
   \code{\link{umx_make_bin_cont_pair_data}},
   \code{\link{umx_merge_CIs}},
   \code{\link{umx_read_lower}}, \code{\link{umx_reorder}},

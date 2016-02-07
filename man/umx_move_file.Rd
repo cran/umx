@@ -35,10 +35,8 @@ umx_move_file(baseFolder = base, fileNameList = toMove, destFolder = dest, test=
 }
 }
 \seealso{
-- \code{\link{umx_rename_file}}, \code{\link{file.rename}}
-
 Other File Functions: \code{\link{dl_from_dropbox}},
-  \code{\link{umx_open}}, \code{\link{umx_rename_file}},
-  \code{\link{umx}}
+  \code{\link{umx_SQL_from_Excel}}, \code{\link{umx_open}},
+  \code{\link{umx_rename_file}}, \code{\link{umx}}
 }
 

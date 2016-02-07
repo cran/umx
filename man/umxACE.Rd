@@ -7,7 +7,8 @@
 umxACE(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = 0.5,
   dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL,
   numObsMZ = NULL, boundDiag = NULL, weightVar = NULL,
-  equateMeans = TRUE, bVector = FALSE, hint = c("none", "left_censored"))
+  equateMeans = TRUE, bVector = FALSE, hint = c("none", "left_censored"),
+  autoRun = getOption("umx_auto_run"))
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE")}
@@ -42,6 +43,8 @@ omit suffixes from names in SelDV, i.e., just "dep" not c("dep_T1", "dep_T2")}
 \item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE)}
 
 \item{hint}{An analysis hint. Options include "none", (default) "left_censored". Default does nothing.}
+
+\item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
 }
 \value{
 - \code{\link{mxModel}} of subclass mxModel.ACE
@@ -115,8 +118,7 @@ dzData <- tmpTwin[tmpTwin$zyg \%in\% "DZFF", selDVs]
 mzData <- mzData[1:200,] # just top 200 so example runs in a couple of secs
 dzData <- dzData[1:200,]
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-m1 = umxRun(m1)
-umxSummary(m1)
+umxSummary(m1, showStd=TRUE)
 umxSummaryACE(m1)
 \dontrun{
 plot(m1)
@@ -156,10 +158,9 @@ mzData <- mzData[1:200,] # just top 200 so example runs in a couple of secs
 dzData <- dzData[1:200,]
 str(mzData)
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
-m1 = mxRun(m1)
-umxSummary(m1)
 \dontrun{
-# plot(m1)
+umxSummary(m1)
+plot(m1)
 }
 
 # ============================================
@@ -227,10 +228,9 @@ tmpTwin <- twinData
 labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
 tmpTwin$zyg = factor(tmpTwin$zyg, levels = 1:5, labels = labList)
 selDVs = c("wt1", "wt2")
-dz = cov(tmpTwin[tmpTwin$zyg == "MZFF", selDVs], use = "complete")
-mz = cov(tmpTwin[tmpTwin$zyg == "DZFF", selDVs], use = "complete")
+mz = cov(tmpTwin[tmpTwin$zyg \%in\% "MZFF", selDVs], use = "complete")
+dz = cov(tmpTwin[tmpTwin$zyg \%in\% "DZFF", selDVs], use = "complete")
 m1 = umxACE(selDVs= selDVs, dzData=dz, mzData=mz, numObsDZ=nrow(dzData), numObsMZ=nrow(mzData))
-m1 = mxRun(m1)
 umxSummary(m1)
 \dontrun{
 plot(m1)
@@ -241,11 +241,13 @@ plot(m1)
 }
 \seealso{
 Other Twin Modeling Functions: \code{\link{umxACESexLim}},
-  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
-  \code{\link{umxIP}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxSummaryACE}},
-  \code{\link{umxSummaryCP}}, \code{\link{umxSummaryGxE}},
-  \code{\link{umxSummaryIP}}, \code{\link{umx}}
+  \code{\link{umxACEcov}}, \code{\link{umxCF_SexLim}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
+  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
+  \code{\link{umx_make_TwinData}}, \code{\link{umx}}
 }
 

@@ -9,7 +9,7 @@
 \arguments{
 \item{object}{An fitted \code{\link{mxModel}} from which to get residuals}
 
-\item{digits}{rounding (default = 2)}
+\item{digits}{round to how many digits (default = 2)}
 
 \item{suppress}{smallest deviation to print out (default = NULL = show all)}
 
@@ -52,9 +52,9 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
   \code{\link{umxCompare}}, \code{\link{umxExpCov}},
   \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
-  \code{\link{umxPlotACE}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
   \code{\link{umxStandardizeModel}},
   \code{\link{umxSummary.MxModel}},
-  \code{\link{umx_drop_ok}}
+  \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}}
 }
 

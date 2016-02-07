@@ -99,7 +99,8 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
   \code{\link{umx_cont_2_ordinal}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_fake_data}},
+  \code{\link{umx_lower2full}},
   \code{\link{umx_make_bin_cont_pair_data}},
   \code{\link{umx_merge_CIs}},
   \code{\link{umx_read_lower}}, \code{\link{umx_reorder}},
@@ -108,6 +109,7 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}}
 
 Other File Functions: \code{\link{dl_from_dropbox}},
+  \code{\link{umx_SQL_from_Excel}},
   \code{\link{umx_move_file}}, \code{\link{umx_open}},
   \code{\link{umx_rename_file}}
 
@@ -147,12 +149,14 @@ Other Super-easy helpers: \code{\link{umxEFA}},
   \code{\link{umxJiggle}}
 
 Other Twin Modeling Functions: \code{\link{umxACESexLim}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxACEcov}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}}
+  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
+  \code{\link{umx_make_TwinData}}
 
 Other Utility Functions: \code{\link{qm}},
   \code{\link{umx_find_object}}, \code{\link{umx_grep}},
@@ -161,6 +165,7 @@ Other Utility Functions: \code{\link{qm}},
   \code{\link{umx_print}}, \code{\link{umx_rename}}
 
 Other zAdvanced Helpers: \code{\link{umx_RAM_ordinal_objective}},
+  \code{\link{umx_standardize_ACEcov}},
   \code{\link{umx_standardize_ACE}},
   \code{\link{umx_standardize_CP}},
   \code{\link{umx_standardize_IP}}

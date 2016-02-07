@@ -7,7 +7,8 @@
 umxIP(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1,
   freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE,
   equateMeans = TRUE, dzAr = 0.5, dzCr = 1, correlatedA = FALSE,
-  addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL)
+  addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL,
+  autoRun = getOption("umx_auto_run"))
 }
 \arguments{
 \item{name}{The name of the model (defaults to "IP")}
@@ -44,6 +45,8 @@ omit suffixes from names in SelDV, i.e., just "dep" not c("dep_T1", "dep_T2")}
 \item{numObsDZ}{= todo: implement ordinal Number of DZ twins: Set this if you input covariance data}
 
 \item{numObsMZ}{= todo: implement ordinal Number of MZ twins: Set this if you input covariance data}
+
+\item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
 }
 \value{
 - \code{\link{mxModel}}
@@ -75,11 +78,13 @@ umxSummary(m1, dotFilename = NA) # dotFilename = NA to avoid opening a plot wind
 - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 
 Other Twin Modeling Functions: \code{\link{umxACESexLim}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxSummaryACE}},
-  \code{\link{umxSummaryCP}}, \code{\link{umxSummaryGxE}},
-  \code{\link{umxSummaryIP}}, \code{\link{umx}}
+  \code{\link{umxACEcov}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
+  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
+  \code{\link{umx_make_TwinData}}, \code{\link{umx}}
 }
 

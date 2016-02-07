@@ -13,7 +13,7 @@ umxExpMeans(model, manifests = TRUE, latents = NULL, digits = NULL)
 
 \item{latents}{Whether to select the latent variables (defaults to TRUE)}
 
-\item{digits}{precision of reporting. Leave NULL to do no rounding.}
+\item{digits}{precision of reporting. Default (NULL) will not round at all.}
 }
 \value{
 - expected means
@@ -50,9 +50,10 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
   \code{\link{umxCompare}}, \code{\link{umxExpCov}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACE}},
+  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotACE}},
   \code{\link{umxStandardizeModel}},
   \code{\link{umxSummary.MxModel}},
-  \code{\link{umx_drop_ok}}
+  \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}}
 }
 
