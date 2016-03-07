@@ -45,13 +45,13 @@ Replace umxGraph_RAM with \code{\link{plot}}
 
 Replace tryHard with \code{\link{umxRun}}
 
-Replace genEpi_ReRun with \code{\link{umxReRun}}
+Replace genEpi_ReRun with \code{\link{umxModify}}
 
 Replace mxStart with \code{\link{umxValues}}
 
 Replace umxLabeler with \code{\link{umxLabel}}
 
-Replace standardizeRAM with \code{\link{umxStandardizeModel}}
+Replace standardizeRAM with \code{\link{umx_standardize_RAM}}
 
 Replace genEpi_equate with \code{\link{umxEquate}}
 

@@ -10,6 +10,29 @@
 # = Get and set OpenMx options =
 # ==============================
 
+#' umx_set_auto_plot
+#'
+#' Set autoplot default for models like umxACE umxGxE etc
+#'
+#' @param autoPlot If NA or "name", sets the umx_auto_plot option. Else returns the current value of umx_auto_plot
+#' @return - Current umx_auto_plot setting
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' old = umx_set_auto_plot() # get existing value
+#' umx_set_auto_plot("name")  # set to "name"
+#' umx_set_auto_plot(old)    # reinstate
+umx_set_auto_plot <- function(autoPlot = NULL) {
+	if(is.null(autoPlot)) {
+		getOption("umx_auto_plot")
+	} else {
+		umx_check(autoPlot %in% c(NA, "name"), "stop")
+		options("umx_auto_plot" = autoPlot)
+	}
+}
+
 #' umx_set_auto_run
 #'
 #' Set autorun default for models like umxACE umxGxE etc
@@ -114,29 +137,26 @@ umx_get_cores <- function(model = NULL) {
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' \dontrun{
-#' # takes a minute on a fast machine
+#' # On a fast machine, takes a minute with 1 core
 #' umx_check_parallel()
 #' }
 umx_check_parallel <- function(nCores = -1) {
 	oldCores = umx_set_cores()
-	if(nCores == -1){
+	if( (length(nCores) == 1) && (nCores == -1)){
 		nCores = detectCores()
-	} else {
-		nCores = nCores
 	}
-	message("You are using ", oldCores, " of ", parallel::detectCores(), " available cores (0 means max - 1)")
-	message("I will now set cores to ", nCores, " (they will be reset after) and run a script that hits multiple cores if possible.\n",
+	message("You have been using ", oldCores, " of ", parallel::detectCores(), " available cores (0 means max - 1)")
+	message("I will now set cores to ", omxQuotes(nCores), " (they will be reset after) and run a script that hits that many cores if possible.\n",
 	"Check CPU while it's running and see if R is pegging the processor.")
-	umx_set_cores(nCores)
 	numberSubjects <- 1000
 	numberIndicators <- 12
 	numberFactors <- 3
 	set.seed(10)
-	fixedBMatrixF <- matrix(c(.4, .2), 2, 1, byrow=TRUE)
-	randomBMatrixF <- matrix(c(.3, .5), 2, 1, byrow=TRUE)
-	XMatrixF <- matrix(rnorm(numberSubjects*2, mean=0, sd=1), numberSubjects, 2)
-	UMatrixF <- matrix(rnorm(numberSubjects*1, mean=0, sd=1), numberSubjects, 1)
-	Z <- matrix(rnorm(numberSubjects, mean=0, sd=1), nrow=numberSubjects, ncol=2)
+	fixedBMatrixF <- matrix(c(.4, .2), 2, 1, byrow = TRUE)
+	randomBMatrixF <- matrix(c(.3, .5), 2, 1, byrow = TRUE)
+	XMatrixF <- matrix(rnorm(numberSubjects * 2, mean = 0, sd = 1), numberSubjects, 2)
+	UMatrixF <- matrix(rnorm(numberSubjects * 1, mean = 0, sd = 1), numberSubjects, 1)
+	Z <- matrix(rnorm(numberSubjects, mean = 0, sd = 1), nrow=numberSubjects, ncol = 2)
 
 	XMatrix <- cbind(XMatrixF, XMatrixF %*% fixedBMatrixF + (XMatrixF*Z) %*% randomBMatrixF + UMatrixF)
 
@@ -186,9 +206,22 @@ umx_check_parallel <- function(nCores = -1) {
 		mxPath(from="one", to=c(latents), arrows=1, free=T, values=.1),
 		mxData(latentMultiRegModerated1, type="raw")
 	)
-	test1 <- mxRun(test1)
+	models = c(test1)
+	for (thisCores in nCores) {
+		models = append(models, test1)
+	}
+	n = 1
+	for (thisCores in nCores) {
+		umx_set_cores(thisCores)
+		thisModel = mxRename(models[[n]], paste0("nCcores_equals_", thisCores))
+		thisModel <- mxRun(thisModel)
+		# umx_time(thisModel, autoRun= F)
+		models[n] = thisModel
+		n = n + 1
+	}
 	umx_set_cores(oldCores)
-	invisible(umx_time(test1))
+	# umx_time(models, autoRun= F)
+	invisible(umx_time(models, autoRun= F))
 }
 
 #' umx_get_optimizer
@@ -235,13 +268,19 @@ umx_set_optimizer <- function(opt = NA, model = NULL) {
 		} else {
 			o= mxOption(model, "Default optimizer")
 		}
-		message("Current Optiumizer is:'", o, "'")
+		message("Current Optimizer is:'", o, "'")
 		invisible(o)
 	} else {
 		if(!opt %in% mxAvailableOptimizers()){
-			stop("The Optimizer ", omxQuotes(opt), " is not legal. legal values are:", omxQuotes(mxAvailableOptimizers()))
+			stop("The Optimizer ", omxQuotes(opt), " is not legal. Legal values (from mxAvailableOptimizers() ) are:",
+			omxQuotes(mxAvailableOptimizers()))
 		}
-		mxOption(NULL, "Default optimizer", opt)	
+		if(is.null(model)){
+			mxOption(NULL, "Default optimizer", opt)	
+		} else {
+			stop(paste0("'Default optimizer' is a global option and cannot be set on models. just say:\n",
+			"umx_set_optimizer(", omxQuotes(opt), ")"))
+		}
 	}
 }
 
@@ -611,13 +650,13 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 
 #' umxFactor
 #'
-#' Just a wrapper around mxFactor for the case when the factor levels are those in the variable
+#' A convenient version of \code{\link{mxFactor}} supporting the common 
+#' case in which the factor levels are those in the variable.
 #'
 #' @param x A variable to recode as an mxFactor (see \code{\link{mxFactor}})
 #' @param levels defaults to NA. UNLIKE mxFactor, if not specified, the existing levels will be used
 #' @param labels = levels (see \code{\link{mxFactor}})
 #' @param exclude = NA (see \code{\link{mxFactor}})
-#' @param ordered = TRUE (see \code{\link{mxFactor}})
 #' @param collapse = FALSE (see \code{\link{mxFactor}})
 #' @return - \code{\link{mxFactor}}
 #' @export
@@ -627,12 +666,18 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' x = umxFactor(letters)
 #' str(x)
 umxFactor <- function(x = character(), levels = NA, labels = levels, 
-		exclude = NA, ordered = TRUE, collapse = FALSE) {
+		exclude = NA, collapse = FALSE) {
+	if(!is.factor(x)){
+		x = factor(x, ordered=TRUE)
+		message("Your variable was not a factor: I made it into one, with levels:", levels(x) )
+	}
 	if(is.na(levels)){
 		levels = levels(x)
+	}else{
+		# TODO should check the provided levels match the data!	(quick)	
 	}
 	mxFactor(x = character(), levels, labels = levels, 
-	    exclude = exclude, ordered = ordered, collapse = collapse)
+	    exclude = exclude, ordered = TRUE, collapse = collapse)
 }
 
 #' umx_RAM_ordinal_objective
@@ -1156,14 +1201,18 @@ umx_move_file <- function(baseFolder = NA, findStr = NULL, fileNameList = NA, de
 #' }
 umx_open <- function(filepath = getwd()) {
 	filepath = normalizePath(filepath)
-	if(umx_check_OS("OSX")){
-		opener = "open "
-	} else if (umx_check_OS("Windows")){
-		opener = "start "
-	}else { # *nix?
-		opener = "xdg-open "
+	if (umx_check_OS("Windows")){
+		shell(shQuote(filepath, type='cmd'), 'cmd.exe')
+	} else {
+		if(umx_check_OS("OSX")){
+			opener = "open "
+		} else { # *nix?
+			opener = "xdg-open "
+		}
+		system(paste(opener, shQuote(filepath)))
+	 # system2(opener, shQuote(filepath)) # possibly more robust.
+	 # check when around multiple machine types
 	}
-	system(paste(opener, shQuote(filepath)))
 }
 
 #' umx_check_OS
@@ -1207,11 +1256,18 @@ umx_check_OS <- function(target=c("OSX", "SunOS", "Linux", "Windows"), action = 
 	return(isTarget)
 }
 
-#' umx_SQL_from_Excel
+#' umx_sql_from_excel
 #'
-#' Read an xlsx file and convert into SQL insert statements. Unliekly to be of use to anyone but the package author :-)
+#' Unlikely to be of use to anyone but the package author :-)
+#' Read an xlsx file and convert into SQL insert statements (placed on the clipboard)
 #' On OS X, the function can access the current frontmost Finder window.
-#' The file renaming is fast and, because you can use regular expressions, powerful
+#' 
+#' The file name should be the name of the test.
+#' Columns should be headed:
+#' itemText	direction	scale	type	then	whatever	you	need	for	response	options
+#' 
+#' The SQL fields expected are:
+#' itemID, test, native_item_number, item_text, direction, scale, format, author
 #'
 #' @param theFile The xlsx file to read. If set to "Finder" (and you are on OS X) it will use the current frontmost Finder window. If it is blank, a choose file dialog will be thrown.
 #' @family File Functions
@@ -1220,10 +1276,10 @@ umx_check_OS <- function(target=c("OSX", "SunOS", "Linux", "Windows"), action = 
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' \dontrun{
-#' umx_SQL_from_Excel()
-#' umx_SQL_from_Excel("~/Desktop/test.xlsx")
+#' umx_sql_from_excel() # Using file selected in front-most Finder window
+#' umx_sql_from_excel("~/Desktop/test.xlsx") # provide a path
 #' }
-umx_SQL_from_Excel <- function(theFile = "Finder") {
+umx_sql_from_excel <- function(theFile = "Finder") {
 	if(theFile == "Finder"){
 		umx_check_OS("OSX")
 		theFile = system(intern = TRUE, "osascript -e 'tell application \"Finder\" to get the POSIX path of (selection as alias)'")
@@ -1442,6 +1498,22 @@ print.reliability <- function (x, digits = 4, ...){
 # =====================
 # = Utility functions =
 # =====================
+#' getOpenMx
+#'
+#' @description
+#' source() the getOpenMx.R script from source repo.
+#'
+#' @return - 
+#' @export
+#' @family Miscellaneous Functions
+#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+#' @examples
+#' \dontrun{
+#' getOpenMx()
+#' }
+getOpenMx <- function() {
+	source('http://openmx.psyc.virginia.edu/getOpenMx.R')
+}
 
 #' umx_msg
 #'
@@ -1595,6 +1667,7 @@ umxCov2cor <- function(x) {
 #' @param model An \code{\link{mxModel}} from which to get the elapsed time
 #' @param formatStr A format string, defining how to show the time (defaults to human readable)
 #' @param tz time zone in which the model was executed (defaults to "GMT")
+#' @param autoRun If TRUE (default), run the model if it appears not to have been.
 #' @return - invisible time string
 #' @export
 #' @family Reporting Functions
@@ -1605,20 +1678,18 @@ umxCov2cor <- function(x) {
 #' data(demoOneFactor)
 #' latents  = c("G")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' myData = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 <- umxRAM("One Factor", data = myData,
+#' 	umxPath(from = latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1)
 #' )
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 #' umx_time(m1)
 #' m2 = umxRun(m1)
 #' umx_time(c(m1, m2))
 #' umx_time('stop')
 #' # elapsed time: 05.23 seconds
-umx_time <- function(model = NA, formatStr = c("simple", "std", "custom %H %M %OS3"), tz = "GMT"){
+umx_time <- function(model = NA, formatStr = c("simple", "std", "custom %H %M %OS3"), tz = "GMT", autoRun = TRUE){
 	formatStr = umx_default_option(formatStr, c("simple", "std", "custom %H %M %OS3"), check = FALSE)
 	# TODO output a nicely formated table
 	for(i in 1:length(model)) {			
@@ -1639,7 +1710,7 @@ umx_time <- function(model = NA, formatStr = c("simple", "std", "custom %H %M %O
 			}
 		} else {
 			# handle model
-			if(!umx_has_been_run(m)){
+			if(!umx_has_been_run(m) && autoRun){
 				m = mxRun(m)
 				# message("You must run the model before asking for the elapsed run time")
 			}
@@ -1721,21 +1792,21 @@ umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print 
 		x <- umx_round(x, digits = digits, coerce = FALSE)
 	    if (any(ina <- is.na(x))) 
 	        x[ina] <- na.print
-		i0 <- !ina & x == 0
+			i0 <- !ina & x == 0
 	    if (zero.print != "0" && any(i0)) 
 	        x[i0] <- zero.print
 	    if (is.numeric(x) || is.complex(x)){
 	        print(x, quote = quote, right = TRUE, ...)
 		} else if(!is.na(file)){
-			R2HTML::HTML(x, file = file, Border = 0, append = FALSE, sortableDF= TRUE); 
-			system(paste0("open ", file))
-			print("Table opened in browser")
+				R2HTML::HTML(x, file = file, Border = 0, append = FALSE, sortableDF= TRUE); 
+				system(paste0("open ", file))
+				print("Table opened in browser")
 	    }else{
-			print(knitr::kable(x, quote = quote, ...))
+				print(knitr::kable(x))
 	    }
 	    invisible(x)
 	}
-}
+} # end umx_print
 
 # ===========================
 # = Boolean check functions =

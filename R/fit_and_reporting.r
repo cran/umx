@@ -71,18 +71,18 @@ umxReduce <- function(m1, report = "html", baseFileName = "tmp") {
 	umx_is_MxModel(m1)
 	if(class(m1) == "MxModel.GxE"){
 		# Reduce GxE Model
-		no_c   = umxReRun(m1, "c_r1c1" , name = "no_c"   )
-		no_a   = umxReRun(m1, "a_r1c1" , name = "no_a"   )
-		no_em  = umxReRun(m1, "em_r1c1", name = "no_em"  )
-		no_cm  = umxReRun(m1, "cm_r1c1", name = "no_cm"  )
-		no_am  = umxReRun(m1, "am_r1c1", name = "no_am"  )
-		no_lin = umxReRun(m1, "lin11"  , name = "no_lin" )  # big linear effect of ses on brain size
-		no_sq  = umxReRun(m1, "quad11" , name = "no_quad")  # no ^2 effect of ses on brain size
+		no_c   = umxModify(m1, "c_r1c1" , name = "no_c"   )
+		no_a   = umxModify(m1, "a_r1c1" , name = "no_a"   )
+		no_em  = umxModify(m1, "em_r1c1", name = "no_em"  )
+		no_cm  = umxModify(m1, "cm_r1c1", name = "no_cm"  )
+		no_am  = umxModify(m1, "am_r1c1", name = "no_am"  )
+		no_lin = umxModify(m1, "lin11"  , name = "no_lin" )  # big linear effect of ses on brain size
+		no_sq  = umxModify(m1, "quad11" , name = "no_quad")  # no ^2 effect of ses on brain size
 		# good to drop the means if possible? I think not. Better to model their most likely value, not lock it too zerp
 
-		no_c_cm   = umxReRun(no_c    , "cm_r1c1", name = "no_c_no_cm")
-		no_c_cem  = umxReRun(no_c_cm , "em_r1c1", name = "no_c_no_em")
-		no_c_acem = umxReRun(no_c_cem, "am_r1c1", name = "no_a_c_or_em")
+		no_c_cm   = umxModify(no_c    , "cm_r1c1", name = "no_c_no_cm")
+		no_c_cem  = umxModify(no_c_cm , "em_r1c1", name = "no_c_no_em")
+		no_c_acem = umxModify(no_c_cem, "am_r1c1", name = "no_a_c_or_em")
 		umxCompare(m1, c(no_c, no_a, no_em, no_cm, no_am, no_lin, no_sq), report = "1")
 		umxCompare(m1, c(no_c, no_a, no_em, no_cm, no_am, no_lin, no_sq), report = report, file = paste0(baseFileName, ".html"))
 		umxCompare(no_c, c(no_c_cm, no_c_cem, no_c_acem), report = "1")
@@ -176,9 +176,9 @@ residuals.MxModel <- function(object, digits = 2, suppress = NULL, ...){
 	invisible(resid)
 }
 
-#' umxStandardizeModel
+#' umx_standardize_RAM
 #'
-#' umxStandardizeModel takes a RAM-style model, and returns standardized version.
+#' umx_standardize_RAM takes a RAM-style model, and returns standardized version.
 #'
 #' @param model The \code{\link{mxModel}} you wish to standardise
 #' @param return What to return. Valid options: "parameters", "matrices", or "model"
@@ -202,9 +202,9 @@ residuals.MxModel <- function(object, digits = 2, suppress = NULL, ...){
 #' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
 #' )
 #' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' m1 = umxStandardizeModel(m1, return = "model")
+#' m1 = umx_standardize_RAM(m1, return = "model")
 #' summary(m1)
-umxStandardizeModel <- function(model, return = "parameters", Amatrix = NA, Smatrix = NA, Mmatrix = NA) {
+umx_standardize_RAM <- function(model, return = "parameters", Amatrix = NA, Smatrix = NA, Mmatrix = NA) {
 	if (!(return == "parameters"|return == "matrices"|return == "model")) stop("Invalid 'return' parameter. Do you want do get back parameters, matrices or model?")
 	suppliedNames = all(!is.na(c(Amatrix,Smatrix)))
 	# if the objective function isn't RAMObjective, you need to supply Amatrix and Smatrix
@@ -570,6 +570,11 @@ umxSummary.default <- function(model, ...){
 #' 	umxPath(var = latents, fixedAt = 1)
 #' )
 #' umxSummary(m1, show = "std")
+#' # output as latex
+#' options(knitr.table.format = 'latex')
+#' umxSummary(m1, show = "std")
+#' options(knitr.table.format = 'markdown')
+#' # output as std
 #' umxSummary(m1, show = "raw")
 #' m1 <- mxModel(m1,
 #'   mxData(demoOneFactor, type = "raw"),
@@ -738,7 +743,8 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("none"
 #' @aliases umxSummary.MxModel.ACE
 #' @param model an \code{\link{mxModel}} to summarize
 #' @param digits round to how many digits (default = 2)
-#' @param dotFilename The name of the dot file to write: NA = none; "name" = use the name of the model
+#' @param dotFilename The name of the dot file to write: "name" = use the name of the model.
+#' Defaults to NA = do not create plot output
 #' @param comparison you can run mxCompare on a comparison model (NULL)
 #' @param showStd Whether to standardize the output (defualt = TRUE)
 #' @param showRg = whether to show the genetic correlations (FALSE)
@@ -770,7 +776,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("none"
 #' umxSummaryACE(m1, dotFilename = "name", showStd = TRUE)
 #' stdFit = umxSummaryACE(m1, returnStd = TRUE);
 #' }
-umxSummaryACE <- function(model, digits = 2, dotFilename = NULL, comparison = NULL, showStd = TRUE, showRg = FALSE, CIs = TRUE, report = c("1", "2", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
+umxSummaryACE <- function(model, digits = 2, dotFilename = getOption("umx_auto_plot"), comparison = NULL, showStd = TRUE, showRg = FALSE, CIs = TRUE, report = c("1", "2", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
 	report = match.arg(report)
 	# depends on R2HTML::HTML
 	if(typeof(model) == "list"){ # call self recursively
@@ -934,7 +940,7 @@ umxSummaryACE <- function(model, digits = 2, dotFilename = NULL, comparison = NU
 	stdFit$top$a@values = a_std
 	stdFit$top$c@values = c_std
 	stdFit$top$e@values = e_std
-	if(!is.null(dotFilename)) {
+	if(!is.na(dotFilename)) {
 		message("making dot file")
 		umxPlotACE(model, dotFilename, std = showStd)
 	}
@@ -987,7 +993,7 @@ umxSummary.MxModel.ACE <- umxSummaryACE
 #' umxSummaryACE(m1, dotFilename = "name", showStd = TRUE)
 #' stdFit = umxSummaryACE(m1, returnStd = TRUE);
 #' }
-umxSummaryACEcov <- function(model, digits = 2, dotFilename = NULL, returnStd = FALSE, extended = FALSE, showRg = FALSE, showStd = TRUE, comparison = NULL, CIs = TRUE, zero.print = ".", report = c("1", "2", "html"), ...) {
+umxSummaryACEcov <- function(model, digits = 2, dotFilename = getOption("umx_auto_plot"), returnStd = FALSE, extended = FALSE, showRg = FALSE, showStd = TRUE, comparison = NULL, CIs = TRUE, zero.print = ".", report = c("1", "2", "html"), ...) {
 	report = match.arg(report)
 	# depends on R2HTML::HTML
 	if(typeof(model) == "list"){ # call self recursively
@@ -1145,7 +1151,7 @@ umxSummaryACEcov <- function(model, digits = 2, dotFilename = NULL, returnStd = 
 	stdFit$top$a@values = a_std
 	stdFit$top$c@values = c_std
 	stdFit$top$e@values = e_std
-	if(!is.null(dotFilename)) {
+	if(!is.na(dotFilename)) {
 		message("making dot file")
 		plot(model, dotFilename, std = showStd)
 	}
@@ -1199,7 +1205,7 @@ umxSummary.MxModel.ACEcov <- umxSummaryACEcov
 #' umxSummaryCP(fit);
 #' umxSummaryCP(fit, dotFilename = "Figure 3", showStd = TRUE)
 #' }
-umxSummaryCP <- function(model, digits = 2, dotFilename = "name", returnStd = FALSE, 
+umxSummaryCP <- function(model, digits = 2, dotFilename = getOption("umx_auto_plot"), returnStd = FALSE, 
     extended = FALSE, showRg = TRUE, comparison = NULL, showStd = TRUE, CIs = FALSE, ...) {
 	# TODO: detect value of DZ covariance, and if .25 set "C" to "D"
 	if(typeof(model) == "list"){ # call self recursively
@@ -1211,7 +1217,6 @@ umxSummaryCP <- function(model, digits = 2, dotFilename = "name", returnStd = FA
 		if(class(model)[1] != "MxModel.CP"){
 			stop("You used umxSummaryCP on model of class ", class(model)[1], "not 'MxModel.CP'")
 		}
-
 		umx_has_been_run(model, stop = TRUE)
 		if(is.null(comparison)){
 			message("-2 \u00d7 log(Likelihood)") # x
@@ -1348,9 +1353,8 @@ umxSummary.MxModel.CP <- umxSummaryCP
 #' \dontrun{
 #' umxSummaryIP(m1, digits = 2, dotFilename = "Figure3", showRg = FALSE, CIs = TRUE);
 #' }
-umxSummaryIP <- function(model, digits = 2, dotFilename = c(NA, "name", "make_up_a_file_name"), 
+umxSummaryIP <- function(model, digits = 2, dotFilename = getOption("umx_auto_plot"), 
     returnStd = FALSE, showStd = FALSE, showRg = TRUE, comparison = NULL, CIs = FALSE, ...) {
-	dotFilename = umx_default_option(dotFilename, c(NA, "name", "make_up_a_file_name"))
 	if(class(model)[1] != "MxModel.IP"){
 		stop("You used umxSummaryIP on model of class ", class(model)[1], "not 'MxModel.IP'")
 	}
@@ -1496,7 +1500,7 @@ umxSummary.MxModel.IP <- umxSummaryIP
 #' umxSummaryGxE(m1)
 #' umxSummaryGxE(m1, location = "topright")
 #' umxSummaryGxE(m1, separateGraphs = FALSE)
-umxSummaryGxE <- function(model = NULL, digits = 2, xlab = NA, location = "topleft", separateGraphs = FALSE, dotFilename = NULL, returnStd = NULL, showStd = NULL, reduce = FALSE, CIs = NULL, report = c("1", "2", "html"), ...) {
+umxSummaryGxE <- function(model = NULL, digits = 2, xlab = NA, location = "topleft", separateGraphs = FALSE, dotFilename = getOption("umx_auto_plot"), returnStd = NULL, showStd = NULL, reduce = FALSE, CIs = NULL, report = c("1", "2", "html"), ...) {
 	report = match.arg(report)
 	umx_has_been_run(model, stop=TRUE)
 	
@@ -1511,19 +1515,19 @@ umxSummaryGxE <- function(model = NULL, digits = 2, xlab = NA, location = "tople
 	umxPlotGxE(model, xlab = xlab, location = location, separateGraphs = separateGraphs)
 
 	if(reduce){
-		modelnomeans  = umxReRun(model , update="lin|quad", regex= TRUE, name = "no_moderation_of_means")
+		modelnomeans  = umxModify(model , update="lin|quad", regex= TRUE, name = "no_moderation_of_means")
 
-		noACEmod     = umxReRun(model, update = "[ace]m"       , regex = TRUE, name = "no_moderation")
-		noA          = umxReRun(model, update = "a_r1c1"       , regex = TRUE, name = "dropA")
-		noC          = umxReRun(model, update = "c_r1c1"       , regex = TRUE, name = "dropC")
-		noE          = umxReRun(model, update = "e_r1c1"       , regex = TRUE, name = "dropE")
-		noAmod       = umxReRun(model, update = "^am"          , regex = TRUE, name = "no_mod_on_A")
-		noCmod       = umxReRun(model, update = "^cm"          , regex = TRUE, name = "no_mod_on_C")
-		noEmod       = umxReRun(model, update = "^em"          , regex = TRUE, name = "no_mod_on_E")
-		noA_noAmod   = umxReRun(model, update = "^(a|am)_r1c1" , regex = TRUE, name = "no_A_no_mod_on_A")
-		noC_noCmod   = umxReRun(model, update = "^(c|cm)_r1c1" , regex = TRUE, name = "no_C_no_mod_on_C")
-		noC_noCEmod  = umxReRun(model, update = "^(c|[ce]m)_r" , regex = TRUE, name = "no_C_no_mod_on_C_or_E")
-		noC_noACEmod = umxReRun(model, update = "^c|([ace]m)_r", regex = TRUE, name = "no_C_no_mod_on_A_C_or_E")
+		noACEmod     = umxModify(model, update = "[ace]m"       , regex = TRUE, name = "no_moderation")
+		noA          = umxModify(model, update = "a_r1c1"       , regex = TRUE, name = "dropA")
+		noC          = umxModify(model, update = "c_r1c1"       , regex = TRUE, name = "dropC")
+		noE          = umxModify(model, update = "e_r1c1"       , regex = TRUE, name = "dropE")
+		noAmod       = umxModify(model, update = "^am"          , regex = TRUE, name = "no_mod_on_A")
+		noCmod       = umxModify(model, update = "^cm"          , regex = TRUE, name = "no_mod_on_C")
+		noEmod       = umxModify(model, update = "^em"          , regex = TRUE, name = "no_mod_on_E")
+		noA_noAmod   = umxModify(model, update = "^(a|am)_r1c1" , regex = TRUE, name = "no_A_no_mod_on_A")
+		noC_noCmod   = umxModify(model, update = "^(c|cm)_r1c1" , regex = TRUE, name = "no_C_no_mod_on_C")
+		noC_noCEmod  = umxModify(model, update = "^(c|[ce]m)_r" , regex = TRUE, name = "no_C_no_mod_on_C_or_E")
+		noC_noACEmod = umxModify(model, update = "^c|([ace]m)_r", regex = TRUE, name = "no_C_no_mod_on_A_C_or_E")
 
 		comparisons = c(
 			noACEmod,
@@ -1582,14 +1586,14 @@ umxSummary.MxModel.GxE <- umxSummaryGxE
 #' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
 #' )
 #' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' m2 = umxReRun(m1, update = "G_to_x2", name = "drop_path_2_x2")
+#' m2 = umxModify(m1, update = "G_to_x2", name = "drop_path_2_x2")
 #' umxCompare(m1, m2)
 #' mxCompare(m1, m2) # what OpenMx gives by default
 #' umxCompare(m1, m2, report = "2") # Add English-sentence descriptions
 #' \dontrun{
 #' umxCompare(m1, m2, report = "html") # Open table in browser
 #' }
-#' m3 = umxReRun(m2, update = "G_to_x3", name = "drop_path_2_x2_and_3")
+#' m3 = umxModify(m2, update = "G_to_x3", name = "drop_path_2_x2_and_3")
 #' umxCompare(m1, c(m2, m3))
 #' umxCompare(c(m1, m2), c(m2, m3), all = TRUE)
 umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, report = c("2", "1", "html"), file = "tmp.html") {
@@ -1843,7 +1847,7 @@ plot.MxModel <- function(x = NA, std = TRUE, digits = 2, dotFilename = "name", p
 	pathLabels = match.arg(pathLabels)
 	latents = model@latentVars   # 'vis', 'math', and 'text' 
 	selDVs  = model@manifestVars # 'visual', 'cubes', 'paper', 'general', 'paragrap'...
-	if(std){ model = umxStandardizeModel(model, return = "model") }
+	if(std){ model = umx_standardize_RAM(model, return = "model") }
 
 	# ========================
 	# = Get Symmetric & Asymmetric Paths =
@@ -1936,22 +1940,7 @@ plot.MxModel <- function(x = NA, std = TRUE, digits = 2, dotFilename = "name", p
 	digraph = paste("digraph G {\n", preOut, out, rankVariables, "\n}", sep = "\n");
 
 	print("nb: see ?plot.MxModel for options - std, digits, dotFilename, pathLabels, resid, showFixed, showMeans")
-	if(!is.na(dotFilename)){
-		if(dotFilename == "name"){
-			dotFilename = paste0(model@name, ".dot")
-		}
-		cat(digraph, file = dotFilename) # write to file
-		if(umx_check_OS("OSX")){
-			umx_open(dotFilename);
-		} else {
-			system(paste0("dot -Tpdf -O ", shQuote(dotFilename)));
-			umx_open(paste0(dotFilename, ".pdf"))
-		}
-		# dot -Tpdf -O yourFilename.dot
-		# creates "yourFilename.dot.pdf"
-	} else {
-		return (cat(digraph));
-	}
+	xmu_dot_maker(model, dotFilename, digraph)
 } # end plot.MxModel
 
 #' umxPlotACE
@@ -2040,22 +2029,7 @@ umxPlotACE <- function(x = NA, dotFilename = "name", digits = 2, showMeans = FAL
 	rankA   = paste("\t{rank = min; ", paste(grep('a'   , latents, value=T), collapse="; "), "};\n") # {rank=min; a1; a2}
 	rankCE  = paste("\t{rank = max; ", paste(grep('[ce]', latents, value=T), collapse="; "), "};\n") # {rank=min; c1; e1}
 	digraph = paste("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, rankVariables, rankA, rankCE, "\n}", sep="");
-	# cat(digraph);
-	# return (out)
-	if(!is.na(dotFilename)){
-		if(dotFilename == "name"){
-			dotFilename = paste0(model@name, ".dot");
-		}
-		cat(digraph, file = dotFilename) # write to file
-		if(umx_check_OS("OSX")){
-			umx_open(dotFilename);
-		} else {
-			system(paste0("dot -Tpdf -O ", shQuote(dotFilename)));
-			umx_open(paste0(dotFilename, ".pdf"))
-		}
-	} else {
-		return (cat(digraph));
-	}
+	xmu_dot_maker(model, dotFilename, digraph)
 } # end umxPlotACE
 
 #' @export
@@ -2165,22 +2139,7 @@ umxPlotACEcov <- function(x = NA, dotFilename = "name", digits = 2, showMeans = 
 	rankA   = paste("\t{rank = min; ", paste(grep('a'   , latents, value = T), collapse = "; "), "};\n") # {rank=min; a1; a2}
 	rankCE  = paste("\t{rank = max; ", paste(grep('[ce]', latents, value = T), collapse = "; "), "};\n") # {rank=min; c1; e1}
 	digraph = paste("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, rankVariables, rankA, rankCE, "\n}", sep="");
-	# cat(digraph);
-	# return (out)
-	if(!is.na(dotFilename)){
-		if(dotFilename == "name"){
-			dotFilename = paste0(model@name, ".dot");
-		}
-		cat(digraph, file = dotFilename) # write to file
-		if(umx_check_OS("OSX")){
-			umx_open(dotFilename);
-		} else {
-			system(paste0("dot -Tpdf -O ", shQuote(dotFilename)));
-			umx_open(paste0(dotFilename, ".pdf"))
-		}
-	} else {
-		return (cat(digraph));
-	}
+	xmu_dot_maker(model, dotFilename, digraph)
 } # end umxPlotACEcov
 
 #' @export
@@ -2347,20 +2306,7 @@ umxPlotCP <- function(x = NA, dotFilename = "name", digits = 2, showMeans = FALS
 	ranks = paste(cSpecifics, collapse = "; ");
 	ranks = paste0("{rank=sink; ", ranks, "}");
 	digraph = paste0("digraph G {\nsplines=\"FALSE\";\n", preOut, ranks, out, "\n}");
-	if(!is.na(dotFilename)){
-		if(dotFilename=="name"){
-			dotFilename = paste0(model@name, ".dot");
-		}
-		cat(digraph, file = dotFilename) # write to file
-		if(umx_check_OS("OSX")){
-			umx_open(dotFilename);
-		} else {
-			system(paste0("dot -Tpdf -O ", shQuote(dotFilename)));
-			umx_open(paste0(dotFilename, ".pdf"))
-		}
-	} else {
-		return (cat(digraph));
-	}
+	xmu_dot_maker(model, dotFilename, digraph)
 }
 
 #' @export
@@ -2455,20 +2401,7 @@ umxPlotIP  <- function(x = NA, dotFilename = "name", digits = 2, showMeans = FAL
 	ranks = paste(cSpecifics, collapse = "; ");
 	ranks = paste0("{rank=sink; ", ranks, "}");
 	digraph = paste0("digraph G {\nsplines=\"FALSE\";\n", preOut, ranks, out, "\n}");
-	if(!is.na(dotFilename)){
-		if(dotFilename == "name"){
-			dotFilename = paste0(model$name, ".dot");
-		}
-		cat(digraph, file = dotFilename) # write to file
-		if(umx_check_OS("OSX")){
-			umx_open(dotFilename);
-		} else {
-			system(paste0("dot -Tpdf -O ", shQuote(dotFilename)));
-			umx_open(paste0(dotFilename, ".pdf"))
-		}
-	} else {
-		return(cat(digraph));
-	}
+	xmu_dot_maker(model, dotFilename, digraph)
 }
 #' @export
 plot.MxModel.IP <- umxPlotIP
@@ -2651,20 +2584,20 @@ umxConditionalsFromModel <- function(model, newData = NULL, returnCovs = FALSE, 
 		eMean <- model$fitfunction@info$expMean
 		expectation <- model$expectation
 		if(!length(setdiff(c("A", "S", "F"), names(getSlots(class(expectation)))))) {
-			A <- eval(substitute(model$X@values, list(X=expectation@A)))
-			S <- eval(substitute(model$X@values, list(X=expectation@S)))
-			if("M" %in% names(getSlots(class(expectation))) && !is.na(expectation@M)) {
-				M <- eval(substitute(model$X@values, list(X=expectation@M)))
+			A <- eval(substitute(model$X$values, list(X=expectation$A)))
+			S <- eval(substitute(model$X$values, list(X=expectation$S)))
+			if("M" %in% names(getSlots(class(expectation))) && !is.na(expectation$M)) {
+				M <- eval(substitute(model$X$values, list(X=expectation$M)))
 			}
 		}
 	} else { # Old objective-style
 		eCov <- model$objective@info$expCov
 		eMean <- model$objective@info$expMean
 		if(!length(setdiff(c("A", "S", "F"), names(getSlots(class(expectation)))))) {
-			A <- eval(substitute(model$X@values, list(X=expectation@A)))
-			S <- eval(substitute(model$X@values, list(X=expectation@S)))
-			if("M" %in% names(getSlots(class(expectation))) && !is.na(expectation@M)) {
-				M <- eval(substitute(model$X@values, list(X=expectation@M)))
+			A <- eval(substitute(model$X$values, list(X=expectation$A)))
+			S <- eval(substitute(model$X$values, list(X=expectation$S)))
+			if("M" %in% names(getSlots(class(expectation))) && !is.na(expectation$M)) {
+				M <- eval(substitute(model$X$values, list(X=expectation$M)))
 			}
 		}
 	}

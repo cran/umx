@@ -2,6 +2,7 @@
 # devtools::release("~/bin/umx", check = TRUE)
 # devtools::build_win("~/bin/umx")
 # devtools::run_examples("~/bin/umx")
+
 # install.packages("curl")
 # install.packages("devtools")
 # install.packages("digest")
@@ -13,7 +14,7 @@
 # install.packages("Rcpp")
 # install.packages("rstudioapi")
 # install.packages("withr")
-
+# install.packages("~/Dropbox/shared folders/OpenMx_binaries/OpenMx_2.3.1-239-OSX/3.2/OpenMx_2.3.1-239.tgz")
 # ===============================
 # = Highlevel models (ACE, GxE) =
 # ===============================
@@ -21,7 +22,8 @@
 	# TODO remove mxCondenseMatrixSlots now that $ get and set are working properly
 	options('mxCondenseMatrixSlots'= FALSE)
 	options("umx_auto_run" = TRUE)
-    packageStartupMessage("For an overview type '?umx'")
+	options("umx_auto_plot" = NA)
+  packageStartupMessage("For an overview type '?umx'")
 }
 
 #' @importFrom MASS mvrnorm
@@ -176,7 +178,7 @@ methods::setClass("MxModel.ACEcov", contains = "MxModel.ACE")
 #' @family Model Building Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
-#' # umxRAM is like ggplot2::qplot(), you give the data in a data =  parameter
+#' # umxRAM is like lm, ggplot2 etc: you give the data in a data = parameter
 #' # A common error is to include data in the main list,
 #' # a bit like saying lm(y~x + df) instead of lm(y~x, data=dd)...
 #' # nb: unlike mxModel, umxRAM needs data at build time.
@@ -200,7 +202,7 @@ methods::setClass("MxModel.ACEcov", contains = "MxModel.ACE")
 #' \dontrun{
 #' # 5. Draw a nice path diagram (needs Graphviz)
 #' plot(m1)
-#' plot(m1, resid = "line") # I find it easier to work with stick-residuals
+#' plot(m1, resid = "line")
 #' 
 #' # =================================================
 #' # = This is an example of using your own labels:  =
@@ -318,7 +320,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 	nLatent = length(latentVars)
 	# Report on which latents were created
 	if(nLatent == 0){
-		message("No latent variables were created.\n")
+		# message("No latent variables were created.\n")
 		latentVars = NA
 	} else if (nLatent == 1){
 		message("A latent variable '", latentVars[1], "' was created.\n")
@@ -336,7 +338,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 		} else {
 			varList = paste0("They were: ", paste(unusedManifests, collapse = ", "), "\n")
 		}
-		message("There were ", length(unusedManifests), " variables in the dataset which were not referenced in any path\n",varList)
+		message(length(unusedManifests), " variables in the dataset which were not referenced in any path\n",varList)
 		if(remove_unused_manifests){
 			# trim down the data to include only the used manifests
 			manifestVars = setdiff(manifestVars, unusedManifests)
@@ -345,12 +347,12 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 			} else {
 				data@observed = umx_reorder(data@observed, manifestVars)
 			}
-			message("These were dropped from the dataset")
+			message("These were dropped from the analysis")
 		} else {
 			message("I left them in the data. To remove them automatically, next time set remove_unused_manifests = TRUE")
 		}		
 	}
-	message("ManifestVars set to: ", paste(manifestVars, collapse = ", "), "\n")
+	message("ManifestVars set to:\n", paste(manifestVars, collapse = ", "), "\n")
 
 	m1 = do.call("mxModel", list(name = name, type = "RAM", 
 		manifestVars = manifestVars,
@@ -425,12 +427,11 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 #' mzData  = subset(twinData, ZYG == "MZFF", selVars)
 #' dzData  = subset(twinData, ZYG == "DZMM", selVars)
 #' m1 = umxGxE(selDVs = selDVs, selDefs = selDefs, dzData = dzData, mzData = mzData)
-#' m1 = umxRun(m1)
 #' # Plot Moderation
 #' umxSummaryGxE(m1)
 #' umxSummary(m1, location = "topright")
 #' umxSummary(m1, separateGraphs = FALSE)
-#' m2 = umxReRun(m1, "am_.*", regex=TRUE, comparison = TRUE)
+#' m2 = umxModify(m1, "am_.*", regex=TRUE, comparison = TRUE)
 umxGxE <- function(name = "G_by_E", selDVs, selDefs, dzData, mzData, suffix = NULL, lboundACE = NA, lboundM = NA, dropMissingDef = FALSE, autoRun = getOption("umx_auto_run")) {
 	nSib = 2;
 	if(!is.null(suffix)){
@@ -899,7 +900,6 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' }
 #' # ADE model (DZ correlation set to .25)
 #' m2 = umxACE("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
-#' m2 = umxRun(m2)
 #' umxCompare(m2, m1) # ADE is better
 #' umxSummary(m2) # nb: though this is ADE, columns are labeled ACE
 #' 
@@ -961,7 +961,6 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' dzData <- dzData[1:200,]
 #' str(mzData)
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
-#' m1 = umxRun(m1)
 #' umxSummary(m1)
 #' 
 #' 
@@ -989,7 +988,6 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' str(mzData)
 #' umx_paste_names(selDVs, "", 1:2)
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
-#' m1 = umxRun(m1)
 #' umxSummary(m1)
 #' 
 #' # ===================================
@@ -1657,10 +1655,9 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix =
 #' mzData <- subset(twinData, ZYG == "MZFF", umx_paste_names(selDVs, "", 1:2))
 #' dzData <- subset(twinData, ZYG == "DZFF", umx_paste_names(selDVs, "", 1:2))
 #' m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = "")
-#' m1 = umxRun(m1)
 #' umxSummary(m1, dotFilename=NA) # dotFilename = NA to avoid opening a plot window during CRAN check
 #' umxGetParameters(m1, "^c", free = TRUE)
-#' m2 = umxReRun(m1, update = "(cs_.*$)|(c_cp_)", regex = TRUE, name = "dropC")
+#' m2 = umxModify(m1, update = "(cs_.*$)|(c_cp_)", regex = TRUE, name = "dropC")
 #' umxSummaryCP(m2, comparison = m1, dotFilename = NA)
 #' umxCompare(m1, m2)
 umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, correlatedA = FALSE, equateMeans=T, dzAr=.5, dzCr=1, addStd = T, addCI = T, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run")) {
@@ -1865,7 +1862,6 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 #' dzData <- subset(twinData, ZYG == "DZFF")
 #' selDVs = c("ht", "wt") # with suffix = "", these will be expanded into "ht1" "ht2"
 #' m1 = umxIP(selDVs = selDVs, suffix = "", dzData = dzData, mzData = mzData)
-#' m1 = umxRun(m1)
 #' umxSummary(m1, dotFilename = NA) # dotFilename = NA to avoid opening a plot window during CRAN check
 umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, equateMeans = TRUE, dzAr = .5, dzCr = 1, correlatedA = FALSE, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run")) {
 	# TODO implement correlatedA
@@ -2247,7 +2243,7 @@ umxACESexLim <- function(name = "ACE_sexlim", selDVs, mzmData, dzmData, mzfData,
 #' @param obj The RAM or matrix \code{\link{mxModel}}, or \code{\link{mxMatrix}} that you want to set start values for.
 #' @param sd Optional Standard Deviation for start values
 #' @param n  Optional Mean for start values
-#' @param onlyTouchZeros Don't alter parameters that appear to have already been started (useful for speeding \code{\link{umxReRun}})
+#' @param onlyTouchZeros Don't alter parameters that appear to have already been started (useful for speeding \code{\link{umxModify}})
 #' @return - \code{\link{mxModel}} with updated start values
 #' @export
 #' @seealso - Core functions:
@@ -2534,25 +2530,29 @@ umxRun <- function(model, n = 1, calc_SE = TRUE, calc_sat = TRUE, setValues = FA
 	return(model)
 }
 
-#' umxReRun
+#' umxModify
 #' 
-#' umxReRun Is a convenience function to re-run an \code{\link{mxModel}}, optionally adding, setting, or dropping parameters.
-#' The main value for umxReRun is compactness. So this one-liner drops a path labelled "Cs", and returns the updated model:
+#' umxModify allows you to modify, re-run and summarize an \code{\link{mxModel}},
+#' all in one line of script. 
+#' You can add paths, or other model elements, set paths or drop them.
+#' As an example, this one-liner drops a path labelled "Cs", and returns the updated model:
 #' 
-#' \code{fit2 = umxReRun(fit1, update = "Cs", name = "newModelName", comparison = TRUE)}
+#' \code{fit2 = umxModify(fit1, update = "Cs", name = "newModelName", comparison = TRUE)}
 #' 
-#' A powerful feature is regular expression. These let you drop collections of paths by matching patterns
-#' fit2 = umxReRun(fit1, update = "C[sr]", regex = TRUE, name = "drop_Cs_andCr", comparison = TRUE)
+#' Regular expressions are a powerful feature: they let you drop collections of paths by matching patterns
+#' fit2 = umxModify(fit1, regex = "C[sr]", name = "drop_Cs_andCr", comparison = TRUE)
 #' 
-#' If you're just starting out, you might find it easier to be more explicit. Like this: 
+#' If you are just starting out, you might find it easier to be more explicit. Like this: 
 #' 
 #' fit2 = omxSetParameters(fit1, labels = "Cs", values = 0, free = FALSE, name = "newModelName")
-#' 
 #' fit2 = mxRun(fit2)
+#' summary(fit2)
 #' 
+#' @aliases umxReRun umxModify
 #' @param lastFit  The \code{\link{mxModel}} you wish to update and run.
 #' @param update What to update before re-running. Can be a list of labels, a regular expression (set regex = TRUE) or an object such as mxCI etc.
-#' @param regex    Whether or not update is a regular expression (defaults to FALSE)
+#' @param regex    Whether or not update is a regular expression (defaults to FALSE). If you provide a string, it
+#' over-rides the contents of update, and sets regex to TRUE.
 #' @param free     The state to set "free" to for the parameters whose labels you specify (defaults to free = FALSE, i.e., fixed)
 #' @param value    The value to set the parameters whose labels you specify too (defaults to 0)
 #' @param freeToStart Whether to update parameters based on their current free-state. free = c(TRUE, FALSE, NA), (defaults to NA - i.e, not checked)
@@ -2560,7 +2560,7 @@ umxRun <- function(model, n = 1, calc_SE = TRUE, calc_sat = TRUE, setValues = FA
 #' @param verbose   How much feedback to give
 #' @param intervals Whether to run confidence intervals (see \code{\link{mxRun}})
 #' @param comparison Whether to run umxCompare() after umxRun
-#' @param dropList A list of strings. If not NA, then the labels listed here will be dropped (or set to the value and free state you specify)
+#' @param dropList (deprecated: use 'update' instead.
 #' @return - \code{\link{mxModel}}
 #' @family Model Building Functions
 #' @references - \url{http://github.com/tbates/umx}
@@ -2578,41 +2578,36 @@ umxRun <- function(model, n = 1, calc_SE = TRUE, calc_sat = TRUE, setValues = FA
 #' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
 #' )
 #' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' m2 = umxReRun(m1, update = "G_to_x1", name = "drop_X1")
+#' m2 = umxModify(m1, update = "G_to_x1", name = "drop_X1")
 #' umxSummary(m2); umxCompare(m1, m2)
 #' # 1-line version including comparison
-#' m2 = umxReRun(m1, update = "G_to_x1", name = "drop_X1", comparison = TRUE)
-#' m2 = umxReRun(m1, update = "^G_to_x[3-5]", regex = TRUE, name = "no_G_to_x3_5", comp = TRUE)
-#' m2 = umxReRun(m1, update = "G_to_x1", value = .2, name = "fix_G_x1", comp = TRUE)
-#' m3 = umxReRun(m2, update = "G_to_x1", free = TRUE, name = "free_G_x1_again")
-#' umxCompare(m3, m2)
-
-umxReRun <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value = 0, freeToStart = NA, name = NULL, verbose = FALSE, intervals = FALSE, comparison = FALSE, dropList = "deprecated") {
-	if (dropList != "deprecated" | typeof(regex) != "logical"){
-		if(dropList != "deprecated"){
-			stop("hi. Sorry for the change, but please replace ", omxQuotes("dropList"), " with ", omxQuotes("update"),". e.g.:\n",
-				"umxReRun(m1, dropList = ", omxQuotes("E_to_heartRate"), ")\n",
-				"becomes\n",
-				"umxReRun(m1, update = ", omxQuotes("E_to_heartRate"), ")\n",
-   			 "\nThis regular expression will do it for you:\n",
-   			 "find    = regex *= *(\\\"[^\\\"]+\\\"),\n",
-   			 "replace = update = $1, regex = TRUE,"
-			)
-		} else {
-			stop("hi. Sorry for the change. To use regex replace ", omxQuotes("regex"), " with ", omxQuotes("update"),
-			 "AND regex =", omxQuotes(T), "e.g.:\n",
-			 "umxReRun(m1, regex = ", omxQuotes("^E_.*"), ")\n",
-			 "becomes\n",
-			 "umxReRun(m1, update = ", omxQuotes("^E_.*"), ", regex = TRUE)\n",
+#' m2 = umxModify(m1, update = "G_to_x1", name = "drop_X1", comparison = TRUE)
+#' m2 = umxModify(m1, update = "^G_to_x[3-5]", regex = TRUE, name = "no_G_to_x3_5", comp = TRUE)
+#' m2 = umxModify(m1, regex = "^G_to_x[3-5]", name = "no_G_to_x3_5") # same, but shorter
+#' m2 = umxModify(m1, update = "G_to_x1", value = .2, name = "fix_G_x1_at_point2", comp = TRUE)
+#' m3 = umxModify(m2, update = "G_to_x1", free = TRUE, name = "free_G_x1_again", comparison = TRUE)
+umxModify <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value = 0, freeToStart = NA, name = NULL, verbose = FALSE, intervals = FALSE, comparison = FALSE, dropList = "deprecated") {
+	if(dropList != "deprecated"){
+		stop("hi. Sorry for the change, but please replace ", omxQuotes("dropList"), " with ", omxQuotes("update"),". e.g.:\n",
+			"umxModify(m1, dropList = ", omxQuotes("E_to_heartRate"), ")\n",
+			"becomes\n",
+			"umxModify(m1, update = ", omxQuotes("E_to_heartRate"), ")\n",
 			 "\nThis regular expression will do it for you:\n",
 			 "find    = regex *= *(\\\"[^\\\"]+\\\"),\n",
 			 "replace = update = $1, regex = TRUE,"
-			 )
+		)
+	}
+	if (typeof(regex) != "logical"){
+		# Use the regex as input, and switch to regex mode
+		if(!is.null(update)){
+			stop("If you input a regular expression in ", omxQuotes("regex"), " you must leave ", omxQuotes("update"), " set to NULL.")
 		}
+		update = regex
+		regex = TRUE
 	}
 
 	if(is.null(update)){
-		message("As you havn't asked to do anything: the parameters that are free to be dropped are:")
+		message("As you haven't asked to do anything: the parameters that are free to be dropped are:")
 		print(umxGetParameters(lastFit))
 		stop()
 	}else{
@@ -2640,6 +2635,8 @@ umxReRun <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value 
 	}
 }
 
+#' @export
+umxReRun <- umxModify
 
 # ==============================
 # = Label and equate functions =
@@ -2749,7 +2746,7 @@ parameters <- umxGetParameters
 #' to equate the start values for parameters which now have identical labels.
 #' 
 #' It also supports regular expressions to select labels. In this respect,
-#' it is similar to \code{\link{umxReRun}} without running the model.
+#' it is similar to \code{\link{umxModify}} without running the model.
 #' 
 #' @param model an \code{\link{mxModel}} to WITH
 #' @param labels = labels to find
@@ -2766,7 +2763,7 @@ parameters <- umxGetParameters
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Modify or Compare Models
-#' @seealso - \code{\link{umxReRun}}, \code{\link{umxLabel}}
+#' @seealso - \code{\link{umxModify}}, \code{\link{umxLabel}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' require(umx)
@@ -2903,7 +2900,6 @@ umxEquate <- function(model, master, slave, free = c(TRUE, FALSE, NA), verbose =
 #' 	umxPath(var = manifests),
 #' 	umxPath(var = latents, fixedAt = 1)
 #' )
-#' m1 = mxRun(m1)
 #' m2 = umxFixAll(m1, run = TRUE, verbose = TRUE)
 #' mxCompare(m1, m2)
 umxFixAll <- function(model, name = "_fixed", run = FALSE, verbose= FALSE){
@@ -2961,7 +2957,7 @@ umxDrop1 <- function(model, regex = NULL, maxP = 1) {
 	for(i in seq_along(toDrop)){
 		tryCatch({
 			message("item ", i, " of ", length(toDrop))
-        	out[i] = umxReRun(model, name = paste0("drop_", toDrop[i]), regex = toDrop[i])
+        	out[i] = umxModify(model, name = paste0("drop_", toDrop[i]), regex = toDrop[i])
 		}, warning = function(w) {
 			message("Warning incurred trying to drop ", toDrop[i])
 			message(w)
@@ -3680,9 +3676,9 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' 
 #' Specify a variance for A with
 #' 
-#' \code{umxPath(var = A)}.
+#' \code{umxPath(var = "A")}.
 #' 
-#' This is equivalent to \code{mxPath(from = A, to = A, arrows = 2)}.
+#' This is equivalent to \code{mxPath(from = "A", to = "A", arrows = 2)}.
 #' 
 #' Of course you can use vectors anywhere:
 #' 
@@ -3690,18 +3686,19 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' 
 #' To specify a mean, you just say
 #' 
-#' \code{umxPath(mean = A)}, which is equivalent to \code{mxPath(from = "one", to = A)}.
+#' \code{umxPath(mean = "A")}, which is equivalent to \code{mxPath(from = "one", to = "A")}.
 #' 
 #' To fix a path at a value, instead of to \code{mxPath(from = A, to = A, arrows = 2, free = FALSE, values = 1)} you can say:
 #' 
-#' \code{umxPath(var = A, fixedAt = 1)} .
+#' \code{umxPath(var = "A", fixedAt = 1)} .
 #' 
 #' The common task of creating a variable with variance fixed at 1 and mean at 0 is done thus:
 #' 
-#' \code{umxPath(v1m0 = A)}
+#' \code{umxPath(v1m0 = "A")}
 #' 
-#' For convenience, you may request estimated variance and means with \code{umxPath(v.m. = A)}
+#' For free variance and means use:
 #' 
+#' \code{umxPath(v.m. = "A")}
 #' 
 #' umxPath exposes \dQuote{unique.bivariate} so you don't have to remember
 #' how to fill in connect = in mxPath (you can still use connect if you wish).
@@ -3710,21 +3707,20 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' 
 #' \code{umxPath(unique.bivariate = c('A',"B","C"))}
 #' 
-#' 
 #' Setting up a latent trait, you can fix the loading of the first path with
 #' 
 #' \code{mxPath(A, to = c(B,C,D), fixFirst = TRUE)}  
 #' 
 #' This is equivalent to \code{mxPath(from = A, to = c(B,C,D), free = c(F, T, T), values = c(1, .5, .4))}.
 #' 
-#' Finally, there are two promised features, not implemented in this release.
+#' A new feature is the ability to create Cholesky-pattern connections:
 #' 
-#' \emph{Cholesky} form paths (see \code{\link{umxACE}}) will be created by:
-#'
 #' \code{umxPath(Cholesky = c("A1", "A2"), to c("var1", "var2"))}
 #' 
-#' I will also implement John Fox "sem"-package style notation,
-#' i.e., "A -> B; X <-> B; " (see examples below.)
+#' Finally, a feature, not implemented in this release, but intended for the future is
+#' John Fox "sem"-package style notation,
+#' 
+#' i.e., "A -> B; X <-> B; "
 #' 
 #' 
 #' @param from either a source variable e.g "A" or c("A","B"), OR a sem-style path description, e.g. "A-> B" or "C <> B"
@@ -3960,7 +3956,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 			arrows = 2
 			connect = "single"
 			if(is.na(lbound)){
-				message("I lbounded var of ", var, " @ 0")			
+				message("I lbounded var of ", omxQuotes(var), " @ 0")			
 				lbound  = 0
 			}
 		}
@@ -4136,8 +4132,8 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 #' # Compare the two models
 #' umxCompare(m1, m2)
 #' 
-#' # Use umxReRun to do the same thing in 1-line
-#' m2 = umxReRun(m1, "G_to_x1", name = "no_effect_of_g_on_X5", comparison = TRUE)
+#' # Use umxModify to do the same thing in 1-line
+#' m2 = umxModify(m1, "G_to_x1", name = "no_effect_of_g_on_X5", comparison = TRUE)
 #' 
 #' # =================================
 #' # = Get some Confidence intervals =

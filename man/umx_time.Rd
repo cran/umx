@@ -5,7 +5,7 @@
 \title{umx_time}
 \usage{
 umx_time(model = NA, formatStr = c("simple", "std", "custom \%H \%M \%OS3"),
-  tz = "GMT")
+  tz = "GMT", autoRun = TRUE)
 }
 \arguments{
 \item{model}{An \code{\link{mxModel}} from which to get the elapsed time}
@@ -13,6 +13,8 @@ umx_time(model = NA, formatStr = c("simple", "std", "custom \%H \%M \%OS3"),
 \item{formatStr}{A format string, defining how to show the time (defaults to human readable)}
 
 \item{tz}{time zone in which the model was executed (defaults to "GMT")}
+
+\item{autoRun}{If TRUE (default), run the model if it appears not to have been.}
 }
 \value{
 - invisible time string
@@ -35,14 +37,12 @@ umx_time('start')
 data(demoOneFactor)
 latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- mxModel("One Factor", type = "RAM", 
-	manifestVars = manifests, latentVars = latents, 
-	mxPath(from = latents, to = manifests),
-	mxPath(from = manifests, arrows = 2),
-	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+myData = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+m1 <- umxRAM("One Factor", data = myData,
+	umxPath(from = latents, to = manifests),
+	umxPath(var = manifests),
+	umxPath(var = latents, fixedAt = 1)
 )
-m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 umx_time(m1)
 m2 = umxRun(m1)
 umx_time(c(m1, m2))

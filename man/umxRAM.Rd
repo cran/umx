@@ -58,7 +58,7 @@ poor modelling. I suggest user learn the handful of \code{\link{umxPath}}
 short cuts and stay clean and explicit!
 }
 \examples{
-# umxRAM is like ggplot2::qplot(), you give the data in a data =  parameter
+# umxRAM is like lm, ggplot2 etc: you give the data in a data = parameter
 # A common error is to include data in the main list,
 # a bit like saying lm(y~x + df) instead of lm(y~x, data=dd)...
 # nb: unlike mxModel, umxRAM needs data at build time.
@@ -82,7 +82,7 @@ umxSummary(m1, show = "std")
 \dontrun{
 # 5. Draw a nice path diagram (needs Graphviz)
 plot(m1)
-plot(m1, resid = "line") # I find it easier to work with stick-residuals
+plot(m1, resid = "line")
 
 # =================================================
 # = This is an example of using your own labels:  =
@@ -107,7 +107,7 @@ m1$S$labels
 \seealso{
 Other Model Building Functions: \code{\link{umxDiagnose}},
   \code{\link{umxLabel}}, \code{\link{umxLatent}},
-  \code{\link{umxPath}}, \code{\link{umxReRun}},
+  \code{\link{umxModify}}, \code{\link{umxPath}},
   \code{\link{umxRun}}, \code{\link{umxThresholdMatrix}},
   \code{\link{umxValues}},
   \code{\link{umx_fix_first_loadings}},

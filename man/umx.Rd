@@ -74,8 +74,8 @@ m2 = mxRun(m2)
 # Compare the two models
 umxCompare(m1, m2)
 
-# Use umxReRun to do the same thing in 1-line
-m2 = umxReRun(m1, "G_to_x1", name = "no_effect_of_g_on_X5", comparison = TRUE)
+# Use umxModify to do the same thing in 1-line
+m2 = umxModify(m1, "G_to_x1", name = "no_effect_of_g_on_X5", comparison = TRUE)
 
 # =================================
 # = Get some Confidence intervals =
@@ -109,9 +109,9 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}}
 
 Other File Functions: \code{\link{dl_from_dropbox}},
-  \code{\link{umx_SQL_from_Excel}},
   \code{\link{umx_move_file}}, \code{\link{umx_open}},
-  \code{\link{umx_rename_file}}
+  \code{\link{umx_rename_file}},
+  \code{\link{umx_sql_from_excel}}
 
 Other Misc: \code{\link{umxEval}},
   \code{\link{umx_APA_model_CI}},
@@ -123,8 +123,8 @@ Other Misc: \code{\link{umxEval}},
 
 Other Model Building Functions: \code{\link{umxDiagnose}},
   \code{\link{umxLabel}}, \code{\link{umxLatent}},
-  \code{\link{umxPath}}, \code{\link{umxRAM}},
-  \code{\link{umxReRun}}, \code{\link{umxRun}},
+  \code{\link{umxModify}}, \code{\link{umxPath}},
+  \code{\link{umxRAM}}, \code{\link{umxRun}},
   \code{\link{umxThresholdMatrix}},
   \code{\link{umxValues}},
   \code{\link{umx_fix_first_loadings}},

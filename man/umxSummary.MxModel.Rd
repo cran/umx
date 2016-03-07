@@ -68,6 +68,11 @@ m1 <- umxRAM("One Factor",
 	umxPath(var = latents, fixedAt = 1)
 )
 umxSummary(m1, show = "std")
+# output as latex
+options(knitr.table.format = 'latex')
+umxSummary(m1, show = "std")
+options(knitr.table.format = 'markdown')
+# output as std
 umxSummary(m1, show = "raw")
 m1 <- mxModel(m1,
   mxData(demoOneFactor, type = "raw"),
@@ -102,7 +107,7 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umxCompare}}, \code{\link{umxExpCov}},
   \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
   \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
-  \code{\link{umxStandardizeModel}},
-  \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}}
+  \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
+  \code{\link{umx_standardize_RAM}}
 }
 

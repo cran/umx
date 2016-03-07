@@ -5,7 +5,8 @@
 \alias{umxSummaryACEcov}
 \title{umxSummaryACEcov}
 \usage{
-umxSummaryACEcov(model, digits = 2, dotFilename = NULL, returnStd = FALSE,
+umxSummaryACEcov(model, digits = 2,
+  dotFilename = getOption("umx_auto_plot"), returnStd = FALSE,
   extended = FALSE, showRg = FALSE, showStd = TRUE, comparison = NULL,
   CIs = TRUE, zero.print = ".", report = c("1", "2", "html"), ...)
 }
