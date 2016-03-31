@@ -4,14 +4,24 @@
 \alias{umxEFA}
 \title{umxEFA}
 \usage{
-umxEFA(name = "", latents, data, report = c("table", "line", "long"))
+umxEFA(name = "efa", factors = NULL, data = NULL, covmat = NULL,
+  n.obs = NULL, rotation = c("varimax", "promax", "none"), digits = 2,
+  report = c("1", "table", "html"))
 }
 \arguments{
-\item{name}{the name for your new EFA model}
+\item{name}{A name for your model.}
 
-\item{latents}{List of factors in your CFA}
+\item{factors}{Either a number (of factors to request) or a list of factor names.}
 
-\item{data}{The dataframe of manifest columns you are modeling}
+\item{data}{A dataframe of manifest columns you are modeling}
+
+\item{covmat}{Covariance matrix of data you are modeling}
+
+\item{n.obs}{Number of observations in covmat (if provided, default = NA)}
+
+\item{rotation}{A rotation to perform on the loadings (default  = "varimax")}
+
+\item{digits}{rounding (defaults to 2)}
 
 \item{report}{What to report}
 }
@@ -19,18 +29,43 @@ umxEFA(name = "", latents, data, report = c("table", "line", "long"))
 - \code{\link{mxModel}}
 }
 \description{
-A helper for EFA that only requires you to enter your latents and manifests
+A helper for EFA that only requires you to choose how many factors and offer up manifest data.
+This is very much early days. I will add "scores" if there is demand, but you are better off
+making a CFA model and getting scores from that with \code{\link{mxFactorScores}}.
+}
+\details{
+You can create an EFA either by specifying some factor names:
+
+umxEFA(factors = c("g", "v"), data = mtcars)
+
+or
+
+umxEFA(factors = 2, data = mtcars)
+
+\figure{umxEFA.png}
+
+\emph{notes}: In an EFA, all items may load on all factors.
+For identification we need m^2 degrees of freedom. We get m * (m+1)/2 from fixing factor variances to 1 and covariances to 0.
+We get another m(m-1)/2 degrees of freemdom by fixing the upper-right hand corner of the factor loadings
+component of the A matrix. The manifest variances are also lbounded at 0.
+
+EFA reports standardized loadings: to do this, we scale the data.
+
+Bear in mind that factor scores are indeterminate and can be rotated.
 }
 \examples{
-\dontrun{
-umxEFA("test", latents = "g", data = mtcars[, c("mpg", "disp", "hp", "wt")])
-}
+myVars <- c("mpg", "disp", "hp", "wt", "qsec")
+m1 = umxEFA(name = "named"    , factors = "g", data = mtcars[, myVars])
+m2 = umxEFA(name = "by_number", factors =   2, rotation = "promax", data = mtcars[, myVars])
+loadings(m2)
+plot(m2)
+m3 = factanal(~ mpg + disp + hp + wt + qsec, factors = 2, rotation = "promax", data = mtcars[])
 }
 \references{
 - \url{http://github.com/tbates/umx}
 }
 \seealso{
-- \code{\link{umxLabel}}, \code{\link{umxRun}}, \code{\link{umxValues}}
+- \code{\link{factanal}}
 
 Other Super-easy helpers: \code{\link{umxJiggle}},
   \code{\link{umx}}

@@ -69,21 +69,18 @@ m1 <- umxRAM("One Factor",
 )
 umxSummary(m1, show = "std")
 # output as latex
-options(knitr.table.format = 'latex')
+umx_set_table_format("latex")
 umxSummary(m1, show = "std")
-options(knitr.table.format = 'markdown')
-# output as std
+umx_set_table_format("markdown")
+# output as raw
 umxSummary(m1, show = "raw")
 m1 <- mxModel(m1,
-  mxData(demoOneFactor, type = "raw"),
+  mxData(demoOneFactor[1:100,], type = "raw"),
   umxPath(mean = manifests),
   umxPath(mean = latents, fixedAt = 0)
 )
 m1 <- mxRun(m1)
-umxSummary(m1, show = "std")
 umxSummary(m1, show = "std", filter = "NS")
-umxSummary(m1, show = "std")
-umxSummary(m1, report = "table")
 }
 \references{
 - Hu, L., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance 
@@ -100,7 +97,7 @@ umxSummary(m1, report = "table")
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
   \code{\link{confint.MxModel}},
-  \code{\link{extractAIC.MxModel}},
+  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
   \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},

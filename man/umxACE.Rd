@@ -19,8 +19,8 @@ umxACE(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = 0.5,
 
 \item{mzData}{The MZ dataframe}
 
-\item{suffix}{The suffix for twin 1 and twin 2, often "_T" (defaults to NULL) With this, you can
-omit suffixes from names in SelDV, i.e., just "dep" not c("dep_T1", "dep_T2")}
+\item{suffix}{The suffix for twin 1 and twin 2, often "_T". if set, simplifies
+SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating)}
 
@@ -103,8 +103,10 @@ require(umx)
 data(twinData)
 tmpTwin <- twinData
 names(tmpTwin)
-# "fam", "age", "zyg", "part", "wt1", "wt2", "ht1", "ht2", "htwt1", "htwt2", "bmi1", "bmi2"
-
+# "fam", "age", "zyg", "part",
+# "wt1", "wt2", "ht1", "ht2", "htwt1", "htwt2", "bmi1", "bmi2", 
+# "cohort", "zygosity", "age1", "age2" 
+  
 # Set zygosity to a factor
 labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
 tmpTwin$zyg = factor(tmpTwin$zyg, levels = 1:5, labels = labList)
@@ -115,10 +117,10 @@ selDVs = c("bmi1", "bmi2") # nb: Can also give base name, (i.e., "bmi") AND set 
 # for example. "VarSuffix1" "VarSuffix2"
 mzData <- tmpTwin[tmpTwin$zyg \%in\% "MZFF", selDVs]
 dzData <- tmpTwin[tmpTwin$zyg \%in\% "DZFF", selDVs]
-mzData <- mzData[1:200,] # just top 200 so example runs in a couple of secs
-dzData <- dzData[1:200,]
+mzData <- mzData[1:100,] # just top 100 so example runs in a couple of secs
+dzData <- dzData[1:100,]
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-umxSummary(m1, showStd=TRUE)
+umxSummary(m1, showStd = TRUE)
 umxSummaryACE(m1)
 \dontrun{
 plot(m1)
@@ -126,7 +128,7 @@ plot(m1)
 # ADE model (DZ correlation set to .25)
 m2 = umxACE("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
 umxCompare(m2, m1) # ADE is better
-umxSummary(m2) # nb: though this is ADE, columns are labeled ACE
+umxSummary(m2, compare = m1) # nb: though this is ADE, columns are labeled ACE
 
 
 # ===================
@@ -135,9 +137,6 @@ umxSummary(m2) # nb: though this is ADE, columns are labeled ACE
 require(umx)
 data(twinData)
 tmpTwin <- twinData
-names(tmpTwin)
-# "fam", "age", "zyg", "part", "wt1", "wt2", "ht1", "ht2", "htwt1", "htwt2", "bmi1", "bmi2"
-
 # Set zygosity to a factor
 labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
 tmpTwin$zyg = factor(tmpTwin$zyg, levels = 1:5, labels = labList)
@@ -153,8 +152,8 @@ tmpTwin$obese2 <- cut(tmpTwin$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = o
 tmpTwin[, ordDVs] <- mxFactor(tmpTwin[, ordDVs], levels = obesityLevels)
 mzData <- tmpTwin[tmpTwin$zyg \%in\% "MZFF", umx_paste_names(selDVs, "", 1:2)]
 dzData <- tmpTwin[tmpTwin$zyg \%in\% "DZFF", umx_paste_names(selDVs, "", 1:2)]
-mzData <- mzData[1:200,] # just top 200 so example runs in a couple of secs
-dzData <- dzData[1:200,]
+mzData <- mzData[1:100,] # just top 100 so example runs in a couple of secs
+dzData <- dzData[1:100,]
 str(mzData)
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
 \dontrun{
@@ -182,8 +181,8 @@ tmpTwin$obese2 <- cut(tmpTwin$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = o
 tmpTwin[, ordDVs] <- mxFactor(tmpTwin[, ordDVs], levels = obesityLevels)
 mzData <- tmpTwin[tmpTwin$zyg \%in\% "MZFF", umx_paste_names(selDVs, "", 1:2)]
 dzData <- tmpTwin[tmpTwin$zyg \%in\% "DZFF", umx_paste_names(selDVs, "", 1:2)]
-mzData <- mzData[1:200,] # just top 200 so example runs in a couple of secs
-dzData <- dzData[1:200,]
+mzData <- mzData[1:100,] # just top 100 so example runs in a couple of secs
+dzData <- dzData[1:100,]
 str(mzData)
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
 umxSummary(m1)
@@ -208,8 +207,8 @@ tmpTwin[, ordDVs] <- mxFactor(tmpTwin[, ordDVs], levels = obesityLevels)
 selDVs = c("wt", "obese")
 mzData <- tmpTwin[tmpTwin$zyg == "MZFF", umx_paste_names(selDVs, "", 1:2)]
 dzData <- tmpTwin[tmpTwin$zyg == "DZFF", umx_paste_names(selDVs, "", 1:2)]
-mzData <- mzData[1:200,] # just top 200 so example runs in a couple of secs
-dzData <- dzData[1:200,]
+mzData <- mzData[1:100,] # just top 200 so example runs in a couple of secs
+dzData <- dzData[1:100,]
 str(mzData)
 umx_paste_names(selDVs, "", 1:2)
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')

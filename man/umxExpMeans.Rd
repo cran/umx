@@ -32,7 +32,7 @@ m1 <- mxModel("One Factor", type = "RAM",
 	mxPath(from = manifests, arrows = 2),
 	mxPath(from = "one", to = manifests),
 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-	mxData(demoOneFactor, type = "raw")
+	mxData(demoOneFactor[1:100,], type = "raw")
 )
 m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 umxExpMeans(model = m1)
@@ -45,7 +45,7 @@ umxExpMeans(m1, digits = 3)
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
   \code{\link{confint.MxModel}},
-  \code{\link{extractAIC.MxModel}},
+  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
   \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},

@@ -10,9 +10,60 @@
 # = Get and set OpenMx options =
 # ==============================
 
+#' umx_set_plot_format
+#'
+#' Set output format of plots (default = "DiagrammeR", alternative is "graphviz")
+#'
+#' @param umx.plot.format format for plots (if empty, returns the current value of umx.plot.format)
+#' @return - Current umx.plot.format setting
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' umx_set_plot_format()
+#' old = umx_set_plot_format() # get existing value
+#' umx_set_plot_format("graphviz")
+#' umx_set_plot_format("DiagrammeR")
+#' umx_set_plot_format(old)    # reinstate
+umx_set_plot_format <- function(umx.plot.format = NULL) {
+	if(is.null(umx.plot.format)) {
+		getOption("umx.plot.format")
+	} else {
+		umx_check(umx.plot.format %in% c("graphviz", "DiagrammeR"), "stop")
+		options("umx.plot.format" = umx.plot.format)
+	}
+}
+
+#' umx_set_table_format
+#'
+#' Set knitr.table.format default (output style for tables). Legal values are 
+#' "latex", "html", "markdown", "pandoc", and "rst".
+#'
+#' @param knitr.table.format format for tables (if empty, returns the current value of knitr.table.format)
+#' @return - Current knitr.table.format setting
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' old = umx_set_table_format() # get existing value
+#' umx_set_table_format("latex")
+#' umx_set_table_format("html")
+#' umx_set_table_format("markdown")
+#' umx_set_table_format(old)    # reinstate
+umx_set_table_format <- function(knitr.table.format = NULL) {
+	if(is.null(knitr.table.format)) {
+		getOption("knitr.table.format")
+	} else {
+		umx_check(knitr.table.format %in% c("latex", "html", "markdown", "pandoc", "rst"), "stop")
+		options("knitr.table.format" = knitr.table.format)
+	}
+}
+
 #' umx_set_auto_plot
 #'
-#' Set autoplot default for models like umxACE umxGxE etc
+#' Set autoPlot default for models like umxACE umxGxE etc
 #'
 #' @param autoPlot If NA or "name", sets the umx_auto_plot option. Else returns the current value of umx_auto_plot
 #' @return - Current umx_auto_plot setting
@@ -446,7 +497,7 @@ umx_is_exogenous <- function(model, manifests_only = TRUE) {
 	exog = c()
 	n = 1
 	for (i in checkThese) {
-		if(!any(model@matrices$A@free[i, ])){
+		if(!any(model$matrices$A$free[i, ])){
 			exog[n] = i
 			n = n + 1
 		}
@@ -530,8 +581,8 @@ umx_add_variances <- function(model, add.to, values = NULL, free = NULL) {
 		stop("not all names found in model")
 	}
 	for (i in add.to) {
-		model@matrices$S@free[i, i] = TRUE
-		model@matrices$S@values[i, i] = .1
+		model$S@free[i, i] = TRUE
+		model$S@values[i, i] = .1
 	}
 	return(model)
 }
@@ -570,8 +621,8 @@ umx_fix_latents <- function(model, latents = NULL, exogenous.only = TRUE, at = 1
 	exogenous_list = umx_is_exogenous(model, manifests_only = FALSE)
 	for (i in latenVarList) {
 		if(!exogenous.only | i %in% exogenous_list){
-			model@matrices$S@free[i, i]   = FALSE
-			model@matrices$S@values[i, i] = at
+			model$S@free[i, i]   = FALSE
+			model$S@values[i, i] = at
 		}
 	}
 	return(model)
@@ -611,18 +662,18 @@ umx_fix_first_loadings <- function(model, latents = NULL, at = 1) {
 	}
 	for (i in latenVarList) {
 		# i = "ind60"
-		firstFreeRow = which(model@matrices$A@free[,i])[1]
+		firstFreeRow = which(model$matrices$A$free[,i])[1]
 		# check that there is not already a factor fixed prior to this one
 		if(firstFreeRow == 1){
 			# must be ok
-			model@matrices$A@free[firstFreeRow, i]   = FALSE
-			model@matrices$A@values[firstFreeRow, i] = at
+			model$A@free[firstFreeRow, i]   = FALSE
+			model$A@values[firstFreeRow, i] = at
 		} else {
-			if(any(model@matrices$A@values[1:(firstFreeRow-1), i] == at)){
+			if(any(model$matrices$A$values[1:(firstFreeRow-1), i] == at)){
 				message("I skipped factor '", i, "'. It looks like it already has a loading fixed at ", at)
 			} else {
-				model@matrices$A@free[firstFreeRow, i]   = FALSE
-				model@matrices$A@values[firstFreeRow, i] = at				
+				model$A@free[firstFreeRow, i]   = FALSE
+				model$A@values[firstFreeRow, i] = at				
 			}
 		}
 	}
@@ -1586,8 +1637,8 @@ umx_paste_names <- function(varNames, textConstant = "", suffixes = 1:2) {
 #' }
 umx_merge_CIs <- function(m1, m2) {
 	# cludge together
-	a  = m1@output$confidenceIntervals
-	b  = m2@output$confidenceIntervals
+	a  = m1$output$confidenceIntervals
+	b  = m2$output$confidenceIntervals
 	a_names = attr(a, "dimnames")[[1]]
 	b_names = attr(b, "dimnames")[[1]]
 	all_names = c(a_names, b_names)
@@ -1600,7 +1651,7 @@ umx_merge_CIs <- function(m1, m2) {
 		cat(all_CIs[duplicated(all_names), ])
 	}
 
-	m1@output$confidenceIntervals = all_CIs
+	m1$output$confidenceIntervals = all_CIs
 	return(m1)
 	# return(all_CIs)
 }
@@ -1756,7 +1807,7 @@ umx_time <- function(model = NA, formatStr = c("simple", "std", "custom %H %M %O
 #' and supressing values below a certain cut-off.
 #' By default, Zeros have the decimals suppressed, and NAs are suppressed altogether.
 #'
-#' @param x A data.frame to print
+#' @param x A data.frame to print (matrices will be coerced to data.frame)
 #' @param digits  The number of decimal places to print (defaults to getOption("digits")
 #' @param quote  Parameter passed to print (defaults to FALSE)
 #' @param na.print String to replace NA with (default to blank "")
@@ -1779,9 +1830,14 @@ umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print 
 	# depends on R2HTML::HTML and knitr::kable
 	# TODO allow matrix as input
 	if(class(x)!="data.frame"){
-		message("Sorry, umx_print currently only prints data.frames. File a request to print '", class(x), "' objects")
-		return()
-	} else if(dim(x)[1] == 0){
+		if(class(x)=="matrix"){
+			x = data.frame(x)
+		} else {
+			message("Sorry, umx_print currently only prints data.frames. File a request to print '", class(x), "' objects")
+			return()
+		}
+	}
+	if(dim(x)[1] == 0){
 		return()
 	} else {
 		file = umx_default_option(file, c(NA,"tmp.html"), check = FALSE)
@@ -1837,7 +1893,7 @@ umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print 
 #' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 #' umx_has_been_run(m1)
 umx_has_been_run <- function(model, stop = FALSE) {
-	output <- model@output
+	output <- model$output
 	if (is.null(output)){
 		if(stop){
 			stop("Provided model has no objective function, and thus no output to process further")
@@ -1996,6 +2052,15 @@ umx_cov_diag <- function(df, ordVar = 1, format = c("diag", "Full", "Lower"), us
 #' tmp$hp  = ordered(mtcars$hp)  # binary factor
 #' umx_means(tmp, ordVar = 0, na.rm = TRUE)
 umx_means <- function(df, ordVar = 0, na.rm = TRUE) {
+	if(!is.data.frame(df)){
+		if(is.matrix(df)){
+			df = data.frame(df)
+			# stop("df argument to umx_is_ordered must be a dataframe. You gave me a matrix")
+		} else {
+			# df = data.frame(df)
+			stop("argument df must be a dataframe. You gave me a ", class(df), ". Perhaps this is one column selected from a data frame without [r,c, drop=FALSE]? ")
+		}
+	}
 	if(any(umx_is_ordered(df, strict = F))){
 		# Set the default outcome
 		means = rep(ordVar, times = dim(df)[2])
@@ -2053,8 +2118,8 @@ umx_is_ordered <- function(df, names = FALSE, strict = TRUE, binary.only = FALSE
 			df = data.frame(df)
 			# stop("df argument to umx_is_ordered must be a dataframe. You gave me a matrix")
 		} else {
-			df = data.frame(df)
-			# stop("df argument to umx_is_ordered must be a dataframe. Perhaps this is one column selected from a data frame without [r,c, drop=FALSE]? ")
+			# df = data.frame(df)
+			stop("Argument df must be a dataframe. You gave me a ", class(df), ". Perhaps this is one column selected from a data frame without [r,c, drop=FALSE]? ")
 		}
 	}
 	nVar = ncol(df);
@@ -2262,7 +2327,7 @@ umx_is_cov <- function(data = NULL, boolean = FALSE, verbose = FALSE) {
 #' umx_has_means(m1)
 #' m1 <- mxModel(m1,
 #' 	mxPath(from = "one", to = manifests),
-#' 	mxData(demoOneFactor, type = "raw")
+#' 	mxData(demoOneFactor[1:100,], type = "raw")
 #' )
 #' umx_has_means(m1)
 #' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
@@ -2272,9 +2337,7 @@ umx_has_means <- function(model) {
 	if(!umx_is_RAM(model)){
 		stop("Can only run on RAM models so far")
 	}
-	return(!is.null(model@matrices$M))
-	# expMeans = attr(model@output$algebras[[paste0(model$name, ".fitfunction")]], "expMean")
-	# return(!all(dim(expMeans) == 0))
+	return(!is.null(model$matrices$M))
 }
 
 #' umx_has_CIs
@@ -2310,15 +2373,15 @@ umx_has_means <- function(model) {
 #' umx_has_CIs(m1, check = "output")  # TRUE: Set, and Run with intervals = T
 umx_has_CIs <- function(model, check = c("both", "intervals", "output")) {
 	check = umx_default_option(check, c("both", "intervals", "output"), check=F)
-	if(is.null(model@intervals)){
+	if(is.null(model$intervals)){
 		thisModelHasIntervals = FALSE
 	}else{
-		thisModelHasIntervals = length(names(model@intervals)) > 0
+		thisModelHasIntervals = length(names(model$intervals)) > 0
 	}
-	if(is.null(model@output$confidenceIntervals)){
+	if(is.null(model$output$confidenceIntervals)){
 		thisModelHasOutput = FALSE
 	} else {
-		thisModelHasOutput = dim(model@output$confidenceIntervals)[1] > 0
+		thisModelHasOutput = dim(model$output$confidenceIntervals)[1] > 0
 	}
 	# do logic of returning a value
 	if(check == "both"){
@@ -2380,12 +2443,12 @@ umx_check_model <- function(obj, type = NULL, hasData = NULL, beenRun = NULL, ha
 		message(paste("type", sQuote(type), "not handled yet"))
 	}
 	if(checkSubmodels){
-		if (length(obj@submodels) > 0) {
+		if (length(obj$submodels) > 0) {
 			message("Cannot yet handle models with submodels")
 		}
 	}
 	if(!is.null(hasData)){
-		if (hasData & is.null(obj@data@observed)) {
+		if (hasData & is.null(obj$data$observed)) {
 			stop("'model' does not contain any data")
 		}
 	}
@@ -3007,7 +3070,8 @@ umx_rot <- function(vec){
 #' Show matrix contents. The user can select  values, free, and/or labels, and which matrices to display
 #'
 #' @param model an \code{\link{mxModel}} to show data from
-#' @param what  legal options are "values" (default), "free", or "labels")
+#' @param what legal options are "values" (default), "free", or "labels")
+#' @param show filter on what to show c("all", "free", "fixed")
 #' @param matrices to show  (default is c("S", "A"))
 #' @param digits precision to report, defaults to rounding to 2 decimal places
 #' @return - \code{\link{mxModel}}
@@ -3032,12 +3096,13 @@ umx_rot <- function(vec){
 #' umx_show(m1, matrices = "S")
 #' umx_show(m1, what = "free")
 #' umx_show(m1, what = "labels")
-#' umx_show(m1, what = "free", "A")
-umx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_free"), matrices = c("S", "A"), digits = 2) {
+#' umx_show(m1, what = "free", matrices = "A")
+umx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_free"), show = c("all", "free", "fixed"), matrices = c("S", "A"), digits = 2) {
 	if(!umx_is_RAM(model)){
 		stop("Only RAM models by default: what would you like me to do with this type of model?")
 	}
 	what = match.arg(what)
+	show = match.arg(show)
 	for (w in matrices) {
 		message("Showing ", what, " for:", w, " matrix:")
 		if(what == "values"){
@@ -3045,7 +3110,13 @@ umx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_fre
 		}else if(what == "free"){
 			umx_print(data.frame(model$matrices[[w]]$free) , zero.print = ".", digits = digits)
 		}else if(what == "labels"){
-			umx_print(data.frame(model$matrices[[w]]$labels) , zero.print = ".", digits = digits)
+			x = model$matrices[[w]]$labels
+			if(show=="free"){
+				x[model$matrices[[w]]$free!=TRUE] = ""
+			} else if (show=="fixed") {
+				x[model$matrices[[w]]$free==TRUE] = ""
+			}
+			umx_print(x, zero.print = ".", digits = digits)
 		}else if(what == "nonzero_or_free"){
 			message("99 means the value is fixed, but is non-zero")
 			values = model$matrices[[w]]$values
@@ -3769,8 +3840,8 @@ umx_get_bracket_addresses <- function(mat, free = NA, newName = NA) {
 	} else {
 		matName = newName
 	}
-	rows <- nrow(mat@free)
-	cols <- ncol(mat@free)
+	rows <- nrow(mat$free)
+	cols <- ncol(mat$free)
 	d1 <- expand.grid(matName, "[", 1:rows, ",", 1:cols, "]", stringsAsFactors = FALSE)	
 	addys = c()
 	for (i in 1:(rows*cols)) {
@@ -3780,9 +3851,9 @@ umx_get_bracket_addresses <- function(mat, free = NA, newName = NA) {
 	if(is.na(free) ){
 		return(addys)
 	} else if (free == TRUE){
-		return(addys[mat@free == TRUE])
+		return(addys[mat$free == TRUE])
 	} else if (free == FALSE){
-		return(addys[mat@free == TRUE])
+		return(addys[mat$free == TRUE])
 	} else {
 		stop("free must be one of NA TRUE or FALSE")	
 	}
@@ -3827,7 +3898,7 @@ umx_str2Algebra <- function(algString, name = NA, dimnames = NA) {
 umx_standardize_ACE <- function(fit) {
 	if(typeof(fit) == "list"){ # call self recursively
 		for(thisFit in fit) {
-			message("Output for Model: ",thisFit@name)
+			message("Output for Model: ",thisFit$name)
 			umx_standardize_ACE(thisFit)
 		}
 	} else {
@@ -3850,9 +3921,9 @@ umx_standardize_ACE <- function(fit) {
 		SD <- solve(sqrt(I * Vtot)) # Inverse of diagonal matrix of standard deviations  (same as "(\sqrt(I.Vtot))~"
 	
 		# Standardized _path_ coefficients ready to be stacked together
-		fit$top@matrices$a$values = SD %*% a; # Standardized path coefficients
-		fit$top@matrices$c$values = SD %*% c;
-		fit$top@matrices$e$values = SD %*% e;
+		fit$top$matrices$a$values = SD %*% a; # Standardized path coefficients
+		fit$top$matrices$c$values = SD %*% c;
+		fit$top$matrices$e$values = SD %*% e;
 		return(fit)
 	}
 }
@@ -3874,7 +3945,7 @@ umx_standardize_ACE <- function(fit) {
 umx_standardize_ACEcov <- function(fit) {
 	if(typeof(fit) == "list"){ # call self recursively
 		for(thisFit in fit) {
-			message("Output for Model: ",thisFit@name)
+			message("Output for Model: ",thisFit$name)
 			umx_standardize_ACEcov(thisFit)
 		}
 	} else {
@@ -3910,13 +3981,13 @@ umx_standardize_ACEcov <- function(fit) {
 umx_standardize_IP <- function(fit){
 	if(!is.null(fit$top$ai_std)){
 		# Standardized general path components
-		fit$top$ai@values = fit$top$ai_std$result # standardized ai
-		fit$top$ci@values = fit$top$ci_std$result # standardized ci
-		fit$top$ei@values = fit$top$ei_std$result # standardized ei
+		fit$top$ai$values = fit$top$ai_std$result # standardized ai
+		fit$top$ci$values = fit$top$ci_std$result # standardized ci
+		fit$top$ei$values = fit$top$ei_std$result # standardized ei
 	    # Standardized specific coeficients
-		fit$top$as@values = fit$top$as_std$result # standardized as
-		fit$top$cs@values = fit$top$cs_std$result # standardized cs
-		fit$top$es@values = fit$top$es_std$result # standardized es
+		fit$top$as$values = fit$top$as_std$result # standardized as
+		fit$top$cs$values = fit$top$cs_std$result # standardized cs
+		fit$top$es$values = fit$top$es_std$result # standardized es
 	} else {
 		stop("Please run umxIP(..., std = TRUE). All I do is copy ai_std values into ai etc, so they have to be run!")
 	}
@@ -3939,7 +4010,7 @@ umx_standardize_IP <- function(fit){
 umx_standardize_CP <- function(fit){
 	if(!is.null(fit$top$ai_std)){
 		# Standardized general path components
-		fit@submodels$top@matrices$cp_loadings@values = fit@submodels$top@algebras$cp_loadings_std$result # standardized cp loadings
+		fit$submodels$top$matrices$cp_loadings$values = fit$submodels$top$algebras$cp_loadings_std$result # standardized cp loadings
 		# Standardized specific path coefficienfitts
 		fit$top$as$values = fit$top$as_std$result # standardized as
 		fit$top$cs$values = fit$top$cs_std$result # standardized cs
@@ -3949,7 +4020,7 @@ umx_standardize_CP <- function(fit){
 		# TODO let this work directly... not hard..
 		selDVs = dimnames(fit$top.expCovMZ)[[1]]
 		nVar   = length(selDVs)/2;
-		nFac   = dim(fit@submodels$top@matrices$a_cp)[[1]]	
+		nFac   = dim(fit$submodels$top$matrices$a_cp)[[1]]	
 		# Calculate standardised variance components
 		a_cp  = mxEval(top.a_cp , fit); # nFac * nFac matrix of path coefficients flowing into the cp_loadings array
 		c_cp  = mxEval(top.c_cp , fit);

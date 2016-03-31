@@ -5,12 +5,14 @@
 \title{umx_show}
 \usage{
 umx_show(model, what = c("values", "free", "labels", "nonzero_or_free"),
-  matrices = c("S", "A"), digits = 2)
+  show = c("all", "free", "fixed"), matrices = c("S", "A"), digits = 2)
 }
 \arguments{
 \item{model}{an \code{\link{mxModel}} to show data from}
 
 \item{what}{legal options are "values" (default), "free", or "labels")}
+
+\item{show}{filter on what to show c("all", "free", "fixed")}
 
 \item{matrices}{to show  (default is c("S", "A"))}
 
@@ -40,15 +42,15 @@ umx_show(m1, digits = 3)
 umx_show(m1, matrices = "S")
 umx_show(m1, what = "free")
 umx_show(m1, what = "labels")
-umx_show(m1, what = "free", "A")
+umx_show(m1, what = "free", matrices = "A")
 }
 \references{
 - \url{http://tbates.github.io}
 }
 \seealso{
-Other Reporting Functions: \code{\link{summaryAPA}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
-  \code{\link{umx_print}}, \code{\link{umx_time}},
-  \code{\link{umx}}
+Other Reporting Functions: \code{\link{loadings.MxModel}},
+  \code{\link{summaryAPA}}, \code{\link{umx_APA_pval}},
+  \code{\link{umx_aggregate}}, \code{\link{umx_print}},
+  \code{\link{umx_time}}, \code{\link{umx}}
 }
 

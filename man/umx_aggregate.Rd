@@ -7,9 +7,9 @@
 umx_aggregate(formula = DV ~ condition, data, what = c("mean_sd", "n"))
 }
 \arguments{
-\item{formula}{the aggregation formula. e.g., DV ~ condition}
+\item{formula}{The aggregation formula. e.g., DV ~ condition}
 
-\item{data}{the dataframe to aggregate with}
+\item{data}{frame to aggregate with}
 
 \item{what}{function to use. Defaults to a built-in "smart" mean (sd)}
 }
@@ -17,8 +17,9 @@ umx_aggregate(formula = DV ~ condition, data, what = c("mean_sd", "n"))
 - table
 }
 \description{
-umx_aggregate Aggregate based on a formula, using a function. Has some handy base functions.
-The purpose of this function is to simplify the task of summarising data
+R's built-in \code{\link{aggregate}} function is extremely useful and powerful, allowing
+xtabs based on a formula. umx_aggregate just tries to make using it a bit easier.
+In particular, it has some handy base functions that simplify the task of summarising data
 aggregating over some grouping factor. A common use is preparing summary tables.
 }
 \examples{
@@ -36,9 +37,9 @@ umx_aggregate(cbind(moodAvg, mood) ~ condition, data = study1)
 \seealso{
 - \code{\link{aggregate}}
 
-Other Reporting Functions: \code{\link{summaryAPA}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_print}},
-  \code{\link{umx_show}}, \code{\link{umx_time}},
-  \code{\link{umx}}
+Other Reporting Functions: \code{\link{loadings.MxModel}},
+  \code{\link{summaryAPA}}, \code{\link{umx_APA_pval}},
+  \code{\link{umx_print}}, \code{\link{umx_show}},
+  \code{\link{umx_time}}, \code{\link{umx}}
 }
 
