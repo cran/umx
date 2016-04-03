@@ -1,4 +1,8 @@
 
+# umx 1.2.5
+* FIX: $models bug in umxStandardizeACE
+* EXPAND test suite
+
 umx 1.2.0
 --------------
 * April 2016 Very Secure Dishes (3.2.4) edition
