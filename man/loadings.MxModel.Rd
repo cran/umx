@@ -15,8 +15,8 @@
 - loadings matrix
 }
 \description{
-loadings exracts the factor loadings from an OpenMx EFA (factor analysis) model. 
-Behaves equivalently to stats::loadings in returning the loadings from an 
+loadings extracts the factor loadings from an OpenMx EFA (factor analysis) model. 
+It behaves equivalently to stats::loadings in returning the loadings from an 
 EFA (factor analysis), but doesn't store the rotation matrix.
 }
 \examples{
@@ -30,7 +30,7 @@ loadings(m1)
 \seealso{
 - \code{\link{factanal}}, \code{\link{loadings}}
 
-Other Reporting Functions: \code{\link{summaryAPA}},
+Other Reporting Functions: \code{\link{umxAPA}},
   \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
   \code{\link{umx_print}}, \code{\link{umx_show}},
   \code{\link{umx_time}}, \code{\link{umx}}

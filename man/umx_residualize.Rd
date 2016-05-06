@@ -38,21 +38,21 @@ In addition, it has the powerful feature of operating on a list of variables, an
 wide data, expanding the var name using a set of variable-name suffixes.
 }
 \examples{
-tmp = mtcars
 # Residualise mpg on cylinders and displacement
-r1 = umx_residualize("mpg", c("cyl", "disp"), data = tmp)
-r2 = residuals(lm(mpg ~ cyl + disp, data = tmp, na.action = na.exclude))
+r1 = umx_residualize("mpg", c("cyl", "disp"), data = mtcars)
+r2 = residuals(lm(mpg ~ cyl + disp, data = mtcars, na.action = na.exclude))
 all(r1$mpg == r2)
 # =====================
 # = formula interface =
 # =====================
-r1 = umx_residualize(mpg ~ cyl + I(cyl^2) + disp, data = tmp)
-r2 = residuals(lm(mpg ~ cyl + I(cyl^2) + disp, data = tmp, na.action = na.exclude))
+r1 = umx_residualize(mpg ~ cyl + I(cyl^2) + disp, data = mtcars)
+r2 = residuals(lm(mpg ~ cyl + I(cyl^2) + disp, data = mtcars, na.action = na.exclude))
 all(r1$mpg == r2)
 
 # ========================================================================
 # = Demonstrate ability to residualize WIDE data (i.e. 1 family per row) =
 # ========================================================================
+tmp = mtcars
 tmp$mpg_T1  = tmp$mpg_T2  = tmp$mpg
 tmp$cyl_T1  = tmp$cyl_T2  = tmp$cyl
 tmp$disp_T1 = tmp$disp_T2 = tmp$disp
@@ -73,10 +73,11 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxFactor}}, \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
-  \code{\link{umx_cont_2_ordinal}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_fake_data}},
-  \code{\link{umx_lower2full}},
+  \code{\link{umx_cont_2_quantiles}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_bin_cont_pair_data}},
+  \code{\link{umx_make_fake_data}},
   \code{\link{umx_merge_CIs}},
   \code{\link{umx_read_lower}}, \code{\link{umx_reorder}},
   \code{\link{umx_round}},

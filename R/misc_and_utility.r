@@ -59,103 +59,9 @@ umx_set_table_format <- function(knitr.table.format = NULL) {
 		umx_check(knitr.table.format %in% c("latex", "html", "markdown", "pandoc", "rst"), "stop")
 		options("knitr.table.format" = knitr.table.format)
 	}
-}
+} # end umx_set_table_format
 
-#' umx_set_auto_plot
-#'
-#' Set autoPlot default for models like umxACE umxGxE etc
-#'
-#' @param autoPlot If NA or "name", sets the umx_auto_plot option. Else returns the current value of umx_auto_plot
-#' @return - Current umx_auto_plot setting
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-#' @examples
-#' library(umx)
-#' old = umx_set_auto_plot() # get existing value
-#' umx_set_auto_plot("name")  # set to "name"
-#' umx_set_auto_plot(old)    # reinstate
-umx_set_auto_plot <- function(autoPlot = NULL) {
-	if(is.null(autoPlot)) {
-		getOption("umx_auto_plot")
-	} else {
-		umx_check(autoPlot %in% c(NA, "name"), "stop")
-		options("umx_auto_plot" = autoPlot)
-	}
-}
 
-#' umx_set_auto_run
-#'
-#' Set autorun default for models like umxACE umxGxE etc
-#'
-#' @param autoRun If TRUE or FALSE, sets the umx_auto_run option. Else returns the current value of umx_auto_run
-#' @return - Current umx_auto_run setting
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-#' @examples
-#' library(umx)
-#' old = umx_set_auto_run() # get existing value
-#' umx_set_auto_run(FALSE)  # set to FALSE
-#' umx_set_auto_run(old)    # reinstate
-umx_set_auto_run <- function(autoRun = NA) {
-	# TODO implement umx_set_auto_run
-	if(is.na(autoRun)) {
-		getOption("umx_auto_run")
-	} else {
-		umx_check(autoRun %in% c(TRUE, FALSE), "stop")
-		options("umx_auto_run" = autoRun)
-	}
-}
-
-#' umx_set_cores
-#'
-#' set the number of cores (threads) used by OpenMx
-#'
-#' @param cores number of cores to use. NA (the default) returns current value. "-1" will set to detectCores().
-#' @param model an (optional) model to set. If left NULL, the global option is updated.
-#' @return - number of cores
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-#' @examples
-#' library(umx)
-#' manifests = c("mpg", "disp", "gear")
-#' m1 <- mxModel("ind", type = "RAM",
-#' 	manifestVars = manifests,
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = "one", to = manifests),
-#' 	mxData(mtcars[, manifests], type = "raw")
-#' )
-#' umx_set_cores()              # show current value
-#' oldCores <- umx_set_cores()  # store existing value
-#' umx_set_cores(detectCores()) # set to max
-#' umx_set_cores(-1) ; umx_set_cores() # set to max
-#' m1 = umx_set_cores(1, m1)  # set m1 useage to 1 core
-#' umx_set_cores(model = m1)  # show new value for m1
-#' umx_set_cores(oldCores)    # reinstate old global value
-umx_set_cores <- function(cores = NA, model = NULL) {
-	# depends on parallel::detectCores
-	if(is.na(cores)){
-		n = mxOption(model, "Number of Threads") # get the old value
-		message(n, "/", parallel::detectCores())
-		return(n)
-	} else if(umx_is_MxModel(cores)) {
-		stop("Call this as umx_set_cores(cores, model), not the other way around")
-	}else{
-		if(!is.numeric(cores)){
-			stop("cores must be an integer. You gave me ", cores)
-		}
-		umx_check(isTRUE(all.equal(cores, as.integer(cores))), message = paste0("cores must be an integer. You gave me: ", cores))
-		if(cores > detectCores() ){
-			message("cores set to maximum available (request (", cores, ") exceeds number possible: ", detectCores() )
-			cores = detectCores()
-		} else if (cores < 1){
-			cores = detectCores()
-		}
-		mxOption(model, "Number of Threads", cores)		
-	}
-}
 
 #' umx_get_cores
 #'
@@ -275,26 +181,83 @@ umx_check_parallel <- function(nCores = -1) {
 	invisible(umx_time(models, autoRun= F))
 }
 
-#' umx_get_optimizer
+
+#' umx_set_auto_plot
 #'
-#' This function is now deprecated: Get the current optimizer, use \\code{\link{umx_set_optimizer}}
-#' with no parameters.
+#' Set autoPlot default for models like umxACE umxGxE etc
 #'
-#' @param model (optional) model to get from. If left NULL, the global option is returned
-#' @return - the optimizer  - a string
+#' @param autoPlot If NA or "name", sets the umx_auto_plot option. Else returns the current value of umx_auto_plot
+#' @return - Current umx_auto_plot setting
 #' @export
 #' @family Get and set
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
-#' # Deprecated function: to get cores, use umx_set_cores() with no value
-umx_get_optimizer <- function(model = NULL) {
-	message("Deprecated function: to get optimizer, use umx_set_optimizer() with no value")
-	if(is.null(model)){
-		mxOption(NULL, "Default optimizer")
+#' library(umx)
+#' old = umx_set_auto_plot() # get existing value
+#' umx_set_auto_plot("name")  # set to "name"
+#' umx_set_auto_plot(old)    # reinstate
+umx_set_auto_plot <- function(autoPlot = NULL) {
+	if(is.null(autoPlot)) {
+		getOption("umx_auto_plot")
 	} else {
-		mxOption(model, "Default optimizer")
+		umx_check(autoPlot %in% c(NA, "name"), "stop", "autoPlot should be either NA or 'name'")
+		options("umx_auto_plot" = autoPlot)
 	}
 }
+
+#' umx_set_auto_run
+#'
+#' Set autorun default for models like umxACE umxGxE etc
+#'
+#' @param autoRun If TRUE or FALSE, sets the umx_auto_run option. Else returns the current value of umx_auto_run
+#' @return - Current umx_auto_run setting
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' old = umx_set_auto_run() # get existing value
+#' umx_set_auto_run(FALSE)  # set to FALSE
+#' umx_set_auto_run(old)    # reinstate
+umx_set_auto_run <- function(autoRun = NA) {
+	# TODO implement umx_set_auto_run
+	if(is.na(autoRun)) {
+		getOption("umx_auto_run")
+	} else {
+		umx_check(autoRun %in% c(TRUE, FALSE), "stop")
+		options("umx_auto_run" = autoRun)
+	}
+}
+
+#' umx_set_condensed_slots
+#'
+#' Sets whether newly-created mxMatrices are to be condensed (set to NULL if not being used) or not.
+#'
+#' @param state what state (TRUE or FALSE) to set condensed slots (default NA returns current value).
+#' @return - current value of condensed slots
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' old = umx_set_condensed_slots() # get the existing state
+#' umx_set_condensed_slots(TRUE) # update globally
+#' umx_set_condensed_slots(old) # set back
+umx_set_condensed_slots <- function(state = NA) {
+	if(is.na(state)){
+		message("mxCondenseMatrixSlots is currently: ",
+			omxQuotes(getOption('mxCondenseMatrixSlots'))
+		)
+		invisible(getOption('mxCondenseMatrixSlots'))
+	} else {
+		if(!is.logical(state)){
+			stop("mxCondenseMatrixSlots can only be set to TRUE FALSE you tried ", omxQuotes(state))
+		}else{
+			options(mxCondenseMatrixSlots = state)			
+		}
+	}
+}
+
 
 #' umx_set_optimizer
 #'
@@ -436,6 +399,56 @@ umx_get_checkpoint <- function(model = NULL) {
 	message("Checkpoint  Directory: ", mxOption(model, "Checkpoint Directory" ) )
 }
 
+#' umx_set_cores
+#'
+#' set the number of cores (threads) used by OpenMx
+#'
+#' @param cores number of cores to use. NA (the default) returns current value. "-1" will set to detectCores().
+#' @param model an (optional) model to set. If left NULL, the global option is updated.
+#' @return - number of cores
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' manifests = c("mpg", "disp", "gear")
+#' m1 <- mxModel("ind", type = "RAM",
+#' 	manifestVars = manifests,
+#' 	mxPath(from = manifests, arrows = 2),
+#' 	mxPath(from = "one", to = manifests),
+#' 	mxData(mtcars[, manifests], type = "raw")
+#' )
+#' umx_set_cores()              # show current value
+#' oldCores <- umx_set_cores()  # store existing value
+#' umx_set_cores(detectCores()) # set to max
+#' umx_set_cores(-1) ; umx_set_cores() # set to max
+#' m1 = umx_set_cores(1, m1)  # set m1 useage to 1 core
+#' umx_set_cores(model = m1)  # show new value for m1
+#' umx_set_cores(oldCores)    # reinstate old global value
+umx_set_cores <- function(cores = NA, model = NULL) {
+	# depends on parallel::detectCores
+	if(is.na(cores)){
+		n = mxOption(model, "Number of Threads") # get the old value
+		message(n, "/", parallel::detectCores())
+		return(n)
+	} else if(umx_is_MxModel(cores)) {
+		stop("Call this as umx_set_cores(cores, model), not the other way around")
+	}else{
+		if(!is.numeric(cores)){
+			stop("cores must be an integer. You gave me ", cores)
+		}
+		umx_check(isTRUE(all.equal(cores, as.integer(cores))), message = paste0("cores must be an integer. You gave me: ", cores))
+		if(cores > detectCores() ){
+			message("cores set to maximum available (request (", cores, ") exceeds number possible: ", detectCores() )
+			cores = detectCores()
+		} else if (cores < 1){
+			cores = detectCores()
+		}
+		mxOption(model, "Number of Threads", cores)		
+	}
+}
+
+
 # ======================================
 # = Lower-level Model building helpers =
 # ======================================
@@ -449,7 +462,7 @@ umx_get_checkpoint <- function(model = NULL) {
 #' @param sd the sd of the jiggle noise
 #' @param dontTouch A value, which, if found, will be left as-is (defaults to 0)
 #' @return - \code{\link{mxMatrix}}
-#' @family Super-easy helpers
+#' @family Miscellaneous Functions
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @export
 #' @examples
@@ -704,32 +717,55 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' A convenient version of \code{\link{mxFactor}} supporting the common 
 #' case in which the factor levels are those in the variable.
 #'
+#' @aliases umx_factor
 #' @param x A variable to recode as an mxFactor (see \code{\link{mxFactor}})
 #' @param levels defaults to NA. UNLIKE mxFactor, if not specified, the existing levels will be used
 #' @param labels = levels (see \code{\link{mxFactor}})
 #' @param exclude = NA (see \code{\link{mxFactor}})
 #' @param collapse = FALSE (see \code{\link{mxFactor}})
+#' @param ordered = TRUE By default return an ordered mxFactor
+#' @param verbose Whether to tell user about such things as coercing to factor
 #' @return - \code{\link{mxFactor}}
 #' @export
 #' @family Data Functions
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
-#' x = umxFactor(letters)
+#' x = umxFactor(letters) # just do it
 #' str(x)
-umxFactor <- function(x = character(), levels = NA, labels = levels, 
-		exclude = NA, collapse = FALSE) {
-	if(!is.factor(x)){
-		x = factor(x, ordered=TRUE)
-		message("Your variable was not a factor: I made it into one, with levels:", levels(x) )
+#' x = umxFactor(letters, verbose = TRUE) # report coercions
+#' x = umxFactor(letters, ordered = FALSE) # non-ordered factor like factor(x), but handles data.frames
+#' # Dataframe example:
+#' x = umx_factor(mtcars[,c("cyl", "am")], ordered = FALSE) 
+umxFactor <- function(x = character(), levels = NA, labels = levels, exclude = NA, collapse = FALSE, ordered = TRUE, verbose = FALSE) {
+	if(is.data.frame(x)){
+		ncols = ncol(x)
+		for (c in 1:ncols) {
+			x[,c] = umxFactor(x = x[,c], levels = levels, labels = labels, exclude = exclude, collapse = collapse, ordered = ordered, verbose = verbose)
+		}
+	} else {
+		if(!is.factor(x)){
+			x = factor(x, ordered = ordered)
+			if(verbose){
+				message("Your variable was not a factor: I made it into one, with levels:", levels(x) )
+			}
+		}
+		if(is.na(levels)){
+			levels = levels(x)
+		} else {
+			# TODO should check the provided levels match the data!	(quick)	
+			if(!levels(x) == levels){
+				message("the levels you provided are not those I see in the data")
+			}
+		}
+		if(ordered){
+			x = mxFactor(x = x, levels = levels, labels = levels, exclude = exclude, ordered = TRUE, collapse = collapse)
+		}
 	}
-	if(is.na(levels)){
-		levels = levels(x)
-	}else{
-		# TODO should check the provided levels match the data!	(quick)	
-	}
-	mxFactor(x = character(), levels, labels = levels, 
-	    exclude = exclude, ordered = TRUE, collapse = collapse)
+	return(x)
 }
+
+#' @export
+umx_factor <- umxFactor
 
 #' umx_RAM_ordinal_objective
 #'
@@ -1160,9 +1196,10 @@ dl_from_dropbox <- function(x, key=NULL){
 #' \dontrun{
 #' umx_pb_note("done!", umx_time(m1))
 #' }
-umx_pb_note <- function(title="test", body="default body", auth_key=NA) {
+umx_pb_note <- function(title = "test", body = "body", auth_key = c(NA, "GET")) {
+	auth_key = match.arg(auth_key)
 	auth_key_file = "~/.pushbulletkey"
-	helpMsg = "auth_key not found. You need to call umx_pb_note one time with auth_key set. see ?umx_pb_note"
+	helpMsg = "auth_key not found. You need to call umx_pb_note one time with auth_key set. See ?umx_pb_note"
 	if(is.na(auth_key)){
 		umx_check(file.exists(auth_key_file), "message", helpMsg)
 		auth_key = read.table(auth_key_file, stringsAsFactors=FALSE)[1,1]
@@ -1173,6 +1210,10 @@ umx_pb_note <- function(title="test", body="default body", auth_key=NA) {
 		fileConn <- file(auth_key_file)
 		writeLines(auth_key, fileConn)
 		close(fileConn)
+		if(title=="test" && body=="default body"){
+			title = "sucessfully setup umx_pb_note!"
+			body = paste0("auth key is in ", omxQuotes(auth_key_file))
+		}
 	}
 	cmd = paste0("curl -s --header 'Authorization: Bearer ", auth_key, "'", 
 	" -X POST https://api.pushbullet.com/v2/pushes ",
@@ -1546,14 +1587,15 @@ print.reliability <- function (x, digits = 4, ...){
 }
 
 
-# =====================
-# = Utility functions =
-# =====================
+# ==================
+# = Code functions =
+# ==================
 #' getOpenMx
 #'
 #' @description
 #' source() the getOpenMx.R script from source repo.
 #'
+#' @aliases umx_get_OpenMx
 #' @return - 
 #' @export
 #' @family Miscellaneous Functions
@@ -1565,6 +1607,40 @@ print.reliability <- function (x, digits = 4, ...){
 getOpenMx <- function() {
 	source('http://openmx.psyc.virginia.edu/getOpenMx.R')
 }
+
+#' @export
+umx_get_OpenMx <- getOpenMx
+
+#' umx_make umx using devtools
+#'
+#' @description
+#' Easily  run devtools "install", "release", "win", or "examples".
+#'
+#' @param what whether to c("install", "release", "win", "examples")
+#' @return - 
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+#' @examples
+#' \dontrun{
+#' umx_make(what = c("install", "release", "win", "examples"))
+#' }
+umx_make <- function(what = c("install", "release", "win", "examples")) {
+	what = match.arg(what)
+	if(what == "install"){
+		devtools::document("~/bin/umx"); devtools::install("~/bin/umx");
+	} else if (what == "release"){
+		devtools::release("~/bin/umx", check = TRUE)
+	}else if (what =="win"){
+		devtools::build_win("~/bin/umx")
+	}else if(what == "examples"){
+		devtools::run_examples("~/bin/umx")
+	}
+}
+
+# ==============================
+# = User interaction functions =
+# ==============================
 
 #' umx_msg
 #'
@@ -1589,6 +1665,9 @@ umx_msg <- function(x) {
 	}
 }
 
+# ====================
+# = String Functions =
+# ====================
 #' umx_paste_names
 #'
 #' Helper to add suffixes to names: useful for expanding base names for variables (e.g. "bmi")
@@ -1739,12 +1818,12 @@ umxCov2cor <- function(x) {
 #' m2 = umxRun(m1)
 #' umx_time(c(m1, m2))
 #' umx_time('stop')
-#' # elapsed time: 05.23 seconds
+#' # elapsed time: .3 seconds
 umx_time <- function(model = NA, formatStr = c("simple", "std", "custom %H %M %OS3"), tz = "GMT", autoRun = TRUE){
-	formatStr = umx_default_option(formatStr, c("simple", "std", "custom %H %M %OS3"), check = FALSE)
-	if(is.na(model)){
+	if(!umx_is_MxModel(model) && any(is.na(model))){
 		stop("Valid requests are 'start', 'stop', or a model as argument")
 	}
+	formatStr = umx_default_option(formatStr, c("simple", "std", "custom %H %M %OS3"), check = FALSE)
 	# TODO output a nicely formated table
 	for(i in 1:length(model)) {			
 		if(length(model) > 1) {
@@ -1793,7 +1872,8 @@ umx_time <- function(model = NA, formatStr = c("simple", "std", "custom %H %M %O
 				formatStr = "%OS2 seconds"
 			}
 		}
-		if(class(model) == "character"){
+		
+		if(class(m) == "character"){
 			timeString = format(.POSIXct(thisTime, tz), paste0("elapsed time: ", formatStr))
 		} else {
 			timeString = format(.POSIXct(thisTime, tz), paste0(m$name, ": ", formatStr, timeDelta))
@@ -2058,9 +2138,7 @@ umx_means <- function(df, ordVar = 0, na.rm = TRUE) {
 	if(!is.data.frame(df)){
 		if(is.matrix(df)){
 			df = data.frame(df)
-			# stop("df argument to umx_is_ordered must be a dataframe. You gave me a matrix")
 		} else {
-			# df = data.frame(df)
 			stop("argument df must be a dataframe. You gave me a ", class(df), ". Perhaps this is one column selected from a data frame without [r,c, drop=FALSE]? ")
 		}
 	}
@@ -2500,17 +2578,17 @@ umx_reorder <- function(old, newOrder) {
 	return(new)
 }
 
-#' umx_cont_2_ordinal
+#' umx_cont_2_quantiles
 #'
-#' Recode a variable into n-quantiles (default = deciles (10 levels)).
+#' Recode a continuous variable into n-quantiles (default = deciles (10 levels)).
 #' It returns an \code{\link{mxFactor}}, with the levels labeled with the max value
 #' in each quantile (i.e., open on the left-side).
 #' 
 #' \strong{Note}: Redundant bins are merged. i.e., if the same score identifies
 #' all deciles up to the fourth, then these will be merged into one level.
 #'
-#' @param var a variable to recode as ordinal
-#' @param nlevels how many bins or levels (at most) to use (default = 10 i,e deciles)
+#' @param x a variable to recode as ordinal (email me if you'd like this upgraded to handle df input)
+#' @param nlevels How many bins or levels (at most) to use (i.e., 10 = deciles)
 #' @param type what to return (Default is "mxFactor") options include
 #' "ordered" and "unordered")
 #' @param verbose report the min, max, and decile cuts used (default = FALSE)
@@ -2519,33 +2597,53 @@ umx_reorder <- function(old, newOrder) {
 #' @family Data Functions
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
-#' x = umx_cont_2_ordinal(rnorm(10000), verbose = TRUE)
-#' x = umx_cont_2_ordinal(rep(0:10, 10), verbose = TRUE)
+#' x = umx_cont_2_quantiles(rnorm(1000), nlevels = 10, verbose = TRUE)
 #' levels(x)
-#' str(umx_cont_2_ordinal(rnorm(10000), nlevels = 4, verbose = TRUE))
-umx_cont_2_ordinal <- function(var, nlevels = 10, type = c("mxFactor", "ordered", "unordered"), verbose = FALSE){
-	type = match.arg(type)	
-	# var = rnorm(1000)
-	# nlevels = 10
-	myBreaks = quantile(var, seq(0, 1, by = 1/nlevels), type = 8, na.rm = TRUE)
-	myBreaks[1] = -Inf
-	myBreaks[length(myBreaks)] = Inf
-	myBreaks = unique(myBreaks)
-    myLabels = c(myBreaks[2:(length(myBreaks)-1)], max(var))
-	# myBreaks = myBreaks[2:(length(myBreaks)-1)] # trim ends
-	if(type == "mxFactor"){
-		out = cut(var, breaks = myBreaks, labels = myLabels, ordered_result = TRUE); 
-		out = mxFactor(out, levels = myLabels)
-	} else if (type=="ordered") {
-		out = cut(var, breaks = myBreaks, labels = myLabels, ordered_result = TRUE); 		
+#' x = umx_cont_2_quantiles(mtcars[,"mpg"], 5) # quintiles
+#' x = umx_cont_2_quantiles(mtcars[,"cyl"], 10)
+#' # x = umx_cont_2_quantiles(mtcars[,1:3])
+#' x = umx_cont_2_quantiles(rep(0:10, 10), nlevels = 10)
+#' x = umx_cont_2_quantiles(rbinom(10000, 1, .5), nlevels = 2)
+#' str(umx_cont_2_quantiles(rnorm(10000), nlevels = 4, verbose = TRUE))
+umx_cont_2_quantiles <- function(x, nlevels = NULL, type = c("mxFactor", "ordered", "unordered"), verbose = FALSE){
+	type = match.arg(type)
+	if(is.null(nlevels)){
+		stop("You must set the number of levels to threshold data, i.e., 'nlevels = 10' for deciles")
+	}
+	# TODO: check if is.data.frame(x) && dim(x)[2] > 1, and if so, proceed columnwise
+	if(is.data.frame(x) && dim(x)[2] > 1){
+		stop("Can't handle multiple column actions yet: email tim and rip him a new one")
 	} else {
-		out = cut(var, breaks = myBreaks, labels = myLabels); 
+		if(!is.numeric(x) ){
+			stop("This is for numeric variables. you gave me a ", typeof(x))
+		} else {
+			# x = mtcars[,"cyl"]
+			myBreaks = quantile(x, seq(0, 1, by = 1/nlevels), type = 8, na.rm = TRUE)
+			myBreaks = unique(myBreaks)
+		  myLabels = myBreaks
+			myBreaks = c(-Inf, myBreaks)
+			# myBreaks[length(myBreaks)] = Inf
+			# myLabels = NULL
+		  # if(max(myBreaks) == max(x)){
+		  # 				myBreaks = myBreaks[1:(length(myBreaks)-1)]
+		  # 				myLabels = myBreaks[2:length(myBreaks)]
+		  # } else {
+		  # 				myLabels = c(myBreaks[2:(length(myBreaks)-1)], paste0("_", max(x)))
+		  # }
+			if(type == "mxFactor"){
+				out = cut(x, breaks = myBreaks, labels = myLabels, ordered_result = TRUE); 
+				out = mxFactor(out, levels = levels(out))
+			} else if (type == "ordered") {
+				out = cut(x, breaks = myBreaks, labels = myLabels, ordered_result = TRUE); 		
+			} else {
+				out = cut(x, breaks = myBreaks, labels = myLabels); 
+			}
+			if(verbose){
+				message("Scores ranged from ", min(x), " to ", max(x), ". Cuts made at ", omxQuotes(myBreaks))
+			}
+			return(out)
+		}
 	}
-	
-	if(verbose){
-		message("Scores ranged from ", min(var), " to ", max(var), ". Cuts made at ", omxQuotes(myBreaks))
-	}
-	return(out)
 }
 
 #' umx_has_square_brackets
@@ -2707,21 +2805,21 @@ umx_is_numeric <- function(df, cols = TRUE){
 #' @family Data Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
-#' tmp = mtcars
 #' # Residualise mpg on cylinders and displacement
-#' r1 = umx_residualize("mpg", c("cyl", "disp"), data = tmp)
-#' r2 = residuals(lm(mpg ~ cyl + disp, data = tmp, na.action = na.exclude))
+#' r1 = umx_residualize("mpg", c("cyl", "disp"), data = mtcars)
+#' r2 = residuals(lm(mpg ~ cyl + disp, data = mtcars, na.action = na.exclude))
 #' all(r1$mpg == r2)
 #' # =====================
 #' # = formula interface =
 #' # =====================
-#' r1 = umx_residualize(mpg ~ cyl + I(cyl^2) + disp, data = tmp)
-#' r2 = residuals(lm(mpg ~ cyl + I(cyl^2) + disp, data = tmp, na.action = na.exclude))
+#' r1 = umx_residualize(mpg ~ cyl + I(cyl^2) + disp, data = mtcars)
+#' r2 = residuals(lm(mpg ~ cyl + I(cyl^2) + disp, data = mtcars, na.action = na.exclude))
 #' all(r1$mpg == r2)
 #' 
 #' # ========================================================================
 #' # = Demonstrate ability to residualize WIDE data (i.e. 1 family per row) =
 #' # ========================================================================
+#' tmp = mtcars
 #' tmp$mpg_T1  = tmp$mpg_T2  = tmp$mpg
 #' tmp$cyl_T1  = tmp$cyl_T2  = tmp$cyl
 #' tmp$disp_T1 = tmp$disp_T2 = tmp$disp
@@ -2805,37 +2903,36 @@ umx_residualize <- function(var, covs = NULL, suffixes = NULL, data){
 #'
 #' Scale wide data across all cases: currently twins
 #'
-#' @param varsToScale the base names of the variables ("weight" etc)
-#' @param suffixes the suffix that distinguishes each case (T1, T2 etc.)
-#' @param df a wide dataframe
-#' @return - new dataframe with scaled variables
+#' @param varsToScale The base names of the variables ("weight" etc)
+#' @param suffix The suffix that distinguishes each case, e.g. "_T")
+#' @param data a wide dataframe
+#' @return - new dataframe with variables scaled in place
 #' @export
 #' @family Data Functions
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' data(twinData) 
-#' df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), suffixes = c("1","2") )
+#' df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), suffix = "" )
 #' plot(wt1 ~ wt2, data = df)
-
-umx_scale_wide_twin_data <- function(varsToScale, suffixes, df) {
-	if(length(suffixes) != 2){
-		stop("I need two suffixes, you gave me ", length(suffixes))
+umx_scale_wide_twin_data <- function(varsToScale, suffix, data) {
+	if(length(suffix) != 1){
+		stop("I need one suffix, you gave me ", length(suffix), "\nYou, might, for instance, need to change c('_T1', '_T2') to just '_T'")
 	}
-	namesNeeded = c(paste0(varsToScale, suffixes[1]), paste0(varsToScale, suffixes[2]))
-	umx_check_names(namesNeeded, df)
-	t1Traits = paste0(varsToScale, suffixes[1])
-	t2Traits = paste0(varsToScale, suffixes[2])
+	namesNeeded = umx_paste_names(varsToScale, textConstant = suffix, suffixes = 1:2)
+	umx_check_names(namesNeeded, data)
+	t1Traits = paste0(varsToScale, suffix, 1)
+	t2Traits = paste0(varsToScale, suffix, 2)
 	for (i in 1:length(varsToScale)) {
-		T1 = df[,t1Traits[i]]
-		T2 = df[,t2Traits[i]]
+		T1 = data[,t1Traits[i]]
+		T2 = data[,t2Traits[i]]
 		totalMean = mean(c(T1, T2), na.rm = TRUE)
 		totalSD   =   sd(c(T1, T2), na.rm = TRUE)
 		T1 = (T1 - totalMean)/totalSD
 		T2 = (T2 - totalMean)/totalSD
-		df[,t1Traits[i] ] = T1
-		df[,t2Traits[i] ] = T2
+		data[,t1Traits[i] ] = T1
+		data[,t2Traits[i] ] = T2
 	}
-	return(df)
+	return(data)
 }
 
 #' umx_default_option
@@ -2844,6 +2941,7 @@ umx_scale_wide_twin_data <- function(varsToScale, suffixes, df) {
 #' This is just a version of x = \code{\link{match.arg}}(x) which
 #' allows items not in the list.
 #'
+#' @aliases umx_match.arg
 #' @param x the value chosen (may be the default option list)
 #' @param option_list  A vector of valid options
 #' @param check Whether to check that single items are in the list. Set false to accept abbreviations (defaults to TRUE) 
@@ -2880,6 +2978,10 @@ umx_default_option <- function(x, option_list, check = TRUE){
 		return(x)
 	}
 }
+
+#' @export
+umx_match.arg <- umx_default_option
+
 
 #' qm
 #'
@@ -3130,44 +3232,7 @@ umx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_fre
 	}
 }
 
-#' Turn a cov matrix into raw data
-#'
-#' Turns a covariance matrix into comparable raw data :-)
-#'
-#' @param myCovariance a covariance matrix
-#' @param n how many rows of data to return
-#' @param means the means of the raw data (defaults to 0)
-#' @return - data.frame
-#' @export
-#' @seealso - \code{\link{cov2cor}}
-#' @family Data Functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-#' @examples
-#' covData <- matrix(nrow=6, ncol=6, byrow=TRUE, dimnames=list(paste0("v", 1:6), paste0("v", 1:6)),
-#' data = c(0.9223099, 0.1862938, 0.4374359, 0.8959973, 0.9928430, 0.5320662,
-#'            0.1862938, 0.2889364, 0.3927790, 0.3321639, 0.3371594, 0.4476898,
-#'            0.4374359, 0.3927790, 1.0069552, 0.6918755, 0.7482155, 0.9013952,
-#'            0.8959973, 0.3321639, 0.6918755, 1.8059956, 1.6142005, 0.8040448,
-#'            0.9928430, 0.3371594, 0.7482155, 1.6142005, 1.9223567, 0.8777786,
-#'            0.5320662, 0.4476898, 0.9013952, 0.8040448, 0.8777786, 1.3997558))
-#' myData = umx_cov2raw(covData, n = 100, means = 1:6)
-umx_cov2raw <- function(myCovariance, n, means = 0) {
-	# depends on MASS::mvrnorm
-	if(!umx_is_cov(myCovariance, boolean = TRUE)){
-		stop("myCovariance must be a covariance matrix")
-	}
-	if(length(means) == 0){
-		means = rep(means, dim(myCovariance)[2])
-	} else {
-		if(length(means) != dim(myCovariance)[2]){
-			stop("means must have the same length as the matrix columns. You gave me ", dim(myCovariance)[2], 
-			 " columns of cov matrix, but ", length(means), " means.")
-		}
-	}
-	out = MASS::mvrnorm (n = n, mu = means, Sigma = myCovariance);
-	out = data.frame(out);  names(out) <- colnames(myCovariance);
-	return(out)
-}
+
 
 #' umx_swap_a_block
 #'
@@ -3199,6 +3264,9 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 	return(theData)
 }
 
+# =================
+# = Simulate Data =
+# =================
 #' umx_make_TwinData
 #'
 #' @description
@@ -3296,11 +3364,63 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs, a = c(avg = .5, min = 0, max =
 	}
 	return(list(mzData=mzData, dzData = dzData))
 }
+
+#' Simulate Mendelian Randomization data
+#'
+#' umx_make_MR_data returns a dataset containing 4 variables: A variable of interest (Y), a putative cause (X),
+#' a qtl (quantitative trait locus) influencing X, and a confounding variable (U) affecting both X and Y.
+#'
+#' The code to make these Data. Modified from Dave Evans 2016 Boulder workshop talk.
+#' 
+#' @param nSubjects Number of subjects in sample
+#' @param Vqtl Variance of QTL affecting causal variable X (Default 0.02) 
+#' @param pQTL Decreaser allele frequency (Default 0.5)
+#' @param bXY  Causal effect of X on Y (Default 0.1)
+#' @param bUX  Confounding effect of confounder 'U' on X (Default 0.5) 
+#' @param bUY  Confounding effect of confounder 'U' on Y (Default 0.5) 
+#' @param seed value for the random number generator (Default 123)
+#' @return - data.frame
+#' @export
+#' @family Data Functions
+#' @examples
+#' df = umx_make_MR_data(10000)
+#' str(df)
+#' \dontrun{
+#' m1 = umxTwoStage(Y ~ X, ~qtl, data = df)
+#' plot(m1)
+#' }
+umx_make_MR_data <- function(nSubjects = 1000, Vqtl = .02, bXY = 0.1, bUX = 0.5, bUY = 0.5, pQTL = 0.5, seed = 123) {	
+	# nSubjects  = 50,000 # Individuals
+	# bXY  = 0.1      # Causal effect of X on Y
+	# bUX  = 0.5      # Confounding effect of U on X
+	# bUY  = 0.5      # Confounding effect of U on Y
+	# pQTL = 0.5      # Decreaser allele frequency
+	set.seed(seed)
+	b_qtl_x  = sqrt(Vqtl) # Path coefficient between SNP and X
+	q    = 1 - pQTL # Increaser allele frequency
+	a = sqrt(1/(2 * pQTL * q)) # Genotypic value for genetic variable of variance 1.0
+	# Residual variance in variable X (so variance adds up to one)
+	Vex  <- (1- Vqtl - bUX^2)
+	sdex <- sqrt(Vex) # Residual standard error in variable X
 	
+	# Residual variance for Y variable (so var sums to 1)
+	Vey = 1 - (bXY^2 + 2*bXY*bUX*bUY + bUY^2) 
+	sdey <- sqrt(Vey) # Residual standard error in variable Y
+ 
+	# Simulate individual genotypic and phenotypic values
+	qtl <- sample(c(-a, 0, a), nSubjects, replace = TRUE, prob = c(pQTL^2, 2 * pQTL * q, q^2)) 
+	U <- rnorm(nSubjects, 0, 1) #Confounding variables
+	X <- b_qtl_x * qtl + bUX * U + rnorm(nSubjects, 0, sdex) # X variable
+	Y <- bXY * X + bUY * U + rnorm(nSubjects, 0, sdey) # Y variable
+	# Recode SNP qtl using traditional 0, 1, 2 coding
+	qtl <- replace(qtl, qtl ==  a, 2)
+	qtl <- replace(qtl, qtl ==  0, 1)
+	qtl <- replace(qtl, qtl == -a, 0)
+	MR_data = data.frame(X = X, Y = Y, U = U, qtl = qtl)
+	# save(MR_data, file = "~/bin/umx/data/MR_data.rda")
+}
 
-
-
-#' umx_fake_data
+#' umx_make_fake_data
 #'
 #' This function takes as argument an existing dataset, which 
 #' must be either a matrix or a data frame. Each column of the 
@@ -3329,8 +3449,8 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs, a = c(avg = .5, min = 0, max =
 #' @family Data Functions
 #' @export
 #' @examples
-#' fakeCars = umx_fake_data(mtcars)
-umx_fake_data <- function(dataset, digits = 2, n = NA, use.names = TRUE, use.levels = TRUE, use.miss = TRUE, mvt.method = "eigen", het.ML = FALSE, het.suppress = TRUE){
+#' fakeCars = umx_make_fake_data(mtcars)
+umx_make_fake_data <- function(dataset, digits = 2, n = NA, use.names = TRUE, use.levels = TRUE, use.miss = TRUE, mvt.method = "eigen", het.ML = FALSE, het.suppress = TRUE){
   # requires mvtnorm & polycor
   # requires data frame or matrix
   if((is.data.frame(dataset)+is.matrix(dataset))==0){
@@ -3457,6 +3577,49 @@ umx_fake_data <- function(dataset, digits = 2, n = NA, use.names = TRUE, use.lev
   # Return the new data
   return(fake)
 }
+
+#' Turn a cov matrix into raw data with umx_cov2raw
+#'
+#' Turns a covariance matrix into comparable raw data :-)
+#'
+#' @param myCovariance a covariance matrix
+#' @param n how many rows of data to return
+#' @param means the means of the raw data (defaults to 0)
+#' @return - data.frame
+#' @export
+#' @seealso - \code{\link{cov2cor}}
+#' @family Data Functions
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' covData <- matrix(nrow=6, ncol=6, byrow=TRUE, dimnames=list(paste0("v", 1:6), paste0("v", 1:6)),
+#' data = c(0.9223099, 0.1862938, 0.4374359, 0.8959973, 0.9928430, 0.5320662,
+#'            0.1862938, 0.2889364, 0.3927790, 0.3321639, 0.3371594, 0.4476898,
+#'            0.4374359, 0.3927790, 1.0069552, 0.6918755, 0.7482155, 0.9013952,
+#'            0.8959973, 0.3321639, 0.6918755, 1.8059956, 1.6142005, 0.8040448,
+#'            0.9928430, 0.3371594, 0.7482155, 1.6142005, 1.9223567, 0.8777786,
+#'            0.5320662, 0.4476898, 0.9013952, 0.8040448, 0.8777786, 1.3997558))
+#' myData = umx_cov2raw(covData, n = 100, means = 1:6)
+umx_cov2raw <- function(myCovariance, n, means = 0) {
+	# depends on MASS::mvrnorm
+	if(!umx_is_cov(myCovariance, boolean = TRUE)){
+		stop("myCovariance must be a covariance matrix")
+	}
+	if(length(means) == 0){
+		means = rep(means, dim(myCovariance)[2])
+	} else {
+		if(length(means) != dim(myCovariance)[2]){
+			stop("means must have length 1 or the number of columns in the matrix. You gave me ", dim(myCovariance)[2], 
+			 " columns of cov matrix, but ", length(means), " means.")
+		}
+	}
+	out = MASS::mvrnorm (n = n, mu = means, Sigma = myCovariance);
+	out = data.frame(out);  names(out) <- colnames(myCovariance);
+	return(out)
+}
+
+# =============
+# = Read data =
+# =============
 
 #' Read lower-triangle of data matrix from console or file
 #'
@@ -4068,3 +4231,24 @@ umx_standardize_CP <- function(fit){
 # https://en.wikipedia.org/wiki/The_Second_Coming_(poem)
 # https://en.wikipedia.org/wiki/Invictus
 # http://www.poetryfoundation.org/poem/173698get
+
+#' umx_get_optimizer
+#'
+#' This function is now deprecated: Get the current optimizer, use \\code{\link{umx_set_optimizer}}
+#' with no parameters.
+#'
+#' @param model (optional) model to get from. If left NULL, the global option is returned
+#' @return - the optimizer  - a string
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' # Deprecated function: to get cores, use umx_set_cores() with no value
+umx_get_optimizer <- function(model = NULL) {
+	message("Deprecated function: to get optimizer, use umx_set_optimizer() with no value")
+	if(is.null(model)){
+		mxOption(NULL, "Default optimizer")
+	} else {
+		mxOption(model, "Default optimizer")
+	}
+}

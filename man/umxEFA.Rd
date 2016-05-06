@@ -19,7 +19,7 @@ umxEFA(x = NULL, factors = NULL, data = NULL, covmat = NULL,
 
 \item{n.obs}{Number of observations in covmat (if provided, default = NA)}
 
-\item{rotation}{A rotation to perform on the loadings (default  = "varimax")}
+\item{rotation}{A rotation to perform on the loadings (default  = "varimax" (orthogonal))}
 
 \item{name}{A name for your model.}
 
@@ -32,16 +32,15 @@ umxEFA(x = NULL, factors = NULL, data = NULL, covmat = NULL,
 }
 \description{
 Perform full-information maximum-likelihood factor analysis on a data matrix.
-You need only offer up manifest data, specify the number of factors.
+as in \code{\link{factanal}}, you need only specify the number of factors and offer up
+some manifest data, e.g:
+                                                             
+umxEFA(factors = 2, data = mtcars)
 }
 \details{
-You can create an EFA either by specifying some factor names:
+Equivalently, you can also give a list of factor names:
 
 umxEFA(factors = c("g", "v"), data = mtcars)
-
-or
-
-umxEFA(factors = 2, data = mtcars)
 
 \figure{umxEFA.png}
 
@@ -78,7 +77,7 @@ m5 = umxEFA(name = "by_number", factors = 2, rotation = "promax", data = mtcars[
 \seealso{
 - \code{\link{factanal}}
 
-Other Super-easy helpers: \code{\link{umxJiggle}},
+Other Super-easy helpers: \code{\link{umxTwoStage}},
   \code{\link{umx}}
 }
 

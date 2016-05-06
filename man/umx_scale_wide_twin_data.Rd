@@ -4,24 +4,24 @@
 \alias{umx_scale_wide_twin_data}
 \title{umx_scale_wide_twin_data}
 \usage{
-umx_scale_wide_twin_data(varsToScale, suffixes, df)
+umx_scale_wide_twin_data(varsToScale, suffix, data)
 }
 \arguments{
-\item{varsToScale}{the base names of the variables ("weight" etc)}
+\item{varsToScale}{The base names of the variables ("weight" etc)}
 
-\item{suffixes}{the suffix that distinguishes each case (T1, T2 etc.)}
+\item{suffix}{The suffix that distinguishes each case, e.g. "_T")}
 
-\item{df}{a wide dataframe}
+\item{data}{a wide dataframe}
 }
 \value{
-- new dataframe with scaled variables
+- new dataframe with variables scaled in place
 }
 \description{
 Scale wide data across all cases: currently twins
 }
 \examples{
 data(twinData) 
-df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), suffixes = c("1","2") )
+df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), suffix = "" )
 plot(wt1 ~ wt2, data = df)
 }
 \references{
@@ -32,10 +32,11 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxFactor}}, \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
-  \code{\link{umx_cont_2_ordinal}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_fake_data}},
-  \code{\link{umx_lower2full}},
+  \code{\link{umx_cont_2_quantiles}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_bin_cont_pair_data}},
+  \code{\link{umx_make_fake_data}},
   \code{\link{umx_merge_CIs}},
   \code{\link{umx_read_lower}}, \code{\link{umx_reorder}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},

@@ -47,14 +47,14 @@ umx_time(m1)
 m2 = umxRun(m1)
 umx_time(c(m1, m2))
 umx_time('stop')
-# elapsed time: 05.23 seconds
+# elapsed time: .3 seconds
 }
 \references{
 - \url{http://www.github.com/tbates/umx}
 }
 \seealso{
 Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{summaryAPA}}, \code{\link{umx_APA_pval}},
+  \code{\link{umxAPA}}, \code{\link{umx_APA_pval}},
   \code{\link{umx_aggregate}}, \code{\link{umx_print}},
   \code{\link{umx_show}}, \code{\link{umx}}
 }

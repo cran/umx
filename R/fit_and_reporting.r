@@ -187,9 +187,12 @@ residuals.MxModel <- function(object, digits = 2, suppress = NULL, ...){
 
 # define generic loadings...
 #' loadings
-#' Generic loadings function
+#' Generic loadings function to extract factor loadings from exploratory or confirmatory
+#' factor analyses.
 #'
-#' See \code{\link[umx]{loadings.MxModel}} to access the laodings of RAM EFA models.
+#' See \code{\link[umx]{loadings.MxModel}} to access the loadings of OpenMx EFA models.
+#' 
+#' Base \code{\link[stats]{loadings}} handles \code{\link{factanal}} objects. 
 #'
 #' @param x an object from which to get loadings 
 #' @param ... additional parameters
@@ -197,17 +200,16 @@ residuals.MxModel <- function(object, digits = 2, suppress = NULL, ...){
 #' @export
 #' @family Reporting functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-loadings <- function(x, ...) UseMethod("loadings", x)
-
+loadings <- function(x, ...) UseMethod("loadings")
 #' @export
-loadings.default <- function(x, ...){
-	stats::loadings(x, ...)
-}
+loadings.default <- function(x, ...) stats::loadings(x, ...) 
+
+# TODO: alternative approach would be to use setGeneric("loadings")
 
 #' loadings.MxModel
 #'
-#' loadings exracts the factor loadings from an OpenMx EFA (factor analysis) model. 
-#' Behaves equivalently to stats::loadings in returning the loadings from an 
+#' loadings extracts the factor loadings from an OpenMx EFA (factor analysis) model. 
+#' It behaves equivalently to stats::loadings in returning the loadings from an 
 #' EFA (factor analysis), but doesn't store the rotation matrix.
 #'
 #' @param x A RAM model to get which to get loadings 
@@ -475,7 +477,8 @@ confint.MxModel <- function(object, parm = list("existing", c("vector", "of", "n
 #' }
 #' 
 #' @param model The \code{\link{mxModel}} you wish to report \code{\link{mxCI}}s on
-#' @param add Whether or not to add mxCIs if none are found (defaults to TRUE)
+#' @param which What CIs to add: c("ALL", NA, "list of your making")
+#' @param remove = FALSE (if set, removes existing specified CIs from the model)
 #' @param run Whether or not to compute the CIs. Valid values = "no" (default), "yes", "if necessary". 
 #' @param showErrorCodes Whether to show errors (default == TRUE)
 #' @details If runCIs is FALSE, the function simply adds CIs to be computed and returns the model.
@@ -500,27 +503,43 @@ confint.MxModel <- function(object, parm = list("existing", c("vector", "of", "n
 #' m1$intervals # none yet list()
 #' m1 = umxCI(m1)
 #' m1$intervals # $G_to_x1
-#' m1 = umxCI(m1, add = TRUE) # Add CIs for all free parameters, and return model
+#' m1 = umxCI(m1, remove = TRUE) # Add CIs for all free parameters, and return model
 #' \dontrun{
 #' umxCI(model, run = "yes") # force update of CIs
 #' # Don't force update of CIs, but if they were just added, then calculate them
 #' umxCI(model, run = "if necessary")
 #' }
-umxCI <- function(model = NULL, add = TRUE, run = c("no", "yes", "if necessary"), showErrorCodes = TRUE) {
+umxCI <- function(model = NULL, which = c("ALL", NA, "list of your making"), remove = FALSE, run = c("no", "yes", "if necessary"), showErrorCodes = TRUE) {
 	# TODO superceed this with confint? just need parameters to hold the 95% etc...
 	run = match.arg(run)
-	if(add){
-		# TODO remove existing CIs to avoid duplicates?
-		# TODO ensure each CI is added individually
-		# TODO support breaking these out into separate models and reassembling them
-		CIs   = names(omxGetParameters(model, free = TRUE))
+	which = umx_default_option(which, c("ALL", NA, "list of your making"), check = FALSE)
+	if(remove){
+		if(which == "ALL"){
+			CIs = names(model$intervals)
+		} else {
+			CIs = which 
+		}
+		if(length(names(model$intervals))>0){
+			model = mxModel(model, mxCI(CIs), remove = TRUE)
+		} else {
+			message("model has no intervals to remove")
+		}
+	} else {
+		# TODO Avoid duplicating existing CIs?
+		# TODO Add each CI individually
+		# TODO Break them out into separate models and reassemble if on cluster?
+		if(which == "ALL"){
+			CIs = names(omxGetParameters(model, free = TRUE))
+		} else {
+			CIs = which 
+		}
 		model = mxModel(model, mxCI(CIs))
 	}
     
 	if(run == "yes" | (!umx_has_CIs(model) & run == "if necessary")) {
 		model = mxRun(model, intervals = TRUE)
-	}else{
-		message("Not running CIs, run==", run)
+	} else {
+		message("Not running CIs, run == ", run)
 	}
 
 	if(umx_has_CIs(model)){
@@ -987,8 +1006,8 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 	stdFit$top$c$values = c_std
 	stdFit$top$e$values = e_std
 	if(!is.na(file)) {
-		message("making dot file")
-		umxPlotACE(model, file, std = showStd)
+		# message("making dot file")
+		umxPlotACE(stdFit, file = file, std = showStd)
 	}
 	if(returnStd) {
 		if(CIs){
@@ -1674,8 +1693,8 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 
 	tablePub = tableOut[, c("comparison", "ep", "diffLL"      , "diffdf"    , "p", "AIC", "base")]
 	# names(tablePub)     <- c("Model"     , "EP", "&Delta; -2LL", "&Delta; df", "p", "AIC", "Compare with Model")
-	names(tablePub)     <- c("Model"     , "EP", "\u25B3 -2LL", "\u25B3 df", "p", "AIC", "Compare with Model")
-	# "\U+25B3"
+	names(tablePub)     <- c("Model"     , "EP", "\u2206 -2LL", "\u2206 df", "p", "AIC", "Compare with Model")
+	# U+2206 = math delta
 	# Fix problem where base model has compare set to its own name, and name set to NA
 	nRows = dim(tablePub)[1]
 	for (i in 1:nRows) {
@@ -1856,18 +1875,17 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #'
 #' @aliases umxPlot
 #' @rdname plot.MxModel
-#' @param x an \code{\link{mxModel}} from which to make a path diagram
-#' @param std Whether to standardize the model.
+#' @param x An \code{\link{mxModel}} from which to make a path diagram
+#' @param std Whether to standardize the model (default = FALSE).
 #' @param digits The number of decimal places to add to the path coefficients
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param pathLabels Whether to show labels on the paths. both will show both the parameter and the label. ("both", "none" or "labels")
-#' @param showFixed Whether to show fixed paths (defaults to FALSE)
+#' @param showFixed Whether to show fixed paths (defaults to TRUE)
 #' @param showMeans Whether to show means
-#' @param resid how to show residuals and variances default is "circle". Options are "line" & "none"
-#' @param showError deprecated: use resid instead
+#' @param resid How to show residuals and variances default is "circle". Options are "line" & "none"
 #' @param ... Optional parameters
 #' @export
-#' @seealso - \code{\link{umx_set_plot_format}}, \code{\link{umxLabel}}, \code{\link{umxValues}}
+#' @seealso - \code{\link{umx_set_plot_format}}
 #' @family Reporting functions
 #' @references - \url{http://www.github.com/tbates/umx}, \url{https://en.wikipedia.org/wiki/DOT_(graph_description_language)}
 #' @examples
@@ -1881,21 +1899,11 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
 #' plot(m1)
-plot.MxModel <- function(x = NA, std = TRUE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), showFixed = FALSE, showMeans = TRUE, resid = c("circle", "line", "none"), showError = "deprecated", ...) {
-	if(showError != "deprecated"){
-		message(omxQuotes("showError"), " is deprecated: in future, use ", 
-			omxQuotes("resid"), " and one of ", omxQuotes(c("circle", "line", "none")))
-		if(showError){
-			resid = "circle"
-		} else {
-			resid = "none"
-		}
-	} else {
-		resid = match.arg(resid)
-	}
+plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), showFixed = TRUE, showMeans = TRUE, resid = c("circle", "line", "none"), ...) {
 	# ==========
 	# = Setup  =
 	# ==========
+	resid = match.arg(resid)
 	model = x # just to be clear that x is a model
 
 	pathLabels = match.arg(pathLabels)
@@ -1910,8 +1918,10 @@ plot.MxModel <- function(x = NA, std = TRUE, digits = 2, file = "name", pathLabe
 	out = xmu_dot_make_paths(model$matrices$A, stringIn = out, heads = 1, showFixed = showFixed, pathLabels = pathLabels, comment = "Single arrow paths", digits = digits)
 	if(resid == "circle"){
 		out = xmu_dot_make_paths(model$matrices$S, stringIn = out, heads = 2, showResiduals = FALSE, showFixed = showFixed, pathLabels = pathLabels, comment = "Covariances", digits = digits)
-	} else {
+	} else if(resid == "line"){
 		out = xmu_dot_make_paths(model$matrices$S, stringIn = out, heads = 2, showResiduals = TRUE , showFixed = showFixed, pathLabels = pathLabels, comment = "Covariances & residuals", digits = digits)
+	}else{
+		out = xmu_dot_make_paths(model$matrices$S, stringIn = out, heads = 2, showResiduals = FALSE , showFixed = showFixed, pathLabels = pathLabels, comment = "Covariances & residuals", digits = digits)		
 	}
 	# TODO should xmu_dot_make_residuals handle showFixed or not necessary?
 	tmp = xmu_dot_make_residuals(model$matrices$S, latents = latents, digits = digits, resid = resid)
@@ -1954,8 +1964,8 @@ plot.MxModel <- function(x = NA, std = TRUE, digits = 2, file = "name", pathLabe
 			}
 
 			# TODO find a way of showing means fixed at zero?
-			if(thisPathFree | showFixed ) {
-			# if(thisPathFree | (showFixed & thisPathVal != 0) ) {
+			if(thisPathFree || showFixed ) {
+				# if(thisPathFree | (showFixed & thisPathVal != 0) ) {
 				out = paste0(out, "\tone -> ", to, labelStart, thisPathVal, '"];\n')
 			}else{
 				# cat(paste0(out, "\tone -> ", to, labelStart, thisPathVal, '"];\n'))
@@ -1993,7 +2003,7 @@ plot.MxModel <- function(x = NA, std = TRUE, digits = 2, file = "name", pathLabe
 	# ===================================
 	digraph = paste("digraph G {\n", preOut, out, rankVariables, "\n}", sep = "\n");
 
-	print("nb: see ?plot.MxModel for options - std, digits, file, pathLabels, resid, showFixed, showMeans")
+	print("nb: see ?plot.MxModel for options - std, digits, file, showFixed, showMeans, resid= 'circle|line|none', pathLabels")
 	xmu_dot_maker(model, file, digraph)
 } # end plot.MxModel
 
@@ -3326,7 +3336,7 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA, rounding
 	}
 }
 
-#' summaryAPA
+#' umxAPA
 #'
 #' @description
 #' This function creates object summaries used in reporting models, effects, and summarizing data.
@@ -3343,7 +3353,7 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA, rounding
 #' 
 #' 4. Given only obj, will be treated as a p value as returned in APA format.
 #' 
-#' @aliases umxAPA
+#' @aliases summaryAPA
 #' @param obj Either a model (\link{lm}), a beta-value, or a data.frame
 #' @param se If b is a model, then name of the parameter of interest, else the SE (standard-error)
 #' @param std If obj is an lm, whether to re-run the model on standardized data and report std betas
@@ -3358,16 +3368,16 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA, rounding
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' # Generate a formatted string convey the effects in a model:  
-#' summaryAPA(lm(mpg ~ wt + disp, mtcars))
-#' summaryAPA(lm(mpg ~ wt + disp, mtcars), "disp")
+#' umxAPA(lm(mpg ~ wt + disp, mtcars))
+#' umxAPA(lm(mpg ~ wt + disp, mtcars), "disp")
 #' # Generate a summary table of correlations + Mean and SD:
-#' summaryAPA(mtcars[,1:3])
+#' umxAPA(mtcars[,1:3])
 #' # Generate a CI string based on effect and se
-#' summaryAPA(.4, .3)
+#' umxAPA(.4, .3)
 #' # format p-value
-#' summaryAPA(.0182613)
-#' summaryAPA(.000182613)
-summaryAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", min = .001, addComparison = NA, report = c("table", "html")) {
+#' umxAPA(.0182613)
+#' umxAPA(.000182613)
+umxAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", min = .001, addComparison = NA, report = c("table", "html")) {
 	report = match.arg(report)
 	if(class(obj)=="data.frame"){
 		# generate a summary of correlation and means
@@ -3379,6 +3389,9 @@ summaryAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete"
 			umx_print(output, digits = digits, file = "tmp.html")
 		} else {
 			umx_print(output, digits = digits)
+		}
+		if(anyNA(obj)){
+			message("Some rows in dataframe had missing values.")
 		}
 	}else if( "lm" == class(obj)){
 		# report lm summary table
@@ -3415,7 +3428,7 @@ summaryAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete"
 }
 
 #' @export
-umxAPA <- summaryAPA
+summaryAPA <- umxAPA
 
 #' umx_APA_model_CI
 #'

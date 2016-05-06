@@ -1,6 +1,6 @@
 Package: umx
-Version: 1.2.5
-Date: 2016-04-01
+Version: 1.2.7
+Date: 2016-05-01
 Title: Structural Equation Modelling in R with 'OpenMx'
 Authors@R: c(person("Timothy C", "Bates", role = c("aut", "cre"),
     email = "timothy.c.bates@gmail.com"))
@@ -12,12 +12,12 @@ Description: Create, run, and report structural equation and twin models quickly
 Depends: R (>= 3.2.0), OpenMx (>= 2.5.0)
 Imports: DiagrammeR, knitr, MASS, Matrix, methods, mvtnorm, numDeriv,
         polycor, R2HTML, RCurl, utils
-Suggests: testthat, gdata
+Suggests: devtools, testthat, gdata
 BugReports: http://github.com/tbates/umx/issues
 LazyData: true
 RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2016-04-03 02:00:26 UTC; tim
+Packaged: 2016-05-06 13:09:12 UTC; tim
 Author: Timothy C Bates [aut, cre]
 Repository: CRAN
-Date/Publication: 2016-04-03 17:03:24
+Date/Publication: 2016-05-06 23:00:50

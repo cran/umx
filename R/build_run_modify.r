@@ -1,8 +1,8 @@
+# umx_open("~/bin/umx/R/misc_and_utility.r")
 # devtools::document("~/bin/umx"); devtools::install("~/bin/umx");
 # devtools::release("~/bin/umx", check = TRUE)
 # devtools::build_win("~/bin/umx")
 # devtools::run_examples("~/bin/umx")
-
 # install.packages("curl")
 # install.packages("devtools")
 # install.packages("digest")
@@ -1277,11 +1277,16 @@ umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .
 	model = omxAssignFirstParameters(model)
 	model = as(model, "MxModel.ACE") # set class so that S3 plot() dispatches.
 	if(autoRun){
-		return(mxRun(model))
+		model = mxRun(model)
+		umxSummary(model)
+		# if(!is.na(umx_set_auto_plot())){
+			# plot(model)
+		# }
 	} else {
-		return(model)
+		# --
 	}
-}
+	return(model)
+} #end umxACE
 
 
 # devtools::document("~/bin/umx"); devtools::install("~/bin/umx");
@@ -1496,10 +1501,11 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix =
 
 #' umxCP
 #'
-#' Make a 2-group Common Pathway model (see Details below)
+#' Make a 2-group Common Pathway twin model (Common-factor common-pathway multivariate model).
 #' 
 #' The common-pathway model provides a powerful tool for theory-based decomposition of genetic
 #' and environmental differences.
+#' 
 #' umxCP supports this with pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
 #' to model the genetic and environmental structure of multiple phenotypes
 #' (measured behaviors).
@@ -1509,10 +1515,10 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix =
 #' common or shared-environment (C) or 
 #' non-additive genetic effects (D).
 #' 
-#' Unlike the Cholesky, these factors do not act directly on the phenotype. Instead A, 
-#' C, and E influences impact on latent factors (by default 1), which then act to account for variance in the phenotypes (see Figure below).
+#' Unlike the Cholesky, these factors do not act directly on the phenotype. Instead latent A, 
+#' C, and E influences impact on one or more latent factors which in turn account for variance in the phenotypes (see Figure below).
 #' 
-#' CP model path diagram.
+#' Common-pathway path diagram:
 #' 
 #' \figure{CP.png}
 #' 
@@ -1733,9 +1739,9 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 
 #' umxIP
 #'
-#' Make a 2-group Independent Pathway model
+#' Make a 2-group Independent Pathway twin model (Common-factor independent-pathway multivariate model)
 #' 
-#' The following figure the IP model as a path diagram:
+#' The following figure shows the IP model diagramatically:
 #' 
 #' \figure{IP.png}
 #'
@@ -2514,6 +2520,12 @@ umxModify <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value
 		regex = TRUE
 	}
 
+	if (typeof(free) != "logical"){
+		# Use the free as input, and switch to free = TRUE
+		update = free
+		free = TRUE
+	}
+
 	if(is.null(update)){
 		message("As you haven't asked to do anything: the parameters that are free to be dropped are:")
 		print(umxGetParameters(lastFit))
@@ -2533,7 +2545,8 @@ umxModify <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value
 		}
 		x = mxRun(x, intervals = intervals)
 		if(comparison){
-			if(free){ # we added a df
+			umxSummary(x)			
+			if(free){ # new model has fewer df
 				umxCompare(x, lastFit)
 			} else {
 				umxCompare(lastFit, x)

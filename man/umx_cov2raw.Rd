@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_cov2raw}
 \alias{umx_cov2raw}
-\title{Turn a cov matrix into raw data}
+\title{Turn a cov matrix into raw data with umx_cov2raw}
 \usage{
 umx_cov2raw(myCovariance, n, means = 0)
 }
@@ -39,10 +39,11 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxFactor}}, \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
-  \code{\link{umx_cont_2_ordinal}},
-  \code{\link{umx_fake_data}},
+  \code{\link{umx_cont_2_quantiles}},
   \code{\link{umx_lower2full}},
+  \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_bin_cont_pair_data}},
+  \code{\link{umx_make_fake_data}},
   \code{\link{umx_merge_CIs}},
   \code{\link{umx_read_lower}}, \code{\link{umx_reorder}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},

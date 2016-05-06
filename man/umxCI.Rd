@@ -4,13 +4,16 @@
 \alias{umxCI}
 \title{umxCI}
 \usage{
-umxCI(model = NULL, add = TRUE, run = c("no", "yes", "if necessary"),
+umxCI(model = NULL, which = c("ALL", NA, "list of your making"),
+  remove = FALSE, run = c("no", "yes", "if necessary"),
   showErrorCodes = TRUE)
 }
 \arguments{
 \item{model}{The \code{\link{mxModel}} you wish to report \code{\link{mxCI}}s on}
 
-\item{add}{Whether or not to add mxCIs if none are found (defaults to TRUE)}
+\item{which}{What CIs to add: c("ALL", NA, "list of your making")}
+
+\item{remove}{= FALSE (if set, removes existing specified CIs from the model)}
 
 \item{run}{Whether or not to compute the CIs. Valid values = "no" (default), "yes", "if necessary".}
 
@@ -53,7 +56,7 @@ m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 m1$intervals # none yet list()
 m1 = umxCI(m1)
 m1$intervals # $G_to_x1
-m1 = umxCI(m1, add = TRUE) # Add CIs for all free parameters, and return model
+m1 = umxCI(m1, remove = TRUE) # Add CIs for all free parameters, and return model
 \dontrun{
 umxCI(model, run = "yes") # force update of CIs
 # Don't force update of CIs, but if they were just added, then calculate them

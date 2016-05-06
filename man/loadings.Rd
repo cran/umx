@@ -3,7 +3,8 @@
 \name{loadings}
 \alias{loadings}
 \title{loadings
-Generic loadings function}
+Generic loadings function to extract factor loadings from exploratory or confirmatory
+factor analyses.}
 \usage{
 loadings(x, ...)
 }
@@ -16,7 +17,10 @@ loadings(x, ...)
 - matrix of loadings
 }
 \description{
-See \code{\link[umx]{loadings.MxModel}} to access the laodings of RAM EFA models.
+See \code{\link[umx]{loadings.MxModel}} to access the loadings of OpenMx EFA models.
+}
+\details{
+Base \code{\link[stats]{loadings}} handles \code{\link{factanal}} objects.
 }
 \references{
 - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}

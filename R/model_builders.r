@@ -5,16 +5,15 @@
 #' umxEFA
 #'
 #' Perform full-information maximum-likelihood factor analysis on a data matrix.
-#' You need only offer up manifest data, specify the number of factors.
+#' as in \code{\link{factanal}}, you need only specify the number of factors and offer up
+#' some manifest data, e.g:
+#'                                                              
+#' umxEFA(factors = 2, data = mtcars)
 #' 
-#' You can create an EFA either by specifying some factor names:
+#' Equivalently, you can also give a list of factor names:
 #' 
 #' umxEFA(factors = c("g", "v"), data = mtcars)
 #' 
-#' or 
-#' 
-#' umxEFA(factors = 2, data = mtcars)
-#'
 #' \figure{umxEFA.png}
 #' 
 #' \emph{notes}: In an EFA, all items may load on all factors.
@@ -36,7 +35,7 @@
 #' @param data A dataframe of manifest columns you are modeling
 #' @param covmat Covariance matrix of data you are modeling (not implemented)
 #' @param n.obs Number of observations in covmat (if provided, default = NA)
-#' @param rotation A rotation to perform on the loadings (default  = "varimax")
+#' @param rotation A rotation to perform on the loadings (default  = "varimax" (orthogonal))
 #' @param name A name for your model.
 #' @param digits rounding (default = 2)
 #' @param report What to report
@@ -125,13 +124,113 @@ umxEFA <- function(x= NULL, factors = NULL, data = NULL, covmat = NULL, n.obs = 
 	}
 	m1 = mxRun(m1)
 	if(rotation != "none" && nFac > 1){
-		x = loadings(m1, verbose = F)
+		x = loadings.MxModel(m1)
 		x = eval(parse(text = paste0(rotation, "(x)")))
-		m1$A$values[manifests, factors] = x$loadings[1:nManifests, 1:nFac]
-		print(x)
+		print(x) # print out the nice rotation result
+		m1$A$values[manifests, factors] = x$loadings[1:nManifests, 1:nFac] # stash the rotated result
 	} else {
 		print(loadings(m1))
 	}
 	umxSummary(m1, digits = digits, report = report);
 	invisible(m1)
 }
+
+#' umxTwoStage
+#'
+#' umxTwoStage implements 2-stage least squares regression in Structural Equation Modeling.
+#' For ease of learning, the function is modeled closely on the \code{\link[sem]{tsls}}.
+#' 
+#' The example is a Mendelian Randomization \url{https://en.wikipedia.org/wiki/Mendelian_randomization} 
+#' analysis to show the value of two-stage.
+#'
+#' @param formula	for structural equation to be estimated; a regression constant is implied if not explicitly omitted.
+#' @param instruments	one-sided formula specifying instrumental variables.
+#' @param data data.frame containing the variables in the model.
+#' @param subset [optional] vector specifying a subset of observations to be used in fitting the model.
+#' @param weights [optional] vector of weights to be used in the fitting process;
+#' if specified should be a non-negative numeric vector with one entry for each observation,
+#' to be used to compute weighted 2SLS estimates.
+#' @param contrasts	an optional list. See the contrasts.arg argument of model.matrix.default.
+#' @param name for the model (defaults to "tsls")
+#' @param ...	arguments to be passed down.
+#' @return - 
+#' @export
+#' @family Super-easy helpers
+#' @seealso - \code{\link{umxRAM}}, \code{\link[sem]{tsls}}
+#' @references - Fox, J. (1979) Simultaneous equation models and two-stage least-squares.
+#' In Schuessler, K. F. (ed.) \emph{Sociological Methodology}, Jossey-Bass., 
+#' Greene, W. H. (1993) \emph{Econometric Analysis}, Second Edition, Macmillan.
+#' @examples
+#' library(umx)
+#' 
+#' 
+#' # ====================================
+#' # = Mendelian randomization analysis =
+#' # ====================================
+#' 
+#'# Note: in practice: many more subjects are desireable - this just to let example run fast
+#' df = umx_make_MR_data(1000) 
+#' m1 = umxTwoStage(Y ~ X, instruments = ~ qtl, data = df)
+#' coef(m1)
+#' plot(m1)
+#' 
+#' # Errant analysis using ordinary least squares regression (WARNING this result is CONFOUNDED!!)
+#' m1 = lm(Y ~ X    , data = df); coef(m1) # incorrect .35 effect of X on Y
+#' m1 = lm(Y ~ X + U, data = df); coef(m1) # Controlling U reveals the true 0.1 beta weight
+#' #
+#' #
+#' \dontrun{
+#' df = umx_make_MR_data(1e5) 
+#' m1 = umxTwoStage(Y ~ X, instruments = ~ qtl, data = df)
+#' 
+#' # ======================
+#' # = now with sem::tsls =
+#' # ======================
+#' # library(sem) # will require you to install X11
+#' m2 = sem::tsls(formula = Y ~ X, instruments = ~ qtl, data = df)
+#' coef(m1)
+#' coef(m2)
+# # Try with missing value for one subect: A beneift of the FIML approach in OpenMx.
+#' m3 = tsls(formula = Y ~ X, instruments = ~ qtl, data = (df[1,"qtl"] = NA))
+#' }
+umxTwoStage <- function(formula, instruments, data, subset, weights, contrasts= NULL, name = "tsls", ...) {
+	umx_check(is.null(contrasts), "stop", "Contrasts not supported yet in umxTwoStage: email maintainer to prioritize")	
+	# formula = Y ~ X; instruments ~ qtl; data = umx_make_MR_data(10000)
+	# m1 = sem::tsls(formula = Y ~ X, instruments = ~ qtl, data = df)
+	# summary(sem::tsls(Q ~ P + D, ~ D + F + A, data=Kmenta))
+	if(!class(formula) == "formula"){
+		stop("formula must be a formula")
+	}
+	allForm = all.vars(terms(formula))
+	if(length(allForm) != 2){
+		stop("I'm currently limited to 1 DV, 1 IV, and 1 instrument: 'formula' had ", length(allForm), " items")
+	}
+	DV   = allForm[1] # left hand item
+	Xvars  = all.vars(delete.response(terms(formula)))
+	inst = all.vars(terms(instruments))
+	if(length(inst) != 1){
+		stop("I'm currently limited to 1 DV, 1 IV, and 1 instrument: 'instruments' had ", length(allForm), " items")
+	}
+	manifests <- c(allForm, inst)     # manifests <- c("qtl", "X", "Y")
+	latentErr <- paste0("e", allForm) # latentErr   <- c("eX", "eY")
+	umx_check_names(manifests, data = data, die = TRUE)
+
+	IVModel <- umxRAM("IV Model", data = mxData(data, type = "raw"),
+		# Causal and confounding paths
+		umxPath(inst , to = Xvars), # beta of SNP effect          :  X ~ b1 x inst
+		umxPath(Xvars, to = DV),    # Causal effect of Xvars on DV: DV ~ b2 x X
+
+		# Latent error stuff + setting up variance and means for variables
+		umxPath(v.m. = inst),     # Model variance and mean of instrument
+		umxPath(var = latentErr), # Variance of residual errors
+		umxPath(latentErr, to = allForm, fixedAt = 1), # X and Y residuals@1.
+		umxPath(unique.bivariate = latentErr, values = 0.2, labels = paste0("phi", length(latentErr)) ), # Correlation among residuals
+		umxPath(means = c(Xvars, DV))
+	)
+	# umx_time(IVModel) # IV Model: 3.1 s ( was 14.34 seconds with poor start values) for 100,000 subjects
+	return(IVModel)
+}
+
+# load(file = "~/Dropbox/shared folders/OpenMx_binaries/shared data/bad_CFI.Rda", verbose =T)
+# ref <- mxRefModels(IVModel, run=TRUE)
+# summary(IVModel, refModels=ref)

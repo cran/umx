@@ -2,6 +2,7 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{getOpenMx}
 \alias{getOpenMx}
+\alias{umx_get_OpenMx}
 \title{getOpenMx}
 \usage{
 getOpenMx()
@@ -19,5 +20,8 @@ getOpenMx()
 }
 \references{
 - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
+\seealso{
+Other Miscellaneous Functions: \code{\link{umxJiggle}}
 }
 
