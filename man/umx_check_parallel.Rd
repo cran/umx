@@ -4,10 +4,17 @@
 \alias{umx_check_parallel}
 \title{umx_check_parallel}
 \usage{
-umx_check_parallel(nCores = -1)
+umx_check_parallel(nCores = -1, testScript = NULL, rowwiseParallel = TRUE,
+  nSubjects = 1000)
 }
 \arguments{
 \item{nCores}{How many cores to run (defaults to -1 (all available))}
+
+\item{testScript}{A user-provided script to run (NULL)}
+
+\item{rowwiseParallel}{Whether to parallel-ize rows (default) or gradient computation}
+
+\item{nSubjects}{Number of rows to model (Default = 1000) Reduce for quicker runs.}
 }
 \value{
 - NULL
@@ -32,6 +39,7 @@ Other Test: \code{\link{umx_check_OS}},
   \code{\link{umx_has_been_run}},
   \code{\link{umx_has_means}},
   \code{\link{umx_has_square_brackets}},
+  \code{\link{umx_is_MxData}},
   \code{\link{umx_is_MxMatrix}},
   \code{\link{umx_is_MxModel}}, \code{\link{umx_is_RAM}},
   \code{\link{umx_is_cov}},

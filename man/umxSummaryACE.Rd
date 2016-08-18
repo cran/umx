@@ -6,7 +6,7 @@
 \title{umxSummaryACE}
 \usage{
 umxSummaryACE(model, digits = 2, file = getOption("umx_auto_plot"),
-  comparison = NULL, showStd = TRUE, showRg = FALSE, CIs = TRUE,
+  comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE,
   report = c("1", "2", "html"), returnStd = FALSE, extended = FALSE,
   zero.print = ".", ...)
 }
@@ -20,13 +20,13 @@ Defaults to NA = do not create plot output}
 
 \item{comparison}{you can run mxCompare on a comparison model (NULL)}
 
-\item{showStd}{Whether to standardize the output (defualt = TRUE)}
+\item{std}{Whether to standardize the output (default = TRUE)}
 
 \item{showRg}{= whether to show the genetic correlations (FALSE)}
 
 \item{CIs}{Whether to show Confidence intervals if they exist (T)}
 
-\item{report}{If 3, then open an html table of the results}
+\item{report}{If "html", then open an html table of the results}
 
 \item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
 
@@ -55,7 +55,7 @@ m1 = umxRun(m1)
 umxSummaryACE(m1)
 \dontrun{
 umxSummaryACE(m1, file = NA);
-umxSummaryACE(m1, file = "name", showStd = TRUE)
+umxSummaryACE(m1, file = "name", std = TRUE)
 stdFit = umxSummaryACE(m1, returnStd = TRUE);
 }
 }

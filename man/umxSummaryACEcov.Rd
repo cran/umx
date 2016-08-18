@@ -6,7 +6,7 @@
 \title{umxSummaryACEcov}
 \usage{
 umxSummaryACEcov(model, digits = 2, file = getOption("umx_auto_plot"),
-  returnStd = FALSE, extended = FALSE, showRg = FALSE, showStd = TRUE,
+  returnStd = FALSE, extended = FALSE, showRg = FALSE, std = TRUE,
   comparison = NULL, CIs = TRUE, zero.print = ".", report = c("1", "2",
   "html"), ...)
 }
@@ -17,21 +17,21 @@ umxSummaryACEcov(model, digits = 2, file = getOption("umx_auto_plot"),
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
-\item{returnStd}{Whether to return the standardized form of the model (default = F)}
+\item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
 
-\item{extended}{how much to report (F)}
+\item{extended}{how much to report (FALSE)}
 
-\item{showRg}{= whether to show the genetic correlations (F)}
+\item{showRg}{= whether to show the genetic correlations (FALSE)}
 
-\item{showStd}{= whether to show the standardized model (T)}
+\item{std}{= whether to show the standardized model (TRUE)}
 
 \item{comparison}{you can run mxCompare on a comparison model (NULL)}
 
-\item{CIs}{Whether to show Confidence intervals if they exist (T)}
+\item{CIs}{Whether to show Confidence intervals if they exist (TRUE)}
 
 \item{zero.print}{How to show zeros (".")}
 
-\item{report}{If 3, then open an html table of the results}
+\item{report}{If "html", then open an html table of the results.}
 
 \item{...}{Other parameters to control model summary}
 }
@@ -54,7 +54,7 @@ m1 = umxRun(m1)
 umxSummaryACE(m1)
 \dontrun{
 umxSummaryACE(m1, file = NA);
-umxSummaryACE(m1, file = "name", showStd = TRUE)
+umxSummaryACE(m1, file = "name", std = TRUE)
 stdFit = umxSummaryACE(m1, returnStd = TRUE);
 }
 }

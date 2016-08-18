@@ -4,22 +4,24 @@
 \alias{umxACE}
 \title{umxACE}
 \usage{
-umxACE(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = 0.5,
-  dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL,
-  numObsMZ = NULL, boundDiag = NULL, weightVar = NULL,
-  equateMeans = TRUE, bVector = FALSE, hint = c("none", "left_censored"),
-  autoRun = getOption("umx_auto_run"))
+umxACE(name = "ACE", selDVs, selCovs = NULL, dzData, mzData,
+  suffix = NULL, dzAr = 0.5, dzCr = 1, addStd = TRUE, addCI = TRUE,
+  numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL, weightVar = NULL,
+  equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased",
+  "left_censored"), autoRun = getOption("umx_auto_run"))
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE")}
 
 \item{selDVs}{The variables to include from the data}
 
+\item{selCovs}{(optional) covariates to include from the data (do not include suffix in names)}
+
 \item{dzData}{The DZ dataframe}
 
 \item{mzData}{The MZ dataframe}
 
-\item{suffix}{The suffix for twin 1 and twin 2, often "_T". if set, simplifies
+\item{suffix}{The suffix for twin 1 and twin 2, often "_T". If set, simplifies
 SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating)}
@@ -34,7 +36,7 @@ SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{numObsMZ}{= Number of MZ twins: Set this if you input covariance data}
 
-\item{boundDiag}{= Whether to bound the diagonal of the a, c, and e matrices}
+\item{boundDiag}{= (optional) lbound for diagonal of the a, c, and e matrices.}
 
 \item{weightVar}{= If provided, a vector objective will be used to weight the data. (default = NULL)}
 
@@ -42,7 +44,7 @@ SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE)}
 
-\item{hint}{An analysis hint. Options include "none", (default) "left_censored". Default does nothing.}
+\item{thresholds}{How to implement ordinal thresholds c("deviationBased", "left_censored")}
 
 \item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
 }
@@ -109,7 +111,6 @@ m2 = umxACE("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25
 umxCompare(m2, m1) # ADE is better
 umxSummary(m2, compare = m1) # nb: though this is ADE, columns are labeled ACE
 
-
 # ===================
 # = Ordinal example =
 # ===================
@@ -128,7 +129,7 @@ mzData <- twinData[twinData$zyg == 1, umx_paste_names(selDVs, "", 1:2)]
 dzData <- twinData[twinData$zyg == 3, umx_paste_names(selDVs, "", 1:2)]
 mzData <- mzData[1:80,] # just top 80 pairs to run fast
 dzData <- dzData[1:80,]
-str(mzData)
+str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
 umxSummary(m1)
 
@@ -184,6 +185,28 @@ selDVs = c("wt1", "wt2")
 mz = cov(twinData[twinData$zyg == 1, selDVs], use = "complete")
 dz = cov(twinData[twinData$zyg == 3, selDVs], use = "complete")
 m1 = umxACE(selDVs=selDVs, dzData=dz, mzData=mz, numObsDZ=nrow(dzData), numObsMZ=nrow(mzData))
+umxSummary(m1)
+plot(m1)
+# =========================================================
+# Example with Tobin data (this is not profuction quality =
+# Definately a work in progress!!!                        =
+# =========================================================
+
+# Analyse a dataset in which only people with a BMI over 22 had their BMI recorded
+
+require(umx)
+data(twinData)
+baseNames = c("bmi")
+selDVs = umx_paste_names(baseNames, "", 1:2)
+tmp = twinData[, c(selDVs, "zyg")]
+tmp$bmi1[tmp$bmi1 <= 22] = 22
+tmp$bmi2[tmp$bmi2 <= 22] = 22
+tmp = umxFactor(tmp) # BAD! letting it know that there are wide data!
+tmp = umxFactor(tmp, sep = "") # GOOD same factor for each twin!
+mz = tmp[tmp$zyg == 1, selDVs]
+dz = tmp[tmp$zyg == 3, selDVs]
+x  = umxThresholdMatrix(dz, sep = "", thresholds = "left_censored", verbose = TRUE)
+m1 = umxACE(selDVs = baseNames, dzData = dz, mzData = mz, suffix = "", thresholds = "left_censored")
 umxSummary(m1)
 plot(m1)
 }

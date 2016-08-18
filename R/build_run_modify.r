@@ -14,16 +14,22 @@
 # install.packages("Rcpp")
 # install.packages("rstudioapi")
 # install.packages("withr")
-# install.packages("~/Dropbox/shared folders/OpenMx_binaries/OpenMx_2.3.1-239-OSX/3.2/OpenMx_2.3.1-239.tgz")
+# install.packages("~/Dropbox/shared folders/OpenMx_binaries/OpenMx2.6.0-MZ-OSX/3.2/OpenMx_2.6.0.tgz")
+
 # ===============================
 # = Highlevel models (ACE, GxE) =
 # ===============================
 .onAttach <- function(libname, pkgname){
-	# TODO remove mxCondenseMatrixSlots now that $ get and set are working properly
-	options('mxCondenseMatrixSlots'= FALSE)
-	options('umx.plot.format' = 'DiagrammeR')
-	options("umx_auto_run" = TRUE)
-	options("umx_auto_plot" = NA)
+	# TODO make sure mxCondenseMatrixSlots not needed now that $ get and set are working properly
+	# umx_set_condensed_slots(FALSE)
+	umx_set_plot_format('DiagrammeR')
+
+	if(is.null(getOption('knitr.table.format'))){
+		umx_set_table_format('markdown')
+		# options('knitr.table.format' = "markdown")
+	}
+	umx_set_auto_run(TRUE)
+	umx_set_auto_plot("name")
 	packageStartupMessage("For an overview type '?umx'")
 }
 
@@ -36,6 +42,7 @@
 # suppress NOTE with a spurious importFrom in the namespace
 #' @importFrom numDeriv jacobian
 #' @importFrom polycor hetcor
+#' @importFrom sfsmisc nearcor
 #' @importFrom parallel detectCores
 #' @importFrom stats C aggregate as.formula coef complete.cases
 #' @importFrom stats confint cor cov cov.wt cov2cor df lm
@@ -43,7 +50,7 @@
 #' @importFrom stats qnorm quantile residuals rnorm runif sd
 #' @importFrom stats setNames update var delete.response terms
 #' @importFrom utils combn data flush.console read.table txtProgressBar
-#' @importFrom utils globalVariables write.table
+#' @importFrom utils globalVariables write.table packageVersion
 NULL
 	
 utils::globalVariables(c(
@@ -169,11 +176,14 @@ methods::setClass("MxModel.ACEcov", contains = "MxModel.ACE")
 #' @param data data for the model. Can be an \code{\link{mxData}} or a data.frame
 #' @param ... mx or umxPaths, mxThreshold objects, etc.
 #' @param setValues Whether to generate likely good start values (Defaults to TRUE)
+#' @param suffix String to append to each label (useful if model will be used in a multi-group model)
 #' @param name A friendly name for the model
 #' @param comparison Compare the new model to the old (if updating an existing model: default = TRUE)
 #' @param independent Whether the model is independent (default = NA)
 #' @param remove_unused_manifests Whether to remove variables in the data to which no path makes reference (defaults to TRUE)
 #' @param showEstimates Whether to show estimates. Defaults to no (alternatives = "raw", "std", etc.)
+#' @param refModels pass in reference models if available. Use FALSE to supress computing these if not provided.
+#' @param thresholds Whether to use deviation-based threshold modeling for ordinal data (if any is detected), direct, or do nothing.
 #' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned)
 #' @return - \code{\link{mxModel}}
 #' @export
@@ -222,9 +232,12 @@ methods::setClass("MxModel.ACEcov", contains = "MxModel.ACE")
 #'# wt   "mpg_with_wt"   "wt_with_wt"  "b1"
 #'# disp "disp_with_mpg" "b1"          "disp_with_disp"
 #' }
-umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, setValues = TRUE, independent = NA, remove_unused_manifests = TRUE, showEstimates = c("none", "raw", "std", "both", "list of column names"), autoRun = getOption("umx_auto_run")) {
+umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, setValues = TRUE, suffix = "", independent = NA, remove_unused_manifests = TRUE, showEstimates = c("none", "raw", "std", "both", "list of column names"), refModels = NULL, thresholds = c("deviationBased", "direct", "ignore", "left_censored"), autoRun = getOption("umx_auto_run")) {
 	dot.items = list(...) # grab all the dot items: mxPaths, etc...
 	showEstimates = umx_default_option(showEstimates, c("none", "raw", "std", "both", "list of column names"), check = FALSE)
+	legalThresholdsOptions = c("deviationBased", "direct", "ignore", "left_censored")
+	thresholds = match.arg(thresholds)
+
 	if(typeof(model) == "character"){
 		if(is.na(name)){
 			name = model
@@ -374,13 +387,23 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 			# print(m1$matrices$M$values)
 		}
 	}
-	m1 = umxLabel(m1)
+	m1 = umxLabel(m1, suffix = suffix)
 	if(setValues){
 		m1 = umxValues(m1, onlyTouchZeros = TRUE)
 	}
+	
+	if(any(umx_is_ordered(data$observed))){
+		if(thresholds == "ignore"){
+			# can't run, as ignored are incomplete
+			autoRun = FALSE
+		} else {
+			m1 = umxRAM2Ordinal(m1, verbose = T, thresholds = thresholds, autoRun = FALSE)
+		}
+	}
+	m1 = omxAssignFirstParameters(m1)
 	if(autoRun){
 		m1 = mxRun(m1)
-		umxSummary(m1, showEstimates = showEstimates)
+		umxSummary(m1, refModels = refModels, showEstimates = showEstimates)
 		return(m1)
 	} else {
 		return(m1)
@@ -637,6 +660,8 @@ umxGxE <- function(name = "G_by_E", selDVs, selDefs, dzData, mzData, suffix = NU
 #' @param moderator The name of the moderator variable in the dataset e.g. "age", "SES" etc.
 #' @param mzData Dataframe containing the DV and moderator for MZ twins
 #' @param dzData Dataframe containing the DV and moderator for DZ twins
+#' @param suffix (optional) separator, e.g. "_T" which will be used expand base names into full variable names:
+#' e.g.: 'bmi' --> c("bmi_T1", "bmi_T2")
 #' @param weightCov Whether to use cov.wt matrices or FIML default = FALSE, i.e., FIML
 #' @param width An option to widen or narrow the window from its default (of 1)
 #' @param target A user-selected list of moderator values to test (default = NULL = explore the full range)
@@ -690,7 +715,12 @@ umxGxE <- function(name = "G_by_E", selDVs, selDefs, dzData, mzData, suffix = NU
 #' Briley, D.A., Harden, K.P., Bates, T.C.,  Tucker-Drob, E.M. (2015).
 #' Nonparametric Estimates of Gene x Environment Interaction Using Local Structural Equation Modeling.
 #' \emph{Behavior Genetics}.
-umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzData = dzData, weightCov = FALSE, target = NULL, width = 1, plotWindow = FALSE, return = c("estimates","last_model")) {
+umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzData = dzData, suffix = NA, weightCov = FALSE, target = NULL, width = 1, plotWindow = FALSE, return = c("estimates","last_model")) {
+	if(!is.na(suffix)){
+		selDVs    = umx_paste_names(selDVs, sep = suffix, 1:2)
+		moderator = umx_paste_names(moderator, sep = suffix, 1:2)
+	} else {
+	}
 	# TODO want to allow missing moderator?
 	# Check moderator is set and exists in mzData and dzData
 	return = match.arg(return)
@@ -843,9 +873,10 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #'
 #' @param name The name of the model (defaults to"ACE")
 #' @param selDVs The variables to include from the data
+#' @param selCovs (optional) covariates to include from the data (do not include suffix in names)
 #' @param dzData The DZ dataframe
 #' @param mzData The MZ dataframe
-#' @param suffix The suffix for twin 1 and twin 2, often "_T". if set, simplifies
+#' @param suffix The suffix for twin 1 and twin 2, often "_T". If set, simplifies
 #' SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")
 #' @param dzAr The DZ genetic correlation (defaults to .5, vary to examine assortative mating)
 #' @param dzCr The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model)
@@ -853,11 +884,11 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' @param addCI Whether to add intervals to compute CIs (defaults to TRUE)
 #' @param numObsDZ = Number of DZ twins: Set this if you input covariance data
 #' @param numObsMZ = Number of MZ twins: Set this if you input covariance data
-#' @param boundDiag = Whether to bound the diagonal of the a, c, and e matrices
+#' @param boundDiag = (optional) lbound for diagonal of the a, c, and e matrices.
 #' @param weightVar = If provided, a vector objective will be used to weight the data. (default = NULL) 
 #' @param equateMeans Whether to equate the means across twins (defaults to TRUE)
 #' @param bVector Whether to compute row-wise likelihoods (defaults to FALSE)
-#' @param hint An analysis hint. Options include "none", (default) "left_censored". Default does nothing.
+#' @param thresholds How to implement ordinal thresholds c("deviationBased", "left_censored")
 #' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned)
 #' @return - \code{\link{mxModel}} of subclass mxModel.ACE
 #' @export
@@ -879,8 +910,7 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' m2 = umxACE("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
 #' umxCompare(m2, m1) # ADE is better
 #' umxSummary(m2, compare = m1) # nb: though this is ADE, columns are labeled ACE
-#' 
-#' 
+#'
 #' # ===================
 #' # = Ordinal example =
 #' # ===================
@@ -899,7 +929,7 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' dzData <- twinData[twinData$zyg == 3, umx_paste_names(selDVs, "", 1:2)]
 #' mzData <- mzData[1:80,] # just top 80 pairs to run fast
 #' dzData <- dzData[1:80,]
-#' str(mzData)
+#' str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
 #' umxSummary(m1)
 #' 
@@ -957,335 +987,367 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' m1 = umxACE(selDVs=selDVs, dzData=dz, mzData=mz, numObsDZ=nrow(dzData), numObsMZ=nrow(mzData))
 #' umxSummary(m1)
 #' plot(m1)
-umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL, 
-	weightVar = NULL, equateMeans = TRUE, bVector = FALSE, hint = c("none", "left_censored"), autoRun = getOption("umx_auto_run")) {
-	if(nrow(dzData) == 0){ stop("Your DZ dataset has no rows!") }
-	if(nrow(mzData) == 0){ stop("Your MZ dataset has no rows!") }
-	hint = match.arg(hint)
-	nSib = 2 # number of siblings in a twin pair
-	if(dzCr == .25 && name == "ACE"){
-		name = "ADE"
-	}
-	# look for name conflicts
-	badNames = umx_grep(selDVs, grepString = "^[ACDEacde][0-9]*$")
-	if(!identical(character(0), badNames)){
-		stop("The data contain variables that look like parts of the a, c, e model, i.e., a1 is illegal.\n",
-		"BadNames included: ", omxQuotes(badNames) )
-	}
-
-	if(!is.null(suffix)){
-		if(length(suffix) > 1){
-			stop("suffix should be just one word, like '_T'. I will add 1 and 2 afterwards... \n",
-			"i.e., you have to name your variables 'obese_T1' and 'obese_T2' etc.")
-		}
-		selDVs = umx_paste_names(selDVs, suffix, 1:2)
-	}
-	umx_check_names(selDVs, mzData)
-	umx_check_names(selDVs, dzData)
-	# message("selDVs: ", omxQuotes(selDVs))
-	nVar = length(selDVs)/nSib; # number of dependent variables ** per INDIVIDUAL ( so times-2 for a family)**
-
-	dataType = umx_is_cov(dzData, boolean = FALSE)
-	# compute numbers of ordinal and binary variables
-	if(dataType == "raw"){
-		if(!all(is.null(c(numObsMZ, numObsDZ)))){
-			stop("You should not be setting numObsMZ or numObsDZ with ", omxQuotes(dataType), " data...")
-		}
-		isFactor = umx_is_ordered(mzData[, selDVs])                      # T/F list of factor columns
-		isOrd    = umx_is_ordered(mzData[, selDVs], ordinal.only = TRUE) # T/F list of ordinal (excluding binary)
-		isBin    = umx_is_ordered(mzData[, selDVs], binary.only  = TRUE) # T/F list of binary columns
-		nFactors = sum(isFactor)
-		nOrdVars = sum(isOrd) # total number of ordinal columns
-		nBinVars = sum(isBin) # total number of binary columns
-
-		factorVarNames = names(mzData)[isFactor]
-		ordVarNames    = names(mzData)[isOrd]
-		binVarNames    = names(mzData)[isBin]
-		contVarNames   = names(mzData)[!isFactor]
-	} else {
-		# summary data
-		isFactor = isOrd = isBin = c()
-		nFactors = nOrdVars = nBinVars = 0
-		factorVarNames = ordVarNames = binVarNames = contVarNames = c()
-	}
-	if(nFactors > 0 & is.null(suffix)){
-		stop("Please set suffix.\n",
-		"Why: You have included ordinal or binary variables. I need to know which variables are for twin 1 and which for twin2.\n",
-		"The way I do this is enforcing some naming rules. For example, if you have 2 variables:\n",
-		" obesity and depression called: 'obesity_T1', 'dep_T1', 'obesity_T2' and 'dep_T2', you should call umxACE with:\n",
-		"selDVs = c('obesity','dep'), suffix = '_T' \n",
-		"suffix is just one word, appearing in all variables (e.g. '_T').\n",
-		"This is assumed to be followed by '1' '2' etc...")
-	}
-	used = selDVs
-	if(!is.null(weightVar)){
-		used = c(used,weightVar)
-	}
-	# Drop unused columns from mz and dzData
-	mzData = mzData[, used]
-	dzData = dzData[, used]
-
-	if(dataType == "raw") {
-		if(!is.null(weightVar)){
-			# weight variable provided: check it exists in each frame
-			if(!umx_check_names(weightVar, data = mzData, die = FALSE) | !umx_check_names(weightVar, data = dzData, die = FALSE)){
-				stop("The weight variable must be included in the mzData and dzData",
-					 " frames passed into umxACE when \"weightVar\" is specified",
-					 "\n mzData contained:", paste(names(mzData), collapse = ", "),
-					 "\n and dzData contain:", paste(names(dzData), collapse = ", "),
-					 "\nbut I was looking for ", weightVar, " as the moderator."
-				)
-			}
-			mzWeightMatrix = mxMatrix(name = "mzWeightMatrix", type = "Full", nrow = nrow(mzData), ncol = 1, free = FALSE, values = mzData[, weightVar])
-			dzWeightMatrix = mxMatrix(name = "dzWeightMatrix", type = "Full", nrow = nrow(dzData), ncol = 1, free = FALSE, values = dzData[, weightVar])
-			mzData = mzData[, selDVs]
-			dzData = dzData[, selDVs]
-			bVector = TRUE
+#' # =========================================================
+#' # Example with Tobin data (this is not profuction quality =
+#' # Definately a work in progress!!!                        =
+#' # =========================================================
+#' 
+#' # Analyse a dataset in which only people with a BMI over 22 had their BMI recorded
+#' 
+#' require(umx)
+#' data(twinData)
+#' baseNames = c("bmi")
+#' selDVs = umx_paste_names(baseNames, "", 1:2)
+#' tmp = twinData[, c(selDVs, "zyg")]
+#' tmp$bmi1[tmp$bmi1 <= 22] = 22
+#' tmp$bmi2[tmp$bmi2 <= 22] = 22
+#' tmp = umxFactor(tmp) # BAD! letting it know that there are wide data!
+#' tmp = umxFactor(tmp, sep = "") # GOOD same factor for each twin!
+#' mz = tmp[tmp$zyg == 1, selDVs]
+#' dz = tmp[tmp$zyg == 3, selDVs]
+#' x  = umxThresholdMatrix(dz, sep = "", thresholds = "left_censored", verbose = TRUE)
+#' m1 = umxACE(selDVs = baseNames, dzData = dz, mzData = mz, suffix = "", thresholds = "left_censored")
+#' umxSummary(m1)
+#' plot(m1)
+umxACE <- function(name = "ACE", selDVs, selCovs = NULL, dzData, mzData, suffix = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL, 
+	weightVar = NULL, equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased", "left_censored"), autoRun = getOption("umx_auto_run")) {
+		# If given covariates, call umxACEcov
+		if(!is.null(selCovs)){
+			umxACEcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, suffix = suffix, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun)
 		} else {
-			# no weights
-		}
-
-		# ===============================
-		# = Notes: Ordinal requires:    =
-		# ===============================
-		# 1. Set to mxFactor
-		# 2. For Binary vars:
-		#   1. Means of binary vars fixedAt 0
-		#   2. A+C+E for binary vars is constrained to 1 
-		# 4. For Ordinal vars, first 2 thresholds fixed
-		# 5. Option to fix all (or all but the first 2??) thresholds for left-censored data.
-        #   # TODO
-		# 	1. Simple test if results are similar for an ACE model of 1 variable
-		# ===========================
-		# = Add means matrix to top =
-		# ===========================
-		# Figure out ace starts while we are here
-		# varStarts will be used to fill a, c, and e
-		# mxMatrix(name = "a", type = "Lower", nrow = nVar, ncol = nVar, free = TRUE, values = varStarts, byrow = TRUE)
-		varStarts = umx_cov_diag(mzData[, selDVs[1:nVar], drop = FALSE], ordVar = 1, use = "pairwise.complete.obs")
-		if(nVar == 1){
-			varStarts = varStarts/3
-		} else {
-			varStarts = t(chol(diag(varStarts/3))) # divide variance up equally, and set to Cholesky form.
-		}
-		varStarts = matrix(varStarts, nVar, nVar)
-
-		# Mean starts (used across all raw solutions
-		obsMZmeans = umx_means(mzData[, selDVs], ordVar = 0, na.rm = TRUE)
-		meanDimNames = list("means", selDVs)		
-		# smarter but not guaranteed
-		# a_val = e_val = t(chol(xmu_cov_factor(mzData, use = "pair"))) * .6
-		# c_val = t(chol(cov(mzData, use = "pair"))) * .1
-		if(nFactors == 0) {			
-			# =======================================================
-			# = Handle all continuous case                          =
-			# =======================================================
-			message("All variables continuous")
-			meansMatrix = mxMatrix(name = "expMean", "Full" , nrow = 1, ncol = (nVar * nSib), free = TRUE, values = obsMZmeans, dimnames = meanDimNames)
-			top = mxModel("top", umxLabel(meansMatrix))
-			MZ  = mxModel("MZ" , mxExpectationNormal("top.expCovMZ", "top.expMean"), mxFitFunctionML(vector = bVector), mxData(mzData, type = "raw") )
-			DZ  = mxModel("DZ" , mxExpectationNormal("top.expCovDZ", "top.expMean"), mxFitFunctionML(vector = bVector), mxData(dzData, type = "raw") )
-		} else if(sum(isBin) == 0){
-			# =======================================================
-			# = Handle some 1 or more ordinal variables (no binary) =
-			# =======================================================
-			message("umxACE found ", (nOrdVars/nSib), " pairs of ordinal variables:", omxQuotes(ordVarNames),
-			"\nNo binary variables were found")			
-			if(length(contVarNames) > 0){
-				message("There were also ", length(contVarNames)/nSib, " pairs of continuous variables:", omxQuotes(contVarNames))	
-			}else{
-				message("No continuous variables found.")
+			if(nrow(dzData) == 0){ stop("Your DZ dataset has no rows!") }
+			if(nrow(mzData) == 0){ stop("Your MZ dataset has no rows!") }
+			thresholds = match.arg(thresholds)
+			nSib = 2 # number of siblings in a twin pair
+			if(dzCr == .25 && name == "ACE"){
+				name = "ADE"
 			}
-			# Means: all free, start cont at the measured value, ord @0
-			meansMatrix  = mxMatrix(name = "expMean", "Full" , nrow = 1, ncol = (nVar * nSib), free = TRUE, values = obsMZmeans, dimnames = meanDimNames)
-			# Thresholds
-			# for better guessing with low-freq cells
-			allData = rbind(mzData, dzData)
-			# threshMat is a three-item list of matrices and algebra
-			threshMat = umxThresholdMatrix(allData, suffixes = paste0(suffix, 1:2), verbose = FALSE, hint = hint)
-			# return(threshMat)
-			mzExpect = mxExpectationNormal("top.expCovMZ", "top.expMean", thresholds = "top.threshMat")
-			dzExpect = mxExpectationNormal("top.expCovDZ", "top.expMean", thresholds = "top.threshMat")			
-			top = mxModel("top", umxLabel(meansMatrix), threshMat)
-			MZ  = mxModel("MZ", mzExpect, mxFitFunctionML(vector = bVector), mxData(mzData, type = "raw") )
-			DZ  = mxModel("DZ", dzExpect, mxFitFunctionML(vector = bVector), mxData(dzData, type = "raw") )
-		} else if(sum(isBin) > 0){
-			# =======================================================
-			# = Handle case of at least 1 binary variable           =
-			# =======================================================
+			# look for name conflicts
+			badNames = umx_grep(selDVs, grepString = "^[ACDEacde][0-9]*$")
+			if(!identical(character(0), badNames)){
+				stop("The data contain variables that look like parts of the a, c, e model, i.e., a1 is illegal.\n",
+				"BadNames included: ", omxQuotes(badNames) )
+			}
 
-			message("umxACE found ", sum(isBin)/nSib, " pairs of binary variables:", omxQuotes(binVarNames))
-			message("\nI am fixing the latent means and variances of these variables to 0 and 1")
-			if(nOrdVars > 0){
-				message("There were also ", nOrdVars/nSib, " pairs of ordinal variables:", omxQuotes(ordVarNames))			
+			if(!is.null(suffix)){
+				if(length(suffix) > 1){
+					stop("suffix should be just one word, like '_T'. I will add 1 and 2 afterwards... \n",
+					"i.e., you have to name your variables 'obese_T1' and 'obese_T2' etc.")
+				}
+				selDVs = umx_paste_names(selDVs, suffix, 1:2)
 			}
-			if(length(contVarNames) > 0){
-				message("\nand ", length(contVarNames)/nSib, " pairs of continuous variables:", omxQuotes(contVarNames))	
-			}else{
-				message("No continuous variables")
+			umx_check_names(selDVs, mzData)
+			umx_check_names(selDVs, dzData)
+			# message("selDVs: ", omxQuotes(selDVs))
+			nVar = length(selDVs)/nSib; # number of dependent variables ** per INDIVIDUAL ( so times-2 for a family)**
+
+			dataType = umx_is_cov(dzData, boolean = FALSE)
+			# compute numbers of ordinal and binary variables
+			if(dataType == "raw"){
+				if(!all(is.null(c(numObsMZ, numObsDZ)))){
+					stop("You should not be setting numObsMZ or numObsDZ with ", omxQuotes(dataType), " data...")
+				}
+				isFactor = umx_is_ordered(mzData[, selDVs])                      # T/F list of factor columns
+				isOrd    = umx_is_ordered(mzData[, selDVs], ordinal.only = TRUE) # T/F list of ordinal (excluding binary)
+				isBin    = umx_is_ordered(mzData[, selDVs], binary.only  = TRUE) # T/F list of binary columns
+				nFactors = sum(isFactor)
+				nOrdVars = sum(isOrd) # total number of ordinal columns
+				nBinVars = sum(isBin) # total number of binary columns
+
+				factorVarNames = names(mzData)[isFactor]
+				ordVarNames    = names(mzData)[isOrd]
+				binVarNames    = names(mzData)[isBin]
+				contVarNames   = names(mzData)[!isFactor]
+			} else {
+				# summary data
+				isFactor = isOrd = isBin = c()
+				nFactors = nOrdVars = nBinVars = 0
+				factorVarNames = ordVarNames = binVarNames = contVarNames = c()
 			}
+			if(nFactors > 0 & is.null(suffix)){
+				stop("Please set suffix.\n",
+				"Why: You have included ordinal or binary variables. I need to know which variables are for twin 1 and which for twin2.\n",
+				"The way I do this is enforcing some naming rules. For example, if you have 2 variables:\n",
+				" obesity and depression called: 'obesity_T1', 'dep_T1', 'obesity_T2' and 'dep_T2', you should call umxACE with:\n",
+				"selDVs = c('obesity','dep'), suffix = '_T' \n",
+				"suffix is just one word, appearing in all variables (e.g. '_T').\n",
+				"This is assumed to be followed by '1' '2' etc...")
+			}
+			used = selDVs
+			if(!is.null(weightVar)){
+				used = c(used, weightVar)
+			}
+			# Drop unused columns from mz and dzData
+			mzData = mzData[, used]
+			dzData = dzData[, used]
+
+			if(dataType == "raw") {
+				if(!is.null(weightVar)){
+					# weight variable provided: check it exists in each frame
+					if(!umx_check_names(weightVar, data = mzData, die = FALSE) | !umx_check_names(weightVar, data = dzData, die = FALSE)){
+						stop("The weight variable must be included in the mzData and dzData",
+							 " frames passed into umxACE when \"weightVar\" is specified",
+							 "\n mzData contained:", paste(names(mzData), collapse = ", "),
+							 "\n and dzData contain:", paste(names(dzData), collapse = ", "),
+							 "\nbut I was looking for ", weightVar, " as the moderator."
+						)
+					}
+					mzWeightMatrix = mxMatrix(name = "mzWeightMatrix", type = "Full", nrow = nrow(mzData), ncol = 1, free = FALSE, values = mzData[, weightVar])
+					dzWeightMatrix = mxMatrix(name = "dzWeightMatrix", type = "Full", nrow = nrow(dzData), ncol = 1, free = FALSE, values = dzData[, weightVar])
+					mzData = mzData[, selDVs]
+					dzData = dzData[, selDVs]
+					bVector = TRUE
+				} else {
+					# no weights
+				}
+
+			# ===========================
+			# = Add means matrix to top =
+			# ===========================
+			# Figure out ace starts while we are here
+			# varStarts will be used to fill a, c, and e
+			# mxMatrix(name = "a", type = "Lower", nrow = nVar, ncol = nVar, free = TRUE, values = varStarts, byrow = TRUE)
+			varStarts = umx_cov_diag(mzData[, selDVs[1:nVar], drop = FALSE], ordVar = 1, use = "pairwise.complete.obs")
+			if(nVar == 1){
+				varStarts = varStarts/3
+			} else {
+				varStarts = t(chol(diag(varStarts/3))) # divide variance up equally, and set to Cholesky form.
+			}
+			varStarts = matrix(varStarts, nVar, nVar)
+
+			# Mean starts (used across all raw solutions
+			obsMZmeans = umx_means(mzData[, selDVs], ordVar = 0, na.rm = TRUE)
+			meanDimNames = list("means", selDVs)		
+			# smarter but not guaranteed
+			# a_val = e_val = t(chol(xmu_cov_factor(mzData, use = "pair"))) * .6
+			# c_val = t(chol(cov(mzData, use = "pair"))) * .1
+
+			# ===============================
+			# = Notes: Ordinal requires:    =
+			# ===============================
+			# 1. Set to mxFactor
+			# 2. For Binary vars:
+			#   1. Means of binary vars fixedAt 0
+			#   2. A + C + E for binary vars is constrained to 1 
+			# 4. For Ordinal vars, first 2 thresholds fixed
+			# 5. Option to fix all (or all but the first 2??) thresholds for left-censored data.
+	        #   # TODO
+			# 	1. Simple test if results are similar for an ACE model of 1 variable
+			if(nFactors == 0) {			
+				# =======================================================
+				# = Handle all continuous case                          =
+				# =======================================================
+				message("All variables continuous")
+				meansMatrix = mxMatrix(name = "expMean", "Full" , nrow = 1, ncol = (nVar * nSib), free = TRUE, values = obsMZmeans, dimnames = meanDimNames)
+				top = mxModel("top", umxLabel(meansMatrix))
+				MZ  = mxModel("MZ" , mxExpectationNormal("top.expCovMZ", "top.expMean"), mxFitFunctionML(vector = bVector), mxData(mzData, type = "raw") )
+				DZ  = mxModel("DZ" , mxExpectationNormal("top.expCovDZ", "top.expMean"), mxFitFunctionML(vector = bVector), mxData(dzData, type = "raw") )
+			} else if(sum(isBin) == 0){
+				# ==================================================
+				# = Handle 1 or more ordinal variables (no binary) =
+				# ==================================================
+				message("umxACE found ", (nOrdVars/nSib), " pairs of ordinal variables:", omxQuotes(ordVarNames),
+				"\nNo binary variables were found")			
+				if(length(contVarNames) > 0){
+					message("There were also ", length(contVarNames)/nSib, " pairs of continuous variables:", omxQuotes(contVarNames))	
+				}else{
+					message("No continuous variables found.")
+				}
+				# Means: all free, start cont at the measured value, ord @0
+				meansMatrix  = mxMatrix(name = "expMean", "Full" , nrow = 1, ncol = (nVar * nSib), free = TRUE, values = obsMZmeans, dimnames = meanDimNames)
+				# Thresholds
+				# for better guessing with low-freq cells
+				allData = rbind(mzData, dzData)
+				# threshMat is is a matrix, or a list of 2 matrices and an algebra
+				threshMat = umxThresholdMatrix(allData, sep = suffix, thresholds = thresholds, threshMatName = "threshMat", verbose = FALSE)
+				mzExpect = mxExpectationNormal("top.expCovMZ", "top.expMean", thresholds = "top.threshMat")
+				dzExpect = mxExpectationNormal("top.expCovDZ", "top.expMean", thresholds = "top.threshMat")			
+				top = mxModel("top", umxLabel(meansMatrix), threshMat)
+				MZ  = mxModel("MZ", mzExpect, mxFitFunctionML(vector = bVector), mxData(mzData, type = "raw") )
+				DZ  = mxModel("DZ", dzExpect, mxFitFunctionML(vector = bVector), mxData(dzData, type = "raw") )
+			} else if(sum(isBin) > 0){
+				if(thresholds == "left_censored"){
+					# TODO this is easy, no? binary is fixed threshold anyhow...
+					stop("left_censored doesn't make sense for binary variables. I also can't handle mixtures of censored and binary yet, sorry")
+				}
+				# =======================================================
+				# = Handle case of at least 1 binary variable           =
+				# =======================================================
+
+				message("umxACE found ", sum(isBin)/nSib, " pairs of binary variables:", omxQuotes(binVarNames))
+				message("\nI am fixing the latent means and variances of these variables to 0 and 1")
+				if(nOrdVars > 0){
+					message("There were also ", nOrdVars/nSib, " pairs of ordinal variables:", omxQuotes(ordVarNames))			
+				}
+				if(length(contVarNames) > 0){
+					message("\nand ", length(contVarNames)/nSib, " pairs of continuous variables:", omxQuotes(contVarNames))	
+				}else{
+					message("No continuous variables")
+				}
 			
-			# ===========================================================================
-			# = Means: bin fixed, others free, start cont at the measured value, ord @0 =
-			# ===========================================================================
-			# Fill with zeros: default for ordinals and binary...
-			meansFree = (!isBin) # fix the binary variables at zero
-			meansMatrix = mxMatrix(name = "expMean", "Full" , nrow = 1, ncol = nVar*nSib, free = meansFree, values = obsMZmeans, dimnames = meanDimNames)
+				# ===========================================================================
+				# = Means: bin fixed, others free, start cont at the measured value, ord @0 =
+				# ===========================================================================
+				# Fill with zeros: default for ordinals and binary...
+				meansFree = (!isBin) # fix the binary variables at zero
+				meansMatrix = mxMatrix(name = "expMean", "Full" , nrow = 1, ncol = nVar*nSib, free = meansFree, values = obsMZmeans, dimnames = meanDimNames)
 
-			# = Thresholds =
-			# For better guessing with low-freq cells
-			allData = rbind(mzData, dzData)
-			# threshMat may be a three item list of matrices and algebra
-			threshMat = umxThresholdMatrix(allData, suffixes = paste0(suffix, 1:2), verbose = TRUE)
-			mzExpect  = mxExpectationNormal("top.expCovMZ", "top.expMean", thresholds = "top.threshMat")
-			dzExpect  = mxExpectationNormal("top.expCovDZ", "top.expMean", thresholds = "top.threshMat")
+				# = Thresholds =
+				# For better guessing with low-freq cells
+				allData = rbind(mzData, dzData)
+				# threshMat may be a three item list of matrices and algebra
+				threshMat = umxThresholdMatrix(allData, sep = suffix, thresholds = thresholds, threshMatName = "threshMat", verbose = TRUE)
 
-			top = mxModel("top", umxLabel(meansMatrix), threshMat)
-			MZ  = mxModel("MZ", mzExpect, mxFitFunctionML(vector = bVector), mxData(mzData, type = "raw") )
-			DZ  = mxModel("DZ", dzExpect, mxFitFunctionML(vector = bVector), mxData(dzData, type = "raw") )
+				mzExpect  = mxExpectationNormal("top.expCovMZ", "top.expMean", thresholds = "top.threshMat")
+				dzExpect  = mxExpectationNormal("top.expCovDZ", "top.expMean", thresholds = "top.threshMat")
 
-			# ===================================
-			# = Constrain Ordinal variance @1  =
-			# ===================================
-			# Algebra to pick out the ord vars
-			# TODO check this way of using twin 1 to pick where the bin vars are is robust...
-			the_bin_cols = which(isBin)[1:nVar] # columns in which the bin vars appear for twin 1, i.e., c(1,3,5,7)
-			binBracketLabels = paste0("Vtot[", the_bin_cols, ",", the_bin_cols, "]")
+				top = mxModel("top", umxLabel(meansMatrix), threshMat)
+				MZ  = mxModel("MZ", mzExpect, mxFitFunctionML(vector = bVector), mxData(mzData, type = "raw") )
+				DZ  = mxModel("DZ", dzExpect, mxFitFunctionML(vector = bVector), mxData(dzData, type = "raw") )
 
-			top = mxModel(top,
-				# Algebra to compute total variances and standard deviations
-				mxAlgebra(name = "Vtot", A + C+ E), # Total variance (redundant but is OK)
-				mxMatrix(name  = "binLabels"  , "Full", nrow = (nBinVars/nSib), ncol = 1, labels = binBracketLabels),
-				mxMatrix(name  = "Unit_nBinx1", "Unit", nrow = (nBinVars/nSib), ncol = 1),
-				mxConstraint(name = "constrain_Bin_var_to_1", binLabels == Unit_nBinx1)
+				# ===================================
+				# = Constrain Ordinal variance @1  =
+				# ===================================
+				# Algebra to pick out the ord vars
+				# TODO check this way of using twin 1 to pick where the bin vars are is robust...
+				the_bin_cols = which(isBin)[1:nVar] # columns in which the bin vars appear for twin 1, i.e., c(1,3,5,7)
+				binBracketLabels = paste0("Vtot[", the_bin_cols, ",", the_bin_cols, "]")
+
+				top = mxModel(top,
+					# Algebra to compute total variances and standard deviations
+					mxAlgebra(name = "Vtot", A + C+ E), # Total variance (redundant but is OK)
+					mxMatrix(name  = "binLabels"  , "Full", nrow = (nBinVars/nSib), ncol = 1, labels = binBracketLabels),
+					mxMatrix(name  = "Unit_nBinx1", "Unit", nrow = (nBinVars/nSib), ncol = 1),
+					mxConstraint(name = "constrain_Bin_var_to_1", binLabels == Unit_nBinx1)
+				)
+			} else {
+				stop("You appear to have something other than I expected in terms of binary, ordinal and continuous variable mix")
+			}
+			# nb: means not yet equated across twins
+		} else if(dataType %in% c("cov", "cor")){
+			if(!is.null(weightVar)){
+				stop("You can't set weightVar when you give cov data - use cov.wt to create weighted cov matrices, or pass in raw data")
+			}
+			umx_check(!is.null(numObsMZ), "stop", paste0("You must set numObsMZ with ", dataType, " data"))
+			umx_check(!is.null(numObsDZ), "stop", paste0("You must set numObsDZ with ", dataType, " data"))
+			# TODO should keep this just as mzData?
+			het_mz = umx_reorder(mzData, selDVs)		
+			het_dz = umx_reorder(dzData, selDVs)
+			varStarts = diag(het_mz)
+			if(nVar == 1){
+				varStarts = varStarts/3
+			} else {
+				varStarts = t(chol(diag(varStarts/3))) # divide variance up equally, and set to Cholesky form.
+			}
+			varStarts = matrix(varStarts, nVar, nVar)
+
+			top = mxModel("top")
+			MZ = mxModel("MZ", 
+				mxExpectationNormal("top.expCovMZ"), 
+				mxFitFunctionML(), 
+				mxData(het_mz, type = "cov", numObs = numObsMZ)
+			)
+		
+			DZ = mxModel("DZ",
+				mxExpectationNormal("top.expCovDZ"),
+				mxFitFunctionML(),
+				mxData(het_dz, type = "cov", numObs = numObsDZ)
 			)
 		} else {
-			stop("You appear to have something other than I expected in terms of binary, ordinal and continuous variable mix")
+			stop("Datatype \"", dataType, "\" not understood. Must be one of raw, cov, or cor")
 		}
-		# nb: means not yet equated across twins
-	} else if(dataType %in% c("cov", "cor")){
-		if(!is.null(weightVar)){
-			stop("You can't set weightVar when you give cov data - use cov.wt to create weighted cov matrices, or pass in raw data")
-		}
-		umx_check(!is.null(numObsMZ), "stop", paste0("You must set numObsMZ with ", dataType, " data"))
-		umx_check(!is.null(numObsDZ), "stop", paste0("You must set numObsDZ with ", dataType, " data"))
-		# TODO should keep this just as mzData?
-		het_mz = umx_reorder(mzData, selDVs)		
-		het_dz = umx_reorder(dzData, selDVs)
-		varStarts = diag(het_mz)
-		if(nVar == 1){
-			varStarts = varStarts/3
+		message("treating data as ", dataType)
+
+		# Finish building top
+		top = mxModel(top,
+			# "top" defines the algebra of the twin model, which MZ and DZ slave off of
+			# NB: top already has the means model and thresholds matrix added if necessary  - see above
+			# Additive, Common, and Unique environmental paths
+			umxLabel(mxMatrix(name = "a", type = "Lower", nrow = nVar, ncol = nVar, free = T, values = varStarts, byrow = T)),
+			umxLabel(mxMatrix(name = "c", type = "Lower", nrow = nVar, ncol = nVar, free = T, values = varStarts, byrow = T)),
+			umxLabel(mxMatrix(name = "e", type = "Lower", nrow = nVar, ncol = nVar, free = T, values = varStarts, byrow = T)),  
+		
+			mxMatrix(name = "dzAr", type = "Full", 1, 1, free = FALSE, values = dzAr),
+			mxMatrix(name = "dzCr", type = "Full", 1, 1, free = FALSE, values = dzCr),
+			# Multiply by each path coefficient by its inverse to get variance component
+			# Quadratic multiplication to add common_loadings
+			mxAlgebra(name = "A", a %*% t(a)), # additive genetic variance
+			mxAlgebra(name = "C", c %*% t(c)), # common environmental variance
+			mxAlgebra(name = "E", e %*% t(e)), # unique environmental variance
+			mxAlgebra(name = "ACE", A+C+E),
+			mxAlgebra(name = "AC" , A+C  ),
+			mxAlgebra(name = "hAC", (dzAr %x% A) + (dzCr %x% C)),
+			mxAlgebra(rbind (cbind(ACE, AC),
+			                 cbind(AC , ACE)), dimnames = list(selDVs, selDVs), name = "expCovMZ"),
+			mxAlgebra(rbind (cbind(ACE, hAC),
+			                 cbind(hAC, ACE)), dimnames = list(selDVs, selDVs), name = "expCovDZ")
+		)
+
+		if(!bVector){
+			model = mxModel(name, MZ, DZ, top,
+				mxFitFunctionMultigroup(c("MZ", "DZ"))
+			)
 		} else {
-			varStarts = t(chol(diag(varStarts/3))) # divide variance up equally, and set to Cholesky form.
+			# bVector is TRUE
+			# To weight objective functions in OpenMx, you specify a container model that applies the weights
+			# m1 is the model with no weights, but with "vector = TRUE" option added to the FIML objective.
+			# This option makes FIML return individual likelihoods for each row of the data (rather than a single -2LL value for the model)
+			# You then optimize weighted versions of these likelihoods by building additional models containing 
+			# weight data and an algebra that multiplies the likelihoods from the first model by the weight vector
+			model = mxModel(name, MZ, DZ, top,
+				mxModel("MZw", mzWeightMatrix,
+					mxAlgebra(-2 * sum(mzWeightMatrix * log(MZ.objective) ), name = "mzWeightedCov"),
+					mxFitFunctionAlgebra("mzWeightedCov")
+				),
+				mxModel("DZw", dzWeightMatrix,
+					mxAlgebra(-2 * sum(dzWeightMatrix * log(DZ.objective) ), name = "dzWeightedCov"),
+					mxFitFunctionAlgebra("dzWeightedCov")
+				),
+				mxFitFunctionMultigroup(c("MZw", "DZw"))
+			)
 		}
-		varStarts = matrix(varStarts, nVar, nVar)
-
-		top = mxModel("top")
-		MZ = mxModel("MZ", 
-			mxExpectationNormal("top.expCovMZ"), 
-			mxFitFunctionML(), 
-			mxData(het_mz, type = "cov", numObs = numObsMZ)
-		)
-		
-		DZ = mxModel("DZ",
-			mxExpectationNormal("top.expCovDZ"),
-			mxFitFunctionML(),
-			mxData(het_dz, type = "cov", numObs = numObsDZ)
-		)
-	} else {
-		stop("Datatype \"", dataType, "\" not understood. Must be one of raw, cov, or cor")
-	}
-	message("treating data as ", dataType)
-
-	# Finish building top
-	top = mxModel(top,
-		# "top" defines the algebra of the twin model, which MZ and DZ slave off of
-		# NB: top already has the means model and thresholds matrix added if necessary  - see above
-		# Additive, Common, and Unique environmental paths
-		umxLabel(mxMatrix(name = "a", type = "Lower", nrow = nVar, ncol = nVar, free = T, values = varStarts, byrow = T)),
-		umxLabel(mxMatrix(name = "c", type = "Lower", nrow = nVar, ncol = nVar, free = T, values = varStarts, byrow = T)),
-		umxLabel(mxMatrix(name = "e", type = "Lower", nrow = nVar, ncol = nVar, free = T, values = varStarts, byrow = T)),  
-		
-		mxMatrix(name = "dzAr", type = "Full", 1, 1, free = FALSE, values = dzAr),
-		mxMatrix(name = "dzCr", type = "Full", 1, 1, free = FALSE, values = dzCr),
-		# Multiply by each path coefficient by its inverse to get variance component
-		# Quadratic multiplication to add common_loadings
-		mxAlgebra(name = "A", a %*% t(a)), # additive genetic variance
-		mxAlgebra(name = "C", c %*% t(c)), # common environmental variance
-		mxAlgebra(name = "E", e %*% t(e)), # unique environmental variance
-		mxAlgebra(name = "ACE", A+C+E),
-		mxAlgebra(name = "AC" , A+C  ),
-		mxAlgebra(name = "hAC", (dzAr %x% A) + (dzCr %x% C)),
-		mxAlgebra(rbind (cbind(ACE, AC),
-		                 cbind(AC , ACE)), dimnames = list(selDVs, selDVs), name = "expCovMZ"),
-		mxAlgebra(rbind (cbind(ACE, hAC),
-		                 cbind(hAC, ACE)), dimnames = list(selDVs, selDVs), name = "expCovDZ")
-	)
-
-	if(!bVector){
-		model = mxModel(name, MZ, DZ, top,
-			mxFitFunctionMultigroup(c("MZ", "DZ"))
-		)
-	} else {
-		# bVector is TRUE
-		# To weight objective functions in OpenMx, you specify a container model that applies the weights
-		# m1 is the model with no weights, but with "vector = TRUE" option added to the FIML objective.
-		# This option makes FIML return individual likelihoods for each row of the data (rather than a single -2LL value for the model)
-		# You then optimize weighted versions of these likelihoods by building additional models containing 
-		# weight data and an algebra that multiplies the likelihoods from the first model by the weight vector
-		model = mxModel(name, MZ, DZ, top,
-			mxModel("MZw", mzWeightMatrix,
-				mxAlgebra(-2 * sum(mzWeightMatrix * log(MZ.objective) ), name = "mzWeightedCov"),
-				mxFitFunctionAlgebra("mzWeightedCov")
-			),
-			mxModel("DZw", dzWeightMatrix,
-				mxAlgebra(-2 * sum(dzWeightMatrix * log(DZ.objective) ), name = "dzWeightedCov"),
-				mxFitFunctionAlgebra("dzWeightedCov")
-			),
-			mxFitFunctionMultigroup(c("MZw", "DZw"))
-		)
-	}
-	if(!is.null(boundDiag)){
-		diag(model$submodels$top$matrices$a$lbound) = boundDiag
-		diag(model$submodels$top$matrices$c$lbound) = boundDiag
-		diag(model$submodels$top$matrices$e$lbound) = boundDiag
-	}
-	if(addStd){
-		newTop = mxModel(model$submodels$top,
-			mxMatrix(name  = "I", "Iden", nVar, nVar), # nVar Identity matrix
-			mxAlgebra(name = "Vtot", A + C+ E),       # Total variance
-			# TODO test that these are identical in all cases
-			# mxAlgebra(vec2diag(1/sqrt(diag2vec(Vtot))), name = "SD"), # Total variance
-			mxAlgebra(name = "SD", solve(sqrt(I * Vtot))), # Total variance
-			mxAlgebra(name = "a_std", SD %*% a), # standardized a
-			mxAlgebra(name = "c_std", SD %*% c), # standardized c
-			mxAlgebra(name = "e_std", SD %*% e)  # standardized e
-		)
-		model = mxModel(model, newTop)
-		if(addCI){
-			model = mxModel(model, mxCI(c('top.a_std', 'top.c_std', 'top.e_std')))
+		if(!is.null(boundDiag)){
+			diag(model$top$matrices$a$lbound) = boundDiag
+			diag(model$top$matrices$c$lbound) = boundDiag
+			diag(model$top$matrices$e$lbound) = boundDiag
 		}
+		if(addStd){
+			newTop = mxModel(model$top,
+				mxMatrix(name  = "I", "Iden", nVar, nVar), # nVar Identity matrix
+				mxAlgebra(name = "Vtot", A + C+ E),       # Total variance
+				# TODO test that these are identical in all cases
+				# mxAlgebra(vec2diag(1/sqrt(diag2vec(Vtot))), name = "SD"), # Total variance
+				mxAlgebra(name = "SD", solve(sqrt(I * Vtot))), # Total variance
+				mxAlgebra(name = "a_std", SD %*% a), # standardized a
+				mxAlgebra(name = "c_std", SD %*% c), # standardized c
+				mxAlgebra(name = "e_std", SD %*% e)  # standardized e
+			)
+			model = mxModel(model, newTop)
+			if(addCI){
+				model = mxModel(model, mxCI(c('top.a_std', 'top.c_std', 'top.e_std')))
+			}
+		}
+		# Equate means for twin1 and twin 2 by matching labels in the first and second halves of the means labels matrix
+		if(equateMeans & (dataType == "raw")){
+			model = omxSetParameters(model,
+			  labels    = paste0("expMean_r1c", (nVar + 1):(nVar * 2)), # c("expMean14", "expMean15", "expMean16"),
+			  newlabels = paste0("expMean_r1c", 1:nVar)             # c("expMean11", "expMean12", "expMean13")
+			)
+		}
+		# Trundle through and make sure values with the same label have the same start value... means for instance.
+		model = omxAssignFirstParameters(model)
+		model = as(model, "MxModel.ACE") # set class so that S3 plot() dispatches.
+		if(autoRun){
+			model = mxRun(model)
+			umxSummary(model)
+			if(!is.na(umx_set_auto_plot())){
+				plot(model)
+			}
+		} else {
+			# --
+		}
+		return(model)
 	}
-	# Equate means for twin1 and twin 2 by matching labels in the first and second halves of the means labels matrix
-	if(equateMeans & (dataType == "raw")){
-		model = omxSetParameters(model,
-		  labels    = paste0("expMean_r1c", (nVar + 1):(nVar * 2)), # c("expMean14", "expMean15", "expMean16"),
-		  newlabels = paste0("expMean_r1c", 1:nVar)             # c("expMean11", "expMean12", "expMean13")
-		)
-	}
-	# Trundle through and make sure values with the same label have the same start value... means for instance.
-	model = omxAssignFirstParameters(model)
-	model = as(model, "MxModel.ACE") # set class so that S3 plot() dispatches.
-	if(autoRun){
-		model = mxRun(model)
-		umxSummary(model)
-		# if(!is.na(umx_set_auto_plot())){
-			# plot(model)
-		# }
-	} else {
-		# --
-	}
-	return(model)
 } #end umxACE
 
 
@@ -1312,7 +1374,7 @@ umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .
 #' @param addCI Whether to add intervals to compute CIs (defaults to TRUE)
 #' @param boundDiag = Whether to bound the diagonal of the a, c, and e matrices
 #' @param equateMeans Whether to equate the means across twins (defaults to TRUE)
-#' @param hint An analysis hint. Options include "none", (default) "left_censored". Default does nothing.
+#' @param thresholds How to implement ordinal thresholds: c("deviationBased", "left_censored")
 #' @param bVector Whether to compute row-wise likelihoods (defaults to FALSE)
 #' @param autoRun Whether to run the model and return it, or just return it
 #' @return - \code{\link{mxModel}} of subclass mxModel.ACEcov
@@ -1325,29 +1387,36 @@ umxACE <- function(name = "ACE", selDVs, dzData, mzData, suffix = NULL, dzAr = .
 #' @examples
 #' require(umx)
 #' data(twinData)
-#' # add age 1 and age 2 columns
+#' # dupliate age to  age1 & age2
 #' twinData$age1 = twinData$age2 = twinData$age
-#' selDVs  = c("bmi")
-#' selCovs = c("age")
-#' selVars = umx_paste_names(c(selDVs, selCovs), textConstant = "", suffixes= 1:2)
-#' # just top 80 so example runs in a couple of secs
+#' selDVs  = c("bmi") # Set the DV
+#' selCovs = c("age") # Set the IV
+#' selVars = umx_paste_names(c(selDVs, selCovs), sep = "", suffixes = 1:2)
+#' # 80 rows so example runs fast
 #' mzData = subset(twinData, zyg == 1, selVars)[1:80, ]
 #' dzData = subset(twinData, zyg == 3, selVars)[1:80, ]
-#' # TODO update for new dataset variable zygosity
+#' # This will also work on OpenMx 2.5 or better
 #' # mzData = subset(twinData, zygosity == "MZFF", selVars)[1:80, ]
 #' # dzData = subset(twinData, zygosity == "DZFF", selVars)[1:80, ]
-#' m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs, dzData = dzData, mzData = mzData, 
-#' 	 suffix = "", autoRun = TRUE)
+#' m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs,
+#' 	dzData = dzData, mzData = mzData, suffix = "", autoRun = TRUE)
 #' umxSummary(m1)
 #' plot(m1)
-umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, boundDiag = NULL, equateMeans = TRUE, bVector = FALSE, hint = c("none", "left_censored"), autoRun = getOption("umx_auto_run")) {
-	if(nrow(dzData)==0){ stop("Your DZ dataset has no rows!") }
-	if(nrow(mzData)==0){ stop("Your MZ dataset has no rows!") }
-	nSib = 2 # number of siblings in a twin pair
+umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, boundDiag = NULL, equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased", "left_censored"), autoRun = getOption("umx_auto_run")) {
+	nSib = 2 # Number of siblings in a twin pair
 	if(dzCr == .25 && name == "ACE"){
 		name = "ADEcov"
 	}
-	# look for name conflicts
+
+	# ==============
+	# = run checks =
+	# ==============
+	if(any(umx_is_ordered(dzData))){
+		stop("Sorry: umxACEcov can't handle ordinal yet: e-mail tim and chew him out")
+	}
+	if(nrow(dzData)==0){ stop("Your DZ dataset has no rows!") }
+	if(nrow(mzData)==0){ stop("Your MZ dataset has no rows!") }
+	# Look for name conflicts
 	badNames = umx_grep(selDVs, grepString = "^[ACDEacde][0-9]*$")
 	if(!identical(character(0), badNames)){
 		stop("The data contain variables that look like parts of the a, c, e model, i.e., a1 is illegal.\n",
@@ -1383,13 +1452,11 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix =
 	dzData = dzData[, selVars]
 
 	meanDimNames = list(NULL, selVars)
-	# meanDimNames= list("means", selVars)
 	# Equate means for twin1 and twin 2 by matching labels in the first and second halves of the means labels matrix
 	if(equateMeans){
 		meanLabels = c(rep(paste0("expMean_", baseDVs), nSib), paste0("expMean_", selCovs))
 	}else{
-		stop("Currently, means must be equated")
-		# meanLabels = c(paste0("expMean_", selDVs), paste0("expMean_", selCovs))
+		stop("Currently, means must be equated... why?")
 	}
 	
 	obsMZmeans  = umx_means(mzData[, selVars], ordVar = 0, na.rm = TRUE)
@@ -1476,7 +1543,7 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix =
 	)
 	
 	if(addStd){
-		newTop = mxModel(model$submodels$top,
+		newTop = mxModel(model$top,
 			mxMatrix(name  = "Iden", "Iden", nDV, nDV), # nDV Identity matrix
 			mxAlgebra(name = "Vtot", A + C+ E),       # Total variance
 			mxAlgebra(name = "SD", solve(sqrt(Iden * Vtot))), # Total variance
@@ -1571,7 +1638,7 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix =
 #' mzData <- subset(twinData, ZYG == "MZFF", umx_paste_names(selDVs, "", 1:2))
 #' dzData <- subset(twinData, ZYG == "DZFF", umx_paste_names(selDVs, "", 1:2))
 #' m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = "")
-#' umxSummary(m1, file=NA) # file = NA to avoid opening a plot window during CRAN check
+#' umxSummary(m1)
 #' umxGetParameters(m1, "^c", free = TRUE)
 #' m2 = umxModify(m1, update = "(cs_.*$)|(c_cp_)", regex = TRUE, name = "dropC")
 #' umxSummaryCP(m2, comparison = m1, file = NA)
@@ -1697,20 +1764,20 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 		)
 	}
 	if(!freeLowerA){
-		toset  = model$submodels$top$matrices$as$labels[lower.tri(model$submodels$top$matrices$as$labels)]
+		toset  = model$top$matrices$as$labels[lower.tri(model$top$matrices$as$labels)]
 		model = omxSetParameters(model, labels = toset, free = FALSE, values = 0)
 	}
 	
 	if(!freeLowerC){
-		toset  = model$submodels$top$matrices$cs$labels[lower.tri(model$submodels$top$matrices$cs$labels)]
+		toset  = model$top$matrices$cs$labels[lower.tri(model$top$matrices$cs$labels)]
 		model = omxSetParameters(model, labels = toset, free = FALSE, values = 0)
 	}
 	if(!freeLowerE){
-		toset  = model$submodels$top$matrices$es$labels[lower.tri(model$submodels$top$matrices$es$labels)]
+		toset  = model$top$matrices$es$labels[lower.tri(model$top$matrices$es$labels)]
 		model = omxSetParameters(model, labels = toset, free = FALSE, values = 0)
 	}
 	if(addStd){
-		newTop = mxModel(model$submodels$top,
+		newTop = mxModel(model$top,
 			# nVar Identity matrix
 			mxMatrix(name = "I", "Iden", nVar, nVar),
 			# inverse of standard deviation diagonal  (same as "(\sqrt(I.Vtot))~"
@@ -1778,7 +1845,8 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 #' dzData <- subset(twinData, ZYG == "DZFF")
 #' selDVs = c("ht", "wt") # These will be expanded into "ht1" "ht2"
 #' m1 = umxIP(selDVs = selDVs, suffix = "", dzData = dzData, mzData = mzData)
-#' umxSummary(m1, file = NA) # file = NA to avoid opening a plot window during CRAN check
+#' umxSummary(m1)
+#' plot(m1)
 umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, equateMeans = TRUE, dzAr = .5, dzCr = 1, correlatedA = FALSE, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run")) {
 	# TODO implement correlatedA
 	if(correlatedA){
@@ -1879,25 +1947,25 @@ umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 	}
 	
 	if(!freeLowerA){
-		toset  = model$submodels$top$matrices$as$labels[lower.tri(model$submodels$top$matrices$as$labels)]
+		toset  = model$top$matrices$as$labels[lower.tri(model$top$matrices$as$labels)]
 		model = omxSetParameters(model, labels = toset, free = FALSE, values = 0)
 	}
 
 	if(!freeLowerC){
-		toset  = model$submodels$top$matrices$cs$labels[lower.tri(model$submodels$top$matrices$cs$labels)]
+		toset  = model$top$matrices$cs$labels[lower.tri(model$top$matrices$cs$labels)]
 		model = omxSetParameters(model, labels = toset, free = FALSE, values = 0)
 	}
 	
 	if(!freeLowerE){
-		toset  = model$submodels$top$matrices$es$labels[lower.tri(model$submodels$top$matrices$es$labels)]
+		toset  = model$top$matrices$es$labels[lower.tri(model$top$matrices$es$labels)]
 		model = omxSetParameters(model, labels = toset, free = FALSE, values = 0)
 	} else {
 		# set the first column off, bar r1
 		model = omxSetParameters(model, labels = "es_r[^1]0-9?c1", free = FALSE, values = 0)
 
-		# toset  = model$submodels$top$matrices$es$labels[lower.tri(model$submodels$top$matrices$es$labels)]
+		# toset  = model$top$matrices$es$labels[lower.tri(model$top$matrices$es$labels)]
 		# model = omxSetParameters(model, labels = toset, free = FALSE, values = 0)
-		# toset  = model$submodels$top$matrices$es$labels[lower.tri(model$submodels$top$matrices$es$labels)]
+		# toset  = model$top$matrices$es$labels[lower.tri(model$top$matrices$es$labels)]
 		# model = omxSetParameters(model, labels = toset, free = FALSE, values = 0)
 
 		# Used to drop the ei paths, as we have a full Cholesky for E, now just set the bottom row TRUE
@@ -1906,7 +1974,7 @@ umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 	}
 
 	if(addStd){
-		newTop = mxModel(model$submodels$top,
+		newTop = mxModel(model$top,
 			# nVar Identity matrix
 			mxMatrix("Iden", nrow = nVar, name = "I"),
 			# inverse of standard deviation diagonal  (same as "(\sqrt(I.Vtot))~"
@@ -2149,6 +2217,46 @@ umxACESexLim <- function(name = "ACE_sexlim", selDVs, mzmData, dzmData, mzfData,
 # = Model building and modifying helpers =
 # ========================================
 
+#' umxRAM2Ordinal 
+#'
+#' umxRAM2Ordinal  converts a RAM model whose data contain ordinal vars to a threshold-based model
+#'
+#' @param model An RAM model to add thresholds too.
+#' @param verbose Tell the user what was added and why (Default = TRUE)
+#' @param thresholds How to implement thresholds: c("deviationBased", "direct", "ignore", "left_censored")
+#' @param name = A new name for the modified model (NULL means leave it as it)
+#' @param showEstimates = Whether to show estimates in the summary (if autorunning) TRUE
+#' @param refModels pass in reference models if available. Use FALSE to supress computing these if not provided.
+#' @param autoRun = whether to run the model before returning it: defaults to getOption("umx_auto_run"))
+#' @return - \code{\link{mxModel}}
+#' @export
+#' @family Model Building Functions
+#' @seealso - \code{\link{umxRAM}}
+#' @examples
+#' \dontrun{
+#' m1 = umxRAM2Ordinal(model)
+#' }
+umxRAM2Ordinal <- function(model, verbose = T, thresholds = c("deviationBased", "direct", "ignore", "left_censored"), name = NULL, showEstimates= TRUE, refModels = NULL, autoRun = getOption("umx_auto_run")) {
+	# model = m3
+	legalThresholdsOptions = c("deviationBased", "direct", "ignore", "left_censored")
+	thresholds = match.arg(thresholds)
+	if(!umx_is_RAM(model)){
+		stop("Only works with RAM models, sorry.")
+	}
+	if(!is.null(name)){
+		model = mxRename(model, name)
+	}
+	model$expectation$thresholds = "threshMat"
+	model = mxModel(model, umxThresholdMatrix(model$data$observed, thresholds = thresholds, verbose = verbose))
+	if (autoRun) {
+		model = mxRun(model)
+		umxSummary(model, showEstimates = showEstimates, refModels = refModels)
+		return(model)
+	} else {
+		return(model)
+	}
+}
+
 #' umxValues
 #'
 #' For models to be estimated, it is essential that path values start at credible values. umxValues takes on that task for you.
@@ -2294,7 +2402,6 @@ umxValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 #' @param boundDiag Whether to bound the diagonal of a matrix
 #' @param verbose How much feedback to give the user (default = FALSE)
 #' @param overRideExisting = FALSE
-#' 
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Model Building Functions
@@ -2600,8 +2707,8 @@ umxReRun <- umxModify
 umxGetParameters <- function(inputTarget, regex = NA, free = NA, verbose = FALSE) {
 	# TODO
 	# 1. Be nice to offer a method to handle submodels
-	# 	model$submodels$aSubmodel$matrices$aMatrix$labels
-	# 	model$submodels$MZ$matrices
+	# 	model$aSubmodel$matrices$aMatrix$labels
+	# 	model$MZ$matrices
 	# 2. Simplify handling
 		# allow umxGetParameters to function like omxGetParameters()[name filter]
 	# 3. All user to request values, free, etc.
@@ -3199,14 +3306,14 @@ umxLatent <- function(latent = NULL, formedBy = NULL, forms = NULL, data = NULL,
 #' For \strong{direct}, it returns a thresholdsMatrix (named threshMatName)
 #'
 #' @param df the data being modelled (to allow access to the factor levels and quantiles within these for each variable)
-#' @param suffixes e.g. c("T1", "T2") - Use for data with repeated observations in a row (i.e., twin data) (defaults to NA)
-#' @param threshMatName name of the matrix which is returned. Defaults to "threshMat" - best not to change it.
-#' @param method  How to set the thresholds: auto (the default), Mehta, which fixes the first two (auto chooses this for ordinal) or "allFree" (auto chooses this for binary)
+#' @param sep (optional) string for wide (twin) data, separating the base name from a numeric suffix (e.g. "_T")
+#' @param method How to set the thresholds: auto (the default), Mehta, which fixes the first two (auto chooses this for ordinal) or "allFree" (auto chooses this for binary)
+#' @param thresholds How to implement thresholds: "deviationBased" (default), "direct", "ignore", "left_censored"
 #' @param l_u_bound c(NA, NA) by default, you can use this to bound the thresholds. Careful you don't set bounds too close if you do.
-#' @param deviationBased Whether to build a helper matrix to keep the thresholds in order (defaults to = TRUE)
 #' @param droplevels Whether to drop levels with no observed data (defaults to FALSE)
+#' @param threshMatName name of the matrix which is returned. Defaults to "threshMat" - best not to change it.
+#' @param suffixes deprecated. Instead of c("T1", "T2"), set sep (see above)
 #' @param verbose (defaults to FALSE))
-#' @param hint currently used for "left_censored" data (defaults to "none"))
 #' @return - thresholds matrix
 #' @export
 #' @family Model Building Functions
@@ -3216,88 +3323,136 @@ umxLatent <- function(latent = NULL, formedBy = NULL, forms = NULL, data = NULL,
 #' umxThresholdMatrix(x)
 #' x = cut(rnorm(100), breaks = c(-Inf,.2,.5, .7, Inf)); levels(x) = 1:5
 #' x = data.frame(ordered(x)); names(x) <- c("x")
-#' tm = umxThresholdMatrix(x)
+#' tmp = umxThresholdMatrix(x)
 #' 
 #' # ==================
 #' # = Binary example =
 #' # ==================
 #' require(umx)
+#' if(!packageVersion("OpenMx") > 2.5){message("Update OpenMx to get a new version of twinData")}
 #' data(twinData)
-#' labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-#' twinData$zyg = factor(twinData$zyg, levels = 1:5, labels = labList)
+#' # ===============================================================
+#' # = Create a series of binary and ordinal columns to work with =
+#' # ===============================================================
 #' # Cut to form category of 80 % obese subjects
-#' cutPoints <- quantile(twinData[, "bmi1"], probs = .2, na.rm = TRUE)
+#' selDVs = c("obese1", "obese2")
 #' obesityLevels = c('normal', 'obese')
+#' cutPoints <- quantile(twinData[, "bmi1"], probs = .2, na.rm = TRUE)
 #' twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 #' twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 #' # Step 2: Make the ordinal variables into mxFactors
 #' # this ensures ordered= TRUE + requires user to confirm levels
-#' selDVs = c("obese1", "obese2")
 #' twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
-#' mzData <- subset(twinData, zyg == "MZFF", selDVs)
-#' str(mzData)
-#' tm = umxThresholdMatrix(mzData, suffixes = 1:2, verbose = TRUE) # informative messages
+#' 
+#' # Repeat for three-level weight variable
+#' selDVs = c("obeseTri1", "obeseTri2")
+#' obesityLevels = c('normal', 'overweight', 'obese')
+#' cutPoints <- quantile(twinData[, "bmi1"], probs = c(.4, .7), na.rm = TRUE)
+#' twinData$obeseTri1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+#' twinData$obeseTri2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+#' twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
+#' 
+#' selDVs = c("obeseQuad1", "obeseQuad2")
+#' obesityLevels = c('underWeight', 'normal', 'overweight', 'obese')
+#' cutPoints <- quantile(twinData[, "bmi1"], probs = c(.25, .4, .7), na.rm = TRUE)
+#' twinData$obeseQuad1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+#' twinData$obeseQuad2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+#' twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
+#'
+#' # Example 1
+#' selDVs = c("obese1", "obese2")
+#' tmp = umxThresholdMatrix(twinData[,selDVs], sep = "", verbose = TRUE) # informative messages
 #' 
 #' # ======================================
 #' # = Ordinal (n categories > 2) example =
 #' # ======================================
-#' # Cut to form three categories of weight
-#' cutPoints <- quantile(twinData[, "bmi1"], probs = c(.4, .7), na.rm = TRUE)
-#' obesityLevels = c('normal', 'overweight', 'obese')
-#' twinData$obeseTri1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-#' twinData$obeseTri2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 #' selDVs = c("obeseTri1", "obeseTri2")
-#' twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
-#' mzData <- subset(twinData, zyg == "MZFF", selDVs)
-#' str(mzData)
-#' tm = umxThresholdMatrix(mzData, suffixes = 1:2, verbose = TRUE)
+#' tmp = umxThresholdMatrix(twinData[,selDVs], sep = "", verbose = TRUE)
 #'
 #' # ========================================================
 #' # = Mix of all three kinds example (and a 4-level trait) =
 #' # ========================================================
-#' 
-#' cutPoints <- quantile(twinData[, "bmi1"], probs = c(.25, .4, .7), na.rm = TRUE)
-#' obesityLevels = c('underWeight', 'normal', 'overweight', 'obese')
-#' twinData$obeseQuad1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-#' twinData$obeseQuad2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-#' selDVs = c("obeseQuad1", "obeseQuad2")
-#' twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
-#' 
+#'
 #' selDVs = umx_paste_names(c("bmi", "obese", "obeseTri", "obeseQuad"), "", 1:2)
-#' mzData <- subset(twinData, zyg == "MZFF", selDVs)
-#' str(mzData)
-#' tm = umxThresholdMatrix(mzData, suffixes = 1:2, verbose = TRUE)
+#' tmp = umxThresholdMatrix(twinData[,selDVs], sep = "", verbose = TRUE)
+#' str(tmp)
 #'
 #' # ===================
 #' # = "left_censored" =
 #' # ===================
-#' 
+#'
 #' x = round(10 * rnorm(1000, mean = -.2))
-#' x[x < 0] = 0
-#' x = mxFactor(x, levels = sort(unique(x)))
-#' x = data.frame(x)
-#' # umxThresholdMatrix(x, deviation = FALSE, hint = "left_censored")
-umxThresholdMatrix <- function(df, suffixes = NA, threshMatName = "threshMat", method = c("auto", "Mehta", "allFree"), l_u_bound = c(NA, NA), deviationBased = TRUE, droplevels = FALSE, verbose = FALSE, hint = c("none", "left_censored")){
-	if(droplevels){ stop("Not sure it's wise to drop levels...") }
-	hint        = match.arg(hint)
+#' y = round(5 * rnorm(1000))
+#' x[x < 0] = 0; y[y < 0] = 0
+#' df  = data.frame(x1 = x, x2 = y)
+#' df  = umxFactor(df); #str(df)
+#' table(df)
+#' tmp = umxThresholdMatrix(df, thresholds = "left_censored"); class(tmp)
+#' any(tmp$free) # all fixed.
+#' tmp$labels
+#' df  = umxFactor(data.frame(x_T1 = x, x_T2 = y), sep="_T"); #str(df)
+#' tmp = umxThresholdMatrix(df, sep="_T", thresholds = "left_censored"); class(tmp)
+#' any(tmp$free) # all fixed.
+#' tmp$labels
+umxThresholdMatrix <- function(df, sep = NA, method = c("auto", "Mehta", "allFree"), thresholds = c("deviationBased", "direct", "ignore", "left_censored"), threshMatName = "threshMat", l_u_bound = c(NA, NA), droplevels = FALSE, suffixes = "deprecated", verbose = FALSE){
+	# TODO: Replace all of this with a conditional algebra(if(x<t){0,x})
+	# TODO: Consider changing from "threshMat" to "Thresholds" to match what mxModel does with mxThresholds internally now...
+	# df = x; sep = NA; threshMatName = "threshMat"; method = "auto"; thresholds = "deviationBased"; l_u_bound = c(NA,NA); verbose = T
+
+	# check input
+	if(dim(df)[1] < 1){ stop("Data input to umxThresholdMatrix had no rows. I use the data to set thresholds, so the data must have rows.") }
+	if(droplevels){ stop("Not sure it's wise to drop levels... let me know what you think") }
+	if(suffixes != "deprecated"){ stop("Using suffixes in umxThresholdMatrix (likely 1:2) is deprecated:\nInstead set 'sep' to the separator (often '_T') between the baseName and the twin numeric suffix")}
+	thresholds  = match.arg(thresholds)
 	method      = match.arg(method)
-	nSib        = length(suffixes)
-	isFactor    = umx_is_ordered(df) # all ordered factors including binary
-	isOrd       = umx_is_ordered(df, ordinal.only = TRUE) # only ordinals
-	isBin       = umx_is_ordered(df, binary.only  = TRUE) # only binaries
-	nFactors    = sum(isFactor)
-	nOrdVars    = sum(isOrd)
-	nBinVars    = sum(isBin)
+
+	# Expand names if necessary
+	if(!is.na(sep)) {
+		tmp         = umx_explode_twin_names(names(df), sep = sep)
+		baseNames   = tmp$baseNames
+		twinIndexes = tmp$twinIndexes
+		nSib = length(twinIndexes)
+	} else {
+		# not wide data
+		nSib = 1
+	}
+
+	isFactor = umx_is_ordered(df) # all ordered factors including binary
+	isOrd    = umx_is_ordered(df, ordinal.only = TRUE) # only ordinals
+	isBin    = umx_is_ordered(df, binary.only  = TRUE) # only binaries
+	nFactors = sum(isFactor)
+	nOrdVars = sum(isOrd)
+	nBinVars = sum(isBin)
 	factorVarNames = names(df)[isFactor]
 	ordVarNames    = names(df)[isOrd]
 	binVarNames    = names(df)[isBin]
+	df = df[, factorVarNames, drop = FALSE]
+	if(nSib == 2){
+		# For precision (placing cuts) and to ensure twins have same levels, copy both halves of the dataframe into each
+		T1 = df[, grep(paste0(twinIndexes[1], "$"), factorVarNames, value = TRUE), drop = FALSE]
+		T2 = df[, grep(paste0(twinIndexes[2], "$"), factorVarNames, value = TRUE), drop = FALSE]
+		names(T2) <- names(T1)
+		df = cbind(rbind(T1, T2), rbind(T1, T2))
+		names(df) = factorVarNames
+	} else if(nSib == 1){
+		# df is fine as is.		
+	} else {
+		stop("I can only handle 1 and 2 sib models. Your data looked like they have", nSib, " family members (using separator ", omxQuotes(sep), "). email tim to get this expanded.")
+	}
+
+	minLevels = xmuMinLevels(df)
+	maxLevels = xmuMaxLevels(df)
+	maxThresh = maxLevels - 1
+
+	# ===========================================
+	# = Tell the user what we found if they ask =
+	# ===========================================
 	if((nOrdVars + nBinVars) < 1){
-		message("No ordinal or binary variables in dataframe: no need to call umxThresholdMatrix")
-		return(NA) # probably OK to set thresholds matrix to NA in mxExpectation()
-		# TODO check if we should die here instead
+		warning("No ordinal or binary variables in dataframe (or possibly a factor but with only 1 level): no need to call umxThresholdMatrix")
+		return(NA) # Probably OK to set thresholds matrix to NA in mxExpectation()
 	} else {
 		if(verbose){
-			message("'threshMat' created to handle ")
+			message("object ", omxQuotes(threshMatName), " created to handle ")
 			if(nSib == 2){
 				if(nOrdVars > 0){
 					message(nOrdVars/nSib, " pair(s) of ordinal variables:", omxQuotes(ordVarNames), "\n")
@@ -3315,255 +3470,249 @@ umxThresholdMatrix <- function(df, suffixes = NA, threshMatName = "threshMat", m
 			}
 		}
 	}
-	minLevels = xmuMinLevels(df)
-	maxLevels = xmuMaxLevels(df)
-	maxThresh = maxLevels - 1
 
-	# TODO simplify for n = bin, n= ord, n= cont msg
-	if(nBinVars > 0){
-		binVarNames = names(df)[isBin]
-		if(verbose){
-			message(sum(isBin), " trait(s) are binary (only 2-levels).\n",
-			omxQuotes(binVarNames),
-			"\nFor these, you you MUST fix or constrain (usually mean==0 & var==1) the latent traits driving each ordinal variable.\n",
-			"See ?mxThresholdMatrix")
+	# =================================
+	# = Create labels and free vector =
+	# =================================
+	labels = free = c()
+	for (thisVarName in factorVarNames) {
+		thisCol = df[,thisVarName]
+		nThreshThisVar = length(levels(thisCol)) -1
+
+		if(nSib == 2){
+			# Make same label (just baseVarname_thresh) for each twin for each variable
+			findStr = paste0(sep, "(", paste(twinIndexes, collapse = "|"), ")$") # "_T(1|2)$"
+			thisLab = sub(findStr, "", thisVarName)
+		} else {
+			thisLab = thisVarName
 		}
+		theseLabels = umx_pad(paste0(thisLab, "_thresh", 1:nThreshThisVar), maxThresh)
+		labels = append(labels, theseLabels)
+		# ============
+		# = Set Free =
+		# ============
+		theseFree = c(rep(TRUE, nThreshThisVar), rep(FALSE, (maxThresh - nThreshThisVar)))
+		free = append(free, theseFree)
 	}
-	if(nOrdVars > 0){
-		if(verbose){
-			message(nOrdVars, " variables are ordinal (at least three levels). For these I will use Paras Mehta's 'fix first 2 thresholds' method.\n",
-			"It's ESSENTIAL that you leave FREE the means and variances of the latent ordinal traits!!!\n",
-			"See ?mxThresholdMatrix")
-		}
-	}
-	if(minLevels == 1){
-		stop("You seem to have a trait with only one category... makes it a bit futile to model it?")
-	}
-
-	df = df[, factorVarNames, drop = FALSE]
-
-	if(nSib == 2){
-		# For better precision, copy both halves of the dataframe into each
-		T1 = df[, grep(paste0(suffixes[1], "$"), factorVarNames, value = TRUE), drop = FALSE]
-		T2 = df[, grep(paste0(suffixes[2], "$"), factorVarNames, value = TRUE), drop = FALSE]
-		names(T2) <- names(T1)
-		dfLong = rbind(T1, T2)
-		df = cbind(dfLong, dfLong)
-		names(df) = factorVarNames
-	} else if(nSib == 1){
-		# df is fine as is.		
-	} else {
-		stop("I can only handle 1 and 2 sib models. You gave me ", nSib, " suffixes.")
-	}
-	
 	# Size the threshMat to order maxThresh rows * nFactors cols
-	threshMat = mxMatrix(name = threshMatName, type = "Full",
+	threshMat <- mxMatrix(name = threshMatName, type = "Full",
 		nrow     = maxThresh,
 		ncol     = nFactors,
-		free     = TRUE, 
-		values = rep(NA, (maxThresh * nFactors)),
+		free     = free, 
+		values   = rep(NA, (maxThresh * nFactors)),
+		labels   = labels,
 		lbound   = l_u_bound[1],
 		ubound   = l_u_bound[2],
 		dimnames = list(paste0("th_", 1:maxThresh), factorVarNames)
 	)
-	# For each factor variable
-	for (thisVarName in factorVarNames) {
-		thisCol = df[,thisVarName]
-		nThreshThisVar = length(levels(thisCol)) -1 # "0"  "1"  "2"  "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10" "11" "12"
 
-		# ===============================================================
-		# = Work out z-values for thresholds based on simple bin counts =
-		# ===============================================================
-		# Pros: Doesn't assume equal intervals.
-		# Problems = empty bins and noise (equal thresholds (illegal) and higher than realistic z-values)
-		tab = table(thisCol)/sum(table(thisCol)) # Simple histogram of proportion at each threshold
-		cumTab = cumsum(tab)                     # Convert to a cumulative sum (sigmoid from 0 to 1)
-		# Use quantiles to get z-equivalent for each level: ditch one to get thresholds...
-		zValues = qnorm(p = cumTab, lower.tail = TRUE)
-		# take this table as make a simple vector
-		zValues = as.numeric(zValues)
-		# =======================================================================================
-		# = TODO handle where flows over, say, 3.3... squash the top down or let the user know? =
-		# =======================================================================================
-		if(any(is.infinite(zValues))){
-			nPlusInf  = sum(zValues == (Inf))
-			nMinusInf = sum(zValues == (-Inf))
-			if(nPlusInf){
-				maxOK = max(zValues[!is.infinite(zValues)])
-				padding = seq(from = (maxOK + .1), by = .1, length.out = nPlusInf)
-				zValues[zValues == (Inf)] = padding
-			}
-			if(nMinusInf){
-				minOK = min(zValues[!is.infinite(zValues)])
-				padding = seq(from = (minOK - .1), by = (- .1), length.out = nMinusInf)
-				zValues[zValues == (-Inf)] = padding
-			}
+	if (thresholds == "left_censored"){
+		# TODO: make this apply only to variables with more than, say, 5 levels...
+		message("\nUsing ", thresholds, " for a fixed-threshold Tobit-style analysis")
+		if(method != "auto"){
+			message("With ", thresholds, " thresholds are fixed: Your choice of method ", omxQuotes(method), " will be ignored.")
 		}
-		# =================================
-		# = Move duplicates (empty cells) =
-		# =================================
-		if(any(duplicated(zValues))){
-			# message("You have some empty cells")
-			# Find where the values change:
-			runs         = rle(zValues)
-			runLengths   = runs$lengths
-			runValues    = runs$values
-			distinctCount = length(runValues)
-			indexIntoRLE = indexIntoZ = 1
-			for (i in runLengths) {
-				runLen = i
-				if(runLen != 1){
-					repeatedValue   = runValues[indexIntoRLE]
-					preceedingValue = runValues[(indexIntoRLE - 1)]
-					minimumStep = .01
-					if(indexIntoRLE == distinctCount){
-						newValues = seq(from = (preceedingValue + minimumStep), by = (minimumStep), length.out = runLen)
-						zValues[c(indexIntoZ:(indexIntoZ + runLen - 1))] = rev(newValues)
-					} else {
-						followedBy = runValues[(indexIntoRLE + 1)]
-						minimumStep = min((followedBy - preceedingValue)/(runLen + 1), minimumStep)
-						newValues = seq(from = (followedBy - minimumStep), by = (-minimumStep), length.out = runLen)
-						zValues[c(indexIntoZ:(indexIntoZ + runLen - 1))] = rev(newValues)
-					}
-				}
-				indexIntoZ   = indexIntoZ + runLen
-				indexIntoRLE = indexIntoRLE + 1
-				# Play "The chemistry between them", Dorothy Hodgkin
-				# Copenhagen, Michael Frein
-			}
+		threshMat$free = FALSE
+		for (varName in factorVarNames) {
+			theseLevels = as.numeric(levels(df[,varName]))
+			nLevels     = length(theseLevels)
+			threshMat$values[,varName] = umx_pad(theseLevels[1:(nLevels - 1)], maxThresh)
 		}
-        # TODO start from 1, right, not 2?
-		# note 2015-03-22: rep(0) was rep(NA). But with deviation-based, the matrix can't contain NAs as it gets %*% by lowerones
-		values = c(zValues[1:(nThreshThisVar)], rep(.001, (maxThresh - nThreshThisVar)))
-		sortValues <- sort(zValues[1:(nThreshThisVar)], na.last = TRUE)
-		if (!identical(sortValues, zValues[1:(nThreshThisVar)])) {
-			umx_msg(values)
-			stop("The thresholds for ", thisVarName, " are not in order... oops: that's my fault :-(")
-		}
-
-		# ==============
-		# = Set labels =
-		# ==============
-		if(nSib == 2){
-			# Search string to find all sib's versions of a var
-			findStr = paste0( "(", paste(suffixes, collapse = "|"), ")$")
-			thisLab = sub(findStr, "", thisVarName)		
-		} else {
-			thisLab = thisVarName
-		}
-        labels = c(paste0(thisLab, "_thresh", 1:nThreshThisVar), rep(NA, (maxThresh - nThreshThisVar)))
-        
-		# ============
-		# = Set Free =
-		# ============
-		free = c(rep(TRUE, nThreshThisVar), rep(FALSE, (maxThresh - nThreshThisVar)))
-		
-		if(nThreshThisVar > 1){ # fix the first 2
-			free[1:2] = FALSE
-		}
-		
-		threshMat$labels[, thisVarName] = labels
-		threshMat$free[,   thisVarName] = free
-		threshMat$values[, thisVarName] = values
-	} # end for each factor variable
-	
-	# TODO describe what we have at this point
-	
-	if(deviationBased) {
-		# ==========================
-		# = Adding deviation model =
-		# ==========================
-		# Tasks:
-		# 1. Convert thresholds into deviations
-		#       value 1 for each var = the base, everything else is a deviation
-		# 2. Make matrix deviations_for_thresh (similar to existing threshMat), fill values with results from 1
-		# 3. Make lower matrix of 1s called "lowerOnes_for_thresh"
-		# 4. Create thresholdsAlgebra named threshMatName
-		# 5. Return a package of lowerOnes_for_thresh, deviations_for_thresh & thresholdsAlgebra (named threshMatName)
-		# 1
-		# startDeviations
-		startDeviations = threshMat$values
-		nrows = dim(threshMat$values)[1]
-		ncols = dim(threshMat$values)[2]
-		if (nrows > 1){
-			for (col in 1:ncols) {
-				# Skip row 1 which is the base
-				for (row in 2:nrows) {
-					# Convert remaining rows to offsets
-					thisOffset = threshMat$values[row, col] - threshMat$values[(row-1), col]
-					if(thisOffset<0){
-						thisOffset = .001
-					}
-					startDeviations[row, col] = thisOffset
-				}
-			}
-		}
-		
-		# threshMat$values
-		#          obese1 obeseTri1 obeseQuad1     obese2 obeseTri2 obeseQuad2
-		# th_1 -0.4727891 0.2557009 -0.2345662 -0.4727891 0.2557009 -0.2345662
-		# th_2         NA 1.0601180  0.2557009         NA 1.0601180  0.2557009
-		# th_3         NA        NA  1.0601180         NA        NA  1.0601180
-		#
-		# threshMat$free
-		#      obese1 obeseTri1 obeseQuad1 obese2 obeseTri2 obeseQuad2
-		# th_1   TRUE     FALSE      FALSE   TRUE     FALSE      FALSE
-		# th_2  FALSE     FALSE      FALSE  FALSE     FALSE      FALSE
-		# th_3  FALSE     FALSE       TRUE  FALSE     FALSE       TRUE
-	
-		# =====
-		# = 2 =
-		# =====
-		devLabels = sub("_thresh", "_dev", threshMat$labels, ignore.case = F)
-		deviations_for_thresh = mxMatrix(name = "deviations_for_thresh", type = "Full",
-			nrow     = maxThresh, ncol = nFactors,
-			free     = threshMat$free,
-			labels   = devLabels,
-			values   = startDeviations,
-			lbound   = .001,
-			# TODO ubound might want to be NA
-			ubound   = 4,
-			dimnames = list(paste0("dev_", 1:maxThresh), factorVarNames)
-		)
-		# 2
-		lowerOnes_for_thresh = mxMatrix(name = "lowerOnes_for_thresh", type = "Lower", nrow = maxThresh, free = FALSE, values = 1)
-		# 3
-		threshDimNames = list(paste0("th_", 1:maxThresh), factorVarNames)
-		thresholdsAlgebra = mxAlgebra(name = threshMatName, lowerOnes_for_thresh %*% deviations_for_thresh, dimnames = threshDimNames)
-
-		return(list(lowerOnes_for_thresh, deviations_for_thresh, thresholdsAlgebra))
-	} else if (hint == "left_censored"){
-		# ignore everything above...
-		message("using ", hint, " fixed thresholds")
-		stop("tobit not implemented yet")
 		return(threshMat)
 	} else {
-		return(threshMat)
+		# Estimate thresholds
+		if(nBinVars > 0){
+			binVarNames = names(df)[isBin]
+			if(verbose){
+				message(sum(isBin), " trait(s) are binary (only 2-levels).\n",
+				omxQuotes(binVarNames),
+				"\nFor these, you you MUST fix the mean and variance of the latent traits driving each variable (usually 0  & 1 respectively) .\n",
+				"See ?mxThresholdMatrix")
+			}
+		}
+		if(nOrdVars > 0){
+			if(verbose){
+				message(nOrdVars, " variables are ordinal (at least three levels). For these I will use Paras Mehta's 'fix first 2 thresholds' method.\n",
+				"It's ESSENTIAL that you leave FREE the means and variances of the latent ordinal traits!!!\n",
+				"See ?mxThresholdMatrix")
+			}
+		}
+		if(minLevels == 1){
+			warning("You seem to have a trait with only one category: ", omxQuotes(xmuMinLevels(df, what = "name")), "... makes it a bit futile to model it?")
+			stop("Stopping, as I can't handle trait with no variance.")
+		}
+
+
+		# For each factor variable
+		for (thisVarName in factorVarNames) {
+			thisCol = df[,thisVarName]
+			nThreshThisVar = length(levels(thisCol)) -1 # "0"  "1"  "2"  "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10" "11" "12"
+			
+			# ===============================================================
+			# = Work out z-values for thresholds based on simple bin counts =
+			# ===============================================================
+			# Pros: Doesn't assume equal intervals.
+			# Problems = empty bins and noise (equal thresholds (illegal) and higher than realistic z-values)
+			tab = table(thisCol)/sum(table(thisCol)) # Simple histogram of proportion at each threshold
+			cumTab = cumsum(tab)                     # Convert to a cumulative sum (sigmoid from 0 to 1)
+			# Use quantiles to get z-equivalent for each level: ditch one to get thresholds...
+			zValues = qnorm(p = cumTab, lower.tail = TRUE)
+			# take this table as make a simple vector
+			zValues = as.numeric(zValues)
+			# =======================================================================================
+			# = TODO handle where flows over, say, 3.3... squash the top down or let the user know? =
+			# =======================================================================================
+			if(any(is.infinite(zValues))){
+				nPlusInf  = sum(zValues == (Inf))
+				nMinusInf = sum(zValues == (-Inf))
+				if(nPlusInf){
+					maxOK = max(zValues[!is.infinite(zValues)])
+					padding = seq(from = (maxOK + .1), by = .1, length.out = nPlusInf)
+					zValues[zValues == (Inf)] = padding
+				}
+				if(nMinusInf){
+					minOK = min(zValues[!is.infinite(zValues)])
+					padding = seq(from = (minOK - .1), by = (- .1), length.out = nMinusInf)
+					zValues[zValues == (-Inf)] = padding
+				}
+			}
+			# =================================
+			# = Move duplicates (empty cells) =
+			# =================================
+			if(any(duplicated(zValues))){
+				# message("You have some empty cells")
+				# Find where the values change:
+				runs         = rle(zValues)
+				runLengths   = runs$lengths
+				runValues    = runs$values
+				distinctCount = length(runValues)
+				indexIntoRLE = indexIntoZ = 1
+				for (i in runLengths) {
+					runLen = i
+					if(runLen != 1){
+						repeatedValue   = runValues[indexIntoRLE]
+						preceedingValue = runValues[(indexIntoRLE - 1)]
+						minimumStep = .01
+						if(indexIntoRLE == distinctCount){
+							newValues = seq(from = (preceedingValue + minimumStep), by = (minimumStep), length.out = runLen)
+							zValues[c(indexIntoZ:(indexIntoZ + runLen - 1))] = rev(newValues)
+						} else {
+							followedBy = runValues[(indexIntoRLE + 1)]
+							minimumStep = min((followedBy - preceedingValue)/(runLen + 1), minimumStep)
+							newValues = seq(from = (followedBy - minimumStep), by = (-minimumStep), length.out = runLen)
+							zValues[c(indexIntoZ:(indexIntoZ + runLen - 1))] = rev(newValues)
+						}
+					}
+					indexIntoZ   = indexIntoZ + runLen
+					indexIntoRLE = indexIntoRLE + 1
+					# Play "The chemistry between them", Dorothy Hodgkin
+					# Copenhagen, Michael Frein
+				}
+			}
+	    	# TODO start from 1, right, not 2?
+			values = c(zValues[1:(nThreshThisVar)], rep(.001, (maxThresh - nThreshThisVar)))
+			sortValues <- sort(zValues[1:(nThreshThisVar)], na.last = TRUE)
+			if (!identical(sortValues, zValues[1:(nThreshThisVar)])) {
+				umx_msg(values)
+				stop("The thresholds for ", thisVarName, " are not in order... oops: that's my fault :-(")
+			}
+		
+			# Already labeled, and all free initialized to TRUE (out of range = FALSE)
+			if(nThreshThisVar > 1){ # fix the first 2
+				threshMat$free[1:2,   thisVarName] = FALSE
+			}	
+			threshMat$values[, thisVarName] = values
+		} # end for each factor variable
+		# TODO describe what we have at this point
+	
+		if(thresholds == "deviationBased") {
+			if(verbose) {
+				message("Using deviation-based model: Thresholds will be in", omxQuotes(threshMatName), " based on deviations in ", omxQuotes("deviations_for_thresh"))
+			}
+			# ==========================
+			# = Adding deviation model =
+			# ==========================
+			# Tasks:
+			# 1. Convert thresholds into deviations
+			#       value 1 for each var = the base, everything else is a deviation
+			# 2. Make matrix deviations_for_thresh (similar to existing threshMat), fill values with results from 1
+			# 3. Make lower matrix of 1s called "lowerOnes_for_thresh"
+			# 4. Create thresholdsAlgebra named threshMatName
+			# 5. Return a package of lowerOnes_for_thresh, deviations_for_thresh & thresholdsAlgebra (named threshMatName)
+
+			# =====
+			# = 1 =
+			# =====
+			# startDeviations
+			deviationValues = threshMat$values
+			nrows = dim(threshMat$values)[1]
+			ncols = dim(threshMat$values)[2]
+			if (nrows > 1){
+				for (col in 1:ncols) {
+					# Skip row 1 which is the base
+					for (row in 2:nrows) {
+						# Convert remaining rows to offsets
+						thisValue = threshMat$values[row, col]
+						previousValue = threshMat$values[(row-1), col]
+						if(!is.na(thisValue)){
+							thisOffset = thisValue - previousValue
+							if(thisOffset <= 0){
+								# tweak to be slightly positive
+								thisOffset = .001
+							}
+							deviationValues[row, col] = thisOffset
+						} else {
+							# out of range: TODO: simplify by just run to max thresh row
+						}
+					}
+				}
+			}
+		
+			# threshMat$values
+			#          obese1 obeseTri1 obeseQuad1     obese2 obeseTri2 obeseQuad2
+			# th_1 -0.4727891 0.2557009 -0.2345662 -0.4727891 0.2557009 -0.2345662
+			# th_2         NA 1.0601180  0.2557009         NA 1.0601180  0.2557009
+			# th_3         NA        NA  1.0601180         NA        NA  1.0601180
+			#
+			# threshMat$free
+			#      obese1 obeseTri1 obeseQuad1 obese2 obeseTri2 obeseQuad2
+			# th_1   TRUE     FALSE      FALSE   TRUE     FALSE      FALSE
+			# th_2  FALSE     FALSE      FALSE  FALSE     FALSE      FALSE
+			# th_3  FALSE     FALSE       TRUE  FALSE     FALSE       TRUE
+	
+			# =====
+			# = 2 =
+			# =====
+			# make a copy of "_thresh" labels, changing to "_dev"
+			devLabels = sub("_thresh", "_dev", threshMat$labels, ignore.case = FALSE)
+			
+			# create the deviations matrix
+			deviations_for_thresh = mxMatrix(name = "deviations_for_thresh", type = "Full",
+				nrow     = maxThresh, ncol = nFactors,
+				free     = threshMat$free,
+				labels   = devLabels,
+				values   = deviationValues,
+				lbound   = .001,
+				# TODO ubound might want to be l_u_bound[2]
+				ubound   = NA,
+				dimnames = list(paste0("dev_", 1:maxThresh), factorVarNames)
+			)
+			deviations_for_thresh$lbound[1,] = NA # don't lbound the first deviation, because it it's the base, not a deviation.
+			# 3: Create the lowerOnes matrix
+			lowerOnes_for_thresh = mxMatrix(name = "lowerOnes_for_thresh", type = "Lower", nrow = maxThresh, free = FALSE, values = 1)
+			# 4: Create thresholdsAlgebra named threshMatName
+			threshDimNames = list(paste0("th_", 1:maxThresh), factorVarNames)
+			thresholdsAlgebra = mxAlgebra(name = threshMatName, lowerOnes_for_thresh %*% deviations_for_thresh, dimnames = threshDimNames)
+
+			return(list(lowerOnes_for_thresh, deviations_for_thresh, thresholdsAlgebra))
+		} else {
+			return(threshMat)
+		}
 	}
 }
 # ===========
 # = Utility =
 # ===========
-
-umxCheck <- function(fit1){
-	# are all the manifests in paths?
-	# do the manifests have residuals?
-	if(any(duplicated(fit1@manifestVars))){
-		stop(paste("manifestVars contains duplicates:", duplicated(fit1@manifestVars)))
-	}
-	if(length(fit1@latentVars) == 0){
-		# Check none are duplicates, none in manifests
-		if(any(duplicated(fit1@latentVars))){
-			stop(paste("latentVars contains duplicates:", duplicated(fit1@latentVars)))
-		}
-		if(any(duplicated(c(fit1@manifestVars, fit1@latentVars)))){
-			stop(
-				paste("manifest and latent lists contain clashing names:", duplicated(c(fit1@manifestVars, fit1@latentVars)))
-			)
-		}
-	}
-	# Check manifests in dataframe
-}
 
 # ====================
 # = Parallel Helpers =
@@ -3649,13 +3798,16 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' @param with same as "to = vars, arrows = 2". nb: from, to= and var=  must be left empty (their default)
 #' @param var equivalent to setting "from = vars, arrows = 2". nb: from, to, and with must be left empty (their default)
 #' @param cov equivalent to setting "from = X, to = Y, arrows = 2". nb: from, to, and with must be left empty (their default)
-#' @param unique.bivariate equivalent to setting "connect = "unique.bivariate", arrows = 2". nb: from, to, and with must be left empty (their default)
-#' @param formative Paired with to, this will build a formative variable, from the formatives, allowing these to
-#' covary, and to the latent "to" variable, fixing its variance to zero.
+#' @param unique.bivariate equivalent to setting "connect = "unique.bivariate", arrows = 2".
+#' nb: from, to, and with must be left empty (their default)
+#' @param unique.pairs equivalent to setting "connect = "unique.pairs", arrows = 2" (don't use from, to, or with)
+#' @param forms Paired with from, this will build a formative variable. from vars form the latent.
+#' Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate among froms.
 #' @param Cholesky Treat \strong{Cholesky} vars as latent and \strong{to} as measured, and connect as in an ACE model.
 #' @param means equivalent to "from = 'one', to = x. nb: from, to, with and var must be left empty (their default).
 #' @param v1m0 variance of 1 and mean of zero in one call.
 #' @param v.m. variance and mean, both free.
+#' @param v0m0 variance and mean, both fixed at zero.
 #' @param fixedAt Equivalent to setting "free = FALSE, values = x" nb: free and values must be left empty (their default)
 #' @param freeAt Equivalent to setting "free = TRUE, values = x" nb: free and values must be left empty (their default)
 #' @param firstAt first value is fixed at this (values passed to free are ignored: warning if not a single TRUE)
@@ -3666,6 +3818,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' @param labels labels for each path
 #' @param lbound lower bounds for each path value
 #' @param ubound upper bounds for each path value
+#' @param hasMeans Used in 'forms' case to know whether the data have means or not.
 #' @return - 1 or more \code{\link{mxPath}}s
 #' @export
 #' @family Model Building Functions
@@ -3676,6 +3829,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' # Some examples of paths with umxPath
 #' umxPath("A", to = "B") # One-headed path from A to B
 #' umxPath("A", to = "B", fixedAt = 1) # same, with value fixed @@1
+#' umxPath("A", to = c("B", "C"), fixedAt = 1:2) # same, with more than 1 value
 #' umxPath("A", to = LETTERS[2:4], firstAt = 1) # Fix only the first path, others free
 #' umxPath(var = "A") # Give a variance to A
 #' umxPath(var = "A", fixedAt = 1) # Give a variance, fixed at 1
@@ -3688,6 +3842,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' umxPath("A", with = c("B", "C"), firstAt = 1) # first covariance fixed at 1
 #' umxPath(cov = c("A", "B"))  # Covariance A <-> B
 #' umxPath(unique.bivariate = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
+#' umxPath(unique.pairs = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
 #' umxPath(Cholesky = c("A1","A2"), to = c("m1", "m2")) # Cholesky
 #' # A worked example
 #' data(demoOneFactor)
@@ -3722,75 +3877,26 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' # # manifests is a reserved word, as is latents.
 #' # # It allows the string syntax to use the manifestVars variable
 #' # umxPath("A -> manifests") 
-umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL, unique.bivariate = NULL, formative = NULL, Cholesky = NULL, means = NULL, v1m0 = NULL, v.m. = NULL, fixedAt = NULL, freeAt = NULL, firstAt = NULL, connect = c("single", "all.pairs", "all.bivariate", "unique.pairs", "unique.bivariate"), arrows = 1, free = TRUE, values = NA, labels = NA, lbound = NA, ubound = NA) {
+umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL, unique.bivariate = NULL, unique.pairs = NULL, forms = NULL, Cholesky = NULL, means = NULL, v1m0 = NULL, v.m. = NULL, v0m0 = NULL, fixedAt = NULL, freeAt = NULL, firstAt = NULL, connect = c("single", "all.pairs", "all.bivariate", "unique.pairs", "unique.bivariate"), arrows = 1, free = TRUE, values = NA, labels = NA, lbound = NA, ubound = NA, hasMeans = NULL) {
 	connect = match.arg(connect) # set to single if not overridden by user.
-	if(!is.null(from)){
-		if(length(from) > 1){
-			isSEMstyle = grepl("[<>]", x = from[1])	
-		} else {
-			isSEMstyle = grepl("[<>]", x = from)				
-		}
-		if(isSEMstyle){
-			stop("sem-style string syntax not yet implemented. In the mean time, try the other features, like with, var, means = , fixedAt = , fixFirst = ")
-			if("from contains an arrow"){
-				# parse into paths
-			} else {
-				if(!is.null(with)){
-					to = with
-					arrows = 2
-					connect = "single"
-				} else {
-					to = to
-					arrows = 1
-					connect = "single"
-				}
-			}	
-			a = "A ->B;A<-B; A>B; A --> B
-			A<->B"
-			# remove newlines, replacing with ;
-			allOneLine = gsub("\n+", ";", a, ignore.case = TRUE)
-			# regularizedArrows = gsub("[ \t]?^<-?>[ \t]?", "->", allOneLine, ignore.case = TRUE)
-			# regularizedArrows = gsub("[ \t]?-?>[ \t]?", "<-", regularizedArrows, ignore.case = TRUE)
-
-			# TODO remove duplicate ; 
-			pathList = umx_explode(";", allOneLine)
-			for (aPath in pathList) {
-				if(length(umx_explode("<->", aPath))==3){
-					# bivariate
-					parts = umx_explode("<->", aPath)
-					# not finished, obviously...
-					mxPath(from = umx_trim(parts[1]))
-				} else if(length(umx_explode("->", aPath))==3){
-					# from to
-				} else if(length(umx_explode("<-", aPath))==3){
-					# to from
-				}else{
-					# bad line
-				}
-			}
-			umx_explode("", a)
-		}
-	}
+	xmu_string2path(from)
 	n = 0
-
-	for (i in list(with, cov, var, means, unique.bivariate, v.m. , v1m0, Cholesky)) {
+	for (i in list(with, cov, var, forms, means, unique.bivariate, unique.pairs, v.m. , v1m0, v0m0, Cholesky)) {
 		if(!is.null(i)){ n = n + 1}
 	}
 	if(n > 1){
-		stop("At most one of with, cov, var, means, unique.bivariate, v1m0, v.m. or Cholesky can be set: Use at one time")
+		stop("At most one of with, cov, var, forms, means, unique.bivariate, unique.pairs, v1m0, v.m., v0m0, or Cholesky can be set: Use at one time")
 	} else if(n == 0){
 		# check that from is set?
 		if(is.null(from)){
 			stop("You must set at least 'from'")
 		}	
-	} else {
-		# n = 1
 	}
 
 	if(!is.null(Cholesky)){
 		if(!(length(to) >= length(Cholesky))){
 			stop("Must have at least as many 'to' vars as latents for Cholesky: you gave me ",
-			length(to), " to vars and ", length(Cholesky), " Choleksy latents")
+			length(to), " to vars and ", length(Cholesky), " Cholesky latents")
 		}
 		if(!is.na(labels)){
 			stop("I don't yet support labels for Cholesky")
@@ -3818,22 +3924,69 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 	}
 	if(!is.null(v1m0)){
 		# TODO lbound ubound unlikely to be applied to two things, and can't affect result... error if they're not NULL?
-		if(!is.na(lbound)&&is.na(ubound)){
-			message("I lbounded var of ", v1m0, " @0")
+		if(!is.na(lbound) && is.na(ubound) && FALSE){
+				message("I lbounded var of ", v1m0, " @0")
 		}
 		a = mxPath(from = v1m0, arrows = 2, free = FALSE, values = 1, labels = labels, lbound = 0, ubound = ubound)
 		b = mxPath(from = "one", to = v1m0, free = FALSE, values = 0, labels = labels, lbound = lbound, ubound = ubound)
-		return(list(a,b))
+		return(list(a, b))
 	}
 
 	if(!is.null(v.m.)){
 		# TODO lbound ubound unlikely to be applied to two things. lbound for var should be 0
-		if(!is.na(lbound)&&is.na(ubound)){
+		if(!is.na(lbound) && is.na(ubound) && FALSE){
 			message("I lbounded var of ", v.m. , " @0")
 		}
 		a = mxPath(from = v.m., arrows = 2, free = TRUE, values = 1, labels = labels, lbound = 0, ubound = ubound)
 		b = mxPath(from = "one", to = v.m., free = TRUE, values = 0, labels = labels, lbound = lbound, ubound = ubound)
-		return(list(a,b))
+		return(list(a, b))
+	}
+
+	if(!is.null(v0m0)){
+		a = mxPath(from = v0m0, arrows = 2, free = FALSE, values = 0)
+		b = mxPath(from = "one", to = v0m0, free = FALSE, values = 0)
+		return(list(a, b))
+	}
+
+	if(!is.null(forms)){
+		# ====================
+		# = Handle formative =
+		# ====================
+		# http://davidakenny.net/cm/mvar.htm
+		if(is.null(from)){
+			stop("You have to have offer up at least 3 unique 'from' variables to make a formative")
+		}
+		if(is.null(hasMeans)){
+			message("You have to set hasMeans so I know whether to make them for this formative: Assuming TRUE")
+			hasMeans = TRUE
+		}
+
+		if(length(forms) > 1){
+			# TODO think about this
+			stop("It's tricky to setup multiple forms vars in 1 line. email if you'd like this to work..")
+		} else {
+			numPaths  = length(forms)
+			free      = rep(TRUE, numPaths)
+			free[1]   = FALSE
+			values    = rep(NA, numPaths)
+			values[1] = 1
+		}
+
+		a = mxPath(from = from, connect = "unique.bivariate")
+		b = mxPath(from = from, to = forms, free = free, values = values)
+		if(hasMeans){
+			c = mxPath(from = forms, arrows = 2, free = FALSE, values = 0)
+			d = mxPath(from = "one", to = forms, free = FALSE, values = 0)
+			e = mxPath(from = from, arrows = 2, free = TRUE, values = 1, labels = labels, lbound = 0, ubound = ubound)
+			f = mxPath(from = "one", to = from, free = TRUE, values = 0, labels = labels, lbound = lbound, ubound = ubound)
+			x = list(a, b, c, d, e, f)
+		} else {
+			c = mxPath(from = forms, arrows = 2, free = FALSE, values = 0)
+			e = mxPath(from = from, arrows = 2, free = TRUE, values = 1, labels = labels, lbound = 0, ubound = ubound)
+			x = list(a, b, c, e)
+		}
+		# return(c(a, b))
+		return(x)
 	}
 
 	if(!is.null(with)){
@@ -3869,7 +4022,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 		# ==============
 		# = handle var =
 		# ==============
-		if(!is.null(from) | !is.null(to)){
+		if(!is.null(from) || !is.null(to)){
 			stop("To use 'var = ', 'from' and 'to' should be empty")
 		} else {
 			from   = var
@@ -3877,8 +4030,8 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 			arrows = 2
 			connect = "single"
 			if(is.na(lbound)){
-				message("I lbounded var of ", omxQuotes(var), " @0")			
 				lbound  = 0
+				# message("I lbounded var of ", omxQuotes(var), " @0")
 			}
 		}
 	} else if(!is.null(means)){
@@ -3915,6 +4068,27 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 			arrows  = 2
 			connect = "unique.bivariate"
 		}
+	} else if(!is.null(unique.pairs)){
+		# ===========================
+		# = Handle unique.pairs =
+		# ===========================
+		if(length(unique(unique.pairs)) < 2){
+			stop("You have to have at least 2 unique variables to use unique.pairs")
+		}
+		if(!is.null(from)){
+			stop("To use unique.pairs, 'from=' should be empty.\n",
+			"Just say 'unique.pairs = c(\"X\",\"Y\").'\n",
+			"or 'unique.pairs = c(\"X\",\"Y\"), to = \"Z\"")
+		} else {
+			if(is.null(to)){
+				to = NA				
+			} else {
+				to = to	
+			}
+			from    = unique.pairs
+			arrows  = 2
+			connect = "unique.pairs"
+		}
 	} else {
 		if(is.null(from) && is.null(to)){
 			stop("You don't seem to have requested any paths.\n",
@@ -3930,9 +4104,9 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 			connect = connect
 		}
 	}
-	# ====================================
-	# = From and to have now been set... =
-	# ====================================
+	# ==============================================
+	# = From, to, and connect have now been set... =
+	# ==============================================
 
 	# ==============================
 	# = Handle fixedAt and firstAt =

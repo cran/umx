@@ -3,6 +3,56 @@
 # = Not used directly by users =
 # ========================================
 
+#' xmu_check_levels_identical
+#'
+#' Just checks that the factor levels for twins 1 and 2 are the same
+#'
+#' @param df data.frame containing the data
+#' @param selDVs base names of variables (without suffixes)
+#' @param sep text-constant separating base variable names the twin index (1:2)
+#' @param action if unequal levels found:  c("stop", "ignore")
+#' @return - 
+#' @export
+#' @family xmu internal not for end user
+#' @examples
+#' require(umx)
+#' data(twinData)
+#' baseNames = c("bmi")
+#' selDVs = umx_paste_names(baseNames, "", 1:2)
+#' tmp = twinData[, selDVs]
+#' tmp$bmi1[tmp$bmi1 <= 22] = 22
+#' tmp$bmi2[tmp$bmi2 <= 22] = 22
+#' xmu_check_levels_identical(umxFactor(tmp, sep = ""), selDVs = baseNames, sep = "")
+#' \dontrun{
+#' xmu_check_levels_identical(umxFactor(tmp), selDVs = baseNames, sep = "")
+#' }
+xmu_check_levels_identical <- function(df, selDVs, sep, action = c("stop", "ignore")){
+	n = umx_explode_twin_names(df, sep)
+	baseNames   = n$baseNames
+	sep         = n$sep
+	twinIndexes = n$twinIndexes
+	selVars     = umx_paste_names(selDVs, sep = sep, suffixes = twinIndexes)
+	umx_check_names(selVars, data = df, die = TRUE)
+	nSib = length(twinIndexes)
+	if(nSib != 2){
+		stop("Sorry, Ask tim to implement handling more than two sibs")
+	}
+	allIdentical = TRUE
+	for (thisVar in selDVs) {
+		a = levels(df[,paste0(thisVar, sep, twinIndexes[1])])
+		b = levels(df[,paste0(thisVar, sep, twinIndexes[2])])
+		if(!identical(a, b)){
+			if(action =="stop"){
+				allIdentical = FALSE
+				stop("levels of ", thisVar, " not identical for twin 1 and twin 2")
+			} else {
+				# alt.expr
+			}
+		}
+	}
+	return(allIdentical)
+}
+
 #' xmuLabel_MATRIX_Model (not a user function)
 #'
 #' This function will label all the free parameters in a (non-RAM) OpenMx \code{\link{mxModel}}
@@ -571,10 +621,16 @@ xmuHasSquareBrackets <- function (input) {
 #' Get the max levels from df
 #'
 #' @param df Dataframe to search through
+#' @param what Either "value" or "name" ( of the max-level column)
 #' @return - max number of levels in frame
 #' @export
 #' @family xmu internal not for end user
-xmuMaxLevels <- function(df) {
+#' @examples
+#' xmuMaxLevels(mtcars) # NA = no ordinal vars
+#' xmuMaxLevels(umxFactor(mtcars))
+#' xmuMaxLevels(umxFactor(mtcars), what = "name")
+xmuMaxLevels <- function(df, what = c("value", "name")) {
+	what = match.arg(what)
 	isOrd = umx_is_ordered(df)
 	if(any(isOrd)){
 		vars = names(df)[isOrd]
@@ -584,7 +640,11 @@ xmuMaxLevels <- function(df) {
 			nLevels[j] = length(levels(df[,i]))
 			j = j + 1
 		}	
-		return(max(nLevels))
+		if(what == "value"){
+			return(max(nLevels))
+		} else {
+			return(names(df)[which.max(nLevels)])
+		}
 	} else {
 		return(NA)
 	}
@@ -595,10 +655,16 @@ xmuMaxLevels <- function(df) {
 #' Get the min levels from df
 #'
 #' @param df Dataframe to search through
+#' @param what Either "value" or "name" (of the min-level column)
 #' @return - min number of levels in frame
 #' @export
 #' @family xmu internal not for end user
-xmuMinLevels <- function(df) {
+#' @examples
+#' xmuMinLevels(mtcars) # NA = no ordinal vars
+#' xmuMinLevels(umxFactor(mtcars))
+#' xmuMinLevels(umxFactor(mtcars), what = "name")
+xmuMinLevels <- function(df, what = c("value", "name")) {
+	what = match.arg(what)
 	isOrd = umx_is_ordered(df)
 	if(any(isOrd)){
 		vars = names(df)[isOrd]
@@ -607,8 +673,12 @@ xmuMinLevels <- function(df) {
 		for (i in vars) {
 			nLevels[j] = length(levels(df[,i]))
 			j = j + 1
-		}	
-		return(min(nLevels))
+		}
+		if(what == "value"){
+			return(min(nLevels))
+		} else {
+			return(names(df)[which.min(nLevels)])
+		}
 	} else {
 		return(NA)
 	}
@@ -673,8 +743,8 @@ xmu_dot_maker <- function(model, file, digraph){
 			file = paste0(model$name, ".gv")
 		}
 		cat(digraph, file = file) # write to file
-		if(umx_set_plot_format() == "DiagrammeR"){			
-			DiagrammeR(diagram = file, type = "grViz")
+		if(umx_set_plot_format() == "DiagrammeR"){
+			DiagrammeR::DiagrammeR(diagram = file, type = "grViz")
 		} else {
 			if(umx_check_OS("OSX")){
 				umx_open(file);
@@ -822,4 +892,57 @@ xmu_dot_make_paths <- function(mxMat, stringIn, heads = NULL, showFixed = TRUE, 
 		}
 	}
 	return(stringIn)
+}
+
+# handle sem-style strings
+
+xmu_string2path <- function(from) {
+	if(!is.null(from)){
+		if(length(from) > 1){
+			isSEMstyle = grepl("[<>]", x = from[1])	
+		} else {
+			isSEMstyle = grepl("[<>]", x = from)				
+		}
+		if(isSEMstyle){
+			stop("sem-style string syntax not yet implemented. In the mean time, try the other features, like with, var, means = , fixedAt = , fixFirst = ")
+
+			if("from contains an arrow"){
+				# parse into paths
+			} else {
+				if(!is.null(with)){
+					to = with
+					arrows = 2
+					connect = "single"
+				} else {
+					to = to
+					arrows = 1
+					connect = "single"
+				}
+			}	
+			a = "A ->B;A<-B; A>B; A --> B
+			A<->B"
+			# remove newlines, replacing with ;
+			allOneLine = gsub("\n+", ";", a, ignore.case = TRUE)
+			# regularizedArrows = gsub("[ \t]?^<-?>[ \t]?", "->", allOneLine, ignore.case = TRUE)
+			# regularizedArrows = gsub("[ \t]?-?>[ \t]?", "<-", regularizedArrows, ignore.case = TRUE)
+
+			# TODO remove duplicate ; 
+			pathList = umx_explode(";", allOneLine)
+			for (aPath in pathList) {
+				if(length(umx_explode("<->", aPath))==3){
+					# bivariate
+					parts = umx_explode("<->", aPath)
+					# not finished, obviously...
+					mxPath(from = umx_trim(parts[1]))
+				} else if(length(umx_explode("->", aPath))==3){
+					# from to
+				} else if(length(umx_explode("<-", aPath))==3){
+					# to from
+				}else{
+					# bad line
+				}
+			}
+			umx_explode("", a)
+		}
+	}
 }

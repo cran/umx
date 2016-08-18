@@ -604,9 +604,9 @@ umxSummary.default <- function(model, ...){
 #' @aliases umxSummary.MxModel
 #' @param model The \code{\link{mxModel}} whose fit will be reported
 #' @param refModels Saturated models if needed for fit indices (see example below:
-#' 	Only needed for raw data. nb: \code{\link{umxRun}} takes care of this for you)
-#' @param showEstimates What estimates to show. Options are c("none", "std", "raw", "both", "list of column names"). 
-#' Default  is "none" (just shows the fit indices)
+#' 	If NULL will be competed on demand. If FALSE will not be computed. Only needed for raw data.
+#' @param showEstimates What estimates to show. By default, the raw estimates are shown 
+#' (Options = c("raw", "std", "both", "none", "list of column names").
 #' @param digits How many decimal places to report (default = 2)
 #' @param report If "html", then show results in browser ("1", "table", "html")
 #' @param filter whether to show significant paths (SIG) or NS paths (NS) or all paths (ALL)
@@ -615,7 +615,7 @@ umxSummary.default <- function(model, ...){
 #' @param matrixAddresses Whether to show "matrix address" columns (Default = FALSE)
 #' @param ... Other parameters to control model summary
 #' @family Reporting functions
-#' @seealso - \code{\link{mxCI}}, \code{\link{umxCI_boot}}, \code{\link{umxRun}}
+#' @seealso - \code{\link{umxRun}}
 #' @references - Hu, L., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance 
 #'  structure analysis: Coventional criteria versus new alternatives. Structural Equation Modeling, 6, 1-55. 
 #'
@@ -637,10 +637,10 @@ umxSummary.default <- function(model, ...){
 #' 	umxPath(var = manifests),
 #' 	umxPath(var = latents, fixedAt = 1)
 #' )
-#' umxSummary(m1, show = "std")
+#' umxSummary(m1, showEstimates = "std")
 #' # output as latex
 #' umx_set_table_format("latex")
-#' umxSummary(m1, show = "std")
+#' umxSummary(m1, showEstimates = "std")
 #' umx_set_table_format("markdown")
 #' # output as raw
 #' umxSummary(m1, show = "raw")
@@ -650,40 +650,50 @@ umxSummary.default <- function(model, ...){
 #'   umxPath(mean = latents, fixedAt = 0)
 #' )
 #' m1 <- mxRun(m1)
-#' umxSummary(m1, show = "std", filter = "NS")
-umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("none", "raw", "std", "both", "list of column names"), digits = 2, report = c("1", "table", "html"), filter = c("ALL", "NS", "SIG"), SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE, ...){
+#' umxSummary(m1, showEstimates = "std", filter = "NS")
+umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("raw", "std", "none", "both", "list of column names"), digits = 2, report = c("1", "table", "html"), filter = c("ALL", "NS", "SIG"), SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE, ...){
 	# TODO make table take lists of models...
 	report = match.arg(report)
 	filter = match.arg(filter)
-	# showEstimates = match.arg(showEstimates)
-	validValuesForshowEstimates = c("none", "raw", "std", "both", "list of column names")
+	validValuesForshowEstimates = c("raw", "std", "none", "both", "list of column names")
 	showEstimates = umx_default_option(showEstimates, validValuesForshowEstimates, check = FALSE) # to allow a user specified list
+
+	message('?umxSummary options include refModels, showEstimates = "raw|std|...", digits, report = "html", filter = "NS|SIG", SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE')
+	
 	# if the filter is off default, the user must want something, let's assume it's std ...
 	if( filter != "ALL" & showEstimates == "none") {
 		showEstimates = "std"
-	}else if(showEstimates =="std" && SE == FALSE){
+	}else if(showEstimates == "std" && SE == FALSE){
 		message("SE must be TRUE to show std, overriding to set SE =TRUE")
 		SE = TRUE
 	}
 	umx_has_been_run(model, stop = TRUE)
 	if(is.null(refModels)) {
+		
 		# saturatedModels not passed in from outside, so get them from the model
 		# TODO improve efficiency here: compute summary only once by detecting when SaturatedLikelihood is missing
 		modelSummary = summary(model)		
 		if(is.null(model$data)){
-			# # TODO model with no data - no saturated solution?
+			# TODO model with no data - no saturated solution?
 		} else if(is.na(modelSummary$SaturatedLikelihood)){
 			# no SaturatedLikelihood, compute refModels
 			refModels = mxRefModels(model, run = TRUE)
 			modelSummary = summary(model, refModels = refModels)
 		}
-	} else {
+	} else if (refModels == FALSE){
+		modelSummary = summary(model) # don't use or generate refModels		
+	}else{
 		modelSummary = summary(model, refModels = refModels) # use user-supplied refModels		
 	}
 
 	# DisplayColumns
 	if(showEstimates != "none"){
-		parameterTable = mxStandardizeRAMpaths(model, SE = SE) # compute standard errors
+		if(length(model@submodels) > 0){
+			message("TODO: Just showing group 1: email tim if you see this, and we can extend to all groups")
+			parameterTable = mxStandardizeRAMpaths(model@submodels[[1]], SE = SE) # compute standard errors
+		} else {
+			parameterTable = mxStandardizeRAMpaths(model, SE = SE) # compute standard errors
+		}
 		#                 name    label  matrix   row         col    Raw.Value  Raw.SE   Std.Value    Std.SE
 		# 1  no_HRV_Dep.A[6,1]    age    A        mean_sdrr   age   -0.37       0.0284   -0.372350    .028
 		# Raw.SE is new
@@ -811,11 +821,11 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("none"
 #' @param file The name of the dot file to write: "name" = use the name of the model.
 #' Defaults to NA = do not create plot output
 #' @param comparison you can run mxCompare on a comparison model (NULL)
-#' @param showStd Whether to standardize the output (defualt = TRUE)
+#' @param std Whether to standardize the output (default = TRUE)
 #' @param showRg = whether to show the genetic correlations (FALSE)
 #' @param CIs Whether to show Confidence intervals if they exist (T)
 #' @param returnStd Whether to return the standardized form of the model (default = FALSE)
-#' @param report If 3, then open an html table of the results
+#' @param report If "html", then open an html table of the results
 #' @param extended how much to report (FALSE)
 #' @param zero.print How to show zeros (".")
 #' @param ... Other parameters to control model summary
@@ -838,16 +848,16 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("none"
 #' umxSummaryACE(m1)
 #' \dontrun{
 #' umxSummaryACE(m1, file = NA);
-#' umxSummaryACE(m1, file = "name", showStd = TRUE)
+#' umxSummaryACE(m1, file = "name", std = TRUE)
 #' stdFit = umxSummaryACE(m1, returnStd = TRUE);
 #' }
-umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, showStd = TRUE, showRg = FALSE, CIs = TRUE, report = c("1", "2", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
+umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("1", "2", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
 	report = match.arg(report)
 	# depends on R2HTML::HTML
 	if(typeof(model) == "list"){ # call self recursively
 		for(thisFit in model) {
 			message("Output for Model: ", thisFit$name)
-			umxSummaryACE(thisFit, digits = digits, file = file, showRg = showRg, showStd = showStd, comparison = comparison, CIs = CIs, returnStd = returnStd, extended = extended, zero.print = zero.print, report = report)
+			umxSummaryACE(thisFit, digits = digits, file = file, showRg = showRg, std = std, comparison = comparison, CIs = CIs, returnStd = returnStd, extended = extended, zero.print = zero.print, report = report)
 		}
 	} else {
 	umx_has_been_run(model, stop = TRUE)
@@ -879,7 +889,7 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 	c_std <- SD %*% c;
 	e_std <- SD %*% e;
 
-	if(showStd){
+	if(std){
 		message("Standardized solution")
 		aClean = a_std
 		cClean = c_std
@@ -963,8 +973,8 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 		CIlist <- CIlist[, c("lbound", "estimate", "ubound")] 
 		CIlist$fullName = row.names(CIlist)
 		# Initialise empty matrices for the standardized results
-		rows = dim(model$submodels$top$matrices$a$labels)[1]
-		cols = dim(model$submodels$top$matrices$a$labels)[2]
+		rows = dim(model$top$matrices$a$labels)[1]
+		cols = dim(model$top$matrices$a$labels)[2]
 		a_std = c_std = e_std = matrix(NA, rows, cols)
 
 		# iterate over each CI
@@ -1007,7 +1017,7 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 	stdFit$top$e$values = e_std
 	if(!is.na(file)) {
 		# message("making dot file")
-		umxPlotACE(stdFit, file = file, std = showStd)
+		umxPlotACE(stdFit, file = file, std = std)
 	}
 	if(returnStd) {
 		if(CIs){
@@ -1028,14 +1038,14 @@ umxSummary.MxModel.ACE <- umxSummaryACE
 #' @param model a \code{\link{umxACEcov}} model to summarize
 #' @param digits round to how many digits (default = 2)
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
-#' @param returnStd Whether to return the standardized form of the model (default = F)
-#' @param extended how much to report (F)
-#' @param showRg = whether to show the genetic correlations (F)
-#' @param showStd = whether to show the standardized model (T)
+#' @param returnStd Whether to return the standardized form of the model (default = FALSE)
+#' @param extended how much to report (FALSE)
+#' @param showRg = whether to show the genetic correlations (FALSE)
+#' @param std = whether to show the standardized model (TRUE)
 #' @param comparison you can run mxCompare on a comparison model (NULL)
-#' @param CIs Whether to show Confidence intervals if they exist (T)
+#' @param CIs Whether to show Confidence intervals if they exist (TRUE)
 #' @param zero.print How to show zeros (".")
-#' @param report If 3, then open an html table of the results
+#' @param report If "html", then open an html table of the results.
 #' @param ... Other parameters to control model summary
 #' @return - optional \code{\link{mxModel}}
 #' @export
@@ -1055,16 +1065,16 @@ umxSummary.MxModel.ACE <- umxSummaryACE
 #' umxSummaryACE(m1)
 #' \dontrun{
 #' umxSummaryACE(m1, file = NA);
-#' umxSummaryACE(m1, file = "name", showStd = TRUE)
+#' umxSummaryACE(m1, file = "name", std = TRUE)
 #' stdFit = umxSummaryACE(m1, returnStd = TRUE);
 #' }
-umxSummaryACEcov <- function(model, digits = 2, file = getOption("umx_auto_plot"), returnStd = FALSE, extended = FALSE, showRg = FALSE, showStd = TRUE, comparison = NULL, CIs = TRUE, zero.print = ".", report = c("1", "2", "html"), ...) {
+umxSummaryACEcov <- function(model, digits = 2, file = getOption("umx_auto_plot"), returnStd = FALSE, extended = FALSE, showRg = FALSE, std = TRUE, comparison = NULL, CIs = TRUE, zero.print = ".", report = c("1", "2", "html"), ...) {
 	report = match.arg(report)
 	# depends on R2HTML::HTML
 	if(typeof(model) == "list"){ # call self recursively
 		for(thisFit in model) {
 			message("Output for Model: ", thisFit$name)
-			umxSummaryACEcov(thisFit, digits = digits, file = file, returnStd = returnStd, extended = extended, showRg = showRg, showStd = showStd, comparison = comparison, CIs = CIs, zero.print = zero.print, report = report)
+			umxSummaryACEcov(thisFit, digits = digits, file = file, returnStd = returnStd, extended = extended, showRg = showRg, std = std, comparison = comparison, CIs = CIs, zero.print = zero.print, report = report)
 		}
 	} else {
 	umx_has_been_run(model, stop = TRUE)
@@ -1096,7 +1106,7 @@ umxSummaryACEcov <- function(model, digits = 2, file = getOption("umx_auto_plot"
 	c_std <- SD %*% c;
 	e_std <- SD %*% e;
 
-	if(showStd){
+	if(std){
 		message("Standardized solution")
 		aClean = a_std
 		cClean = c_std
@@ -1174,8 +1184,8 @@ umxSummaryACEcov <- function(model, digits = 2, file = getOption("umx_auto_plot"
 		CIlist <- CIlist[, c("lbound", "estimate", "ubound")] 
 		CIlist$fullName = row.names(CIlist)
 		# Initialise empty matrices for the standardized results
-		rows = dim(model$submodels$top$matrices$a$labels)[1]
-		cols = dim(model$submodels$top$matrices$a$labels)[2]
+		rows = dim(model$top$matrices$a$labels)[1]
+		cols = dim(model$top$matrices$a$labels)[2]
 		a_std = c_std = e_std = matrix(NA, rows, cols)
 
 		# iterate over each CI
@@ -1218,7 +1228,7 @@ umxSummaryACEcov <- function(model, digits = 2, file = getOption("umx_auto_plot"
 	stdFit$top$e$values = e_std
 	if(!is.na(file)) {
 		message("making dot file")
-		plot(model, file, std = showStd)
+		plot(model, file, std = std)
 	}
 	if(returnStd) {
 		if(CIs){
@@ -1242,7 +1252,7 @@ umxSummary.MxModel.ACEcov <- umxSummaryACEcov
 #' @param returnStd Whether to return the standardized form of the model (default = FALSE)
 #' @param extended how much to report (FALSE)
 #' @param showRg Whether to show the genetic correlations (FALSE) (Not implemented!)
-#' @param showStd Whether to show the standardized model (TRUE) (Not implemented!)
+#' @param std Whether to show the standardized model (TRUE) (ignored: used extended = TRUE to get unstandardized)
 #' @param comparison Whether to run mxCompare on a comparison model (NULL)
 #' @param CIs Confidence intervals (F)
 #' @param ... Optional additional parameters
@@ -1260,23 +1270,23 @@ umxSummary.MxModel.ACEcov <- umxSummaryACEcov
 #' mzData <- subset(twinData, ZYG == "MZFF")
 #' dzData <- subset(twinData, ZYG == "DZFF")
 #' m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = "")
-#' m1 = mxRun(m1)
 #' umxSummaryCP(m1, file = NA) # suppress plot creation with file
 #' umxSummary(m1, file = NA) # generic summary is the same
-#' stdFit = umxSummaryCP(m1, digits = 2, file = NA, returnStd = FALSE, 
-#' 		extended = FALSE, showRg = TRUE, showStd = TRUE, CIs = TRUE);
-#' \dontrun{
-#' examples which will create graphical output
-#' umxSummaryCP(fit);
-#' umxSummaryCP(fit, file = "Figure 3", showStd = TRUE)
-#' }
-umxSummaryCP <- function(model, digits = 2, file = getOption("umx_auto_plot"), returnStd = FALSE, 
-    extended = FALSE, showRg = TRUE, comparison = NULL, showStd = TRUE, CIs = FALSE, ...) {
+#' stdFit = umxSummaryCP(m1, digits = 2, file = NA, returnStd = TRUE, 
+#' 		extended = FALSE, showRg = TRUE, std = TRUE, CIs = TRUE);
+#' umxSummaryCP(m1, ext = TRUE, file = "name")
+#' umxSummaryCP(m1, file = "Figure 3", std = TRUE)
+umxSummaryCP <- function(model, digits = 2, file = umx_set_auto_plot(), returnStd = FALSE, 
+    extended = FALSE, showRg = TRUE, comparison = NULL, std = TRUE, CIs = FALSE, ...) {
 	# TODO: detect value of DZ covariance, and if .25 set "C" to "D"
+	if(!std){
+		stop("TODO: I currently always standardize CP model output. e-mail tim to get this turned off")
+	}
+
 	if(typeof(model) == "list"){ # call self recursively
 		for(thisFit in model) {
 			message(paste("Output for Model: ", thisFit$name))
-			umxSummaryCP(thisFit, digits = digits, file = file, returnStd = returnStd, extended = extended, showRg = showRg, comparison = comparison, CIs = CIs)
+			umxSummaryCP(thisFit, digits = digits, file = file, returnStd = returnStd, extended = extended, showRg = showRg, comparison = comparison, std = std, CIs = CIs)
 		}
 	} else {
 		if(class(model)[1] != "MxModel.CP"){
@@ -1292,7 +1302,7 @@ umxSummaryCP <- function(model, digits = 2, file = getOption("umx_auto_plot"), r
 		}
 		selDVs = dimnames(model$top.expCovMZ)[[1]]
 		nVar   = length(selDVs)/2;
-		nFac   = dim(model$submodels$top$matrices$a_cp)[[1]]	
+		nFac   = dim(model$top$matrices$a_cp)[[1]]	
 		# MZc = mxEval(MZ.expCov,  model); # Same effect as expCovMZ$matrices$twinACEFit
 		# DZc = mxEval(DZ.expCov,  model);
 		# M   = mxEval(MZ.expMean, model);
@@ -1309,7 +1319,7 @@ umxSummaryCP <- function(model, digits = 2, file = getOption("umx_auto_plot"), r
 		E  = mxEval(top.E, model);
 		Vtot = A + C + E; # Total variance
 		nVarIden = diag(nVar)
-		SD       = solve(sqrt(nVarIden*Vtot)); # inverse of diagonal matrix of standard deviations  (same as "(\sqrt(I.Vtot))~"
+		SD       = solve(sqrt(nVarIden * Vtot)); # inverse of diagonal matrix of standard deviations  (same as "(\sqrt(I.Vtot))~"
 		# print(SD)  # nVar*nVar diagonal matrix
 
 		# Common factor ACE inputs are already std to 1: Just print out
@@ -1318,12 +1328,12 @@ umxSummaryCP <- function(model, digits = 2, file = getOption("umx_auto_plot"), r
 		names(commonACE) = c ("A", "C", "E")
 		message("Common Factor paths")
 		umx_print(commonACE, digits = digits, zero.print = ".")
-		if(class(model$submodels$top$matrices$a_cp)[1] =="LowerMatrix"){
+		if(class(model$top$matrices$a_cp)[1] =="LowerMatrix"){
 			message("You used correlated genetic inputs to the common factor. This is the a_cp matrix")
 			print(a_cp)
 		}
-		stdFit = umx_standardize_CP(model) # Make a copy of model to hold the standardized results
-		# Standardize loadings on Common factors
+		stdFit = umx_standardize_CP(model) # Make a standardized copy of model
+		# Get standardized loadings on Common factors
 		std_cp_loadings = mxEval(top.cp_loadings, stdFit); # Standardized path coefficients (general factor(s))		
 		rowNames = sub("_.1$", "", selDVs[1:nVar])
 		std_CommonEstimate = data.frame(std_cp_loadings, row.names = rowNames);
@@ -1346,7 +1356,7 @@ umxSummaryCP <- function(model, digits = 2, file = getOption("umx_auto_plot"), r
 		if(extended == TRUE) {
 			cat("\nUnstandardized path coefficients\n") # factor loadings
 			print(round(commonACE, digits)); # Loadings on Common factor
-			print(round(data.frame(common_loadings, row.names = rowNames), digits));
+			print(round(data.frame(cp_loadings, row.names = rowNames), digits));
 			# specifics
 			asClean = as
 			csClean = cs
@@ -1362,19 +1372,19 @@ umxSummaryCP <- function(model, digits = 2, file = getOption("umx_auto_plot"), r
 			message("Genetic Correlations")
 			# Pre & post multiply covariance matrix by inverse of standard deviations
 			NAmatrix <- matrix(NA,nVar,nVar);
-			rA = tryCatch(solve(sqrt(nVarIden*A)) %*% A %*% solve(sqrt(nVarIden*A)), error = function(err) return(NAmatrix)); # genetic correlations
-			rC = tryCatch(solve(sqrt(nVarIden*C)) %*% C %*% solve(sqrt(nVarIden*C)), error = function(err) return(NAmatrix)); # shared environmental correlations
-			rE = tryCatch(solve(sqrt(nVarIden*E)) %*% E %*% solve(sqrt(nVarIden*E)), error = function(err) return(NAmatrix)); # Unique environmental correlations
+			rA = tryCatch(solve(sqrt(nVarIden * A)) %*% A %*% solve(sqrt(nVarIden * A)), error = function(err) return(NAmatrix)); # genetic correlations
+			rC = tryCatch(solve(sqrt(nVarIden * C)) %*% C %*% solve(sqrt(nVarIden * C)), error = function(err) return(NAmatrix)); # shared environmental correlations
+			rE = tryCatch(solve(sqrt(nVarIden * E)) %*% E %*% solve(sqrt(nVarIden * E)), error = function(err) return(NAmatrix)); # Unique environmental correlations
 			genetic_correlations = data.frame(cbind(rA, rC, rE), row.names = rowNames);
 			# Make a table
 			names(genetic_correlations) = paste0(rep(c("rA", "rC", "rE"), each = nVar), rep(1:nVar));
 			umx_print(genetic_correlations, digits = digits, zero.print = ".")
 		}
 		if(CIs){
-			message("showing CIs in output not implemented yet: use summary(model) to view them in the mean time")
+			message("Showing CIs in output not implemented yet: use summary(model) to view them in the mean time")
 		}
 		if(!is.na(file)){
-			umxPlotCP(model = stdFit, file = file, digits = digits, showMeans = FALSE, std = FALSE)
+			umxPlotCP(stdFit, file = file, digits = digits, std = FALSE, means = FALSE)
 		}
 		if(returnStd) {
 			return(stdFit)
@@ -1395,7 +1405,7 @@ umxSummary.MxModel.CP <- umxSummaryCP
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param returnStd Whether to return the standardized form of the model (default = F)
 #' @param showRg = whether to show the genetic correlations (F)
-#' @param showStd = Whether to show the standardized model (TRUE)
+#' @param std = Whether to show the standardized model (TRUE)
 #' @param comparison Whether to run mxCompare on a comparison model (NULL)
 #' @param CIs Confidence intervals (F)
 #' @param ... Optional additional parameters
@@ -1414,21 +1424,22 @@ umxSummary.MxModel.CP <- umxSummaryCP
 #' dzData <- subset(twinData, ZYG == "DZFF")
 #' m1 = umxIP(selDVs = selDVs, dzData = dzData, mzData = mzData)
 #' m1 = umxRun(m1)
-#' umxSummaryIP(m1, file = NA) # suppress graphing with NA for CRAN
+#' umxSummaryIP(m1)
+#' plot(m1)
 #' \dontrun{
 #' umxSummaryIP(m1, digits = 2, file = "Figure3", showRg = FALSE, CIs = TRUE);
 #' }
 umxSummaryIP <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
-    returnStd = FALSE, showStd = FALSE, showRg = TRUE, comparison = NULL, CIs = FALSE, ...) {
+    returnStd = FALSE, std = TRUE, showRg = TRUE, comparison = NULL, CIs = FALSE, ...) {
 	if(class(model)[1] != "MxModel.IP"){
 		stop("You used umxSummaryIP on model of class ", class(model)[1], "not 'MxModel.IP'")
 	}
 
 	umx_has_been_run(model, stop = TRUE)
 	selDVs = dimnames(model$top.expCovMZ)[[1]]
-	notImplemented = c(showStd)
+	notImplemented = c(std)
 	if(any(notImplemented)){
-		message("Some parameters not implemented yet. Don't use showStd")
+		message("Some parameters not implemented yet. Don't use std")
 	}
 
 	if(is.null(comparison)){
@@ -1508,7 +1519,7 @@ umxSummaryIP <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 		message("showing CIs in output not implemented yet: use summary(model) to view them in the mean time")
 	}
 	if(!is.na(file)){
-		umxPlotIP(model = stdFit, file = file, digits = 2, std = FALSE)
+		umxPlotIP(x = stdFit, file = file, digits = 2, std = FALSE)
 	}
 	if(returnStd) {
 		return(stdFit)
@@ -1527,7 +1538,7 @@ umxSummary.MxModel.IP <- umxSummaryIP
 #' @param digits round to how many digits (default = 2)
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param returnStd Whether to return the standardized form of the model (default = FALSE)
-#' @param showStd Whether to show the standardized model (not implemented! TRUE)
+#' @param std Whether to show the standardized model (not implemented! TRUE)
 #' @param CIs Confidence intervals (FALSE)
 #' @param xlab label for the x-axis of plot
 #' @param location default = "topleft"
@@ -1565,12 +1576,12 @@ umxSummary.MxModel.IP <- umxSummaryIP
 #' umxSummaryGxE(m1)
 #' umxSummaryGxE(m1, location = "topright")
 #' umxSummaryGxE(m1, separateGraphs = FALSE)
-umxSummaryGxE <- function(model = NULL, digits = 2, xlab = NA, location = "topleft", separateGraphs = FALSE, file = getOption("umx_auto_plot"), returnStd = NULL, showStd = NULL, reduce = FALSE, CIs = NULL, report = c("1", "2", "html"), ...) {
+umxSummaryGxE <- function(model = NULL, digits = 2, xlab = NA, location = "topleft", separateGraphs = FALSE, file = getOption("umx_auto_plot"), returnStd = NULL, std = NULL, reduce = FALSE, CIs = NULL, report = c("1", "2", "html"), ...) {
 	report = match.arg(report)
 	umx_has_been_run(model, stop=TRUE)
 	
-	if(any(!is.null(c(file, returnStd, showStd, CIs, ...) ))){
-		message("I haven't implemented file, returnStd, extended, showStd, comparison or CIs yet...")
+	if(any(!is.null(c(file, returnStd, std, CIs, ...) ))){
+		message("I haven't implemented file, returnStd, extended, std, comparison or CIs yet...")
 	}
 
 	if(is.null(model)){
@@ -1881,8 +1892,9 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param pathLabels Whether to show labels on the paths. both will show both the parameter and the label. ("both", "none" or "labels")
 #' @param showFixed Whether to show fixed paths (defaults to TRUE)
-#' @param showMeans Whether to show means
+#' @param means Whether to show means or not (default = TRUE)
 #' @param resid How to show residuals and variances default is "circle". Options are "line" & "none"
+#' @param showMeans Deprecated: just use 'means = '
 #' @param ... Optional parameters
 #' @export
 #' @seealso - \code{\link{umx_set_plot_format}}
@@ -1899,10 +1911,15 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
 #' plot(m1)
-plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), showFixed = TRUE, showMeans = TRUE, resid = c("circle", "line", "none"), ...) {
+plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), showFixed = TRUE, means = TRUE, resid = c("circle", "line", "none"), showMeans = NULL, ...) {
 	# ==========
 	# = Setup  =
 	# ==========
+	if(!is.null(showMeans)){
+		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+		means = showMeans
+	}	
+	
 	resid = match.arg(resid)
 	model = x # just to be clear that x is a model
 
@@ -1944,7 +1961,7 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 	# ================
 	# = handle means =
 	# ================
-	if(umx_has_means(model) & showMeans){
+	if(umx_has_means(model) & means){
 		out = paste0(out, "\n\t# Means paths\n")
 		# Add a triangle to the list of shapes
 		preOut = paste0(preOut, "\t one [shape = triangle];\n")
@@ -2003,7 +2020,7 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 	# ===================================
 	digraph = paste("digraph G {\n", preOut, out, rankVariables, "\n}", sep = "\n");
 
-	print("nb: see ?plot.MxModel for options - std, digits, file, showFixed, showMeans, resid= 'circle|line|none', pathLabels")
+	print("nb: see ?plot.MxModel for options - std, digits, file, showFixed, means, resid= 'circle|line|none', pathLabels")
 	xmu_dot_maker(model, file, digraph)
 } # end plot.MxModel
 
@@ -2015,8 +2032,9 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 #' @param x \code{\link{mxModel}} to plot (created by umxACE in order to inherit the MxModel.ACE class)
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param digits How many decimals to include in path loadings (default is 2)
-#' @param showMeans Whether to show means paths (default is FALSE)
+#' @param means Whether to show means paths (default is FALSE)
 #' @param std Whether to standardize the model (default is TRUE)
+#' @param showMeans Deprecated: just use 'means = ' for simplicity of typing.
 #' @param ... Additional (optional) parameters
 #' @return - optionally return the dot code
 #' @export
@@ -2033,17 +2051,24 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
 #' plot(m1)
 #' plot(m1, std = FALSE) # don't standardize
-umxPlotACE <- function(x = NA, file = "name", digits = 2, showMeans = FALSE, std = TRUE, ...) {
+umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, showMeans = NULL, std = TRUE, ...) {
+	if(!is.null(showMeans)){
+		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+		means = showMeans
+	}
+	if(!class(x) == "MxModel.ACE"){
+		stop("The first parameter of umxPlotACE must be an ACE model, you gave me a ", class(x))
+	}
 	model = x # just to be clear that x is a model
 	if(std){
 		model = umx_standardize_ACE(model)
 	}
 	out = "";
 	latents  = c();
-	if(model$submodels$MZ$data$type == "raw"){
-		selDVs = names(model$submodels$MZ$data$observed)
+	if(model$MZ$data$type == "raw"){
+		selDVs = names(model$MZ$data$observed)
 	}else{
-		selDVs = dimnames(model$submodels$MZ$data$observed)[[1]]
+		selDVs = dimnames(model$MZ$data$observed)[[1]]
 	}
 	varCount = length(selDVs)/2;
 	parameterKeyList = omxGetParameters(model);
@@ -2059,10 +2084,10 @@ umxPlotACE <- function(x = NA, file = "name", digits = 2, showMeans = FALSE, std
 			latents = append(latents, from)
 			show = T
 		} else { # means probably
-			if(showMeans){
-				show = T
+			if(means){
+				show = TRUE
 			} else {
-				show = F
+				show = FALSE
 			}
 			from   = thisParam;
 			target = sub('r([0-9])c([0-9])', 'var\\2', thisParam, perl=T) 
@@ -2101,8 +2126,9 @@ plot.MxModel.ACE <- umxPlotACE
 #' @param x \code{\link{mxModel}} to plot (created by umxACE in order to inherit the MxModel.ACE class)
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param digits How many decimals to include in path loadings (default is 2)
-#' @param showMeans Whether to show means paths (default is FALSE)
+#' @param means Whether to show means paths (default is FALSE)
 #' @param std Whether to standardize the model (default is TRUE)
+#' @param showMeans (older parameter - replace with means)
 #' @param ... Additional (optional) parameters
 #' @return - optionally return the dot code
 #' @export
@@ -2116,7 +2142,7 @@ plot.MxModel.ACE <- umxPlotACE
 #' # Pick the variables. We will use base names (i.e., "bmi") and set suffix.
 #' selDVs  = c("bmi")
 #' selCovs = c("age")
-#' selVars = umx_paste_names(c(selDVs, selCovs), textConstant = "", suffixes= 1:2)
+#' selVars = umx_paste_names(c(selDVs, selCovs), sep = "", suffixes= 1:2)
 #' # just top few pairs so example runs quickly
 #' mzData = subset(twinData, zyg == 1, selVars)[1:100, ]
 #' dzData = subset(twinData, zyg == 3, selVars)[1:100, ]
@@ -2127,7 +2153,14 @@ plot.MxModel.ACE <- umxPlotACE
 #' 	 suffix = "", autoRun = TRUE)
 #' plot(m1)
 #' plot(m1, std = FALSE) # don't standardize
-umxPlotACEcov <- function(x = NA, file = "name", digits = 2, showMeans = FALSE, std = TRUE, ...) {
+umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = NULL, ...) {
+	if(!is.null(showMeans)){
+		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+		means = showMeans
+	}	
+	if(!class(x) == "MxModel.ACEcov"){
+		stop("The first parameter of umxPlotACEcov must be an ACEcov model, you gave me a ", class(x))
+	}
 	model = x # just to be clear that x is a model
 	# relies on 'a' not having its dimnames stripped off...
 	if(model$MZ$data$type == "raw"){
@@ -2158,7 +2191,7 @@ umxPlotACEcov <- function(x = NA, file = "name", digits = 2, showMeans = FALSE, 
 			target  = selDVs[target]
 			latents = append(latents, from)
 		} else { # means probably
-			if(showMeans){
+			if(means){
 				show = TRUE
 			} else {
 				show = FALSE
@@ -2223,10 +2256,13 @@ plot.MxModel.ACEcov <- umxPlotACEcov
 #' plot(m1)
 #' umxPlotGxE(x = m1, xlab = "SES", separateGraphs = TRUE, location = "topleft")
 umxPlotGxE <- function(x, xlab = NA, location = "topleft", separateGraphs = FALSE, ...) {
+	if(!class(x) == "MxModel.GxE"){
+		stop("The first parameter of umxPlotGxE must be a GxE model, you gave me a ", class(x))
+	}
 	model = x # to emphasise that x has to be a umxGxE model
 	# get unique values of moderator
-	mzData = model$submodels$MZ$data$observed
-	dzData = model$submodels$DZ$data$observed
+	mzData = model$MZ$data$observed
+	dzData = model$DZ$data$observed
 	selDefs = names(mzData)[3:4]
 	if(is.na(xlab)){
 		xlab = selDefs[1]
@@ -2237,12 +2273,12 @@ umxPlotGxE <- function(x, xlab = NA, location = "topleft", separateGraphs = FALS
 	dz2 = as.vector(dzData[,selDefs[2]])
 	allValuesOfDefVar= c(mz1,mz2,dz1,dz2)
 	defVarValues = sort(unique(allValuesOfDefVar))
-	a   = model$submodels$top$matrices$a$values
-	c   = model$submodels$top$matrices$c$values
-	e   = model$submodels$top$matrices$e$values
-	am  = model$submodels$top$matrices$am$values
-	cm  = model$submodels$top$matrices$cm$values
-	em  = model$submodels$top$matrices$em$values
+	a   = model$top$matrices$a$values
+	c   = model$top$matrices$c$values
+	e   = model$top$matrices$e$values
+	am  = model$top$matrices$am$values
+	cm  = model$top$matrices$cm$values
+	em  = model$top$matrices$em$values
 	Va  = (a + am * defVarValues)^2
 	Vc  = (c + cm * defVarValues)^2
 	Ve  = (e + em * defVarValues)^2
@@ -2276,8 +2312,9 @@ plot.MxModel.GxE <- umxPlotGxE
 #' @param x The Common Pathway \code{\link{mxModel}} to display graphically
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param digits How many decimals to include in path loadings (defaults to 2)
-#' @param showMeans Whether to show means paths (defaults to FALSE)
+#' @param means Whether to show means paths (defaults to FALSE)
 #' @param std Whether to standardize the model (defaults to TRUE)
+#' @param showMeans deprecated: replace with just 'means'
 #' @param ... Optional additional parameters
 #' @return - Optionally return the dot code
 #' @family Twin Modeling Functions
@@ -2288,15 +2325,22 @@ plot.MxModel.GxE <- umxPlotGxE
 #' \dontrun{
 #' plot(yourCP_Model) # no need to remember a special name: plot works fine!
 #' }
-umxPlotCP <- function(x = NA, file = "name", digits = 2, showMeans = FALSE, std = TRUE, ...) {
+umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = NULL, ...) {
+	if(!is.null(showMeans)){
+		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+		means = showMeans
+	}
+	if(!class(x) == "MxModel.CP"){
+		stop("The first parameter of umxPlotCP must be a CP model, you gave me a ", class(x))
+	}
 	model = x # just to emphasise that x has to be a model 
 	if(std){
 		model = umx_standardize_CP(model)
 	}
 	# TODO Check I am handling nFac > 1 properly!!
-	facCount = dim(model$submodels$top$a_cp$labels)[[1]]
-	varCount = dim(model$submodels$top$as$values)[[1]]
-	selDVs   = dimnames(model$submodels$MZ$data$observed)[[2]]
+	facCount = dim(model$top$a_cp$labels)[[1]]
+	varCount = dim(model$top$as$values)[[1]]
+	selDVs   = dimnames(model$MZ$data$observed)[[2]]
 	selDVs   = selDVs[1:(varCount)]
 	parameterKeyList = omxGetParameters(model)
 	out = "";
@@ -2333,7 +2377,7 @@ umxPlotCP <- function(x = NA, file = "name", digits = 2, showMeans = FALSE, std 
 		} else {
 			stop("I don't know what a ", thisParam, " is")
 		}
-		if(from == "one" & !showMeans ){
+		if(from == "one" & !means ){
 			# not adding means...
 		} else {
 			CIstr = umx_APA_model_CI(model, cellLabel = thisParam, prefix = "top.", suffix = "_std", digits = digits)
@@ -2372,8 +2416,9 @@ plot.MxModel.CP <- umxPlotCP
 #' @param x The \code{\link{umxIP}} model to plot
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param digits How many decimals to include in path loadings (defaults to 2)
-#' @param showMeans Whether to show means paths (defaults to FALSE)
+#' @param means Whether to show means paths (defaults to FALSE)
 #' @param std whether to standardize the model (defaults to TRUE)
+#' @param showMeans Deprecated: replace with just 'means' for simplicity.
 #' @param ... Optional additional parameters
 #' 
 #' @return - optionally return the dot code
@@ -2385,15 +2430,22 @@ plot.MxModel.CP <- umxPlotCP
 #' plot(model)
 #' umxPlotIP(model, file = NA)
 #' }
-umxPlotIP  <- function(x = NA, file = "name", digits = 2, showMeans = FALSE, std = TRUE, ...) {
+umxPlotIP  <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = NULL, ...) {
+	if(!is.null(showMeans)){
+		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+		means = showMeans
+	}	
+	if(!class(x) == "MxModel.IP"){
+		stop("The first parameter of umxPlotIP must be an IP model, you gave me a ", class(x))
+	}
 	model = x # to emphasise that x has to be an umxIP model
 	if(std){
 		model = umx_standardize_IP(model)
 	}
 	# TODO Check I am handling nFac > 1 properly!!
-	facCount = dim(model$submodels$top$a_cp$labels)[[1]]
-	varCount = dim(model$submodels$top$ai$values)[[1]]
-	selDVs   = dimnames(model$submodels$MZ$data$observed)[[2]]
+	facCount = dim(model$top$a_cp$labels)[[1]]
+	varCount = dim(model$top$ai$values)[[1]]
+	selDVs   = dimnames(model$MZ$data$observed)[[2]]
 	selDVs   = selDVs[1:(varCount)]
 	parameterKeyList = omxGetParameters(model, free = TRUE);
 	out = "";
@@ -2425,7 +2477,7 @@ umxPlotIP  <- function(x = NA, file = "name", digits = 2, showMeans = FALSE, std
 			stop("I don't know what a ", thisParam, " is")
 		}
 
-		if(!showMeans & from == "one"){
+		if(!means & from == "one"){
 			# not adding means...
 		} else {
 			CIstr = umx_APA_model_CI(model, cellLabel = thisParam, prefix = "top.", suffix = "_std", digits = digits, verbose = F)
@@ -3232,7 +3284,7 @@ umx_fun_mean_sd = function(x, na.rm = TRUE, digits = 2){
 #' @return - table
 #' @export
 #' @family Reporting Functions
-#' @seealso - \code{\link{aggregate}}
+#' @seealso - \code{\link{umx_apply}}, \code{\link{aggregate}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' aggregate(mpg ~ cyl, FUN = mean, na.rm = TRUE, data = mtcars)
@@ -3252,7 +3304,7 @@ umx_aggregate <- function(formula = DV ~ condition, data, what = c("mean_sd", "n
 	}
 	x_n = function(x){sum(!is.na(x))}
 
-	what = umx_default_option(what, c("mean_sd", "n"), check=FALSE)
+	what = umx_default_option(what, c("mean_sd", "n"), check = FALSE)
 	if(what == "mean_sd"){
 		FUN = mean_sd
 	} else if(what == "n"){
@@ -3340,18 +3392,29 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA, rounding
 #'
 #' @description
 #' This function creates object summaries used in reporting models, effects, and summarizing data.
+#' 
 #' 1. Given an lm, will return a formated effect, including 95\% CI 
 #' in square brackets, for one of the effects (specified by name in se). e.g.:
+#' \code{\link{umxAPA}}(m1, "wt") yields:
 #' 
-#' \code{\link{summaryAPA}}(m1, "wt")
 #' \eqn{\beta} = -5.344 [-6.486, -4.203], p< 0.001
 #' 
 #' 2. Given a dataframe, summaryAPA will return a table of correlations, with
-#' the mean and SD of each variable as the last row.
+#' the mean and SD of each variable as the last row. So, 
+#' \code{umxAPA(mtcars[,c("cyl", "wt", "mpg", )])} yields a table of 
+#' correlations, means and SDs thus:
 #' 
-#' 3. Given obj and se will return a CI based on 1.96 times the se.
+#'\tabular{lccc}{
+#'         \tab cyl         \tab  wt          \tab mpg          \cr
+#' cyl     \tab 1           \tab  0.78        \tab -0.85        \cr
+#' wt      \tab 0.78        \tab  1           \tab -0.87        \cr
+#' mpg     \tab -0.85       \tab  -0.87       \tab 1            \cr
+#' mean_sd \tab 6.19 (1.79) \tab  3.22 (0.98) \tab 20.09 (6.03)
+#'}
+#'
+#' 3. Given obj and se, umxAPA returns a CI based on 1.96 times the se.
 #' 
-#' 4. Given only obj, will be treated as a p value as returned in APA format.
+#' 4. Given only a number as obj will be treated as a p-value as returned in APA format.
 #' 
 #' @aliases summaryAPA
 #' @param obj Either a model (\link{lm}), a beta-value, or a data.frame
@@ -3392,6 +3455,15 @@ umxAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", mi
 		}
 		if(anyNA(obj)){
 			message("Some rows in dataframe had missing values.")
+		}
+	}else if( "matrix" == class(obj)){
+		# Assume these are correlations or similar numbers
+		cor_table = umx_apply(round, obj, digits = digits) # round corelations
+		output = data.frame(cor_table)
+		if(report == "html"){
+			umx_print(output, digits = digits, file = "tmp.html")
+		} else {
+			umx_print(output, digits = digits)
 		}
 	}else if( "lm" == class(obj)){
 		# report lm summary table

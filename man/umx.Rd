@@ -89,9 +89,9 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}}
 
 Other File Functions: \code{\link{dl_from_dropbox}},
+  \code{\link{umx_make_sql_from_excel}},
   \code{\link{umx_move_file}}, \code{\link{umx_open}},
-  \code{\link{umx_rename_file}},
-  \code{\link{umx_sql_from_excel}}
+  \code{\link{umx_rename_file}}
 
 Other Misc: \code{\link{umxEval}},
   \code{\link{umx_APA_model_CI}},
@@ -104,8 +104,8 @@ Other Misc: \code{\link{umxEval}},
 Other Model Building Functions: \code{\link{umxDiagnose}},
   \code{\link{umxLabel}}, \code{\link{umxLatent}},
   \code{\link{umxModify}}, \code{\link{umxPath}},
-  \code{\link{umxRAM}}, \code{\link{umxRun}},
-  \code{\link{umxThresholdMatrix}},
+  \code{\link{umxRAM2Ordinal}}, \code{\link{umxRAM}},
+  \code{\link{umxRun}}, \code{\link{umxThresholdMatrix}},
   \code{\link{umxValues}},
   \code{\link{umx_fix_first_loadings}},
   \code{\link{umx_fix_latents}}
@@ -117,9 +117,10 @@ Other Modify or Compare Models: \code{\link{umxAdd1}},
   \code{\link{umxUnexplainedCausalNexus}}
 
 Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{umxAPA}}, \code{\link{umx_APA_pval}},
-  \code{\link{umx_aggregate}}, \code{\link{umx_print}},
-  \code{\link{umx_show}}, \code{\link{umx_time}}
+  \code{\link{mxSE}}, \code{\link{umxAPA}},
+  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
+  \code{\link{umx_print}}, \code{\link{umx_show}},
+  \code{\link{umx_time}}
 
 Other Stats Functions: \code{\link{reliability}},
   \code{\link{umxCov2cor}}, \code{\link{umx_cor}},
@@ -144,8 +145,7 @@ Other Utility Functions: \code{\link{qm}},
   \code{\link{umx_paste_names}}, \code{\link{umx_pb_note}},
   \code{\link{umx_print}}, \code{\link{umx_rename}}
 
-Other zAdvanced Helpers: \code{\link{umx_RAM_ordinal_objective}},
-  \code{\link{umx_standardize_ACEcov}},
+Other zAdvanced Helpers: \code{\link{umx_standardize_ACEcov}},
   \code{\link{umx_standardize_ACE}},
   \code{\link{umx_standardize_CP}},
   \code{\link{umx_standardize_IP}}

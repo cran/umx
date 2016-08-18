@@ -6,7 +6,7 @@
 \title{umxSummaryIP}
 \usage{
 umxSummaryIP(model, digits = 2, file = getOption("umx_auto_plot"),
-  returnStd = FALSE, showStd = FALSE, showRg = TRUE, comparison = NULL,
+  returnStd = FALSE, std = TRUE, showRg = TRUE, comparison = NULL,
   CIs = FALSE, ...)
 }
 \arguments{
@@ -18,7 +18,7 @@ umxSummaryIP(model, digits = 2, file = getOption("umx_auto_plot"),
 
 \item{returnStd}{Whether to return the standardized form of the model (default = F)}
 
-\item{showStd}{= Whether to show the standardized model (TRUE)}
+\item{std}{= Whether to show the standardized model (TRUE)}
 
 \item{showRg}{= whether to show the genetic correlations (F)}
 
@@ -44,7 +44,8 @@ mzData <- subset(twinData, ZYG == "MZFF")
 dzData <- subset(twinData, ZYG == "DZFF")
 m1 = umxIP(selDVs = selDVs, dzData = dzData, mzData = mzData)
 m1 = umxRun(m1)
-umxSummaryIP(m1, file = NA) # suppress graphing with NA for CRAN
+umxSummaryIP(m1)
+plot(m1)
 \dontrun{
 umxSummaryIP(m1, digits = 2, file = "Figure3", showRg = FALSE, CIs = TRUE);
 }

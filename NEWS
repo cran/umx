@@ -1,3 +1,35 @@
+# umx 1.3.0
+* R 3.3.1 companion: "Bug in your Hair" August 2016
+* NEW: umxPath allows unique.pairs connection
+ * Useful for growth curve models
+* IMPROVED: umxRAM handles suffix labels
+ * Useful for models embedded in multi-group 
+* IMPROVED: umxSummary to show parameters from first model in multi-group
+ * Begin to support multi-group in umxSummary
+* IMPROVED: twin model figures tweaked
+* CHANGE showStd= to std= in most remaining cases
+ * Might need to update your code!
+* CHANGE: umx_show_options to umx_get_options
+ * Might need to update your code!
+* FIX: umx_check_parallel typo
+* FIX: plot calls from summary
+* REMOVE: dependency on non-condensed slots
+
+# umx 1.2.8
+* R 3.3.0 companion: "Very compatible" May 2016
+* NEW: umxRAM can now build and run Joint Continuous Ordinal models. Tada!!
+* NEW: umx_show_options function to help users learn the options available
+* BETA: umxACE can now implement a form of left-censoring. Tada!!
+* BETA: umxThresholdMatrix can now implement a form of left-censoring.
+* IMPROVE: umxRAM & umxRAM2Ordinal can turn off refModel computation with refModels = F;
+* IMPROVE: umx_show can show thresholds
+* IMPROVED: listOK option for umx_is_MxModel
+* IMPROVED: rowwiseParallel and numberSubjects options for umx_check_parallel
+* CHANGE: I changed "suffix" to "sep" in several places for consistency: this will break
+  some low level code: nearly all of it mine, and fixed. But might affect some users!!
+* UPDATE: umx_time and umx_check_parallel to work with new S4 list deprecation
+* UPDATE: shorter run-time on 2sls code
+
 # umx 1.2.7
 * May 2016 stable release
 * ADDED: umxTwoStage FIML-based Instrumental variable and Mendelian Randomization (beta)
@@ -89,20 +121,20 @@
 * NEW IP twin models! (create, plot, summary) 
 * NEW GxE twin models! (create, plot, summary) 
 * FIXED limitation in umxPath where "to" was not being set.
-* SUPPORT circles as well as lines for residualvariance
-* IMPROVE help text. Thanks Mike Neale esp.!
-* IMPROVE organization of functions into @families in the help.
-* IMPROVE example for umx_lower2full()
+* SUPPORT Circles as well as lines for residualvariance
+* IMPROVE Help text. Thanks Mike Neale esp.!
+* IMPROVE Organization of functions into @families in the help.
+* IMPROVE Rxample for umx_lower2full()
 * DROPPED umxRAM functionality to set endogenous, exogenous, and latent traits
-* DROPPED a dozen deprecated functions.
+* DROPPED A dozen deprecated functions.
 
 # umx 0.50.0
 * First CRAN release
 
 # umx 0.49.0
-* Ensuring edge cases work
-* Improving help files and feedback
-* rationalizing fn names into @families
+* IMPROVE Edge cases work
+* IMPROVE Improving help files and feedback
+* IMPROVE Rationalizing fn names into @families
 
 # umx 0.45-beta
 * Feature complete

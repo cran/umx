@@ -5,7 +5,7 @@
 \title{umxSummary.MxModel}
 \usage{
 \method{umxSummary}{MxModel}(model, refModels = NULL,
-  showEstimates = c("none", "raw", "std", "both", "list of column names"),
+  showEstimates = c("raw", "std", "none", "both", "list of column names"),
   digits = 2, report = c("1", "table", "html"), filter = c("ALL", "NS",
   "SIG"), SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE, ...)
 }
@@ -13,10 +13,10 @@
 \item{model}{The \code{\link{mxModel}} whose fit will be reported}
 
 \item{refModels}{Saturated models if needed for fit indices (see example below:
-Only needed for raw data. nb: \code{\link{umxRun}} takes care of this for you)}
+If NULL will be competed on demand. If FALSE will not be computed. Only needed for raw data.}
 
-\item{showEstimates}{What estimates to show. Options are c("none", "std", "raw", "both", "list of column names"). 
-Default  is "none" (just shows the fit indices)}
+\item{showEstimates}{What estimates to show. By default, the raw estimates are shown 
+(Options = c("raw", "std", "both", "none", "list of column names").}
 
 \item{digits}{How many decimal places to report (default = 2)}
 
@@ -67,10 +67,10 @@ m1 <- umxRAM("One Factor",
 	umxPath(var = manifests),
 	umxPath(var = latents, fixedAt = 1)
 )
-umxSummary(m1, show = "std")
+umxSummary(m1, showEstimates = "std")
 # output as latex
 umx_set_table_format("latex")
-umxSummary(m1, show = "std")
+umxSummary(m1, showEstimates = "std")
 umx_set_table_format("markdown")
 # output as raw
 umxSummary(m1, show = "raw")
@@ -80,7 +80,7 @@ m1 <- mxModel(m1,
   umxPath(mean = latents, fixedAt = 0)
 )
 m1 <- mxRun(m1)
-umxSummary(m1, show = "std", filter = "NS")
+umxSummary(m1, showEstimates = "std", filter = "NS")
 }
 \references{
 - Hu, L., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance 
@@ -92,7 +92,7 @@ umxSummary(m1, show = "std", filter = "NS")
 \url{http://www.github.com/tbates/umx}
 }
 \seealso{
-- \code{\link{mxCI}}, \code{\link{umxCI_boot}}, \code{\link{umxRun}}
+- \code{\link{umxRun}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},

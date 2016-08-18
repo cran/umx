@@ -4,12 +4,12 @@
 \alias{umx_paste_names}
 \title{umx_paste_names}
 \usage{
-umx_paste_names(varNames, textConstant = "", suffixes = 1:2)
+umx_paste_names(varNames, sep = "", suffixes = 1:2)
 }
 \arguments{
 \item{varNames}{a list of _base_ names, e.g c("bmi", "IQ")}
 
-\item{textConstant}{A string separating the name and the twin suffix, e.g. "_T" (default is "")}
+\item{sep}{A string separating the name and the twin suffix, e.g. "_T" (default is "")}
 
 \item{suffixes}{a list of terminal suffixes differentiating the twins default = c("1", "2"))}
 }
@@ -19,10 +19,11 @@ umx_paste_names(varNames, textConstant = "", suffixes = 1:2)
 \description{
 Helper to add suffixes to names: useful for expanding base names for variables (e.g. "bmi")
 into fully specified family-wise row names for variables c("bmi_T1", "bmi_T2")
-Use textConstant to add a constant like "_T" after each base variable name.
+Use sep to add a constant like "_T" after each base variable name.
 This is then suffixed with e.g. "1", "2".
 }
 \examples{
+# two styles doing the same thing: first is more general
 umx_paste_names("bmi", "_T", 1:2)
 umx_paste_names("bmi", suffixes = c("_T1", "_T2"))
 varNames = umx_paste_names(c("N", "E", "O", "A", "C"), "_T", 1:2)

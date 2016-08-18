@@ -4,29 +4,29 @@
 \alias{umxThresholdMatrix}
 \title{umxThresholdMatrix}
 \usage{
-umxThresholdMatrix(df, suffixes = NA, threshMatName = "threshMat",
-  method = c("auto", "Mehta", "allFree"), l_u_bound = c(NA, NA),
-  deviationBased = TRUE, droplevels = FALSE, verbose = FALSE,
-  hint = c("none", "left_censored"))
+umxThresholdMatrix(df, sep = NA, method = c("auto", "Mehta", "allFree"),
+  thresholds = c("deviationBased", "direct", "ignore", "left_censored"),
+  threshMatName = "threshMat", l_u_bound = c(NA, NA), droplevels = FALSE,
+  suffixes = "deprecated", verbose = FALSE)
 }
 \arguments{
 \item{df}{the data being modelled (to allow access to the factor levels and quantiles within these for each variable)}
 
-\item{suffixes}{e.g. c("T1", "T2") - Use for data with repeated observations in a row (i.e., twin data) (defaults to NA)}
-
-\item{threshMatName}{name of the matrix which is returned. Defaults to "threshMat" - best not to change it.}
+\item{sep}{(optional) string for wide (twin) data, separating the base name from a numeric suffix (e.g. "_T")}
 
 \item{method}{How to set the thresholds: auto (the default), Mehta, which fixes the first two (auto chooses this for ordinal) or "allFree" (auto chooses this for binary)}
 
-\item{l_u_bound}{c(NA, NA) by default, you can use this to bound the thresholds. Careful you don't set bounds too close if you do.}
+\item{thresholds}{How to implement thresholds: "deviationBased" (default), "direct", "ignore", "left_censored"}
 
-\item{deviationBased}{Whether to build a helper matrix to keep the thresholds in order (defaults to = TRUE)}
+\item{threshMatName}{name of the matrix which is returned. Defaults to "threshMat" - best not to change it.}
+
+\item{l_u_bound}{c(NA, NA) by default, you can use this to bound the thresholds. Careful you don't set bounds too close if you do.}
 
 \item{droplevels}{Whether to drop levels with no observed data (defaults to FALSE)}
 
-\item{verbose}{(defaults to FALSE))}
+\item{suffixes}{deprecated. Instead of c("T1", "T2"), set sep (see above)}
 
-\item{hint}{currently used for "left_censored" data (defaults to "none"))}
+\item{verbose}{(defaults to FALSE))}
 }
 \value{
 - thresholds matrix
@@ -51,67 +51,77 @@ x = data.frame(ordered(rbinom(100,1,.5))); names(x) <- c("x")
 umxThresholdMatrix(x)
 x = cut(rnorm(100), breaks = c(-Inf,.2,.5, .7, Inf)); levels(x) = 1:5
 x = data.frame(ordered(x)); names(x) <- c("x")
-tm = umxThresholdMatrix(x)
+tmp = umxThresholdMatrix(x)
 
 # ==================
 # = Binary example =
 # ==================
 require(umx)
+if(!packageVersion("OpenMx") > 2.5){message("Update OpenMx to get a new version of twinData")}
 data(twinData)
-labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-twinData$zyg = factor(twinData$zyg, levels = 1:5, labels = labList)
+# ===============================================================
+# = Create a series of binary and ordinal columns to work with =
+# ===============================================================
 # Cut to form category of 80 \% obese subjects
-cutPoints <- quantile(twinData[, "bmi1"], probs = .2, na.rm = TRUE)
+selDVs = c("obese1", "obese2")
 obesityLevels = c('normal', 'obese')
+cutPoints <- quantile(twinData[, "bmi1"], probs = .2, na.rm = TRUE)
 twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 # Step 2: Make the ordinal variables into mxFactors
 # this ensures ordered= TRUE + requires user to confirm levels
-selDVs = c("obese1", "obese2")
 twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
-mzData <- subset(twinData, zyg == "MZFF", selDVs)
-str(mzData)
-tm = umxThresholdMatrix(mzData, suffixes = 1:2, verbose = TRUE) # informative messages
+
+# Repeat for three-level weight variable
+selDVs = c("obeseTri1", "obeseTri2")
+obesityLevels = c('normal', 'overweight', 'obese')
+cutPoints <- quantile(twinData[, "bmi1"], probs = c(.4, .7), na.rm = TRUE)
+twinData$obeseTri1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData$obeseTri2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
+
+selDVs = c("obeseQuad1", "obeseQuad2")
+obesityLevels = c('underWeight', 'normal', 'overweight', 'obese')
+cutPoints <- quantile(twinData[, "bmi1"], probs = c(.25, .4, .7), na.rm = TRUE)
+twinData$obeseQuad1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData$obeseQuad2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
+
+# Example 1
+selDVs = c("obese1", "obese2")
+tmp = umxThresholdMatrix(twinData[,selDVs], sep = "", verbose = TRUE) # informative messages
 
 # ======================================
 # = Ordinal (n categories > 2) example =
 # ======================================
-# Cut to form three categories of weight
-cutPoints <- quantile(twinData[, "bmi1"], probs = c(.4, .7), na.rm = TRUE)
-obesityLevels = c('normal', 'overweight', 'obese')
-twinData$obeseTri1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-twinData$obeseTri2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 selDVs = c("obeseTri1", "obeseTri2")
-twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
-mzData <- subset(twinData, zyg == "MZFF", selDVs)
-str(mzData)
-tm = umxThresholdMatrix(mzData, suffixes = 1:2, verbose = TRUE)
+tmp = umxThresholdMatrix(twinData[,selDVs], sep = "", verbose = TRUE)
 
 # ========================================================
 # = Mix of all three kinds example (and a 4-level trait) =
 # ========================================================
 
-cutPoints <- quantile(twinData[, "bmi1"], probs = c(.25, .4, .7), na.rm = TRUE)
-obesityLevels = c('underWeight', 'normal', 'overweight', 'obese')
-twinData$obeseQuad1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-twinData$obeseQuad2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-selDVs = c("obeseQuad1", "obeseQuad2")
-twinData[, selDVs] <- mxFactor(twinData[, selDVs], levels = obesityLevels)
-
 selDVs = umx_paste_names(c("bmi", "obese", "obeseTri", "obeseQuad"), "", 1:2)
-mzData <- subset(twinData, zyg == "MZFF", selDVs)
-str(mzData)
-tm = umxThresholdMatrix(mzData, suffixes = 1:2, verbose = TRUE)
+tmp = umxThresholdMatrix(twinData[,selDVs], sep = "", verbose = TRUE)
+str(tmp)
 
 # ===================
 # = "left_censored" =
 # ===================
 
 x = round(10 * rnorm(1000, mean = -.2))
-x[x < 0] = 0
-x = mxFactor(x, levels = sort(unique(x)))
-x = data.frame(x)
-# umxThresholdMatrix(x, deviation = FALSE, hint = "left_censored")
+y = round(5 * rnorm(1000))
+x[x < 0] = 0; y[y < 0] = 0
+df  = data.frame(x1 = x, x2 = y)
+df  = umxFactor(df); #str(df)
+table(df)
+tmp = umxThresholdMatrix(df, thresholds = "left_censored"); class(tmp)
+any(tmp$free) # all fixed.
+tmp$labels
+df  = umxFactor(data.frame(x_T1 = x, x_T2 = y), sep="_T"); #str(df)
+tmp = umxThresholdMatrix(df, sep="_T", thresholds = "left_censored"); class(tmp)
+any(tmp$free) # all fixed.
+tmp$labels
 }
 \references{
 - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
@@ -120,8 +130,8 @@ x = data.frame(x)
 Other Model Building Functions: \code{\link{umxDiagnose}},
   \code{\link{umxLabel}}, \code{\link{umxLatent}},
   \code{\link{umxModify}}, \code{\link{umxPath}},
-  \code{\link{umxRAM}}, \code{\link{umxRun}},
-  \code{\link{umxValues}},
+  \code{\link{umxRAM2Ordinal}}, \code{\link{umxRAM}},
+  \code{\link{umxRun}}, \code{\link{umxValues}},
   \code{\link{umx_fix_first_loadings}},
   \code{\link{umx_fix_latents}}, \code{\link{umx}}
 }

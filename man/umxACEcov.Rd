@@ -6,8 +6,8 @@
 \usage{
 umxACEcov(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix = NULL,
   dzAr = 0.5, dzCr = 1, addStd = TRUE, addCI = TRUE, boundDiag = NULL,
-  equateMeans = TRUE, bVector = FALSE, hint = c("none", "left_censored"),
-  autoRun = getOption("umx_auto_run"))
+  equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased",
+  "left_censored"), autoRun = getOption("umx_auto_run"))
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE")}
@@ -37,7 +37,7 @@ full column names, i,e "dep" -->  c("dep_T1", "dep_T2")}
 
 \item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE)}
 
-\item{hint}{An analysis hint. Options include "none", (default) "left_censored". Default does nothing.}
+\item{thresholds}{How to implement ordinal thresholds: c("deviationBased", "left_censored")}
 
 \item{autoRun}{Whether to run the model and return it, or just return it}
 }
@@ -53,19 +53,19 @@ umxACEcov supplements the \code{\link{umxACE}} Cholesky model with covariates.
 \examples{
 require(umx)
 data(twinData)
-# add age 1 and age 2 columns
+# dupliate age to  age1 & age2
 twinData$age1 = twinData$age2 = twinData$age
-selDVs  = c("bmi")
-selCovs = c("age")
-selVars = umx_paste_names(c(selDVs, selCovs), textConstant = "", suffixes= 1:2)
-# just top 80 so example runs in a couple of secs
+selDVs  = c("bmi") # Set the DV
+selCovs = c("age") # Set the IV
+selVars = umx_paste_names(c(selDVs, selCovs), sep = "", suffixes = 1:2)
+# 80 rows so example runs fast
 mzData = subset(twinData, zyg == 1, selVars)[1:80, ]
 dzData = subset(twinData, zyg == 3, selVars)[1:80, ]
-# TODO update for new dataset variable zygosity
+# This will also work on OpenMx 2.5 or better
 # mzData = subset(twinData, zygosity == "MZFF", selVars)[1:80, ]
 # dzData = subset(twinData, zygosity == "DZFF", selVars)[1:80, ]
-m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs, dzData = dzData, mzData = mzData, 
-	 suffix = "", autoRun = TRUE)
+m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs,
+	dzData = dzData, mzData = mzData, suffix = "", autoRun = TRUE)
 umxSummary(m1)
 plot(m1)
 }

@@ -35,11 +35,12 @@ umx_aggregate(cbind(moodAvg, mood) ~ condition, data = study1)
 - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 }
 \seealso{
-- \code{\link{aggregate}}
+- \code{\link{umx_apply}}, \code{\link{aggregate}}
 
 Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{umxAPA}}, \code{\link{umx_APA_pval}},
-  \code{\link{umx_print}}, \code{\link{umx_show}},
-  \code{\link{umx_time}}, \code{\link{umx}}
+  \code{\link{mxSE}}, \code{\link{umxAPA}},
+  \code{\link{umx_APA_pval}}, \code{\link{umx_print}},
+  \code{\link{umx_show}}, \code{\link{umx_time}},
+  \code{\link{umx}}
 }
 

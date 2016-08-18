@@ -4,10 +4,12 @@
 \alias{xmuMinLevels}
 \title{xmuMinLevels}
 \usage{
-xmuMinLevels(df)
+xmuMinLevels(df, what = c("value", "name"))
 }
 \arguments{
 \item{df}{Dataframe to search through}
+
+\item{what}{Either "value" or "name" (of the min-level column)}
 }
 \value{
 - min number of levels in frame
@@ -15,8 +17,14 @@ xmuMinLevels(df)
 \description{
 Get the min levels from df
 }
+\examples{
+xmuMinLevels(mtcars) # NA = no ordinal vars
+xmuMinLevels(umxFactor(mtcars))
+xmuMinLevels(umxFactor(mtcars), what = "name")
+}
 \seealso{
-Other xmu internal not for end user: \code{\link{xmuHasSquareBrackets}},
+Other xmu internal not for end user: \code{\link{umx_explode_twin_names}},
+  \code{\link{xmuHasSquareBrackets}},
   \code{\link{xmuLabel_MATRIX_Model}},
   \code{\link{xmuLabel_Matrix}},
   \code{\link{xmuLabel_RAM_Model}}, \code{\link{xmuMI}},
@@ -25,6 +33,7 @@ Other xmu internal not for end user: \code{\link{xmuHasSquareBrackets}},
   \code{\link{xmuMakeTwoHeadedPathsFromPathList}},
   \code{\link{xmuMaxLevels}},
   \code{\link{xmuPropagateLabels}},
+  \code{\link{xmu_check_levels_identical}},
   \code{\link{xmu_dot_make_paths}},
   \code{\link{xmu_dot_make_residuals}},
   \code{\link{xmu_start_value_list}}

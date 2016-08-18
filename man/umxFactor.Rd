@@ -5,23 +5,27 @@
 \alias{umx_factor}
 \title{umxFactor}
 \usage{
-umxFactor(x = character(), levels = NA, labels = levels, exclude = NA,
-  collapse = FALSE, ordered = TRUE, verbose = FALSE)
+umxFactor(x = character(), levels = NULL, labels = levels, exclude = NA,
+  ordered = TRUE, collapse = FALSE, verbose = FALSE, sep = NA)
 }
 \arguments{
 \item{x}{A variable to recode as an mxFactor (see \code{\link{mxFactor}})}
 
-\item{levels}{defaults to NA. UNLIKE mxFactor, if not specified, the existing levels will be used}
+\item{levels}{(default NULL). Like \code{\link{factor}} but UNLIKE \code{\link{mxFactor}}, 
+unique values will be used if levels not specified.}
 
 \item{labels}{= levels (see \code{\link{mxFactor}})}
 
 \item{exclude}{= NA (see \code{\link{mxFactor}})}
 
-\item{collapse}{= FALSE (see \code{\link{mxFactor}})}
-
 \item{ordered}{= TRUE By default return an ordered mxFactor}
 
+\item{collapse}{= FALSE (see \code{\link{mxFactor}})}
+
 \item{verbose}{Whether to tell user about such things as coercing to factor}
+
+\item{sep}{If twin data are being used, the string that separates the base from twin index
+# will try and ensure factor levels same across all twins.}
 }
 \value{
 - \code{\link{mxFactor}}
@@ -31,12 +35,29 @@ A convenient version of \code{\link{mxFactor}} supporting the common
 case in which the factor levels are those in the variable.
 }
 \examples{
-x = umxFactor(letters) # just do it
-str(x)
-x = umxFactor(letters, verbose = TRUE) # report coercions
-x = umxFactor(letters, ordered = FALSE) # non-ordered factor like factor(x), but handles data.frames
+umxFactor(letters)
+umxFactor(letters, verbose = TRUE) # report coercions
+umxFactor(letters, ordered = FALSE) # non-ordered factor like factor(x)
 # Dataframe example:
-x = umx_factor(mtcars[,c("cyl", "am")], ordered = FALSE) 
+x = umx_factor(mtcars[,c("cyl", "am")], ordered = FALSE); str(x)
+# =================
+# = Twin example: =
+# =================
+data(twinData)
+tmp = twinData[, c("bmi1", "bmi2")]
+tmp$bmi1[tmp$bmi1 <= 22] = 22
+tmp$bmi2[tmp$bmi2 <= 22] = 22
+# remember to factor _before_ breaking into MZ and DZ groups
+x = umxFactor(tmp, sep = ""); str(x)
+xmu_check_levels_identical(x, "bmi", sep="")
+
+# Simple example to check behavior
+x = round(10 * rnorm(1000, mean = -.2))
+y = round(5 * rnorm(1000))
+x[x < 0] = 0; y[y < 0] = 0
+jnk = umxFactor(x); str(jnk)
+df  = data.frame(x = x, y = y)
+jnk = umxFactor(df); str(jnk)
 }
 \references{
 - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}

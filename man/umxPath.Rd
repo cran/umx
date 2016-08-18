@@ -5,11 +5,12 @@
 \title{umxPath: Flexible specification of sem paths}
 \usage{
 umxPath(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
-  unique.bivariate = NULL, formative = NULL, Cholesky = NULL,
-  means = NULL, v1m0 = NULL, v.m. = NULL, fixedAt = NULL,
-  freeAt = NULL, firstAt = NULL, connect = c("single", "all.pairs",
-  "all.bivariate", "unique.pairs", "unique.bivariate"), arrows = 1,
-  free = TRUE, values = NA, labels = NA, lbound = NA, ubound = NA)
+  unique.bivariate = NULL, unique.pairs = NULL, forms = NULL,
+  Cholesky = NULL, means = NULL, v1m0 = NULL, v.m. = NULL,
+  v0m0 = NULL, fixedAt = NULL, freeAt = NULL, firstAt = NULL,
+  connect = c("single", "all.pairs", "all.bivariate", "unique.pairs",
+  "unique.bivariate"), arrows = 1, free = TRUE, values = NA,
+  labels = NA, lbound = NA, ubound = NA, hasMeans = NULL)
 }
 \arguments{
 \item{from}{either a source variable e.g "A" or c("A","B"), OR a sem-style path description, e.g. "A-> B" or "C <> B"}
@@ -22,10 +23,13 @@ umxPath(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 
 \item{cov}{equivalent to setting "from = X, to = Y, arrows = 2". nb: from, to, and with must be left empty (their default)}
 
-\item{unique.bivariate}{equivalent to setting "connect = "unique.bivariate", arrows = 2". nb: from, to, and with must be left empty (their default)}
+\item{unique.bivariate}{equivalent to setting "connect = "unique.bivariate", arrows = 2".
+nb: from, to, and with must be left empty (their default)}
 
-\item{formative}{Paired with to, this will build a formative variable, from the formatives, allowing these to
-covary, and to the latent "to" variable, fixing its variance to zero.}
+\item{unique.pairs}{equivalent to setting "connect = "unique.pairs", arrows = 2" (don't use from, to, or with)}
+
+\item{forms}{Paired with from, this will build a formative variable. from vars form the latent.
+Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate among froms.}
 
 \item{Cholesky}{Treat \strong{Cholesky} vars as latent and \strong{to} as measured, and connect as in an ACE model.}
 
@@ -34,6 +38,8 @@ covary, and to the latent "to" variable, fixing its variance to zero.}
 \item{v1m0}{variance of 1 and mean of zero in one call.}
 
 \item{v.m.}{variance and mean, both free.}
+
+\item{v0m0}{variance and mean, both fixed at zero.}
 
 \item{fixedAt}{Equivalent to setting "free = FALSE, values = x" nb: free and values must be left empty (their default)}
 
@@ -54,6 +60,8 @@ covary, and to the latent "to" variable, fixing its variance to zero.}
 \item{lbound}{lower bounds for each path value}
 
 \item{ubound}{upper bounds for each path value}
+
+\item{hasMeans}{Used in 'forms' case to know whether the data have means or not.}
 }
 \value{
 - 1 or more \code{\link{mxPath}}s
@@ -127,6 +135,7 @@ require(umx)
 # Some examples of paths with umxPath
 umxPath("A", to = "B") # One-headed path from A to B
 umxPath("A", to = "B", fixedAt = 1) # same, with value fixed @1
+umxPath("A", to = c("B", "C"), fixedAt = 1:2) # same, with more than 1 value
 umxPath("A", to = LETTERS[2:4], firstAt = 1) # Fix only the first path, others free
 umxPath(var = "A") # Give a variance to A
 umxPath(var = "A", fixedAt = 1) # Give a variance, fixed at 1
@@ -139,6 +148,7 @@ umxPath("A", with = "B", fixedAt = .5) # 2-head path fixed at .5
 umxPath("A", with = c("B", "C"), firstAt = 1) # first covariance fixed at 1
 umxPath(cov = c("A", "B"))  # Covariance A <-> B
 umxPath(unique.bivariate = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
+umxPath(unique.pairs = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
 umxPath(Cholesky = c("A1","A2"), to = c("m1", "m2")) # Cholesky
 # A worked example
 data(demoOneFactor)
@@ -182,8 +192,9 @@ umxSummary(m1, show = "std")
 
 Other Model Building Functions: \code{\link{umxDiagnose}},
   \code{\link{umxLabel}}, \code{\link{umxLatent}},
-  \code{\link{umxModify}}, \code{\link{umxRAM}},
-  \code{\link{umxRun}}, \code{\link{umxThresholdMatrix}},
+  \code{\link{umxModify}}, \code{\link{umxRAM2Ordinal}},
+  \code{\link{umxRAM}}, \code{\link{umxRun}},
+  \code{\link{umxThresholdMatrix}},
   \code{\link{umxValues}},
   \code{\link{umx_fix_first_loadings}},
   \code{\link{umx_fix_latents}}, \code{\link{umx}}
