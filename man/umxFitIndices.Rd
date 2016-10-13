@@ -4,38 +4,45 @@
 \alias{umxFitIndices}
 \title{umxFitIndices}
 \usage{
-umxFitIndices(model, indepfit)
+umxFitIndices(model, refModels = mxRefModels(model, run = TRUE))
 }
 \arguments{
-\item{model}{the \code{\link{mxModel}} you want fit indices for}
+\item{model}{The \code{\link{mxModel}} for which you want fit indices.}
 
-\item{indepfit}{an (optional) saturated \code{\link{mxModel}}}
+\item{refModels}{Independence and saturated models. default mxRefModels(model, run = TRUE)}
 }
 \value{
-\code{NULL}
+Table of fit statistics
 }
 \description{
-A list of fit indices
+A list of fit indices. Originated in this thread: http://openmx.psyc.virginia.edu/thread/765
+note: This is not a full-fat fit reporter. It is not robust across multi-group designs,
+definition variables. It is primarily designed to add less-often reported fit indices for 
+RAM models where reviewer 2 wants something other than CFA/TLI/RMSEA :-).
 }
 \examples{
 require(umx)
 data(demoOneFactor)
 latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- mxModel("One Factor", type = "RAM", 
-	manifestVars = manifests, latentVars = latents, 
-	mxPath(from = latents, to = manifests),
-	mxPath(from = manifests, arrows = 2),
-	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+m1 <- umxRAM("One Factor",
+	data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
+	umxPath(latents, to = manifests),
+	umxPath(var = manifests),
+	umxPath(var = latents, fixedAt = 1)
 )
-m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-\dontrun{
 umxFitIndices(m1)
-}
+# And with raw data
+m1 <- umxRAM("m1", data = demoOneFactor,
+	umxPath(latents, to = manifests),
+	umxPath(v.m. = manifests),
+	umxPath(v1m0 = latents)
+)
+umxFitIndices(m1)
+umxAPA(umxFitIndices(m1), digits = 3)
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+-
 }
 \seealso{
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
@@ -47,7 +54,8 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
   \code{\link{umxCompare}}, \code{\link{umxExpCov}},
   \code{\link{umxExpMeans}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACE}},
+  \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
   \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}

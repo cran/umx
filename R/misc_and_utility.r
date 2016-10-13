@@ -794,6 +794,7 @@ umx_explode_twin_names <- function(df, sep = "_T") {
 #' @return - \code{\link{mxFactor}}
 #' @export
 #' @family Data Functions
+#' @seealso - \code{\link{umxFactanal}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' umxFactor(letters)
@@ -1039,6 +1040,8 @@ umx_find_object <- function(pattern = ".*", requiredClass = "MxModel") {
 #'
 #' Returns a dataframe with variables renamed as desired.
 #' Unlike some functions, it checks that the variables exist, and that the new names are not already used.
+#' 
+#' As a courtesy function, it handles grep replace in strings of characters.
 #'
 #' note: to use replace list, you must say c(old = "new"), not c(old -> "new")
 #' @param x the dataframe in which to rename variables
@@ -1071,9 +1074,9 @@ umx_rename <- function(x, replace = NULL, old = NULL, grep = NULL, test = FALSE)
 		if(is.null(replace)){
 			stop("Please set replace to a valid replacement string!")
 		}
-	    nameVector = names(x)
+	    nameVector = umx_names(x)
 	    if (is.null(nameVector)) {
-	        stop(paste0("umx_names requires a dataframe or something else with names(), ", 
+	        stop(paste0("umx_rename requires a dataframe or something else with names(), ", 
 	            umx_object_as_str(x), " is a ", typeof(x)))
 	    }
 		new_names = gsub(grep, replace, nameVector)
@@ -1085,7 +1088,11 @@ umx_rename <- function(x, replace = NULL, old = NULL, grep = NULL, test = FALSE)
 			message("New:")
 			print(new_names[!(nameVector == new_names)])
 		} else {
-			names(x) = new_names
+			if(class(x)=="character"){
+				x = new_names
+			} else {
+				names(x) = new_names
+			}
 		}
 		invisible(x)		
 	} else {
@@ -1505,6 +1512,7 @@ umx_check_OS <- function(target=c("OSX", "SunOS", "Linux", "Windows"), action = 
 #' \dontrun{
 #' # An example xcel spreadsheet
 #' fp = system.file("inst/extdata", "GQ6.sql.xlsx", package = "umx")
+#' fp = system.file("extdata", "GQ6.sql.xlsx", package = "umx")
 #' umx_open(fp)
 #' umx_make_sql_from_excel() # Using file selected in front-most Finder window
 #' umx_make_sql_from_excel("~/Desktop/test.xlsx") # provide a path
@@ -1735,26 +1743,26 @@ print.reliability <- function (x, digits = 4, ...){
 # ==================
 # = Code functions =
 # ==================
-#' getOpenMx
+#' install.OpenMx
 #'
 #' @description
 #' source() the getOpenMx.R script from source repo.
 #'
-#' @aliases umx_get_OpenMx
+#' @aliases umx_install_OpenMx
 #' @return - 
 #' @export
 #' @family Miscellaneous Functions
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' \dontrun{
-#' getOpenMx()
+#' install.OpenMx()
 #' }
-getOpenMx <- function() {
+install.OpenMx <- function() {
 	source('http://openmx.psyc.virginia.edu/getOpenMx.R')
 }
 
 #' @export
-umx_get_OpenMx <- getOpenMx
+umx_install_OpenMx <- install.OpenMx
 
 #' umx_make umx using devtools
 #'
@@ -1933,14 +1941,17 @@ umxCov2cor <- function(x) {
 #' A function to compactly report how long a model took to execute. Comes with some preset styles
 #' User can set the format with C-style string formatting.
 #'
-#' The default is "simple", which gives only the biggest unit used. i.e., "x seconds" for times under 1 minute.
+#' The default time format is "simple", which gives only the biggest unit used. i.e., "x seconds" for times under 1 minute.
 #' "std" shows time in the format adopted in OpenMx 2.0 e.g. "Wall clock time (HH:MM:SS.hh): 00:00:01.16"
 #' 
 #' If a list of models is provided, time deltas will also be reported.
 #' 
-#' If the model hasn not been run, umx_time will run it for you.
+#' If instead of a model the key word "start" is given in x, a start time will be recorded. "stop" gives the
+#' time since "start" was called (and clears the timer)
+#' 
+#' If a model has not been run, umx_time will run it for you.
 #'
-#' @param model An \code{\link{mxModel}} (or \code{\link{list}} of models for which to display elapsed time
+#' @param x A \code{\link{mxModel}} or list of models for which to display elapsed time, or 'start' or 'stop'
 #' @param formatStr A format string, defining how to show the time (defaults to human readable)
 #' @param tz time zone in which the model was executed (defaults to "GMT")
 #' @param autoRun If TRUE (default), run the model if it appears not to have been.
@@ -1965,31 +1976,31 @@ umxCov2cor <- function(x) {
 #' umx_time(c(m1, m2))
 #' umx_time('stop')
 #' # elapsed time: .3 seconds
-umx_time <- function(model = NA, formatStr = c("simple", "std", "custom %H %M %OS3"), tz = "GMT", autoRun = TRUE){
-	if(is.list(model)){
+umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3"), tz = "GMT", autoRun = TRUE){
+	if(is.list(x)){
 		# check each item is a model
-		if(!umx_is_MxModel(model, listOK = TRUE)){
-			stop("If model is a list of models, each must be a valid mxModel")
+		if(!umx_is_MxModel(x, listOK = TRUE)){
+			stop("If x is a list of models, each must be a valid mxModel")
 		}
-	}else if(umx_is_MxModel(model)){
+	}else if(umx_is_MxModel(x)){
 		# great, we've got a model?
-	}else if(is.character(model)){
-		umx_check(model %in% c('start', 'stop'), "stop", "Valid time strings are 'start', 'stop' (or a model or list of models)")
-	}else if(is.na(model)){
+	}else if(is.character(x)){
+		umx_check(x %in% c('start', 'stop'), "stop", "Valid time strings are 'start', 'stop' (or a model or list of models)")
+	}else if(is.na(x)){
 		stop("You must set the first parameter (options are 'start', 'stop', a model, or a list of models)")
 	}else{
-		stop("You must set the first parameter to 'start', 'stop', a model, or a list of models.\nYou offered up a", class(model))
+		stop("You must set the first parameter to 'start', 'stop', a model, or a list of models.\nYou offered up a", class(x))
 	}
 	formatStr = umx_default_option(formatStr, c("simple", "std", "custom %H %M %OS3"), check = FALSE)
 	# TODO output a nicely formatted table
-	for(i in 1:length(model)) {			
-		if(length(model) > 1) {
-			m = model[[i]]
+	for(i in 1:length(x)) {			
+		if(length(x) > 1) {
+			m = x[[i]]
 		} else {
-			if(class(model) == "list"){
-				m = model[[i]]
+			if(class(x) == "list"){
+				m = x[[i]]
 			} else {
-				m = model
+				m = x
 			}
 		}
 		if(class(m) == "character"){
@@ -3350,9 +3361,9 @@ umx_explode <- function(delimiter = character(), string) {
 #' umx_names(mtcars, "^d") # "disp", drat
 #' umx_names(mtcars, "r[ab]") # "drat", "carb"
 umx_names <- function(df, pattern = ".*", ignore.case = TRUE, perl = FALSE, value = TRUE, fixed = FALSE, useBytes = FALSE, invert = FALSE) {
-	if(class(df)=="data.frame"){
+	if(class(df) == "data.frame"){
 		nameVector = names(df)
-	} else if(class(df)=="character"){
+	} else if(class(df) == "character"){
 		nameVector = df
 	} else {
 		nameVector = parameters(df)

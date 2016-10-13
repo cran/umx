@@ -64,14 +64,15 @@ stdFit = umxSummaryACE(m1, returnStd = TRUE);
 \seealso{
 - \code{\link{umxACEcov}}
 
-Other Twin Modeling Functions: \code{\link{umxACESexLim}},
-  \code{\link{umxACEcov}}, \code{\link{umxACE}},
-  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
-  \code{\link{umxIP}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxSummaryACE}},
-  \code{\link{umxSummaryCP}}, \code{\link{umxSummaryGxE}},
-  \code{\link{umxSummaryIP}},
+Other Twin Modeling Functions: \code{\link{plot.MxModel}},
+  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
+  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
+  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
   \code{\link{umx_make_TwinData}}, \code{\link{umx}}
 }
 

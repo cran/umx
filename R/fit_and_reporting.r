@@ -658,7 +658,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("raw",
 	validValuesForshowEstimates = c("raw", "std", "none", "both", "list of column names")
 	showEstimates = umx_default_option(showEstimates, validValuesForshowEstimates, check = FALSE) # to allow a user specified list
 
-	message('?umxSummary options include refModels, showEstimates = "raw|std|...", digits, report = "html", filter = "NS|SIG", SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE')
+	message("?umxSummary showEstimates='raw|std', digits, report= 'html', filter= 'NS' & more")
 	
 	# if the filter is off default, the user must want something, let's assume it's std ...
 	if( filter != "ALL" & showEstimates == "none") {
@@ -749,7 +749,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("raw",
 			umx_print(toShow, digits = digits, na.print = "", zero.print = "0", justify = "none")
 		}
 	} else {
-		message("For estimates, umxSummary(..., showEstimates = 'std', 'raw', or 'both')")
+		# message("For estimates, umxSummary(..., showEstimates = 'std', 'raw', or 'both')")
 	}
 	with(modelSummary, {
 		if(!is.finite(TLI)){
@@ -1884,21 +1884,24 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' select Graphviz.app (or OmniGraffle professional),
 #' then set \dQuote{change all}.
 #'
-#' @aliases umxPlot
+#' @aliases plot umxPlot
 #' @rdname plot.MxModel
 #' @param x An \code{\link{mxModel}} from which to make a path diagram
 #' @param std Whether to standardize the model (default = FALSE).
 #' @param digits The number of decimal places to add to the path coefficients
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param pathLabels Whether to show labels on the paths. both will show both the parameter and the label. ("both", "none" or "labels")
-#' @param showFixed Whether to show fixed paths (defaults to TRUE)
+#' @param fixed Whether to show fixed paths (defaults to TRUE)
 #' @param means Whether to show means or not (default = TRUE)
 #' @param resid How to show residuals and variances default is "circle". Options are "line" & "none"
-#' @param showMeans Deprecated: just use 'means = '
+#' @param showMeans Deprecated: just use 'means = TRUE'
+#' @param showFixed Deprecated: just use 'fixed = TRUE'
 #' @param ... Optional parameters
 #' @export
-#' @seealso - \code{\link{umx_set_plot_format}}
+#' @seealso - \code{\link{umx_set_plot_format}}, \code{\link{plot.MxModel}}, \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}}, \code{\link{umxPlotGxE}},
+#' @family Plotting functions
 #' @family Reporting functions
+#' @family Twin Modeling Functions
 #' @references - \url{http://www.github.com/tbates/umx}, \url{https://en.wikipedia.org/wiki/DOT_(graph_description_language)}
 #' @examples
 #' require(umx)
@@ -1911,7 +1914,7 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
 #' plot(m1)
-plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), showFixed = TRUE, means = TRUE, resid = c("circle", "line", "none"), showMeans = NULL, ...) {
+plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), fixed = TRUE, means = TRUE, resid = c("circle", "line", "none"), showFixed = TRUE, showMeans = NULL, ...) {
 	# ==========
 	# = Setup  =
 	# ==========
@@ -1920,27 +1923,40 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 		means = showMeans
 	}	
 	
+	if(!is.null(showMeans)){
+		message("We're moving from showFixed = T/F to just fixed = T/F for simplicity")
+		fixed = showFixed
+	}	
 	resid = match.arg(resid)
 	model = x # just to be clear that x is a model
 
 	pathLabels = match.arg(pathLabels)
 	latents = model@latentVars   # 'vis', 'math', and 'text' 
 	selDVs  = model@manifestVars # 'visual', 'cubes', 'paper', 'general', 'paragrap'...
+	
+	# update values using compute = T to capture labels with [] references.
+	# TODO: !!! Needs more work to sync with confidence intervals and SES
+	model$S$values = mxEval(S, model, compute = T)
+	model$A$values = mxEval(A, model, compute = T)
+	if(!is.null(model$M)){
+		model$M$values = mxEval(M, model, compute = T)
+	}
+	
 	if(std){ model = umx_standardize_RAM(model, return = "model") }
 
 	# ========================
 	# = Get Symmetric & Asymmetric Paths =
 	# ========================
 	out = "";
-	out = xmu_dot_make_paths(model$matrices$A, stringIn = out, heads = 1, showFixed = showFixed, pathLabels = pathLabels, comment = "Single arrow paths", digits = digits)
+	out = xmu_dot_make_paths(model$matrices$A, stringIn = out, heads = 1, fixed = fixed, pathLabels = pathLabels, comment = "Single arrow paths", digits = digits)
 	if(resid == "circle"){
-		out = xmu_dot_make_paths(model$matrices$S, stringIn = out, heads = 2, showResiduals = FALSE, showFixed = showFixed, pathLabels = pathLabels, comment = "Covariances", digits = digits)
+		out = xmu_dot_make_paths(model$matrices$S, stringIn = out, heads = 2, showResiduals = FALSE, fixed = fixed, pathLabels = pathLabels, comment = "Covariances", digits = digits)
 	} else if(resid == "line"){
-		out = xmu_dot_make_paths(model$matrices$S, stringIn = out, heads = 2, showResiduals = TRUE , showFixed = showFixed, pathLabels = pathLabels, comment = "Covariances & residuals", digits = digits)
+		out = xmu_dot_make_paths(model$matrices$S, stringIn = out, heads = 2, showResiduals = TRUE , fixed = fixed, pathLabels = pathLabels, comment = "Covariances & residuals", digits = digits)
 	}else{
-		out = xmu_dot_make_paths(model$matrices$S, stringIn = out, heads = 2, showResiduals = FALSE , showFixed = showFixed, pathLabels = pathLabels, comment = "Covariances & residuals", digits = digits)		
+		out = xmu_dot_make_paths(model$matrices$S, stringIn = out, heads = 2, showResiduals = FALSE , fixed = fixed, pathLabels = pathLabels, comment = "Covariances & residuals", digits = digits)		
 	}
-	# TODO should xmu_dot_make_residuals handle showFixed or not necessary?
+	# TODO should xmu_dot_make_residuals handle fixed or not necessary?
 	tmp = xmu_dot_make_residuals(model$matrices$S, latents = latents, digits = digits, resid = resid)
 	variances     = tmp$variances  #either "var_var textbox" or "var -> var port circles"
 	varianceNames = tmp$varianceNames # names of residuals/variances. EMPTY if using circles 
@@ -1981,8 +1997,8 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 			}
 
 			# TODO find a way of showing means fixed at zero?
-			if(thisPathFree || showFixed ) {
-				# if(thisPathFree | (showFixed & thisPathVal != 0) ) {
+			if(thisPathFree || fixed ) {
+				# if(thisPathFree | (fixed & thisPathVal != 0) ) {
 				out = paste0(out, "\tone -> ", to, labelStart, thisPathVal, '"];\n')
 			}else{
 				# cat(paste0(out, "\tone -> ", to, labelStart, thisPathVal, '"];\n'))
@@ -2008,19 +2024,15 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 	# TODO more intelligence possible in plot() perhaps hints like "MIMIC" or "ACE"
 	rankVariables = paste0("\t{rank=min ; ", paste(latents, collapse = "; "), "};\n")
 	rankVariables = paste0(rankVariables, "\t{rank=same; ", paste(selDVs, collapse = " "), "};\n")
-	
 	if(umx_has_means(model)){ append(varianceNames, "one")}
-
 	if(length(varianceNames) > 0){
 		rankVariables = paste0(rankVariables, "\t{rank=max ; ", paste(varianceNames, collapse = " "), "};\n")
 	}
-
 	# ===================================
 	# = Assemble full text to write out =
 	# ===================================
 	digraph = paste("digraph G {\n", preOut, out, rankVariables, "\n}", sep = "\n");
-
-	print("nb: see ?plot.MxModel for options - std, digits, file, showFixed, means, resid= 'circle|line|none', pathLabels")
+	print("?plot.MxModel options: std, digits, file, fixed, means, resid= 'circle|line|none' & more")
 	xmu_dot_maker(model, file, digraph)
 } # end plot.MxModel
 
@@ -2028,16 +2040,18 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 #'
 #' Make a graphical display of an ACE model
 #'
-#' @aliases plot plot.MxModel.ACE
+#' @aliases plot.MxModel.ACE
 #' @param x \code{\link{mxModel}} to plot (created by umxACE in order to inherit the MxModel.ACE class)
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param digits How many decimals to include in path loadings (default is 2)
 #' @param means Whether to show means paths (default is FALSE)
 #' @param std Whether to standardize the model (default is TRUE)
-#' @param showMeans Deprecated: just use 'means = ' for simplicity of typing.
+#' @param showMeans DEPRECATED: just use 'means = ' for simplicity of typing.
+#' @param showStd DEPRECATED: just use 'std = '
 #' @param ... Additional (optional) parameters
 #' @return - optionally return the dot code
 #' @export
+#' @family Plotting functions
 #' @family Reporting functions
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
@@ -2051,10 +2065,14 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
 #' plot(m1)
 #' plot(m1, std = FALSE) # don't standardize
-umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, showMeans = NULL, std = TRUE, ...) {
-	if(!is.null(showMeans)){
-		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = "deprecated", showStd = "deprecated", ...) {
+	if(showMeans != "deprecated"){
+		message("We're moving from 'showMeans'to just means = T/F for simplicity")
 		means = showMeans
+	}
+	if(showStd != "deprecated"){
+		message("We're moving from 'showStd' to just std = T/F for simplicity")
+		std = showStd
 	}
 	if(!class(x) == "MxModel.ACE"){
 		stop("The first parameter of umxPlotACE must be an ACE model, you gave me a ", class(x))
@@ -2128,11 +2146,13 @@ plot.MxModel.ACE <- umxPlotACE
 #' @param digits How many decimals to include in path loadings (default is 2)
 #' @param means Whether to show means paths (default is FALSE)
 #' @param std Whether to standardize the model (default is TRUE)
-#' @param showMeans (older parameter - replace with means)
+#' @param showMeans DEPRECATED use "means" instead
 #' @param ... Additional (optional) parameters
 #' @return - optionally return the dot code
 #' @export
+#' @family Plotting functions
 #' @family Reporting functions
+#' @family Twin Modeling Functions
 #' @references - \url{http://tbates.github.io}
 #' @examples
 #' require(umx)
@@ -2237,6 +2257,8 @@ plot.MxModel.ACEcov <- umxPlotACEcov
 #' @param separateGraphs (default = FALSE)
 #' @param ... Optional additional parameters
 #' @return - 
+#' @family Reporting functions
+#' @family Plotting functions
 #' @family Twin Modeling Functions
 #' @export
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
@@ -2317,6 +2339,8 @@ plot.MxModel.GxE <- umxPlotGxE
 #' @param showMeans deprecated: replace with just 'means'
 #' @param ... Optional additional parameters
 #' @return - Optionally return the dot code
+#' @family Plotting functions
+#' @family Reporting functions
 #' @family Twin Modeling Functions
 #' @export
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
@@ -2420,10 +2444,12 @@ plot.MxModel.CP <- umxPlotCP
 #' @param std whether to standardize the model (defaults to TRUE)
 #' @param showMeans Deprecated: replace with just 'means' for simplicity.
 #' @param ... Optional additional parameters
-#' 
 #' @return - optionally return the dot code
 #' @export
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()}
+#' @family Plotting functions
+#' @family Reporting functions
+#' @family Twin Modeling Functions
 #' @references - \url{http://tbates.github.io}
 #' @examples
 #' \dontrun{
@@ -2870,10 +2896,11 @@ extractAIC.MxModel <- function(fit, scale, k, ...) {
 	return(a[1, "AIC"])
 }
 
-#' umxExpCov
+#' Get the expected vcov matrix
 #'
 #' Extract the expected covariance matrix from an \code{\link{mxModel}}
 #'
+#' @aliases vcov.MxModel
 #' @param object an \code{\link{mxModel}} to get the covariance matrix from
 #' @param latents Whether to select the latent variables (defaults to TRUE)
 #' @param manifests Whether to select the manifest variables (defaults to TRUE)
@@ -2898,10 +2925,11 @@ extractAIC.MxModel <- function(fit, scale, k, ...) {
 #' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
 #' )
 #' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' umxExpCov(m1)
+#' vcov(m1)
 #' umxExpCov(m1, digits = 3)
 umxExpCov <- function(object, latents = FALSE, manifests = TRUE, digits = NULL, ...){
 	# umx_has_been_run(m1)
+	# TODO integrate with mxGetExpected(model, "covariance")
 	if(object$data$type == "raw"){
 		manifestNames = names(object$data$observed)
 	} else {
@@ -2942,9 +2970,9 @@ umxExpCov <- function(object, latents = FALSE, manifests = TRUE, digits = NULL, 
 	return(expCov) 
 }
 
-#' @rdname umxExpCov
 #' @export
 vcov.MxModel <- umxExpCov
+
 
 #' umxExpMean
 #'
@@ -3055,105 +3083,118 @@ logLik.MxModel <- function(object, ...) {
 
 #' umxFitIndices
 #'
-#' A list of fit indices
+#' A list of fit indices. Originated in this thread: http://openmx.psyc.virginia.edu/thread/765
+#' note: This is not a full-fat fit reporter. It is not robust across multi-group designs,
+#' definition variables. It is primarily designed to add less-often reported fit indices for 
+#' RAM models where reviewer 2 wants something other than CFA/TLI/RMSEA :-).
 #'
-#' @param model the \code{\link{mxModel}} you want fit indices for
-#' @param indepfit an (optional) saturated \code{\link{mxModel}}
-#' @return \code{NULL}
+#' @param model The \code{\link{mxModel}} for which you want fit indices.
+#' @param refModels Independence and saturated models. default mxRefModels(model, run = TRUE)
+#' @return Table of fit statistics
 #' @export
 #' @family Reporting functions
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - 
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
 #' latents  = c("G")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 <- umxRAM("One Factor",
+#' 	data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1)
 #' )
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' \dontrun{
 #' umxFitIndices(m1)
-#' }
-umxFitIndices <- function(model, indepfit) {
-	# TODO fix umxFitIndices requirement for indepence if model doesn't need it!
-    # TODO use means and compute independence model here for example...
-	options(scipen = 3)
-	indepSummary     <- summary(indepfit)
-	modelSummary <- summary(model)
-	N         <- modelSummary$numObs
-	N.parms   <- modelSummary$estimatedParameters
-	N.manifest <- length(model@manifestVars)
-	deviance  <- modelSummary$Minus2LogLikelihood
-	Chi       <- modelSummary$Chi
-	df        <- modelSummary$degreesOfFreedom
-	p.Chi     <- 1 - pchisq(Chi, df)
-	Chi.df    <- Chi/df
-	indep.chi <- indepSummary$Chi
-	indep.df  <- indepSummary$degreesOfFreedom
-	q <- (N.manifest*(N.manifest+1))/2
-	N.latent     <- length(model@latentVars)
-	observed.cov <- model$data$observed
-	observed.cor <- cov2cor(observed.cov)
+#' # And with raw data
+#' m1 <- umxRAM("m1", data = demoOneFactor,
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(v.m. = manifests),
+#' 	umxPath(v1m0 = latents)
+#' )
+#' umxFitIndices(m1)
+# Round to 3 places, and report as a markdown table
+#' umxAPA(umxFitIndices(m1), digits = 3)
+umxFitIndices <- function(model, refModels = mxRefModels(model, run = TRUE)) {
+	if(!umx_is_RAM(model)){
+		message("Not fully tested against non-RAM models...")
+	}
+	# refModels = mxRefModels(model, run = TRUE)
+	modelSummary = summary(model, refModels = refModels)
+	indepSummary = summary(refModels$Independence) #, refModels = refModels$Independence
+	N            = modelSummary$numObs
+	N.parms      = modelSummary$estimatedParameters
+	N.manifest   = length(model@manifestVars) # assumes RAM
+	deviance     = modelSummary$Minus2LogLikelihood
+	Chi          = modelSummary$Chi
+	df           = modelSummary$degreesOfFreedom
+	p.Chi        = 1 - pchisq(Chi, df)
+	Chi.df       = Chi/df
+	indep.chi    = indepSummary$Chi
+	indep.df     = indepSummary$degreesOfFreedom
+	q            = (N.manifest * (N.manifest + 1)) / 2
+	N.latent     = length(model@latentVars)
+	observed.cov = model$data$observed
+	if(model$data$type == "raw"){
+		observed.cov = cov(observed.cov)
+	}
+	observed.cor = cov2cor(observed.cov)
 
-	A <- model$matrices$A$values
-	S <- model$matrices$S$values
-	F <- model$matrices$F$values
-	I <- diag(N.manifest+N.latent)
-	estimate.cov <- F %*% (qr.solve(I-A)) %*% S %*% (t(qr.solve(I-A))) %*% t(F)
-	estimate.cor <- cov2cor(estimate.cov)
-	Id.manifest  <- diag(N.manifest)
-	residual.cov <- observed.cov-estimate.cov
-	residual.cor <- observed.cor-estimate.cor
-	F0       <- max((Chi-df)/(N-1),0)
-	NFI      <- (indep.chi-Chi)/indep.chi
-	NNFI.TLI <- (indep.chi-indep.df/df*Chi)/(indep.chi-indep.df)
-	PNFI     <- (df/indep.df)*NFI
-	RFI      <- 1 - (Chi/df) / (indep.chi/indep.df)
-	IFI      <- (indep.chi-Chi)/(indep.chi-df)
-	CFI      <- min(1.0-(Chi-df)/(indep.chi-indep.df),1)
-	PRATIO   <- df/indep.df
-	PCFI     <- PRATIO*CFI
-	NCP      <- max((Chi-df),0)
-	RMSEA    <- sqrt(F0/df) # need confidence intervals
-	MFI      <- exp(-0.5*(Chi-df)/N)
-	GH       <- N.manifest / (N.manifest+2*((Chi-df)/(N-1)))
-	GFI      <- 1 - (
+	estimate.cov =	mxGetExpected(model, "covariance")
+	estimate.cor =  cov2cor(estimate.cov)
+	Id.manifest  =  diag(N.manifest)
+	residual.cov =  observed.cov - estimate.cov
+	residual.cor =  observed.cor - estimate.cor
+	F0       =  max((Chi-df)/(N-1),0)
+	NFI      =  (indep.chi - Chi)/indep.chi
+	NNFI.TLI =  (indep.chi - indep.df/df * Chi)/(indep.chi - indep.df)
+	PNFI     =  (df/indep.df) * NFI
+	RFI      =  1 - (Chi/df) / (indep.chi/indep.df)
+	IFI      =  (indep.chi - Chi)/(indep.chi - df)
+	CFI      =  min(1.0-(Chi - df)/(indep.chi - indep.df),1)
+	PRATIO   =  df/indep.df
+	PCFI     =  PRATIO*CFI
+	NCP      =  max((Chi - df), 0)
+	RMSEA    =  sqrt(F0/df) # need confidence intervals
+	MFI      =  exp(-0.5 * (Chi - df)/N)
+	GH       =  N.manifest / (N.manifest + 2 * ((Chi - df)/(N - 1)))
+	GFI      =  1 - (
 		 sum(diag(((solve(estimate.cor) %*% observed.cor)-Id.manifest) %*% ((solve(estimate.cor) %*% observed.cor) - Id.manifest))) /
 	    sum(diag((solve(estimate.cor) %*% observed.cor) %*% (solve(estimate.cor) %*% observed.cor)))
 	)
-	AGFI     <- 1 - (q/df)*(1-GFI)
-	PGFI     <- GFI * df/q
-	AICchi   <- Chi+2*N.parms
-	AICdev   <- deviance+2*N.parms
-	BCCchi   <- Chi + 2*N.parms/(N-N.manifest-2)
-	BCCdev   <- deviance + 2*N.parms/(N-N.manifest-2)
-	BICchi   <- Chi+N.parms*log(N)
-	BICdev   <- deviance+N.parms*log(N)
-	CAICchi  <- Chi+N.parms*(log(N)+1)
-	CAICdev  <- deviance+N.parms*(log(N)+1)
-	ECVIchi  <- 1/N*AICchi
-	ECVIdev  <- 1/N*AICdev
-	MECVIchi <- 1/BCCchi
-	MECVIdev <- 1/BCCdev
-	RMR      <- sqrt((2*sum(residual.cov^2))/(2*q))
-	SRMR     <- sqrt((2*sum(residual.cor^2))/(2*q))
-	indices  <-
-	rbind(N,deviance,N.parms,Chi,df,p.Chi,Chi.df,
-		AICchi,AICdev,
-		BCCchi,BCCdev,
-		BICchi,BICdev,
-		CAICchi,CAICdev,
-		RMSEA,SRMR,RMR,
-		GFI,AGFI,PGFI,
-		NFI,RFI,IFI,
-		NNFI.TLI,CFI,
-		PRATIO,PNFI,PCFI,NCP,
-		ECVIchi,ECVIdev,MECVIchi,MECVIdev,MFI,GH
+	AGFI        =  1 - (q/df) * (1 - GFI)
+	PGFI        =  GFI * df/q
+	AICchi      =  Chi + 2 * N.parms
+	AICdev      =  deviance + 2 * N.parms
+	BCCchi      =  Chi + 2 * N.parms/(N - N.manifest - 2)
+	BCCdev      =  deviance + 2 * N.parms/(N - N.manifest - 2)
+	BICchi      =  Chi + N.parms * log(N)
+	BICdev      =  deviance + N.parms * log(N)
+	CAICchi     =  Chi + N.parms * (log(N) + 1)
+	CAICdev     =  deviance + N.parms * (log(N) + 1)
+	ECVIchi     =  1/N * AICchi
+	ECVIdev     =  1/N * AICdev
+	MECVIchi    =  1/BCCchi
+	MECVIdev    =  1/BCCdev
+	RMR         =  sqrt(mean((residual.cov^2)[lower.tri(residual.cov,diag=TRUE)]))
+	SRMR        =  sqrt(mean((residual.cor^2)[lower.tri(residual.cor,diag=TRUE)]))
+	MAR         =  mean(abs(residual.cov[lower.tri(residual.cor,diag=TRUE)]))
+	SMAR        =  mean(abs(residual.cor[lower.tri(residual.cor,diag=TRUE)]))
+	MAR.nodiag  =  mean(abs(residual.cov[lower.tri(residual.cov,diag=FALSE)]))
+	SMAR.nodiag =  mean(abs(residual.cor[lower.tri(residual.cor,diag=FALSE)]))
+	indices     =  rbind(N, deviance, N.parms, Chi, df, p.Chi, Chi.df,
+		AICchi, AICdev,
+		BCCchi, BCCdev,
+		BICchi, BICdev,
+		CAICchi, CAICdev,
+		RMSEA, SRMR, RMR,
+		SMAR, MAR,
+		SMAR.nodiag, MAR.nodiag,
+		GFI, AGFI, PGFI,
+		NFI, RFI, IFI,
+		NNFI.TLI, CFI,
+		PRATIO, PNFI, PCFI, NCP,
+		ECVIchi, ECVIdev, MECVIchi, MECVIdev, MFI, GH
 	)
 	return(indices)
 }

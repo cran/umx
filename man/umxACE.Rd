@@ -52,16 +52,19 @@ SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 - \code{\link{mxModel}} of subclass mxModel.ACE
 }
 \description{
-Make a 2-group ACE Cholesky Twin model (see Details below)
-}
-\details{
+Make a 2-group ACE Cholesky Twin model.
+umxACE supports a core model in behavior genetics, known as the ACE Cholesky model
+(Cardon and Neale, 1996). #' This model decomposes phenotypic variance into Additive genetic,
+unique environmental (E) and, optionally, either common or shared-environment (C) or 
+non-additive genetic effects (D). Scroll down to details for how to use the function, a figure
+and multiple examples.
 A common task in twin modelling involves using the genetic and environmental differences 
 between large numbers of pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
 to model the genetic and environmental structure of one, or, typically, several phenotypes
 (measured behaviors).
-
-umxACE supports a core model in behavior genetics, known as the ACE Cholesky model
-(Cardon and Neale, 1996). This model decomposes phenotypic variance into Additive genetic, 
+}
+\details{
+This model decomposes phenotypic variance into Additive genetic,
 unique environmental (E) and, optionally, either common or shared-environment (C) or 
 non-additive genetic effects (D). This latter restriction emerges due to a lack of degrees of 
 freedom to simultaneously model C and D with only MZ and DZ twin pairs {ref?}. The Cholesky or 
@@ -95,21 +98,44 @@ from 1 (the default for modelling family-level effects shared 100% by twins in a
 to .25 to model dominance effects.
 }
 \examples{
+
+# ===========================
+# = Univariate model of BMI =
+# ===========================
 require(umx)
-# BMI ?twinData set from Australian twins.
-data(twinData)
+data(twinData) # ?twinData set from Australian twins.
 # Pick the variables
 selDVs = c("bmi1", "bmi2")
-selDVs = c("bmi1", "bmi2")
-mzData <- twinData[twinData$zyg == 1, selDVs][1:80,] # 80 pairs for speed
-dzData <- twinData[twinData$zyg == 3, selDVs][1:80,]
+mzData <- twinData[twinData$zyg == 1,][1:80,] # 80 pairs for speed
+dzData <- twinData[twinData$zyg == 3,][1:80,]
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-umxSummary(m1, showStd = TRUE)
+umxSummary(m1, std = FALSE)
 plot(m1)
-# ADE model (DZ correlation set to .25)
+
+# =========================================
+# = ADE model (DZ correlation set to .25) =
+# =========================================
 m2 = umxACE("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
 umxCompare(m2, m1) # ADE is better
 umxSummary(m2, compare = m1) # nb: though this is ADE, columns are labeled ACE
+
+
+# =====================================
+# = Bivariate height and weight model =
+# =====================================
+data(twinData)
+selDVs = c("ht", "wt") # umx will add suffix (in this case "") + "1" or '2'
+mzData <- twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"),]
+dzData <- twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
+mzData <- mzData[1:80,] # quicker run to keep CRAN happy
+dzData <- dzData[1:80,]
+m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
+umxSummary(m1)
+
+# ================================================================
+# = Well done! Now you can make and compare twin models in R :-) =
+# ================================================================
+
 
 # ===================
 # = Ordinal example =
@@ -146,13 +172,12 @@ twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels =
 twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 # Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
 twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obesityLevels)
-mzData <- twinData[twinData$zyg == 1, umx_paste_names(selDVs, "", 1:2)]
-dzData <- twinData[twinData$zyg == 3, umx_paste_names(selDVs, "", 1:2)]
+mzData <- twinData[twinData$zyg == 1,] # umxACE can trim out unused variables on its own
+dzData <- twinData[twinData$zyg == 3,]
 mzData <- mzData[1:80,] # just top 80 so example runs in a couple of secs
 dzData <- dzData[1:80,]
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
-umxSummary(m1)
-
+plot(m1)
 
 # =======================================
 # = Mixed continuous and binary example =
@@ -214,12 +239,13 @@ plot(m1)
 - \url{http://www.github.com/tbates/umx}
 }
 \seealso{
-Other Twin Modeling Functions: \code{\link{umxACESexLim}},
-  \code{\link{umxACEcov}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
+Other Twin Modeling Functions: \code{\link{plot.MxModel}},
+  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
   \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
   \code{\link{umx_make_TwinData}}, \code{\link{umx}}

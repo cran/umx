@@ -19,7 +19,7 @@ umxPlotACEcov(x = NA, file = "name", digits = 2, means = FALSE,
 
 \item{std}{Whether to standardize the model (default is TRUE)}
 
-\item{showMeans}{(older parameter - replace with means)}
+\item{showMeans}{DEPRECATED use "means" instead}
 
 \item{...}{Additional (optional) parameters}
 }
@@ -53,6 +53,10 @@ plot(m1, std = FALSE) # don't standardize
 - \url{http://tbates.github.io}
 }
 \seealso{
+Other Plotting functions: \code{\link{plot.MxModel}},
+  \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}}
+
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
   \code{\link{confint.MxModel}},
@@ -62,9 +66,21 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
   \code{\link{umxCompare}}, \code{\link{umxExpCov}},
   \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
-  \code{\link{umxPlotACE}},
+  \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
   \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
+
+Other Twin Modeling Functions: \code{\link{plot.MxModel}},
+  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
+  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
+  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
+  \code{\link{umx_make_TwinData}}, \code{\link{umx}}
 }
 

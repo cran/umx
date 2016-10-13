@@ -72,15 +72,20 @@ plot(m1)
 \references{
 - Neale, M. C., & Martin, N. G. (1989). The effects of age, sex, 
 and genotype on self-report drunkenness following a challenge dose of alcohol. 
-Behavior Genetics, 19(1), 63-78. doi:10.1007/BF01065884
+Behavior Genetics, 19, 63-78. doi:10.1007/BF01065884
+
+Schwabe, I., Boomsma, D. I., Zeeuw, E. L., & Berg, S. M. (2015). A New Approach 
+to Handle Missing Covariate Data in Twin Research : With an Application to
+Educational Achievement Data. Behavior Genetics. doi:10.1007/s10519-015-9771-1
 }
 \seealso{
-Other Twin Modeling Functions: \code{\link{umxACESexLim}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
+Other Twin Modeling Functions: \code{\link{plot.MxModel}},
+  \code{\link{umxACESexLim}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
   \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
   \code{\link{umx_make_TwinData}}, \code{\link{umx}}
