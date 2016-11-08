@@ -19,16 +19,13 @@
 #' @examples
 #' umx_get_options()
 umx_get_options <- function() {
-		o = paste0("current options set are:\n",
-		"\numx_set_auto_plot()  = "      , umx_set_auto_plot(),
-		"\numx_set_plot_format()  = "    , umx_set_plot_format(),
-		"\numx_set_table_format()  = "   , umx_set_table_format(),
-		"\numx_set_cores()  = "          , umx_set_cores(),
-		"\numx_set_condensed_slots()  = ", umx_set_condensed_slots(),
-		"\numx_set_optimizer()  = "      , umx_set_optimizer(),
-		"\numx_set_auto_run()  = "       , umx_set_auto_run() 
-	)
-	message(o)
+	umx_set_auto_plot()
+	umx_set_plot_format()
+	umx_set_table_format()
+	umx_set_optimizer()
+	message(umx_set_cores(silent = TRUE), " cores will be used")
+	umx_set_auto_run() 
+	umx_set_condensed_slots()
 }
 
 #' umx_set_plot_format
@@ -36,20 +33,27 @@ umx_get_options <- function() {
 #' Set output format of plots (default = "DiagrammeR", alternative is "graphviz")
 #'
 #' @param umx.plot.format format for plots (if empty, returns the current value of umx.plot.format)
+#' @param silent If TRUE, no message will be printed.
 #' @return - Current umx.plot.format setting
 #' @export
 #' @family Get and set
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' library(umx)
-#' umx_set_plot_format()
-#' old = umx_set_plot_format() # get existing value
+#' umx_set_plot_format() # print current state
+#' old = umx_set_plot_format(silent = TRUE) # store current value
 #' umx_set_plot_format("graphviz")
 #' umx_set_plot_format("DiagrammeR")
-#' umx_set_plot_format(old)    # reinstate
-umx_set_plot_format <- function(umx.plot.format = NULL) {
+#' umx_set_plot_format(old) # reinstate
+umx_set_plot_format <- function(umx.plot.format = NULL, silent = FALSE) {
 	if(is.null(umx.plot.format)) {
-		getOption("umx.plot.format")
+		if(!silent){
+			message("Current format is", 
+				omxQuotes(getOption("umx.plot.format")),
+				". Valid options are 'graphviz' or 'DiagrammeR'"
+			)
+		}
+		invisible(getOption("umx.plot.format"))
 	} else {
 		umx_check(umx.plot.format %in% c("graphviz", "DiagrammeR"), "stop", "valid options are 'graphviz' or 'DiagrammeR'")
 		options("umx.plot.format" = umx.plot.format)
@@ -62,21 +66,28 @@ umx_set_plot_format <- function(umx.plot.format = NULL) {
 #' "latex", "html", "markdown", "pandoc", and "rst".
 #'
 #' @param knitr.table.format format for tables (if empty, returns the current value of knitr.table.format)
+#' @param silent If TRUE, no message will be printed.
 #' @return - Current knitr.table.format setting
 #' @export
 #' @family Get and set
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' library(umx)
-#' old = umx_set_table_format() # get existing value
+#' umx_set_table_format() # show current state
+#' old = umx_set_table_format() # store existing value
 #' umx_set_table_format("latex")
 #' umx_set_table_format("html")
 #' umx_set_table_format("markdown")
 #' umx_set_table_format("") # get available options
 #' umx_set_table_format(old)    # reinstate
-umx_set_table_format <- function(knitr.table.format = NULL) {
+umx_set_table_format <- function(knitr.table.format = NULL, silent = FALSE) {
 	if(is.null(knitr.table.format)) {
-		getOption("knitr.table.format")
+		if(!silent){
+			message("Current format is", omxQuotes(getOption("knitr.table.format")), 
+				". Valid options are latex, html, markdown, pandoc, or rst"
+			)
+		}
+		invisible(getOption("knitr.table.format"))		
 	} else {
 		if(!knitr.table.format %in% c("latex", "html", "markdown", "pandoc", "rst")){
 			message("legal options are latex, html, markdown, pandoc, rst")
@@ -86,6 +97,301 @@ umx_set_table_format <- function(knitr.table.format = NULL) {
 	}
 } # end umx_set_table_format
 
+
+#' umx_set_auto_plot
+#'
+#' Set autoPlot default for models like umxACE umxGxE etc
+#'
+#' @param autoPlot If NA or "name", sets the umx_auto_plot option. Else returns the current value of umx_auto_plot
+#' @param silent If TRUE, no message will be printed.
+#' @return - Current umx_auto_plot setting
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' umx_set_auto_plot() # print current state
+#' old = umx_set_auto_plot(silent = TRUE) # store existing value
+#' umx_set_auto_plot("name")  # set to "name"
+#' umx_set_auto_plot(old)    # reinstate
+umx_set_auto_plot <- function(autoPlot = NULL, silent = FALSE) {
+	if(is.null(autoPlot)) {
+		if(!silent){
+			message("Current plot format is ", omxQuotes(getOption("umx_auto_plot")),
+				". Valid options are NA or 'name'.", 
+				" 'name' will auto-plot, using the name of the model as the plot name."
+			)
+		}
+		invisible(getOption("umx_auto_plot"))
+	} else {
+		umx_check(autoPlot %in% c(NA, "name"), "stop", "autoPlot should be either NA or 'name'")
+		options("umx_auto_plot" = autoPlot)
+	}
+}
+
+#' umx_set_auto_run
+#'
+#' Set autorun default for models like umxACE umxGxE etc
+#'
+#' @param autoRun If TRUE or FALSE, sets the umx_auto_run option. Else returns the current value of umx_auto_run
+#' @param silent If TRUE, no message will be printed.
+#' @return - Current umx_auto_run setting
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' umx_set_auto_run() # print existing value
+#' old = umx_set_auto_run(silent = TRUE) # store existing value
+#' umx_set_auto_run(FALSE)  # set to FALSE
+#' umx_set_auto_run(old)    # reinstate
+umx_set_auto_run <- function(autoRun = NA, silent = FALSE) {
+	# TODO implement umx_set_auto_run
+	if(is.na(autoRun)) {
+		if(!silent){
+			message(
+				"Current auto-run setting is ", 
+				omxQuotes(getOption("umx_auto_run")),
+				". Valid options are TRUE or FALSE."
+			)
+		}
+		invisible(getOption("umx_auto_run"))
+	} else {
+		umx_check(autoRun %in% c(TRUE, FALSE), "stop")
+		options("umx_auto_run" = autoRun)
+	}
+}
+
+#' umx_set_condensed_slots
+#'
+#' Sets whether newly-created mxMatrices are to be condensed (set to NULL if not being used) or not.
+#'
+#' @param state what state (TRUE or FALSE) to set condensed slots (default NA returns current value).
+#' @param silent If TRUE, no message will be printed.
+#' @return - current value of condensed slots
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' umx_set_condensed_slots() # print
+#' old = umx_set_condensed_slots(silent = TRUE) # store the existing state
+#' umx_set_condensed_slots(TRUE) # update globally
+#' umx_set_condensed_slots(old) # set back
+umx_set_condensed_slots <- function(state = NA, silent = FALSE) {
+	if(is.na(state)){
+		if(!silent){
+			message("mxCondenseMatrixSlots is currently: ",
+				omxQuotes(getOption('mxCondenseMatrixSlots'))
+			)
+		}
+		invisible(getOption('mxCondenseMatrixSlots'))
+	} else {
+		if(!is.logical(state)){
+			stop("mxCondenseMatrixSlots must be TRUE or FALSE you tried ", omxQuotes(state))
+		}else{
+			options(mxCondenseMatrixSlots = state)			
+		}
+	}
+}
+
+
+#' umx_set_optimizer
+#'
+#' Set the optimizer in OpenMx
+#'
+#' @param opt default (NA) returns current value. Current alternatives are
+#' "NPSOL" "SLSQP" and "CSOLNP".
+#' @param model A model for which to set the optimizer. Default (NULL) sets the optimizer globally.
+#' @param silent If TRUE, no message will be printed.
+#' @return - 
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' umx_set_optimizer() # print the existing state
+#' old = umx_set_optimizer(silent = TRUE) # store the existing state
+#' umx_set_optimizer("SLSQP") # update globally
+#' umx_set_optimizer(old) # set back
+umx_set_optimizer <- function(opt = NA, model = NULL, silent = FALSE) {
+	if(is.na(opt)){
+		if(is.null(model)){
+			o = mxOption(NULL, "Default optimizer")
+		} else {
+			o = mxOption(model, "Default optimizer")
+		}
+		if(!silent){
+			quoteOptions = omxQuotes(mxAvailableOptimizers())
+			message("Current Optimizer is: ", omxQuotes(o), ". Options are: ", quoteOptions)
+		}
+		invisible(o)
+	} else {
+		if(!opt %in% mxAvailableOptimizers()){
+			stop("The Optimizer ", omxQuotes(opt), " is not legal. Legal values (from mxAvailableOptimizers() ) are:",
+			omxQuotes(mxAvailableOptimizers()))
+		}
+		if(is.null(model)){
+			mxOption(NULL, "Default optimizer", opt)	
+		} else {
+			stop(paste0("'Default optimizer' is a global option and cannot be set on models. just say:\n",
+			"umx_set_optimizer(", omxQuotes(opt), ")"))
+		}
+	}
+}
+
+#' umx_set_cores
+#'
+#' set the number of cores (threads) used by OpenMx
+#'
+#' @param cores number of cores to use. NA (the default) returns current value. "-1" will set to detectCores().
+#' @param model an (optional) model to set. If left NULL, the global option is updated.
+#' @param silent If TRUE, no message will be printed.
+#' @return - number of cores
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' library(umx)
+#' manifests = c("mpg", "disp", "gear")
+#' m1 <- mxModel("ind", type = "RAM",
+#' 	manifestVars = manifests,
+#' 	mxPath(from = manifests, arrows = 2),
+#' 	mxPath(from = "one", to = manifests),
+#' 	mxData(mtcars[, manifests], type = "raw")
+#' )
+#' umx_set_cores() # print current value
+#' oldCores <- umx_set_cores(silent = TRUE)  # store existing value
+#' umx_set_cores(detectCores()) # set to max
+#' umx_set_cores(-1); umx_set_cores() # set to max
+#' m1 = umx_set_cores(1, m1)  # set m1 useage to 1 core
+#' umx_set_cores(model = m1)  # show new value for m1
+#' umx_set_cores(oldCores)    # reinstate old global value
+umx_set_cores <- function(cores = NA, model = NULL, silent = FALSE) {
+	# depends on parallel::detectCores
+	if(is.na(cores)){
+		n = mxOption(model, "Number of Threads") # get the old value
+		if(!silent){
+			message(n, "/", parallel::detectCores() )
+		}
+		return(n)
+	} else if(umx_is_MxModel(cores)) {
+		stop("Call this as umx_set_cores(cores, model), not the other way around")
+	}else{
+		if(!is.numeric(cores)){
+			stop("cores must be an integer. You gave me ", cores)
+		}
+		umx_check(isTRUE(all.equal(cores, as.integer(cores))), message = paste0("cores must be an integer. You gave me: ", cores))
+		if(cores > detectCores() ){
+			message("cores set to maximum available (request (", cores, ") exceeds number possible: ", detectCores() )
+			cores = detectCores()
+		} else if (cores < 1){
+			cores = detectCores()
+		}
+		mxOption(model, "Number of Threads", cores)		
+	}
+}
+
+#' umx_set_checkpoint
+#'
+#' Set the checkpoint status for a model or global options
+#'
+#' @aliases umx_set_checkpoint umx_checkpoint
+#' @param interval How many units between checkpoints: Default =  1.
+#' A value of zero sets always to 'No' (i.e., do not checkpoint all models during optimization)
+#' @param units units to count in: Default unit is 'evaluations' ('minutes' is also legal)
+#' @param prefix string prefix to add to all checkpoint filenames (default = "")
+#' @param directory a directory, i.e "~/Desktop" (defaults to getwd())
+#' @param model (optional) model to set options in (default = NULL)
+#' @return - mxModel if provided
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @examples
+#' umx_set_checkpoint(interval = 1, "evaluations", dir = "~/Desktop/")
+#' # turn off checkpointing with interval = 0
+#' umx_set_checkpoint(interval = 0)
+#' umx_set_checkpoint(2, "evaluations", prefix="SNP_1")
+#' require(umx)
+#' data(demoOneFactor)
+#' latents  = c("G")
+#' manifests = names(demoOneFactor)
+#' m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
+#' )
+#' m1 = umx_set_checkpoint(model = m1)
+#' m1 = mxRun(m1)
+#' umx_checkpoint(0)
+umx_set_checkpoint <- function(interval = 1, units = c("evaluations", "iterations", "minutes"), prefix = "", directory = getwd(), model = NULL) {
+	if(umx_is_MxModel(interval)){
+		stop("You passed in a model as the first parameter. You probably want:\n",
+		"umx_is_MxModel(model=yourModel)")
+	}
+	units = match.arg(units)
+	if(interval == 0){
+		always = "No"
+	} else {
+		always = "Yes"
+	}
+	if(is.null(model)){
+		# Whether to checkpoint all models during optimization.
+		mxOption(NULL, "Always Checkpoint"   , always)
+
+		# The number of units between checkpoint intervals
+		mxOption(NULL, "Checkpoint Count"    , interval)
+
+		# The type of units for checkpointing: 'minutes', 'iterations', or 'evaluations'.
+		mxOption(NULL, "Checkpoint Units"    , units)	
+
+		# The string prefix to add to all checkpoint filenames.
+		mxOption(NULL, "Checkpoint Prefix"   , prefix)
+
+		# the directory into which checkpoint files are written.
+		mxOption(NULL, "Checkpoint Directory", directory)
+	} else {
+		model = mxOption(model, "Always Checkpoint"   , always)
+		model = mxOption(model, "Checkpoint Count"    , interval)
+		model = mxOption(model, "Checkpoint Units"    , units)
+		model = mxOption(model, "Checkpoint Prefix"   , prefix)
+		model = mxOption(model, "Checkpoint Directory", directory)
+		return(model)
+	}
+}
+
+#' @export
+umx_checkpoint <- umx_set_checkpoint
+
+#' umx_get_checkpoint
+#'
+#' get the checkpoint status for a model or global options
+#'
+#' @param model an optional model to get options from
+#' @return - NULL
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}
+#' @examples
+#' umx_get_checkpoint() # current global default
+#' require(umx)
+#' data(demoOneFactor)
+#' latents  = c("G")
+#' manifests = names(demoOneFactor)
+#' m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1)
+#' )
+#' m1 = umx_set_checkpoint(interval = 2, model = m1)
+#' umx_get_checkpoint(model = m1)
+umx_get_checkpoint <- function(model = NULL) {
+	message("Always Checkpoint: "    , mxOption(model, "Always Checkpoint") )
+	message("Checkpoint  Count: "    , mxOption(model, "Checkpoint Count" ) )
+	message("Checkpoint  Units: "    , mxOption(model, "Checkpoint Units" ) )
+	message("Checkpoint  Prefix: "   , mxOption(model, "Checkpoint Prefix" ) )	
+	message("Checkpoint  Directory: ", mxOption(model, "Checkpoint Directory" ) )
+}
 
 #' umx_check_parallel
 #'
@@ -206,274 +512,6 @@ umx_check_parallel <- function(nCores = -1, testScript = NULL, rowwiseParallel =
 	invisible(umx_time(models, autoRun = FALSE))
 }
 
-
-#' umx_set_auto_plot
-#'
-#' Set autoPlot default for models like umxACE umxGxE etc
-#'
-#' @param autoPlot If NA or "name", sets the umx_auto_plot option. Else returns the current value of umx_auto_plot
-#' @return - Current umx_auto_plot setting
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-#' @examples
-#' library(umx)
-#' old = umx_set_auto_plot() # get existing value
-#' umx_set_auto_plot("name")  # set to "name"
-#' umx_set_auto_plot(old)    # reinstate
-umx_set_auto_plot <- function(autoPlot = NULL) {
-	if(is.null(autoPlot)) {
-		getOption("umx_auto_plot")
-	} else {
-		umx_check(autoPlot %in% c(NA, "name"), "stop", "autoPlot should be either NA or 'name'")
-		options("umx_auto_plot" = autoPlot)
-	}
-}
-
-#' umx_set_auto_run
-#'
-#' Set autorun default for models like umxACE umxGxE etc
-#'
-#' @param autoRun If TRUE or FALSE, sets the umx_auto_run option. Else returns the current value of umx_auto_run
-#' @return - Current umx_auto_run setting
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-#' @examples
-#' library(umx)
-#' old = umx_set_auto_run() # get existing value
-#' umx_set_auto_run(FALSE)  # set to FALSE
-#' umx_set_auto_run(old)    # reinstate
-umx_set_auto_run <- function(autoRun = NA) {
-	# TODO implement umx_set_auto_run
-	if(is.na(autoRun)) {
-		getOption("umx_auto_run")
-	} else {
-		umx_check(autoRun %in% c(TRUE, FALSE), "stop")
-		options("umx_auto_run" = autoRun)
-	}
-}
-
-#' umx_set_condensed_slots
-#'
-#' Sets whether newly-created mxMatrices are to be condensed (set to NULL if not being used) or not.
-#'
-#' @param state what state (TRUE or FALSE) to set condensed slots (default NA returns current value).
-#' @return - current value of condensed slots
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-#' @examples
-#' library(umx)
-#' old = umx_set_condensed_slots() # get the existing state
-#' umx_set_condensed_slots(TRUE) # update globally
-#' umx_set_condensed_slots(old) # set back
-umx_set_condensed_slots <- function(state = NA) {
-	if(is.na(state)){
-		message("mxCondenseMatrixSlots is currently: ",
-			omxQuotes(getOption('mxCondenseMatrixSlots'))
-		)
-		invisible(getOption('mxCondenseMatrixSlots'))
-	} else {
-		if(!is.logical(state)){
-			stop("mxCondenseMatrixSlots can only be set to TRUE FALSE you tried ", omxQuotes(state))
-		}else{
-			options(mxCondenseMatrixSlots = state)			
-		}
-	}
-}
-
-
-#' umx_set_optimizer
-#'
-#' Set the optimizer in OpenMx
-#'
-#' @param opt default (NA) returns current value. Current alternatives are
-#' "NPSOL" "SLSQP" and "CSOLNP".
-#' @param model A model for which to set the optimizer. Default (NULL) sets the optimizer globally.
-#' @return - 
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-#' @examples
-#' library(umx)
-#' old = umx_set_optimizer() # get the existing state
-#' umx_set_optimizer("SLSQP") # update globally
-#' umx_set_optimizer(old) # set back
-umx_set_optimizer <- function(opt = NA, model = NULL) {
-	if(is.na(opt)){
-		if(is.null(model)){
-			o= mxOption(NULL, "Default optimizer")
-		} else {
-			o= mxOption(model, "Default optimizer")
-		}
-		message("Current Optimizer is:'", o, "'")
-		invisible(o)
-	} else {
-		if(!opt %in% mxAvailableOptimizers()){
-			stop("The Optimizer ", omxQuotes(opt), " is not legal. Legal values (from mxAvailableOptimizers() ) are:",
-			omxQuotes(mxAvailableOptimizers()))
-		}
-		if(is.null(model)){
-			mxOption(NULL, "Default optimizer", opt)	
-		} else {
-			stop(paste0("'Default optimizer' is a global option and cannot be set on models. just say:\n",
-			"umx_set_optimizer(", omxQuotes(opt), ")"))
-		}
-	}
-}
-
-#' umx_set_checkpoint
-#'
-#' Set the checkpoint status for a model or global options
-#'
-#' @aliases umx_set_checkpoint umx_checkpoint
-#' @param interval How many units between checkpoints: Default =  1.
-#' A value of zero sets always to 'No' (i.e., do not checkpoint all models during optimization)
-#' @param units units to count in: Default unit is 'evaluations' ('minutes' is also legal)
-#' @param prefix string prefix to add to all checkpoint filenames (default = "")
-#' @param directory a directory, i.e "~/Desktop" (defaults to getwd())
-#' @param model (optional) model to set options in (default = NULL)
-#' @return - mxModel if provided
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
-#' @examples
-#' umx_set_checkpoint(interval = 1, "evaluations", dir = "~/Desktop/")
-#' # turn off checkpointing with interval = 0
-#' umx_set_checkpoint(interval = 0)
-#' umx_set_checkpoint(2, "evaluations", prefix="SNP_1")
-#' require(umx)
-#' data(demoOneFactor)
-#' latents  = c("G")
-#' manifests = names(demoOneFactor)
-#' m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-#' 	umxPath(latents, to = manifests),
-#' 	umxPath(var = manifests),
-#' 	umxPath(var = latents, fixedAt = 1.0)
-#' )
-#' m1 = umx_set_checkpoint(model = m1)
-#' m1 = mxRun(m1)
-#' umx_checkpoint(0)
-umx_set_checkpoint <- function(interval = 1, units = c("evaluations", "iterations", "minutes"), prefix = "", directory = getwd(), model = NULL) {
-	if(umx_is_MxModel(interval)){
-		stop("You passed in a model as the first parameter. You probably want:\n",
-		"umx_is_MxModel(model=yourModel)")
-	}
-	units = match.arg(units)
-	if(interval == 0){
-		always = "No"
-	} else {
-		always = "Yes"
-	}
-	if(is.null(model)){
-		# Whether to checkpoint all models during optimization.
-		mxOption(NULL, "Always Checkpoint"   , always)
-
-		# The number of units between checkpoint intervals
-		mxOption(NULL, "Checkpoint Count"    , interval)
-
-		# The type of units for checkpointing: 'minutes', 'iterations', or 'evaluations'.
-		mxOption(NULL, "Checkpoint Units"    , units)	
-
-		# The string prefix to add to all checkpoint filenames.
-		mxOption(NULL, "Checkpoint Prefix"   , prefix)
-
-		# the directory into which checkpoint files are written.
-		mxOption(NULL, "Checkpoint Directory", directory)
-	} else {
-		model = mxOption(model, "Always Checkpoint"   , always)
-		model = mxOption(model, "Checkpoint Count"    , interval)
-		model = mxOption(model, "Checkpoint Units"    , units)
-		model = mxOption(model, "Checkpoint Prefix"   , prefix)
-		model = mxOption(model, "Checkpoint Directory", directory)
-		return(model)
-	}
-}
-
-#' @export
-umx_checkpoint <- umx_set_checkpoint
-
-#' umx_get_checkpoint
-#'
-#' get the checkpoint status for a model or global options
-#'
-#' @param model an optional model to get options from
-#' @return - NULL
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}
-#' @examples
-#' umx_get_checkpoint() # current global default
-#' require(umx)
-#' data(demoOneFactor)
-#' latents  = c("G")
-#' manifests = names(demoOneFactor)
-#' m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-#' 	umxPath(latents, to = manifests),
-#' 	umxPath(var = manifests),
-#' 	umxPath(var = latents, fixedAt = 1)
-#' )
-#' m1 = umx_set_checkpoint(interval = 2, model = m1)
-#' umx_get_checkpoint(model = m1)
-umx_get_checkpoint <- function(model = NULL) {
-	message("Always Checkpoint: "    , mxOption(model, "Always Checkpoint") )
-	message("Checkpoint  Count: "    , mxOption(model, "Checkpoint Count" ) )
-	message("Checkpoint  Units: "    , mxOption(model, "Checkpoint Units" ) )
-	message("Checkpoint  Prefix: "   , mxOption(model, "Checkpoint Prefix" ) )	
-	message("Checkpoint  Directory: ", mxOption(model, "Checkpoint Directory" ) )
-}
-
-#' umx_set_cores
-#'
-#' set the number of cores (threads) used by OpenMx
-#'
-#' @param cores number of cores to use. NA (the default) returns current value. "-1" will set to detectCores().
-#' @param model an (optional) model to set. If left NULL, the global option is updated.
-#' @return - number of cores
-#' @export
-#' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
-#' @examples
-#' library(umx)
-#' manifests = c("mpg", "disp", "gear")
-#' m1 <- mxModel("ind", type = "RAM",
-#' 	manifestVars = manifests,
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = "one", to = manifests),
-#' 	mxData(mtcars[, manifests], type = "raw")
-#' )
-#' umx_set_cores()              # show current value
-#' oldCores <- umx_set_cores()  # store existing value
-#' umx_set_cores(detectCores()) # set to max
-#' umx_set_cores(-1) ; umx_set_cores() # set to max
-#' m1 = umx_set_cores(1, m1)  # set m1 useage to 1 core
-#' umx_set_cores(model = m1)  # show new value for m1
-#' umx_set_cores(oldCores)    # reinstate old global value
-umx_set_cores <- function(cores = NA, model = NULL) {
-	# depends on parallel::detectCores
-	if(is.na(cores)){
-		n = mxOption(model, "Number of Threads") # get the old value
-		message(n, "/", parallel::detectCores())
-		return(n)
-	} else if(umx_is_MxModel(cores)) {
-		stop("Call this as umx_set_cores(cores, model), not the other way around")
-	}else{
-		if(!is.numeric(cores)){
-			stop("cores must be an integer. You gave me ", cores)
-		}
-		umx_check(isTRUE(all.equal(cores, as.integer(cores))), message = paste0("cores must be an integer. You gave me: ", cores))
-		if(cores > detectCores() ){
-			message("cores set to maximum available (request (", cores, ") exceeds number possible: ", detectCores() )
-			cores = detectCores()
-		} else if (cores < 1){
-			cores = detectCores()
-		}
-		mxOption(model, "Number of Threads", cores)		
-	}
-}
-
-
 # ======================================
 # = Lower-level Model building helpers =
 # ======================================
@@ -487,7 +525,7 @@ umx_set_cores <- function(cores = NA, model = NULL) {
 #' @param sd the sd of the jiggle noise
 #' @param dontTouch A value, which, if found, will be left as-is (defaults to 0)
 #' @return - \code{\link{mxMatrix}}
-#' @family Miscellaneous Functions
+#' @family Advanced Model Building Functions
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @export
 #' @examples
@@ -635,7 +673,7 @@ umx_add_variances <- function(model, add.to, values = NULL, free = NULL) {
 #' @param at (Default = 1)
 #' @return - \code{\link{mxModel}}
 #' @export
-#' @family Model Building Functions
+#' @family Advanced Model Building Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
 #' @examples
 #' require(umx)
@@ -675,7 +713,7 @@ umx_fix_latents <- function(model, latents = NULL, exogenous.only = TRUE, at = 1
 #' @param at (Default = 1)
 #' @return - \code{\link{mxModel}}
 #' @export
-#' @family Model Building Functions
+#' @family Advanced Model Building Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
 #' @examples
 #' require(umx)
@@ -718,6 +756,46 @@ umx_fix_first_loadings <- function(model, latents = NULL, at = 1) {
 	return(model)
 }
 
+#' umx_drop_ok
+#'
+#' Print a meaningful sentence about a model comparison. If you use this, please email me and ask to have it
+#' merged with \code{\link{umxCompare}}() :-)
+#'
+#' @param model1 the base code{\link{mxModel}}
+#' @param model2 the nested code{\link{mxModel}}
+#' @param text name of the thing being tested, i.e., "Extraversion" or "variances"
+#' @return - 
+#' @export
+#' @family Reporting functions
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' require(umx)
+#' data(demoOneFactor)
+#' latents   = c("g")
+#' manifests = names(demoOneFactor)
+#' myData    = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 <- umxRAM("OneFactor", data = myData,
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1)
+#' )
+#' m2 = umxModify(m1, update = "g_to_x1", name = "no effect on x1")
+#' umx_drop_ok(m1, m2, text = "the path to x1")
+umx_drop_ok <- function(model1, model2, text = "parameter") {
+	a = mxCompare(model1, model2)
+	if(a$diffdf[2] > 1){
+		are = "are"
+	}else{
+		are = "is"
+	}
+	if(a$p[2] < .05){
+		if(!is.null(text)){ print(paste0("The ", text, " ", are, " significant and should be kept (p = ", umx_APA_pval(a$p[2]), ")")) }
+		return(FALSE)
+	} else {
+		if(!is.null(text)){ print(paste0("The ", text, " ", are, " non-significant and can be dropped (p = ", umx_APA_pval(a$p[2]), ")")) }
+		return(TRUE)
+	}
+}
 
 # ====================
 # = Parallel Helpers =
@@ -743,7 +821,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' @param sep text constant separating name from numeric 1:2 twin index
 #' @return - list(varnames = c("Dep"), sep = "_T", twinIndexes = c(1,2))
 #' @export
-#' @family xmu internal not for end user
+#' @family String Functions
 #' @examples
 #' require(umx)
 #' data("twinData")
@@ -2325,7 +2403,8 @@ umx_cov_diag <- function(df, ordVar = 1, format = c("diag", "Full", "Lower"), us
 
 #' umx_means
 #'
-#' Helper to get means from a df that might contain ordered  data. Factor means are set to "ordVar"
+#' Helper to get means from a df that might contain ordered or string data.
+#' Factor means are set to "ordVar"
 #'
 #' @param df a dataframe of raw data from which to get variances.
 #' @param ordVar value to return for the means of factor data = 0
@@ -2719,7 +2798,6 @@ umx_has_CIs <- function(model, check = c("both", "intervals", "output")) {
 		return(thisModelHasOutput)
 	}
 }
-
 
 #' umx_check_model
 #'
