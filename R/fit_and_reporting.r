@@ -45,7 +45,7 @@ umxDiagnose <- function(model, tryHard = FALSE, diagonalizeExpCov = FALSE){
   # umx_any_ordinal()
   # more tricky - we should really report the variances and the standardized thresholds.
   # The guidance would be to try starting with unit variances and thresholds that are within +/- 2SD of the mean.
-  # [bivariate outliers %p](http://openmx.psyc.virginia.edu/thread/3899)
+  # [bivariate outliers %p](http://openmx.ssri.psu.edu/thread/3899)
 }
 
 # =============================
@@ -619,21 +619,21 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("raw",
 
 	message("?umxSummary showEstimates='raw|std', digits, report= 'html', filter= 'NS' & more")
 	
-	# If the filter is off default, the user must want something, let's assume it's std ...
+	# If the filter is not default, user must want something: Assume it's what would have been the default...
 	if( filter != "ALL" & showEstimates == "none") {
-		showEstimates = "std"
+		showEstimates = "raw"
 	}else if(showEstimates == "std" && SE == FALSE){
 		message("SE must be TRUE to show std, overriding to set SE = TRUE")
 		SE = TRUE
 	}
 	umx_has_been_run(model, stop = TRUE)
 	if(is.null(refModels)) {
-		
-		# saturatedModels not passed in from outside, so get them from the model
-		# TODO improve efficiency here: compute summary only once by detecting when SaturatedLikelihood is missing
-		modelSummary = summary(model)		
+		# SaturatedModels not passed in from outside, so get them from the model
+		# TODO Improve efficiency: Compute summary only once by detecting when SaturatedLikelihood is missing
+		modelSummary = summary(model)
 		if(is.null(model$data)){
 			# TODO model with no data - no saturated solution?
+			message("Not sure I (umxSummary) know what to do with models with no data: Try summary() - it's smarter than I am.")
 		} else if(is.na(modelSummary$SaturatedLikelihood)){
 			# no SaturatedLikelihood, compute refModels
 			refModels = mxRefModels(model, run = TRUE)
@@ -1750,8 +1750,8 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 #' 	m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 #' 	umxCI_boot(m1, type = "par.expected")
 #'}
-#' @references - \url{http://openmx.psyc.virginia.edu/thread/2598}
-#' Original written by \url{http://openmx.psyc.virginia.edu/users/bwiernik}
+#' @references - \url{http://openmx.ssri.psu.edu/thread/2598}
+#' Original written by \url{http://openmx.ssri.psu.edu/users/bwiernik}
 #' @seealso - \code{\link{umxExpMeans}}, \code{\link{umxExpCov}}
 #' @family Reporting functions
 umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.observed", "empirical"), std = TRUE, rep = 1000, conf = 95, dat = FALSE, digits = 3) {
@@ -1874,17 +1874,17 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
 #' plot(m1)
-plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), fixed = TRUE, means = TRUE, resid = c("circle", "line", "none"), showFixed = TRUE, showMeans = NULL, ...) {
+plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), fixed = TRUE, means = TRUE, resid = c("circle", "line", "none"), showMeans = "deprecated", showFixed = "deprecated", ...) {
 	# ==========
 	# = Setup  =
 	# ==========
-	if(!is.null(showMeans)){
-		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+	if(showMeans != "deprecated"){
+		message("Change ", omxQuotes("showMeans"), " to ", omxQuotes("means"), "(", omxQuotes("showMeans"), " will stop working in future)")
 		means = showMeans
 	}	
 	
-	if(!is.null(showMeans)){
-		message("We're moving from showFixed = T/F to just fixed = T/F for simplicity")
+	if(showFixed != "deprecated"){
+		message("Change ", omxQuotes("showFixed"), " to ", omxQuotes("fixed"), "(", omxQuotes("showFixed"), " will stop working in future)")
 		fixed = showFixed
 	}	
 	resid = match.arg(resid)
@@ -2027,13 +2027,13 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 #' plot(m1, std = FALSE) # don't standardize
 umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = "deprecated", showStd = "deprecated", ...) {
 	if(showMeans != "deprecated"){
-		message("We're moving from 'showMeans'to just means = T/F for simplicity")
+		message("Change ", omxQuotes("showMeans"), " to ", omxQuotes("means"), "(", omxQuotes("showMeans"), " will stop working in future)")
 		means = showMeans
-	}
+	}	
 	if(showStd != "deprecated"){
-		message("We're moving from 'showStd' to just std = T/F for simplicity")
-		std = showStd
-	}
+		message("Change ", omxQuotes("showStd"), " to ", omxQuotes("std"), "(", omxQuotes("showStd"), " will stop working in future)")
+		fixed = showStd
+	}	
 	if(!class(x) == "MxModel.ACE"){
 		stop("The first parameter of umxPlotACE must be an ACE model, you gave me a ", class(x))
 	}
@@ -2133,9 +2133,9 @@ plot.MxModel.ACE <- umxPlotACE
 #' 	 suffix = "", autoRun = TRUE)
 #' plot(m1)
 #' plot(m1, std = FALSE) # don't standardize
-umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = NULL, ...) {
-	if(!is.null(showMeans)){
-		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = "deprecated", ...) {
+	if(showMeans != "deprecated"){
+		message("Change ", omxQuotes("showMeans"), " to ", omxQuotes("means"), "(", omxQuotes("showMeans"), " will stop working in future)")
 		means = showMeans
 	}	
 	if(!class(x) == "MxModel.ACEcov"){
@@ -2309,11 +2309,11 @@ plot.MxModel.GxE <- umxPlotGxE
 #' \dontrun{
 #' plot(yourCP_Model) # no need to remember a special name: plot works fine!
 #' }
-umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = NULL, ...) {
-	if(!is.null(showMeans)){
-		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = "deprecated", ...) {
+	if(showMeans != "deprecated"){
+		message("Change ", omxQuotes("showMeans"), " to ", omxQuotes("means"), "(", omxQuotes("showMeans"), " will stop working in future)")
 		means = showMeans
-	}
+	}	
 	if(!class(x) == "MxModel.CP"){
 		stop("The first parameter of umxPlotCP must be a CP model, you gave me a ", class(x))
 	}
@@ -2416,9 +2416,9 @@ plot.MxModel.CP <- umxPlotCP
 #' plot(model)
 #' umxPlotIP(model, file = NA)
 #' }
-umxPlotIP  <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = NULL, ...) {
-	if(!is.null(showMeans)){
-		message("We're moving from showMeans = T/F to just means = T/F for simplicity")
+umxPlotIP  <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, showMeans = "deprecated", ...) {
+	if(showMeans != "deprecated"){
+		message("Change ", omxQuotes("showMeans"), " to ", omxQuotes("means"), "(", omxQuotes("showMeans"), " will stop working in future)")
 		means = showMeans
 	}	
 	if(!class(x) == "MxModel.IP"){
@@ -2834,7 +2834,7 @@ umxComputeConditionals <- function(sigma, mu, current, onlyMean = FALSE) {
 #' @return - AIC value
 #' @seealso - \code{\link{AIC}}, \code{\link{umxCompare}}, \code{\link{logLik.MxModel}}
 #' @family Reporting functions
-#' @references - \url{http://openmx.psyc.virginia.edu/thread/931#comment-4858}
+#' @references - \url{http://openmx.ssri.psu.edu/thread/931#comment-4858}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -2869,8 +2869,8 @@ extractAIC.MxModel <- function(fit, scale, k, ...) {
 #' @return - expected covariance matrix
 #' @export
 #' @family Reporting functions
-#' @references - \url{http://openmx.psyc.virginia.edu/thread/2598}
-#' Original written by \url{http://openmx.psyc.virginia.edu/users/bwiernik}
+#' @references - \url{http://openmx.ssri.psu.edu/thread/2598}
+#' Original written by \url{http://openmx.ssri.psu.edu/users/bwiernik}
 #' @seealso - \code{\link{umxRun}}, \code{\link{umxCI_boot}}
 #' @examples
 #' require(umx)
@@ -2945,7 +2945,7 @@ vcov.MxModel <- umxExpCov
 #' @return - expected means
 #' @export
 #' @family Reporting functions
-#' @references - \url{http://openmx.psyc.virginia.edu/thread/2598}
+#' @references - \url{http://openmx.ssri.psu.edu/thread/2598}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -3005,7 +3005,7 @@ umxExpMeans <- function(model, manifests = TRUE, latents = NULL, digits = NULL){
 #' @return - the log likelihood
 #' @seealso - \code{\link{AIC}}, \code{\link{umxCompare}}
 #' @family Reporting functions
-#' @references - \url{http://openmx.psyc.virginia.edu/thread/931#comment-4858}
+#' @references - \url{http://openmx.ssri.psu.edu/thread/931#comment-4858}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -3043,11 +3043,17 @@ logLik.MxModel <- function(object, ...) {
 
 #' umxFitIndices
 #'
-#' A list of fit indices. Originated in this thread: http://openmx.psyc.virginia.edu/thread/765
+#' A list of fit indices. Originated in this thread: http://openmx.ssri.psu.edu/thread/765
 #' note: This is not a full-fat fit reporter. It is not robust across multi-group designs,
 #' definition variables. It is primarily designed to add less-often reported fit indices for 
 #' RAM models where reviewer 2 wants something other than CFA/TLI/RMSEA :-).
+#' 
+#' Fit information reported includes: N, deviance, N.parms, Chi, df, p.Chi, Chi.df, AICchi, AICdev, BCCchi, BCCdev, BICchi, BICdev, 
+#' CAICchi, CAICdev, RMSEA, SRMR, RMR, SMAR, MAR, SMAR.nodiag, MAR.nodiag, GFI, AGFI, PGFI, 
+#' NFI, RFI, IFI, NNFI.TLI, CFI, PRATIO, PNFI, PCFI, NCP, ECVIchi, ECVIdev, MECVIchi, MECVIdev, MFI, GH 
 #'
+#' Want more? File a report at github
+#' 
 #' @param model The \code{\link{mxModel}} for which you want fit indices.
 #' @param refModels Independence and saturated models. default mxRefModels(model, run = TRUE)
 #' @return Table of fit statistics
@@ -3171,7 +3177,7 @@ umxFitIndices <- function(model, refModels = mxRefModels(model, run = TRUE)) {
 #' @return - RMSEA object containing value (and perhaps a CI)
 #' @export
 #' @family Reporting functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 RMSEA <- function(x, ci.lower, ci.upper, digits) UseMethod("RMSEA", x)
 
 #' RMSEA function for MxModels
@@ -3280,8 +3286,10 @@ umx_fun_mean_sd = function(x, na.rm = TRUE, digits = 2){
 #' aggregating over some grouping factor. A common use is preparing summary tables.
 #'
 #' @param formula The aggregation formula. e.g., DV ~ condition
-#' @param data frame to aggregate with
+#' @param data frame to aggregate
 #' @param what function to use. Defaults to a built-in "smart" mean (sd)
+#' @param digits for rounding of results
+#' @param kable Report as a formatted table? (Default is TRUE)
 #' @return - table
 #' @export
 #' @family Reporting Functions
@@ -3290,17 +3298,17 @@ umx_fun_mean_sd = function(x, na.rm = TRUE, digits = 2){
 #' @examples
 #' aggregate(mpg ~ cyl, FUN = mean, na.rm = TRUE, data = mtcars)
 #' umx_aggregate(mpg ~ cyl, data = mtcars)
-#' umx_aggregate(cbind(mpg, qsec) ~ cyl, data = mtcars)
+#' umx_aggregate(mpg ~ cyl, data = mtcars, kable = FALSE)
+#' umx_aggregate(cbind(mpg, qsec) ~ cyl, data = mtcars, digits = 3)
 #' t(umx_aggregate(cbind(mpg, qsec) ~ cyl, data = mtcars))
 #' \dontrun{
 #' umx_aggregate(cbind(moodAvg, mood) ~ condition, data = study1)
 #' }
-umx_aggregate <- function(formula = DV ~ condition, data, what = c("mean_sd", "n")) {
-	# TODO N doesn't seem needed here?
-	# TODO other handy aggregating functions?
+umx_aggregate <- function(formula = DV ~ condition, data = NA, what = c("mean_sd", "n"), digits = 2, kable = TRUE) {
+	# TODO Add more aggregating functions?
 	mean_sd = function(x){
-		paste0(round(mean(x, na.rm=TRUE),2), " (",
-			   round(sd(x, na.rm=TRUE),2), ")"
+		paste0(round(mean(x, na.rm = TRUE), digits = digits), " (",
+			   round(sd(x, na.rm = TRUE), digits = digits), ")"
 		)
 	}
 	x_n = function(x){sum(!is.na(x))}
@@ -3315,17 +3323,13 @@ umx_aggregate <- function(formula = DV ~ condition, data, what = c("mean_sd", "n
 	}
 	tmp = aggregate(formula, FUN = FUN, data = data)
 	n_s = aggregate(formula, FUN = x_n, data = data)
-
-	# old way
-	# row.names(tmp) = paste0(as.character(tmp[,1]), " (n = ", n_s[,2], ")")
-	# # tmp = data.frame(tmp)
-	# tmp = tmp[,-1, drop = FALSE]
-	# return(tmp)
-
-	# new way
 	tmp = data.frame(tmp)
-	tmp[,1] = paste0(as.character(tmp[,1]), " (n = ", n_s[,2], ")")
-	return(tmp)	
+	tmp[, 1] = paste0(as.character(tmp[, 1]), " (n = ", n_s[, 2], ")")
+	if(kable){
+		return(knitr::kable(tmp))
+	} else {
+		return(tmp)
+	}
 }
 
 #' umx_APA_pval
@@ -3426,29 +3430,37 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA, rounding
 #' @param min = .001 for a p-value, the smallest value to report numerically
 #' @param addComparison for a p-value, whether to add "</=" default (NA) adds "<" if necessary
 #' @param report what to return (default = markdown table). Use "html" to open a web page table
+#' @param lower whether to report on the lower triangle of correlations for a data.frame (Default = TRUE)
 #' @return - string
 #' @export
 #' @family Reporting Functions
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
-#' # Generate a formatted string convey the effects in a model:  
+#' # Generate a formatted string describing a regression:  
 #' umxAPA(lm(mpg ~ wt + disp, mtcars))
 #' umxAPA(lm(mpg ~ wt + disp, mtcars), "disp")
 #' # Generate a summary table of correlations + Mean and SD:
 #' umxAPA(mtcars[,1:3])
+#' umxAPA(mtcars[,1:3], digits = 3)
+#' umxAPA(mtcars[,1:3], lower = FALSE)
+#' umxAPA(mtcars[,1:3], report = "html")
 #' # Generate a CI string based on effect and se
 #' umxAPA(.4, .3)
 #' # format p-value
 #' umxAPA(.0182613)
 #' umxAPA(.000182613)
-umxAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", min = .001, addComparison = NA, report = c("table", "html")) {
+umxAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", min = .001, addComparison = NA, report = c("table", "html"), lower = TRUE) {
 	report = match.arg(report)
-	if(class(obj)=="data.frame"){
-		# generate a summary of correlation and means
+	if(class(obj) == "data.frame"){
+		# Generate a summary of correlation and means
 		cor_table = umxHetCor(obj, ML = FALSE, use = use, treatAllAsFactor = FALSE, verbose = FALSE)
-		cor_table = umx_apply(round, cor_table, digits = digits) # round corelations
+		cor_table = umx_apply(round, cor_table, digits = digits) # round correlations
+		if(lower){
+			cor_table[upper.tri(cor_table)] = ""
+		}
 		mean_sd = umx_apply(umx_fun_mean_sd, obj)
 		output = data.frame(rbind(cor_table, mean_sd), stringsAsFactors = FALSE)
+		rownames(output)[length(rownames(output))] = "Mean (SD)"
 		if(report == "html"){
 			umx_print(output, digits = digits, file = "tmp.html")
 		} else {
@@ -3457,7 +3469,7 @@ umxAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", mi
 		if(anyNA(obj)){
 			message("Some rows in dataframe had missing values.")
 		}
-	}else if( "matrix" == class(obj)){
+	} else if( "matrix" == class(obj)) {
 		# Assume these are correlations or similar numbers
 		cor_table = umx_apply(round, obj, digits = digits) # round corelations
 		output = data.frame(cor_table)
@@ -3466,7 +3478,7 @@ umxAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", mi
 		} else {
 			umx_print(output, digits = digits)
 		}
-	}else if( "lm" == class(obj)){
+	} else if( "lm" == class(obj)) {
 		# report lm summary table
 		if(std){
 			obj = update(obj, data = umx_scale(obj$model))

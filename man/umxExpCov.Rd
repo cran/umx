@@ -41,8 +41,8 @@ vcov(m1)
 umxExpCov(m1, digits = 3)
 }
 \references{
-- \url{http://openmx.psyc.virginia.edu/thread/2598}
-Original written by \url{http://openmx.psyc.virginia.edu/users/bwiernik}
+- \url{http://openmx.ssri.psu.edu/thread/2598}
+Original written by \url{http://openmx.ssri.psu.edu/users/bwiernik}
 }
 \seealso{
 - \code{\link{umxRun}}, \code{\link{umxCI_boot}}

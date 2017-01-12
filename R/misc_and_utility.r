@@ -306,7 +306,7 @@ umx_set_cores <- function(cores = NA, model = NULL, silent = FALSE) {
 #' @return - mxModel if provided
 #' @export
 #' @family Get and set
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' umx_set_checkpoint(interval = 1, "evaluations", dir = "~/Desktop/")
 #' # turn off checkpointing with interval = 0
@@ -552,12 +552,14 @@ umxJiggle <- function(matrixIn, mean = 0, sd = .1, dontTouch = 0) {
 #' @return - list of exogenous variables
 #' @export
 #' @family Test
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
 #' m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-#' 	mxPath(from = "g", to = names(demoOneFactor))
+#' 	umxPath("g", to = names(demoOneFactor)),
+#' 	umxPath(var = "g", fixedAt = 1),
+#' 	umxPath(var = names(demoOneFactor))
 #' )
 #' umx_is_exogenous(m1, manifests_only = TRUE)
 #' umx_is_exogenous(m1, manifests_only = FALSE)
@@ -590,12 +592,14 @@ umx_is_exogenous <- function(model, manifests_only = TRUE) {
 #' @return - list of endogenous variables
 #' @export
 #' @family Test
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
 #' m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-#' 	mxPath(from = "g", to = names(demoOneFactor))
+#' 	umxPath("g", to = names(demoOneFactor)),
+#' 	umxPath(var = "g", fixedAt = 1),
+#' 	umxPath(var = names(demoOneFactor))
 #' )
 #' umx_is_endogenous(m1, manifests_only = TRUE)
 #' umx_is_endogenous(m1, manifests_only = FALSE)
@@ -632,7 +636,7 @@ umx_is_endogenous <- function(model, manifests_only = TRUE) {
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Misc
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -674,7 +678,7 @@ umx_add_variances <- function(model, add.to, values = NULL, free = NULL) {
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Advanced Model Building Functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -714,7 +718,7 @@ umx_fix_latents <- function(model, latents = NULL, exogenous.only = TRUE, at = 1
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Advanced Model Building Functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -918,7 +922,7 @@ umxFactor <- function(x = character(), levels= NULL, labels = levels, exclude = 
 				allLevels = allLevels[!is.na(allLevels)] # drop NA if present
 				# z = umxFactor(x = x[,theseNames], levels = allLevels, ordered = T, verbose = T, collapse=FALSE)
 				# z = umxFactor(x = x[,theseNames], levels = allLevels, labels = allLevels, ordered = T, verbose = T)
-				x[, theseNames] = umxFactor(x = x[,theseNames], levels = allLevels, labels = allLevels, exclude = exclude, collapse = collapse, ordered = ordered, verbose = verbose)
+				x[, theseNames] = umxFactor(x = x[, theseNames, drop = FALSE], levels = allLevels, labels = allLevels, exclude = exclude, collapse = collapse, ordered = ordered, verbose = verbose)
 			}
 		} else {
 			for (c in 1:ncols) {
@@ -1836,7 +1840,7 @@ print.reliability <- function (x, digits = 4, ...){
 #' install.OpenMx()
 #' }
 install.OpenMx <- function() {
-	source('http://openmx.psyc.virginia.edu/getOpenMx.R')
+	source('http://http://openmx.psyc.virginia.edu/getOpenMx.R')
 }
 
 #' @export
@@ -1881,7 +1885,7 @@ umx_make <- function(what = c("install", "release", "win", "examples")) {
 #' @return - NULL
 #' @export
 #' @family Utility Functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' a = "brian"
 #' umx_msg(a)
@@ -2877,8 +2881,8 @@ umx_check_model <- function(obj, type = NULL, hasData = NULL, beenRun = NULL, ha
 #' Reorder the variables in a correlation matrix. Can also remove one or more variables from a matrix using this function
 #'
 #' @param old a square matrix of correlation or covariances to reorder
-#' @param newOrder The order you'd like the variables to be in
-#' @return - the re-ordered (and/or resized) matrix
+#' @param newOrder Variables you want in the order you wish to have
+#' @return - the re-ordered/resized matrix
 #' @export
 #' @family Data Functions
 #' @references - \url{http://www.github.com/tbates/umx}
@@ -2886,13 +2890,14 @@ umx_check_model <- function(obj, type = NULL, hasData = NULL, beenRun = NULL, ha
 #' oldMatrix = cov(mtcars)
 #' umx_reorder(oldMatrix, newOrder = c("mpg", "cyl", "disp")) # first 3
 #' umx_reorder(oldMatrix, newOrder = c("hp", "disp", "cyl")) # subset and reordered
+#' umx_reorder(oldMatrix, "hp") # edge-case of just 1-var
 umx_reorder <- function(old, newOrder) {
 	dim_names = dimnames(old)[[1]]
 	if(!all(newOrder %in% dim_names)){
-		stop("All variable names must appear in the matrix")
+		stop("All variable names must appear in the matrix being umx_reorder'd")
 	}
 	numVarsToRetain = length(newOrder)
-	new = old[1:numVarsToRetain, 1:numVarsToRetain]
+	new = old[1:numVarsToRetain, 1:numVarsToRetain, drop = FALSE]
 	dimnames(new) = list(newOrder, newOrder)
 	for(r in newOrder) {
 		for(c in newOrder) {
@@ -3462,7 +3467,7 @@ umx_names <- function(df, pattern = ".*", ignore.case = TRUE, perl = FALSE, valu
 #' @return - string
 #' @export
 #' @family String Functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' umx_trim(" dog") # "dog"
 #' umx_trim("dog ") # "dog"
@@ -4074,7 +4079,7 @@ umx_read_lower <- function(file="", diag=TRUE, names=as.character(paste("X", 1:n
 #' @return - copy of the dataframe with new binary variables and censoring
 #' @export
 #' @family Data Functions
-#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}, \url{http://openmx.psyc.virginia.edu}
+#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' df = umx_make_bin_cont_pair_data(mtcars, vars = c("mpg"))
 #' str(df)

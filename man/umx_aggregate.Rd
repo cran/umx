@@ -4,14 +4,19 @@
 \alias{umx_aggregate}
 \title{umx_aggregate}
 \usage{
-umx_aggregate(formula = DV ~ condition, data, what = c("mean_sd", "n"))
+umx_aggregate(formula = DV ~ condition, data = NA, what = c("mean_sd",
+  "n"), digits = 2, kable = TRUE)
 }
 \arguments{
 \item{formula}{The aggregation formula. e.g., DV ~ condition}
 
-\item{data}{frame to aggregate with}
+\item{data}{frame to aggregate}
 
 \item{what}{function to use. Defaults to a built-in "smart" mean (sd)}
+
+\item{digits}{for rounding of results}
+
+\item{kable}{Report as a formatted table? (Default is TRUE)}
 }
 \value{
 - table
@@ -25,7 +30,8 @@ aggregating over some grouping factor. A common use is preparing summary tables.
 \examples{
 aggregate(mpg ~ cyl, FUN = mean, na.rm = TRUE, data = mtcars)
 umx_aggregate(mpg ~ cyl, data = mtcars)
-umx_aggregate(cbind(mpg, qsec) ~ cyl, data = mtcars)
+umx_aggregate(mpg ~ cyl, data = mtcars, kable = FALSE)
+umx_aggregate(cbind(mpg, qsec) ~ cyl, data = mtcars, digits = 3)
 t(umx_aggregate(cbind(mpg, qsec) ~ cyl, data = mtcars))
 \dontrun{
 umx_aggregate(cbind(moodAvg, mood) ~ condition, data = study1)
@@ -38,10 +44,9 @@ umx_aggregate(cbind(moodAvg, mood) ~ condition, data = study1)
 - \code{\link{umx_apply}}, \code{\link{aggregate}}
 
 Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{mxSE}}, \code{\link{umxAPA}},
-  \code{\link{umxGetParameters}}, \code{\link{umxSummary}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_print}},
-  \code{\link{umx_show}}, \code{\link{umx_time}},
-  \code{\link{umx}}
+  \code{\link{umxAPA}}, \code{\link{umxGetParameters}},
+  \code{\link{umxSummary}}, \code{\link{umx_APA_pval}},
+  \code{\link{umx_print}}, \code{\link{umx_show}},
+  \code{\link{umx_time}}, \code{\link{umx}}
 }
 
