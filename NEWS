@@ -1,5 +1,16 @@
+# umx 1.5.1
+* March 05 2017 R 3.2.2
+* IMPROVED: umxCP example for improved compatibility with OpenMx 1.7
+* IMPROVED: umx twin models now set a better (less likely to fail) precision for CSOLNP
+* IMPROVED: improved help files; document forms parameter for umxPath
+* IMPROVED: handling list inputs
+* IMPROVED: behavior of confint()
+* IMPROVED: formatting of umxAPA table output
+* ADD: "check" option to umx_make()
+* FIXED: umxpath(a, forms= ) arrows = 2 bug
+
 # umx 1.5.0
-* December 2016 feature release
+* December 2016 feature + OpenMx 1.7.3 compatibility release
 * IMPROVED: umxRAM returns invisibly
 * IMPROVED: umx_aggregate can return a formatted table (kable = TRUE)
 * IMPROVED: umxAPA returns lower-triangle of data.frame correlations (by default)

@@ -337,39 +337,31 @@ umx_standardize_RAM <- function(model, return = "parameters", Amatrix = NA, Smat
 #' data(demoOneFactor)
 #' latents = c("G")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
+#' 	umxPath(from = latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' m2 = confint(m1) # default: CIs added, but user prompted to set run = TRUE
+#' m2 = confint(m1, "all") # default: CIs added, but user prompted to set run = TRUE
 #' m2 = confint(m2, run = TRUE) # CIs run and reported
 #' # Add CIs for asymmetric paths in RAM model, report them, save m1 with this CI added
 #' m1 = confint(m1, parm = "G_to_x1", run = TRUE) 
 #' # Add CIs for asymmetric paths in RAM model, report them, save m1 with mxCIs added
 #' m1 = confint(m1, parm = "A", run = TRUE)
 #' confint(m1, parm = "existing") # request existing CIs (none added yet...)
-confint.MxModel <- function(object, parm = list("existing", c("vector", "of", "names"), "default = add all"), level = 0.95, run = FALSE, showErrorCodes = FALSE, ...) {
-	defaultParmString = list("existing", c("vector", "of", "names"), "default = add all")
+confint.MxModel <- function(object, parm = c("existing", "all", "vector of names"), level = 0.95, run = FALSE, showErrorCodes = FALSE, ...) {
+	option_list = c("existing", "all", "vector of names")
+	parm = umx_default_option(parm, option_list, check = FALSE)
 	# 1. Add CIs if needed
-	if (isTRUE(all.equal(parm, defaultParmString))) {
+	if (parm == "all") {
 		if(umx_has_CIs(object, "intervals")) {
 			# TODO add a count for the user
-			message(length(object$intervals), " CIs found")
-		} else {
-			message("Adding CIs for all free parameters")
-			CIs_to_set = names(omxGetParameters(object, free = TRUE))
-			object = mxModel(object, mxCI(CIs_to_set, interval = level))
+			message(length(object$intervals), " existing CIs found - I am removing these, and adding CIs for all free parameters")
+			object <- mxModel(object, remove=TRUE, object$intervals)
 		}
-	} else if(parm == "existing") {
-		# check there are some in existence
-		if(!umx_has_CIs(object, "intervals")) {
-			message("This model has no CIs yet. Perhaps you wanted just confint(model, run = TRUE) to add and run CIs on all free parameters? Or set parm to a list of labels you'd like CIs? Also see help(mxCI)")
-		}
-	} else {
+		CIs_to_set = names(omxGetParameters(object, free = TRUE))
+		object = mxModel(object, mxCI(CIs_to_set, interval = level))
+	} else if (parm != "existing"){
 		# add requested CIs to model
 		# TODO check that these exist
 		object = mxModel(object, mxCI(parm, interval = level))
@@ -377,6 +369,10 @@ confint.MxModel <- function(object, parm = list("existing", c("vector", "of", "n
 
 	# 2. Run CIs if requested
 	if(run) {
+		# check there are some in existence
+		if(!umx_has_CIs(object, "intervals")) {
+			message("This model has no CIs yet. Perhaps you wanted to use parm = 'all' to add and run CIs on all free parameters? Or set parm to a list of labels you'd like CIs? Also see help(mxCI)")
+		}
 		object = mxRun(object, intervals = TRUE)
 	}
 	# 3. Report CIs if found in output
@@ -1222,12 +1218,14 @@ umxSummary.MxModel.ACEcov <- umxSummaryACEcov
 #' @references - \url{http://www.github.com/tbates/umx}, \url{http://tbates.github.io}
 #' @examples
 #' require(umx)
-#' data(twinData)
-#' labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-#' twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = labList)
-#' selDVs = c("ht", "wt") # will be expanded into "ht1", "wt1", "ht2", "wt2"
-#' mzData <- subset(twinData, ZYG == "MZFF")
-#' dzData <- subset(twinData, ZYG == "DZFF")
+#' data(twinData) 
+#' zygList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
+#' twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = zygList)
+#' twinData$wt1 = twinData$wt1/10 # help CSOLNP by putting wt on a similar scale to ht
+#' twinData$wt2 = twinData$wt2/10 # help CSOLNP by putting wt on a similar scale to ht
+#' selDVs = c("ht", "wt")
+#' mzData <- subset(twinData, ZYG == "MZFF", umx_paste_names(selDVs, "", 1:2))
+#' dzData <- subset(twinData, ZYG == "DZFF", umx_paste_names(selDVs, "", 1:2))
 #' m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = "")
 #' umxSummaryCP(m1, file = NA) # suppress plot creation with file
 #' umxSummary(m1, file = NA) # generic summary is the same
@@ -2864,7 +2862,7 @@ extractAIC.MxModel <- function(fit, scale, k, ...) {
 #' @param object an \code{\link{mxModel}} to get the covariance matrix from
 #' @param latents Whether to select the latent variables (defaults to TRUE)
 #' @param manifests Whether to select the manifest variables (defaults to TRUE)
-#' @param digits precision of reporting. Deafult (NULL) is not not round at all.
+#' @param digits precision of reporting. NULL (Default) = no rounding.
 #' @param ... extra parameters (to match \code{\link{vcov}})
 #' @return - expected covariance matrix
 #' @export
@@ -3306,6 +3304,16 @@ umx_fun_mean_sd = function(x, na.rm = TRUE, digits = 2){
 #' }
 umx_aggregate <- function(formula = DV ~ condition, data = NA, what = c("mean_sd", "n"), digits = 2, kable = TRUE) {
 	# TODO Add more aggregating functions?
+	# TODO: add summaryBy ability to handle more than var on the left hand side
+	# doBy::summaryBy(Sex_T1 + Sex_T2 ~ zyg, data = twinData, FUN = function(x) { round(c(
+	# 	n    = length(x),
+	# 	mean = mean(x, na.rm = T),
+	# 	sd   = sd(x, na.rm = T)), 2)
+	# })
+	# TODO: add "suffix" to umx_aggregate to make wide data long for summary as in genEpi_TwinDescriptives
+	# genEpi_TwinDescriptives(mzData = twinData, dzData = NULL, selDVs = selDVs, groupBy = c("Sex_T1", "Sex_T2"), graph = F)
+	# genEpi_twinDescribe(twinData, varsToSummarize="Age", groupBy="Sex", suffix="_T")
+
 	mean_sd = function(x){
 		paste0(round(mean(x, na.rm = TRUE), digits = digits), " (",
 			   round(sd(x, na.rm = TRUE), digits = digits), ")"
