@@ -7,7 +7,8 @@
 \usage{
 umxModify(lastFit, update = NULL, regex = FALSE, free = FALSE,
   value = 0, freeToStart = NA, name = NULL, verbose = FALSE,
-  intervals = FALSE, comparison = FALSE, dropList = "deprecated")
+  intervals = FALSE, comparison = FALSE, autoRun = TRUE,
+  dropList = "deprecated")
 }
 \arguments{
 \item{lastFit}{The \code{\link{mxModel}} you wish to update and run.}
@@ -30,6 +31,8 @@ over-rides the contents of update, and sets regex to TRUE.}
 \item{intervals}{Whether to run confidence intervals (see \code{\link{mxRun}})}
 
 \item{comparison}{Whether to run umxCompare() after umxRun}
+
+\item{autoRun}{Whether to run the modified model before returning it (default), or just to modify and return without running.}
 
 \item{dropList}{(deprecated: use 'update' instead.}
 }
@@ -59,6 +62,8 @@ require(umx)
 data(demoOneFactor)
 latents  = c("G")
 manifests = names(demoOneFactor)
+umx_set_optimizer("SLSQP")
+
 m1 <- mxModel("One Factor", type = "RAM", 
 	manifestVars = manifests, latentVars = latents, 
 	mxPath(from = latents, to = manifests),
@@ -71,8 +76,12 @@ m2 = umxModify(m1, update = "G_to_x1", name = "drop_X1")
 umxSummary(m2); umxCompare(m1, m2)
 # 1-line version including comparison
 m2 = umxModify(m1, update = "G_to_x1", name = "drop_X1", comparison = TRUE)
+# use regular expression to drop multiple paths: e.g. G to x3, x4, x5
 m2 = umxModify(m1, update = "^G_to_x[3-5]", regex = TRUE, name = "no_G_to_x3_5", comp = TRUE)
-m2 = umxModify(m1, regex = "^G_to_x[3-5]", name = "no_G_to_x3_5") # same, but shorter
+# Same, but shorter
+m2 = umxModify(m1, regex  = "^G_to_x[3-5]", name = "no_G_to_x3_5")
+# Same, but don't autoRun
+m2 = umxModify(m1, regex  = "^G_to_x[3-5]", name = "no_G_to_x3_5", autoRun = FALSE) 
 m2 = umxModify(m1, update = "G_to_x1", value = .2, name = "fix_G_x1_at_point2", comp = TRUE)
 m3 = umxModify(m2, update = "G_to_x1", free = TRUE, name = "free_G_x1_again", comparison = TRUE)
 }

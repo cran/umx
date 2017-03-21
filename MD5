@@ -1,18 +1,18 @@
-2eb5aa196b220fe6d78484a98dd63eaf *DESCRIPTION
+aba87a69671509cc5096e2174d3c18ec *DESCRIPTION
 17549f01f938d25d7b486f4a6f230c5a *INSTALL
-e9a6543fecd240be6a5f6671a0752c2c *NAMESPACE
-f939ed20fb61a6e5c5f0e7221767b6e6 *NEWS
-1aec5c96a1fab7246ccc45af7f660699 *R/build_run_modify.r
+68edd895731f5f65860f8be57e718436 *NAMESPACE
+1e137fd3d9c74cc154f19e6cf8b8db1d *NEWS
+13fb6f5b55642cb108bf7ac2b41e13ef *R/build_run_modify.r
 7cfa89b91851976c3828ae9e0f56ac3d *R/datasets.R
 3ace5fcd7c3a5f852e938178fa41d814 *R/datasets_openmx.R
 da6e2d76881f46c2537247b8dd002878 *R/deprecated.r
-6b159c7b6b38be202ad33834b18e02c9 *R/fit_and_reporting.r
+4eee36ed35d824d466953deb2668909b *R/fit_and_reporting.r
 93a0d316edeb7750144eab8c259b01eb *R/hermine_original_twinHetMulAceCon.R
-2739653d416e1dfa641ec93d48b28d0b *R/misc_and_utility.r
+5fd695cf0d0ba8657fafbed0742160e7 *R/misc_and_utility.r
 94aabcb70151474f3ec7b248a9ddf3f8 *R/model_builders.r
 002a727b0486051c596dbe30db101030 *R/umxCF_SexLim.R
 a9b489b1d744d90fd83f1b1d309e5ba8 *R/xmu.r
-6115fab3170f261abfb672d896b35ebd *README.md
+d387eeef111d2686ba93cedd873d142f *README.md
 7a392fe1e591a26c8f9ca37d255e3f25 *data/ex9_6.rda
 0625ef5365d41ad17a980e6e0715b196 *data/us_skinfold_data.rda
 0402a10065e3c2cc5eb854d32bdab940 *inst/CITATION
@@ -23,7 +23,7 @@ a1e51d1d39739387e869c3b26981a698 *inst/extdata/GQ6.sql.xlsx
 000df22e85deb29450e920be6fb0ab70 *man/confint.MxModel.Rd
 88dfcb9f9742d9653bc3754a26ccc29f *man/dl_from_dropbox.Rd
 32fab169f74852191c6d44998ae7ac50 *man/ex9_6.Rd
-5fd960f0bd4b96eec6658f1c3df02b04 *man/extractAIC.MxModel.Rd
+25748e3cb9dd4afc0e666b5cfa88c80a *man/extractAIC.MxModel.Rd
 a0ff3c6bd86cc1fc55acabc3819422bd *man/figures/ACE.png
 31136704437a36e7139f69f7f3cd6ec9 *man/figures/ACEcov.png
 dfabfc4a2b569b2658954e69a8c22020 *man/figures/Bivariate_GxE.png
@@ -56,7 +56,7 @@ edcc0ac22ae666c6bfcd863e338df383 *man/umxAPA.Rd
 73b3b84439818be70be5c06e630913df *man/umxCF_SexLim.Rd
 0379798c84cfee3f937e4ab20c073c4f *man/umxCI.Rd
 01e8bc9794d524bb7dd572dc81629fe4 *man/umxCI_boot.Rd
-9274c847711b41b19108004351a9ecbf *man/umxCP.Rd
+c7db738844a64d032f5f31b770430609 *man/umxCP.Rd
 64b7b2eb9daacd347b24f08c0a6df96e *man/umxCompare.Rd
 e8ce2495a8a2f86bead990c8771e928a *man/umxCov2cor.Rd
 2f53da1c5ca0af15c88803e5dcddfe9d *man/umxCovData.Rd
@@ -80,9 +80,9 @@ ee1b4ce1f7154e1bcb993b51863a5af4 *man/umxLabel.Rd
 58bf8bd7a5b05f10e116f4cf5fd42dc0 *man/umxLatent.Rd
 8899ff3e32574c7d7edbb9ec1383c9c6 *man/umxMI.Rd
 a7675f2c55f21f5f9bd92b609ca68ce6 *man/umxMatrix.Rd
-30c865325777ed409a36054abe441aea *man/umxModify.Rd
+3ed0b13a75b5ca47e25e3c4eadfcc54d *man/umxModify.Rd
 17332acd28c9f9924e4703abb1e2db38 *man/umxPadAndPruneForDefVars.Rd
-92a98842b77771b4ce5e08eb228e17f1 *man/umxPath.Rd
+e4fdbc1bfcd887842fbba59d8c46ed35 *man/umxPath.Rd
 17b8bbbb6cccc61454f141140619abca *man/umxPlotACE.Rd
 f726e531d81836571cb68b1b0aa02c8e *man/umxPlotACEcov.Rd
 d8f50339e4441c1a4401348cd7c25253 *man/umxPlotCP.Rd
@@ -93,7 +93,7 @@ af96a7d66b509bc4649bf21ebe4094fe *man/umxRAM.Rd
 ab9f438f37e3d04361fa9a926ae00b02 *man/umxReduce.Rd
 c48135634a59d9a70b8ac4629e6ef582 *man/umxRun.Rd
 3f6d6332289c877bd55c4d140450994b *man/umxSetParameters.Rd
-cbc9293194456ec413a6174e28f6e94a *man/umxSummary.MxModel.Rd
+fc6afc43998704ba966e71cf75e6f397 *man/umxSummary.MxModel.Rd
 84bafdf5e842db4d406a6be731970244 *man/umxSummary.Rd
 8c532f91aca106c1535bce078304bb8f *man/umxSummaryACE.Rd
 f2fbfa646206c50049087fae2d49b0fb *man/umxSummaryACEcov.Rd
@@ -113,7 +113,7 @@ f4e2409c655bef342a83050e9bb9fa84 *man/umx_apply.Rd
 db825797e0757f6144af714232e8f4ce *man/umx_check.Rd
 b2fff5f5dc7e604e9ef7be206aa91314 *man/umx_check_OS.Rd
 9132786458045f4cf657e7f58f6065f1 *man/umx_check_model.Rd
-68b38412d35ceb6102265d10851cf19b *man/umx_check_names.Rd
+6ee1f1f93bfb13e613bf729dcdbd259e *man/umx_check_names.Rd
 b082de95d5b5895ac95911d6371cf5d1 *man/umx_check_parallel.Rd
 80b494db6deb8f969283353c46cb0c1f *man/umx_cont_2_quantiles.Rd
 9d27572a314b6790b3087e850a863b25 *man/umx_cor.Rd
@@ -146,7 +146,7 @@ a1cdf52eb176fab49304b2bf0b6a0631 *man/umx_is_endogenous.Rd
 a3c7e1783149609713c3bcd56b660efb *man/umx_is_exogenous.Rd
 edc68ae13b42d8eda7a02b57b83bce2e *man/umx_is_ordered.Rd
 26161ce2e3d2e979a8644594cc021a24 *man/umx_lower2full.Rd
-5a9c1e26ae26bf483b732eb6e6801163 *man/umx_make.Rd
+9f380abcc6e7557cb6f97d3812ae5d14 *man/umx_make.Rd
 7201ee036bbc574249186501b2adcdb5 *man/umx_make_MR_data.Rd
 4fd970e0bad1e46083da26c8ff8111d5 *man/umx_make_TwinData.Rd
 c4ba9c0945349302a43e9ac2dc507934 *man/umx_make_bin_cont_pair_data.Rd
@@ -164,6 +164,7 @@ e41f31667b707bbe21ae1763312ed430 *man/umx_move_file.Rd
 bd47d6b32e22fb5b9a2433996b7011b0 *man/umx_paste_names.Rd
 8e01953261d2b13b77e44a67c5709484 *man/umx_pb_note.Rd
 575764559def85a8ddb1ab6bf9185589 *man/umx_print.Rd
+d3e6fd1dc2d3b229c3a0c72ab7e2ecb6 *man/umx_r_test.Rd
 d3de8531e511b6caec09a3133f510e18 *man/umx_read_lower.Rd
 7e93012b6a74636d3ea14ad194f2d736 *man/umx_rename.Rd
 618f1413e5b228169b4d0c0b3f36506b *man/umx_rename_file.Rd
@@ -177,7 +178,7 @@ b1203fb81a251149dcdc3148fbb02fb7 *man/umx_round.Rd
 cf9060162f8b91054961bca05dce146a *man/umx_set_auto_run.Rd
 7698fdd15bbffc1c50634be4334489ef *man/umx_set_checkpoint.Rd
 9b7aa65df5a058081216d13ee948685b *man/umx_set_condensed_slots.Rd
-ccb6e4af387d15261a87bdf9ab722cb6 *man/umx_set_cores.Rd
+223209d424a9206c4faa4d82e410920b *man/umx_set_cores.Rd
 3c6871d16955ed320dd4d1fd7af9b88f *man/umx_set_optimizer.Rd
 9b34a80ea91174040829f4bdcedc92c9 *man/umx_set_plot_format.Rd
 1c9b74671db305f5be0a39cade4584c4 *man/umx_set_table_format.Rd
@@ -191,6 +192,7 @@ d27a3426e8e07b8d9558f6a22df256e8 *man/umx_standardize_IP.Rd
 bf4cc27c1d29756413612bb8a1a7e5f8 *man/umx_swap_a_block.Rd
 8b56afaf33a55c6780ce8f6b8a667d10 *man/umx_time.Rd
 144198698fd385ffff9f75f0193ef11e *man/umx_trim.Rd
+aa5b9a60e08b2737e727a75f66e69cd9 *man/umx_write_to_clipboard.Rd
 eaa0034c071d7acb24fba633dcdf6850 *man/us_skinfold_data.Rd
 c790b24f1e5d9cae1510105a5bdb0507 *man/xmuHasSquareBrackets.Rd
 1766f165f6a953ba9b5b3d9ad93c0be4 *man/xmuLabel_MATRIX_Model.Rd

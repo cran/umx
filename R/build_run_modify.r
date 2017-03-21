@@ -54,6 +54,7 @@
 #' @importFrom stats setNames update var delete.response terms
 #' @importFrom utils combn data flush.console read.table txtProgressBar
 #' @importFrom utils globalVariables write.table packageVersion
+# #' @importFrom cocor cocor.dep.groups.nonoverlap
 NULL
 	
 utils::globalVariables(c(
@@ -323,11 +324,16 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 	if(is.null(data)){
 		stop("You must set data: either data = dataframe or data = mxData(yourData, type = 'raw|cov)', ...)")
 	} else if(class(data)[1] == "data.frame") {
-			data = mxData(observed = data, type = "raw")
+		data = mxData(observed = data, type = "raw")
 	}
 
   if(class(data)[1] %in%  c("MxNonNullData", "MxDataStatic") ) {
 		if(data$type == "raw"){
+			# check "one" is not a column
+			if("one" %in% names(data$observed) ){
+				warning("You have a data column called 'one' which is illegal (means). I dropped it!")
+				data$observed = data$observed[ , !(names(data$observed) %in% c("one")), drop = FALSE]
+			}
 			manifestVars = names(data$observed)
 			isRaw = TRUE
 		} else {
@@ -459,6 +465,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 #' @param verbose   How much feedback to give
 #' @param intervals Whether to run confidence intervals (see \code{\link{mxRun}})
 #' @param comparison Whether to run umxCompare() after umxRun
+#' @param autoRun Whether to run the modified model before returning it (default), or just to modify and return without running.
 #' @param dropList (deprecated: use 'update' instead.
 #' @return - \code{\link{mxModel}}
 #' @family Core Modeling Functions
@@ -469,6 +476,8 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 #' data(demoOneFactor)
 #' latents  = c("G")
 #' manifests = names(demoOneFactor)
+#' umx_set_optimizer("SLSQP")
+#' 
 #' m1 <- mxModel("One Factor", type = "RAM", 
 #' 	manifestVars = manifests, latentVars = latents, 
 #' 	mxPath(from = latents, to = manifests),
@@ -481,11 +490,15 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 #' umxSummary(m2); umxCompare(m1, m2)
 #' # 1-line version including comparison
 #' m2 = umxModify(m1, update = "G_to_x1", name = "drop_X1", comparison = TRUE)
+#' # use regular expression to drop multiple paths: e.g. G to x3, x4, x5
 #' m2 = umxModify(m1, update = "^G_to_x[3-5]", regex = TRUE, name = "no_G_to_x3_5", comp = TRUE)
-#' m2 = umxModify(m1, regex = "^G_to_x[3-5]", name = "no_G_to_x3_5") # same, but shorter
+#' # Same, but shorter
+#' m2 = umxModify(m1, regex  = "^G_to_x[3-5]", name = "no_G_to_x3_5")
+#' # Same, but don't autoRun
+#' m2 = umxModify(m1, regex  = "^G_to_x[3-5]", name = "no_G_to_x3_5", autoRun = FALSE) 
 #' m2 = umxModify(m1, update = "G_to_x1", value = .2, name = "fix_G_x1_at_point2", comp = TRUE)
 #' m3 = umxModify(m2, update = "G_to_x1", free = TRUE, name = "free_G_x1_again", comparison = TRUE)
-umxModify <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value = 0, freeToStart = NA, name = NULL, verbose = FALSE, intervals = FALSE, comparison = FALSE, dropList = "deprecated") {
+umxModify <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value = 0, freeToStart = NA, name = NULL, verbose = FALSE, intervals = FALSE, comparison = FALSE, autoRun = TRUE, dropList = "deprecated") {
 	if(dropList != "deprecated"){
 		stop("hi. Sorry for the change, but please replace ", omxQuotes("dropList"), " with ", omxQuotes("update"),". e.g.:\n",
 			"umxModify(m1, dropList = ", omxQuotes("E_to_heartRate"), ")\n",
@@ -528,13 +541,15 @@ umxModify <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value
 			if(is.null(name)){ name = NA }
 			x = mxModel(lastFit, update, name = name)
 		}
-		x = mxRun(x, intervals = intervals)
-		if(comparison){
-			umxSummary(x)
-			if(free){ # new model has fewer df
-				umxCompare(x, lastFit)
-			} else {
-				umxCompare(lastFit, x)
+		if(autoRun){
+			x = mxRun(x, intervals = intervals)
+			if(comparison){
+				umxSummary(x)
+				if(free){ # new model has fewer df
+					umxCompare(x, lastFit)
+				} else {
+					umxCompare(lastFit, x)
+				}
 			}
 		}
 		return(x)
@@ -1480,9 +1495,6 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, dzData, mzData, suffix 
 		# Trundle through and make sure values with the same label have the same start value... means for instance.
 		model = omxAssignFirstParameters(model)
 		model = as(model, "MxModel.ACE") # set class so that S3 plot() dispatches.
-		if(umx_set_optimizer(silent = TRUE) == 'CSOLNP'){
-			model <- mxOption(model, "Optimality tolerance", "1e-10")
-		}
 		
 		if(autoRun){
 			model = mxRun(model)
@@ -1790,6 +1802,7 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix =
 #' selDVs = c("ht", "wt")
 #' mzData <- subset(twinData, ZYG == "MZFF", umx_paste_names(selDVs, "", 1:2))
 #' dzData <- subset(twinData, ZYG == "DZFF", umx_paste_names(selDVs, "", 1:2))
+#' umx_set_optimizer("SLSQP") #preferably NPSOL: CSOLNP needs setup to run this model.
 #' m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = "")
 #' umxSummary(m1)
 #' umxGetParameters(m1, "^c", free = TRUE)
@@ -1802,7 +1815,7 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 	if(!is.null(suffix)){
 		if(length(suffix) != 1){
 			stop("suffix should be just one word, like '_T'. I will add 1 and 2 afterwards... \n",
-			"i.e., set selDVs to 'obese', suffiex to '_T' and I look for 'obese_T1' and 'obese_T2' in the data...\n",
+			"i.e., set selDVs to 'obese', suffix to '_T' and I look for 'obese_T1' and 'obese_T2' in the data...\n",
 			"PS: variables have to end in 1 or 2, i.e  'example_T1' and 'example_T2'")
 		}
 		selDVs = umx_paste_names(selDVs, suffix, 1:2)
@@ -1950,10 +1963,6 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 	}
 	model = omxAssignFirstParameters(model) # Just trundle through and make sure values with the same label have the same start value... means for instance.
 	model = as(model, "MxModel.CP")
-	if(umx_set_optimizer(silent = TRUE) == 'CSOLNP'){
-		model <- mxOption(model, "Optimality tolerance", "1e-10")
-	}
-	
 	if(autoRun){
 		return(mxRun(model))
 	} else {
@@ -2152,10 +2161,7 @@ umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 	}
 	model  = omxAssignFirstParameters(model) # ensure parameters with the same label have the same start value... means, for instance.
 	model = as(model, "MxModel.IP")
-	if(umx_set_optimizer(silent = TRUE) == 'CSOLNP'){
-		model <- mxOption(model, "Optimality tolerance", "1e-10")
-	}
-	
+
 	if(autoRun){
 		return(mxRun(model))
 	} else {
@@ -3928,6 +3934,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' @param v1m0 variance of 1 and mean of zero in one call.
 #' @param v.m. variance and mean, both free.
 #' @param v0m0 variance and mean, both fixed at zero.
+#' @param v.m0 variance free, mean fixed at zero.
 #' @param fixedAt Equivalent to setting "free = FALSE, values = x" nb: free and values must be left empty (their default)
 #' @param freeAt Equivalent to setting "free = TRUE, values = x" nb: free and values must be left empty (their default)
 #' @param firstAt first value is fixed at this (values passed to free are ignored: warning if not a single TRUE)
@@ -3997,15 +4004,15 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' # # manifests is a reserved word, as is latents.
 #' # # It allows the string syntax to use the manifestVars variable
 #' # umxPath("A -> manifests") 
-umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL, unique.bivariate = NULL, unique.pairs = NULL, forms = NULL, Cholesky = NULL, defn = NULL, means = NULL, v1m0 = NULL, v.m. = NULL, v0m0 = NULL, fixedAt = NULL, freeAt = NULL, firstAt = NULL, connect = c("single", "all.pairs", "all.bivariate", "unique.pairs", "unique.bivariate"), arrows = 1, free = TRUE, values = NA, labels = NA, lbound = NA, ubound = NA, hasMeans = NULL) {
+umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL, unique.bivariate = NULL, unique.pairs = NULL, forms = NULL, Cholesky = NULL, defn = NULL, means = NULL, v1m0 = NULL, v.m. = NULL, v0m0 = NULL, v.m0 = NULL, fixedAt = NULL, freeAt = NULL, firstAt = NULL, connect = c("single", "all.pairs", "all.bivariate", "unique.pairs", "unique.bivariate"), arrows = 1, free = TRUE, values = NA, labels = NA, lbound = NA, ubound = NA, hasMeans = NULL) {
 	connect = match.arg(connect) # set to single if not overridden by user.
 	xmu_string2path(from)
 	n = 0
-	for (i in list(with, cov, var, forms, means, unique.bivariate, unique.pairs, v.m. , v1m0, v0m0, defn, Cholesky)) {
+	for (i in list(with, cov, var, forms, means, unique.bivariate, unique.pairs, v.m. , v1m0, v0m0, v.m0, defn, Cholesky)) {
 		if(!is.null(i)){ n = n + 1}
 	}
 	if(n > 1){
-		stop("At most one of with, cov, var, forms, means, unique.bivariate, unique.pairs, v1m0, v.m., v0m0, defn, or Cholesky can be set: Use at one time")
+		stop("At most one of with, cov, var, forms, means, unique.bivariate, unique.pairs, v1m0, v.m., v0m0, v.m0, defn, or Cholesky can be set: Use at one time")
 	} else if(n == 0){
 		# check that from is set?
 		if(is.null(from)){
@@ -4014,11 +4021,12 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 	}
 
 	n = 0
-	for (i in list(v.m. , v1m0, v0m0)) {
+	for (i in list(v.m. , v1m0, v0m0, v.m0)) {
 		if(!is.null(i)){ n = n + 1}
 	}
 	if(n && !is.null(fixedAt)){
-		warning("When you use v.m. , v1m0, v0m0, don't also set fixedAt - I will ignore it this time")
+		warning("When you use v.m. , v1m0, v0m0, v.m0, don't also set fixedAt - I will ignore it this time")
+		fixedAt = NULL
 	}
 
 	if(!is.null(defn)){
@@ -4084,6 +4092,12 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 	if(!is.null(v0m0)){
 		a = mxPath(from = v0m0, arrows = 2, free = FALSE, values = 0)
 		b = mxPath(from = "one", to = v0m0, free = FALSE, values = 0)
+		return(list(a, b))
+	}
+
+	if(!is.null(v.m0)){
+		a = mxPath(from = v.m0, arrows = 2, free = TRUE, values = 1)
+		b = mxPath(from = "one", to = v.m0, free = FALSE, values = 0)
 		return(list(a, b))
 	}
 
