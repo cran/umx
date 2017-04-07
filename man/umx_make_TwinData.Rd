@@ -2,52 +2,118 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_make_TwinData}
 \alias{umx_make_TwinData}
-\title{umx_make_TwinData: Simulate twin data with control over A, C, E, and moderation}
+\title{Simulate twin data with control over A, C, E, and moderation}
 \usage{
-umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, a = c(avg = 0.5, min = 0,
-  max = 1), c = NULL, e = NULL)
+umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL,
+  EE = NULL, nThresh = NULL, sum2one = TRUE, varNames = "var",
+  seed = NULL, empirical = FALSE)
 }
 \arguments{
 \item{nMZpairs}{Number of MZ pairs to simulate}
 
 \item{nDZpairs}{Number of DZ pairs to simulate (if omitted defaults to nMZpairs)}
 
-\item{a}{value for a, defaults to an example of moderation: c(avg=.5, min=0, max=1)}
+\item{AA}{value for A variance. Optionally a vecotr: c(avg=.5, min=0, max=1)}
 
-\item{c}{value for c}
+\item{CC}{value for C variance.}
 
-\item{e}{value for e}
+\item{EE}{value for E variance.}
+
+\item{nThresh}{If supplied, use as thresholds and return mxFactor output? (default is not too)}
+
+\item{sum2one}{Whether to enforce AA + CC + EE summing the one (default = TRUE)}
+
+\item{varNames}{name for var (defaults to 'var')}
+
+\item{seed}{Allows user to set.seed() if wanting reproducible dataset}
+
+\item{empirical}{Passed to mvrnorm}
 }
 \value{
-- list of mzData and dzData data.frames
+\itemize{
+\item list of mzData and dzData dataframes containing T1 and T2 plus, if needed M1 and M2 (moderator values)
+}
 }
 \description{
-Makes MZ and DZ twin data, optionally moderated. Note, if you want a power calculator, see here:
-\url{http://www.people.vcu.edu/~bverhulst/power/power.html}
-}
-\details{
-You supply the number of pairs of each zygosity that wish to simulate (nMZpairs, nDZpairs), along with the values of a, c,and e.
-a can take a list c(avg = .5, min = 0, max = 1). If specified will act like a moderated heritability, with average value avg, and swinging
-down to min and up to max across 4-SDs of the moderator.
+Makes MZ and DZ twin data, optionally with moderated A. y default, the three variance components must sum to 1.
+
+See examples for how to use this: it is pretty flexible.
+
+Note, if you want a power calculator, see \href{http://www.people.vcu.edu/~bverhulst/power/power.html}{here}.
+You supply the number of pairs of each zygosity that wish to simulate (nMZpairs, nDZpairs), along with the values of AA, CC,and EE.
+
+\strong{Shortcuts}
+
+You can omit nDZpairs. You can also give any 2 of A, C, or E and the function will add the value which makes the ACE total = 1.
+
+\strong{Moderation}
+
+AA can take a list c(avg = .5, min = 0, max = 1). If specified will act like a moderated heritability, with average value avg, and swinging
+down to min and up to max across 3 SDs of the moderator.
 }
 \examples{
-str(umx_make_TwinData(nMZpairs = 100, nDZpairs = 100, a = .5, c = .3, e = .4))
-str(umx_make_TwinData(nMZpairs = 100, nDZpairs = 100, a = .5, c = .3, e = .4))
-str(umx_make_TwinData(nMZpairs = 100, a = c(avg = .5, min = 0, max = 1), c = .3, e = .4))
+# =====================================================================
+# = Basic Example, with all elements of std univariate data specified =
+# =====================================================================
+tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 100, AA = .36, CC = .04, EE = .60)
+# Show list of 2 data sets
+str(tmp)
+# = How to consume the built datasets =
+mzData = tmp[[1]];
+dzData = tmp[[2]];
+cov(mzData); cov(dzData)
+str(mzData); str(dzData); 
+
+# Prefer to work in path coefficient values? (little a?)
+tmp = umx_make_TwinData(200, AA = .6^2, CC = .2^2)
+# Check the correlations
+umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
+
+# =============
+# = Shortcuts =
+# =============
+
+# Omit nDZpairs (equal numbers of both by default)
+tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 100, AA = .36, CC = .04, EE = .60)
+tmp = umx_make_TwinData(100, AA = 0.5, CC = 0.3) # omit any one of A, C, or E (sums to 1)
+cov(tmp[[1]])
+# Not limited to unit variance
+tmp = umx_make_TwinData(100, AA = 3, CC = 2, EE = 3, sum2one = FALSE) 
+cov(tmp[[1]])
+
+# =====================
+# = Moderator Example =
+# =====================
+
+x = umx_make_TwinData(100, AA = c(avg = .7, min = 0, max = 1), CC = .55, EE = .63)
+str(x)
+
+# =====================
+# = Threshold Example =
+# =====================
+tmp = umx_make_TwinData(100, AA = .6, CC = .2, nThresh = 3)
+str(tmp)
+umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
+Other Data Functions: \code{\link{umxCovData}},
+  \code{\link{umxFactor}}, \code{\link{umxHetCor}},
+  \code{\link{umxPadAndPruneForDefVars}},
+  \code{\link{umx_as_numeric}},
+  \code{\link{umx_cont_2_quantiles}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_make_MR_data}},
+  \code{\link{umx_make_bin_cont_pair_data}},
+  \code{\link{umx_make_fake_data}},
+  \code{\link{umx_merge_CIs}},
+  \code{\link{umx_read_lower}}, \code{\link{umx_reorder}},
+  \code{\link{umx_residualize}}, \code{\link{umx_round}},
+  \code{\link{umx_scale_wide_twin_data}},
+  \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}},
   \code{\link{umx}}
 }

@@ -422,6 +422,7 @@ umx_check_parallel <- function(nCores = -1, testScript = NULL, rowwiseParallel =
 	message("I will now set cores to ", omxQuotes(nCores), " (they will be reset after) and run a script that hits that many cores if possible.\n",
 	"Check CPU while it's running and see if R is pegging the processor.")
 	set.seed(10)
+	# nSubjects = 1000
 	numberIndicators = 12
 	numberFactors    = 3
 	fixedBMatrixF    = matrix(c(.4, .2), 2, 1, byrow = TRUE)
@@ -481,7 +482,7 @@ umx_check_parallel <- function(nCores = -1, testScript = NULL, rowwiseParallel =
 	
 	# set rowwiseParallel
 	if(packageVersion("OpenMx") >= "2.6.1"){
-		test1$fitfunction$rowwiseParallel = rowwiseParallel
+		# test1$fitfunction$rowwiseParallel = rowwiseParallel
 	} else {
 		message("ignored rowwiseParallel: upgrade to OpenMx 2.6.1 or better to use this")
 		# ignore: this is not supported by versions before 2.6.1
@@ -970,9 +971,36 @@ umx_factor <- umxFactor
 # = Utility =
 # ===========
 
-# ===========
-# = Utility =
-# ===========
+#' Print the version of umx, along with detail from  OpenMx and general system info.
+#'
+#' @description
+#' umxVersion returns the version information for umx, and for OpenMx and R.
+#' essential for bug-reports.
+#'
+#' @param model Optional to show optimizer in this model
+#' @param verbose = TRUE
+#' @param return Which package (umx or openMx to return version on
+#' @return - \code{\link{mxModel}}
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @seealso - \code{\link{packageVersion}}
+#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+#' @examples
+#' x = umxVersion(); x
+umxVersion <- function (model = NULL, verbose = TRUE, return = "umx") {
+	umx_vers <- try(packageVersion("umx"))
+    if (verbose) {
+        msg = paste0("umx version: ", umx_vers)
+        message(msg)
+    }
+	pvers = mxVersion(model = model, verbose = verbose)
+    
+	if(return == "umx"){
+		invisible(umx_vers)
+	} else {
+		invisible(pvers)
+	}
+}
 
 #' Open the CRAN page for a package
 #' 
@@ -1868,12 +1896,15 @@ print.reliability <- function (x, digits = 4, ...){
 # ==================
 # = Code functions =
 # ==================
-#' install.OpenMx
+#' Easily install the latest parallel/NPSOL enabled build of OpenMx.
 #'
 #' @description
-#' source() the getOpenMx.R script from source repo.
+#' You can install from UVa, from travis latest, from a custom url, or open the list of travis builds.
 #'
-#' @aliases umx_install_OpenMx
+#' @aliases umx_install_OpenMx umx_update_OpenMx
+#' @param loc Where to install from: "UVa" (the default), "latest" (travis build),
+#' or open the "travis" list of builds.
+#' @param url A custom URL if you have/need one (probably not)
 #' @return - 
 #' @export
 #' @family Miscellaneous Functions
@@ -1882,12 +1913,28 @@ print.reliability <- function (x, digits = 4, ...){
 #' \dontrun{
 #' install.OpenMx()
 #' }
-install.OpenMx <- function() {
-	source('http://http://openmx.psyc.virginia.edu/getOpenMx.R')
+install.OpenMx <- function(loc = c("UVa", "latest", "travis"), url= NULL) {	
+	loc = match.arg(loc)
+	if(!is.null(url)){
+		loc = url
+	}
+	if(loc == "travis"){
+		# TODO special case by OS
+		browseURL("http://openmx.psyc.virginia.edu/OpenMx2/bin/macosx/travis")
+	}else if(loc == "latest"){
+		install.packages("http://openmx.psyc.virginia.edu/OpenMx2/bin/macosx/travis/OpenMx_latest.tgz")
+	} else if(loc == "UVa"){
+		source("http://openmx.psyc.virginia.edu/getOpenMx.R")
+	}else{
+		install.packages(loc)
+	}
 }
 
 #' @export
 umx_install_OpenMx <- install.OpenMx
+
+#' @export
+umx_update_OpenMx <- install.OpenMx
 
 #' umx_make umx using devtools
 #'
@@ -1950,29 +1997,68 @@ umx_msg <- function(x) {
 # ====================
 # = String Functions =
 # ====================
-#' umx_paste_names
+#' Concatenate base variable names with suffixes to create wide-format variable names (i.e twin-format)
 #'
-#' Helper to add suffixes to names: useful for expanding base names for variables (e.g. "bmi")
-#' into fully specified family-wise row names for variables c("bmi_T1", "bmi_T2")
-#' Use sep to add a constant like "_T" after each base variable name.
+#' @description
+#' It's easier to work with base names, rather than the twice-as-long hard-to-typo list of column names.
+#' `umx_paste_names` adds suffixes to names so you can work with that nice short list.
+#' So, you provide `bmi`, and you get back fully specified family-wise names: `c("bmi_T1", "bmi_T2")`
+#' 
+#' @details
+#' Method 1: **Use complete suffixes**
+#' 
+#' You can provide complete suffixes like "_T1" and "_T2". This has the benefit of being explicit
+#' and very general:
+#'
+#'     umx_paste_names(c("var1", "var2"), suffixes = c("_T1", "_T2"))
+#'
+#' *Method 2*: Use sep and a suffix vector
+#' 
+#' Alternatively, you can use `sep` to add a constant like "_T" after each basename, along
+#' with a vector of suffixes. This has the benefit of showing what is varying:
 #' This is then suffixed with e.g. "1", "2".
 #'
+#'     umx_paste_names(c("var1", "var2"), sep = "_T", suffixes = 1:2)
+#'
+#' **Working with covariates**
+#' 
+#' If you are using \code{\link{umxACEcov}}, you **need** to keep all the covariates at the end of the list.
+#' Here's how:
+#' 
+#'     umx_paste_names(c("var1", "var2"), cov = c("cov1"), sep = "_T", suffixes = 1:2)
+#' 
+#' note: in conventional twin models, the expCov matrix is T1 vars, followed by T2 vars. For covariates, you want
+#' T1vars, T2 vars, T1 covs, T2 covs. This is what `covNames` accomplishes.
 #' @param varNames a list of _base_ names, e.g c("bmi", "IQ")
 #' @param sep A string separating the name and the twin suffix, e.g. "_T" (default is "")
 #' @param suffixes a list of terminal suffixes differentiating the twins default = c("1", "2"))
-#' @return - vector of suffixed var names, i.e., c("a_T1", "b_T1", "a_T2", "b_T2")
+#' @param covNames a list of _base_ names for covariates (sorted last in list), e.g c("age", "sex")
+#' @param prefix a string to pre=pend to each label, e.g c("mean_age", "mean_sex")
+#' @return - vector of suffixed var names, i.e., c("v1_T1", "v2_T1", "v1_T2", "v2_T2", "cov_T1", "cov_T2")
 #' @export
 #' @family Utility Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' # two styles doing the same thing: first is more general
-#' umx_paste_names("bmi", "_T", 1:2)
 #' umx_paste_names("bmi", suffixes = c("_T1", "_T2"))
+#' umx_paste_names("bmi", sep = "_T", suffixes = 1:2)
 #' varNames = umx_paste_names(c("N", "E", "O", "A", "C"), "_T", 1:2)
-umx_paste_names <- function(varNames, sep = "", suffixes = 1:2) {
+#' umx_paste_names(c("IQ", "C"), cov = c("age"), sep = "_T", suffixes = 1:2)
+#' umx_paste_names(c("IQ", "C"), cov = c("age"), sep = "_T", prefix= "mean_")
+#' @md
+umx_paste_names <- function(varNames, sep = "", suffixes = 1:2, covNames = NULL, prefix = NULL) {
 	nameList = c()
 	for (ID in suffixes) {
 		nameList = c(nameList, paste0(varNames, sep, ID))
+	}
+	if(!is.null(covNames)){
+		for (ID in suffixes) {
+			nameList = c(nameList, paste0(covNames, sep, ID))
+		}
+	}
+
+	if(!is.null(prefix)){
+		nameList = paste0(prefix, nameList)
 	}
 	return(nameList)
 }
@@ -2359,7 +2445,7 @@ umx_check <- function(boolean.test, action = c("stop", "warning", "message"), me
 #' data(demoOneFactor) # "x1" "x2" "x3" "x4" "x5"
 #' umx_check_names(c("x1", "x2"), demoOneFactor)
 #' umx_check_names(c("x1", "x2"), as.matrix(demoOneFactor))
-#' umx_check_names(c("x1", "x2"), cov(demoOneFactor[,c("x1","x2")]))
+#' umx_check_names(c("x1", "x2"), cov(demoOneFactor[, c("x1","x2")]))
 #' umx_check_names(c("z1", "x2"), data = demoOneFactor, die = FALSE)
 #' umx_check_names(c("x1", "x2"), data = demoOneFactor, die = FALSE, no_others = TRUE)
 #' umx_check_names(c("x1","x2","x3","x4","x5"), data = demoOneFactor, die = FALSE, no_others = TRUE)
@@ -2408,15 +2494,15 @@ umx_check_names <- function(namesNeeded, data = NA, die = TRUE, no_others = FALS
 	}
 }
 
-#' umx_cov_diag
+#' Get variances from a df that might contain some non-numeric columns
 #'
-#' Helper to get variances from a df that might contain some non-numeric columns.
-#' Values at non-numeric columns are set to the value passed in as ordVar.
+#' Pass in any dataframe and get variances despite some non-numeric columns.
+#' Cells involving these non-numeric columns are set to ordVar (default = 1).
 #'
 #' @param df a dataframe of raw data from which to get variances.
-#' @param ordVar The value to return at any ordinal columns (defaults to 1)
-#' @param format to return: options are c("diag", "Full", "Lower"). Defaults to diag: a vector of variances
-#' @param use passed to \code{\link{cov}} - defaults to "complete.obs" (other options are in the function )
+#' @param ordVar The value to return at any ordinal columns (defaults to 1).
+#' @param format to return: options are c("full", "diag", "lower"). Defaults to full, but this is not implemented yet.
+#' @param use passed to \code{\link{cov}} - defaults to "complete.obs" (see param default for other options).
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Building Functions
@@ -2425,31 +2511,39 @@ umx_check_names <- function(namesNeeded, data = NA, die = TRUE, no_others = FALS
 #' tmp = mtcars[,1:4]
 #' tmp$cyl = ordered(mtcars$cyl) # ordered factor
 #' tmp$hp  = ordered(mtcars$hp)  # binary factor
-#' umx_cov_diag(tmp, ordVar = 1, use = "pair")
+#' umx_var(tmp, format= "diag", ordVar = 1, use = "pair")
 #' tmp2 = tmp[, c(1,3)]
-#' umx_cov_diag(tmp2)
-#' umx_cov_diag(tmp2, format = "Full")
-umx_cov_diag <- function(df, ordVar = 1, format = c("diag", "Full", "Lower"), use = c("complete.obs", "pairwise.complete.obs", "everything", "all.obs", "na.or.complete")){
+#' umx_var(tmp2, format= "diag")
+#' # todo: umx_var(tmp2, format = "full")
+umx_var <- function(df, ordVar = 1, format = c("full", "diag", "lower"), use = c("complete.obs", "pairwise.complete.obs", "everything", "all.obs", "na.or.complete")){
 	format = match.arg(format)
 	use    = match.arg(use)
 	if(any(umx_is_ordered(df))){
 		nCol = dim(df)[2]
-		starts = diag(ordVar, nCol, nCol)
+		out  = diag(ordVar, nCol, nCol)
 		cont = umx_is_ordered(df, continuous.only = TRUE)
 		if(any(cont)){
 			for(i in which(cont)) {
-				starts[i,i] = var(df[,i], use = use)
+				out[i,i] = var(df[,i], use = use)
 			}
 		}
-		starts = diag(starts)
+		if(format == "diag"){
+			return(diag(out))
+		} else {
+			stop("Only diag implemented yet for umx_var")
+			return(out)	
+		}
 	} else {
-		starts = diag(var(df, use = use))
-	}
-	if(format == "diag"){
-		return(starts)
-	} else {
-		message("only var list implemented")
-		return(starts)	
+		full = var(df, use = use)
+		if(format == "full"){
+			out = full
+		} else if(format == "diag") {
+			out = diag(full)
+		} else {
+		 # "lower"
+			out = diag(full)
+		}
+		return(out)
 	}
 }
 
@@ -2477,11 +2571,11 @@ umx_means <- function(df, ordVar = 0, na.rm = TRUE) {
 			stop("argument df must be a dataframe. You gave me a ", class(df), ". Perhaps this is one column selected from a data frame without [r,c, drop=FALSE]? ")
 		}
 	}
-	if(any(umx_is_ordered(df, strict = F))){
+	if(any(umx_is_ordered(df, strict = FALSE))){
 		# Set the default outcome
 		means = rep(ordVar, times = dim(df)[2])
-		# Get variables where mean makes snes
-		cont = umx_is_ordered(df, continuous.only = TRUE)
+		# Get variables where mean makes sense
+		cont = umx_is_ordered(df, continuous.only = TRUE, strict = FALSE)
 		if(any(cont)){
 			for(i in which(cont)) {
 				means[i] = mean(df[, i], na.rm = na.rm)
@@ -2493,7 +2587,7 @@ umx_means <- function(df, ordVar = 0, na.rm = TRUE) {
 	return(means)
 }
 
-#' umx_is_ordered
+#' Check if an object is an mxData object
 #'
 #' Is the input an MxData?
 #'
@@ -2514,7 +2608,7 @@ umx_is_MxData <- function(x) {
 	}
 }
 
-#' umx_is_ordered
+#' Test if one or more variables in a dataframe are ordered
 #'
 #' Return the names of any ordinal variables in a dataframe
 #'
@@ -2959,69 +3053,96 @@ umx_reorder <- function(old, newOrder) {
 #'
 #' Recode a continuous variable into n-quantiles (default = deciles (10 levels)).
 #' It returns an \code{\link{mxFactor}}, with the levels labeled with the max value
-#' in each quantile (i.e., open on the left-side).
+#' in each quantile (i.e., open on the left-side). quantiles are labeld "quantile1"
+#' "quantile2" etc.
 #' 
-#' \strong{Note}: Redundant bins are merged. i.e., if the same score identifies
-#' all deciles up to the fourth, then these will be merged into one level.
+#' \strong{Note}: Redundant quantiles are merged. i.e., if the same score identifies
+#' all deciles up to the fourth, then these will be merged into one bin, labeled "quantile4".
 #'
+#' @aliases umx2ord
 #' @param x a variable to recode as ordinal (email me if you'd like this upgraded to handle df input)
 #' @param nlevels How many bins or levels (at most) to use (i.e., 10 = deciles)
-#' @param type what to return (Default is "mxFactor") options include
-#' "ordered" and "unordered")
+#' @param type what to return (Default is "mxFactor") options: "ordered" and "unordered")
 #' @param verbose report the min, max, and decile cuts used (default = FALSE)
+#' @param returnCutpoints just return the cutpoints, for use directly
 #' @return - recoded variable as an \code{\link{mxFactor}}
 #' @export
 #' @family Data Functions
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' x = umx_cont_2_quantiles(rnorm(1000), nlevels = 10, verbose = TRUE)
-#' levels(x)
-#' x = umx_cont_2_quantiles(mtcars[,"mpg"], 5) # quintiles
-#' x = umx_cont_2_quantiles(mtcars[,"cyl"], 10)
-#' # x = umx_cont_2_quantiles(mtcars[,1:3])
-#' x = umx_cont_2_quantiles(rep(0:10, 10), nlevels = 10)
+#' x = data.frame(x)
+#' str(x); levels(x)
+#' table(x)
+#' \dontrun{
+#' ggplot2::qplot(x$x)
+#' y = mxDataWLS(x, type = "WLS")
+#' }
+#' 
+#'# ===========================
+#'# = Use with twin variables =
+#'# ===========================
+#' 
+#' x = twinData
+#' y = rbind(x$wt1, x$wt2) 
+#' cuts  = umx_cont_2_quantiles(y, nlevels = 10, returnCutpoints = TRUE)
+#' x$wt1 = umx_cont_2_quantiles(x$wt1, nlevels = cuts) # use same for both...
+#' x$wt2 = umx_cont_2_quantiles(x$wt2, nlevels = cuts) # use same for both...
+#' str(x[, c("wt1", "wt2")])
+#' 
+#' # More examples
+#' 
+#' x = umx_cont_2_quantiles(mtcars[, "mpg"], nlevels = 5) # quintiles
+#' x = umx2ord(mtcars[, "mpg"], nlevels = 5) # using shorter alias
+#' x = umx_cont_2_quantiles(mtcars[, "cyl"], nlevels = 10) # more than integers exist
 #' x = umx_cont_2_quantiles(rbinom(10000, 1, .5), nlevels = 2)
-#' str(umx_cont_2_quantiles(rnorm(10000), nlevels = 4, verbose = TRUE))
-umx_cont_2_quantiles <- function(x, nlevels = NULL, type = c("mxFactor", "ordered", "unordered"), verbose = FALSE){
+umx_cont_2_quantiles <- function(x, nlevels = NULL, type = c("mxFactor", "ordered", "unordered"), verbose = FALSE, returnCutpoints = FALSE){
+	# TODO: check if is.data.frame(x) && dim(x)[2] > 1, and if so, proceed column-wise
 	type = match.arg(type)
-	if(is.null(nlevels)){
-		stop("You must set the number of levels to threshold data, i.e., 'nlevels = 10' for deciles")
-	}
-	# TODO: check if is.data.frame(x) && dim(x)[2] > 1, and if so, proceed columnwise
 	if(is.data.frame(x) && dim(x)[2] > 1){
-		stop("Can't handle multiple column actions yet: email tim and rip him a new one")
+		stop("I can only handle single vectors: email tim and rip him a new one")
+	}
+	if(!is.numeric(x) ){
+		stop("This is for numeric variables. you gave me a ", typeof(x))
+	}
+
+	if(is.null(nlevels)){
+		stop("You must set the number of levels, i.e., 'nlevels = 10'  to threshold data into deciles")
+	} else if(length(nlevels) > 1){
+		# Levels contains a list of cutpoints
+		cutPoints = nlevels
+		nlevels   = length(cutPoints) + 1
+		levelLabels = paste0("quantile", 1:(nlevels))
 	} else {
-		if(!is.numeric(x) ){
-			stop("This is for numeric variables. you gave me a ", typeof(x))
-		} else {
-			# x = mtcars[,"cyl"]
-			myBreaks = quantile(x, seq(0, 1, by = 1/nlevels), type = 8, na.rm = TRUE)
-			myBreaks = unique(myBreaks)
-		  myLabels = myBreaks
-			myBreaks = c(-Inf, myBreaks)
-			# myBreaks[length(myBreaks)] = Inf
-			# myLabels = NULL
-		  # if(max(myBreaks) == max(x)){
-		  # 				myBreaks = myBreaks[1:(length(myBreaks)-1)]
-		  # 				myLabels = myBreaks[2:length(myBreaks)]
-		  # } else {
-		  # 				myLabels = c(myBreaks[2:(length(myBreaks)-1)], paste0("_", max(x)))
-		  # }
-			if(type == "mxFactor"){
-				out = cut(x, breaks = myBreaks, labels = myLabels, ordered_result = TRUE); 
-				out = mxFactor(out, levels = levels(out))
-			} else if (type == "ordered") {
-				out = cut(x, breaks = myBreaks, labels = myLabels, ordered_result = TRUE); 		
-			} else {
-				out = cut(x, breaks = myBreaks, labels = myLabels); 
-			}
-			if(verbose){
-				message("Scores ranged from ", min(x), " to ", max(x), ". Cuts made at ", omxQuotes(myBreaks))
-			}
-			return(out)
+		cutPoints = quantile(x, probs = c((1:(nlevels-1)) / (nlevels)), type = 8, na.rm = TRUE)
+		levelLabels = paste0("quantile", 1:(nlevels))
+		## needed to collapse overlapping quantiles
+		uniqueItems = !duplicated(cutPoints)
+		cutPoints   = cutPoints[uniqueItems]
+		levelLabels = levelLabels[uniqueItems]
+
+		# (happens with highly skewed data).
+		if(returnCutpoints){
+			return(cutPoints)
 		}
 	}
+	cutPoints   = c(-Inf, cutPoints, Inf)
+	if(type == "mxFactor"){
+		out = cut(x, breaks = cutPoints, labels = levelLabels, ordered_result = TRUE); 
+		out = mxFactor(out, levels = levels(out))
+	} else if (type == "ordered") {
+		out = cut(x, breaks = cutPoints, labels = levelLabels, ordered_result = TRUE); 		
+	} else {
+		out = cut(x, breaks = cutPoints, labels = levelLabels); 
+	}
+	if(verbose){
+		message("Scores ranged from ", min(x), " to ", max(x), ". Cuts made at ", omxQuotes(cutPoints))
+	}
+	return(out)
 }
+
+#' @export
+umx2ord <- umx_cont_2_quantiles
 
 #' umx_has_square_brackets
 #'
@@ -3690,39 +3811,136 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 # =================
 # = Simulate Data =
 # =================
-#' umx_make_TwinData: Simulate twin data with control over A, C, E, and moderation
-#'
+#' Simulate twin data with control over A, C, E, and moderation
 #' @description
-#' Makes MZ and DZ twin data, optionally moderated. Note, if you want a power calculator, see here:
-#' \url{http://www.people.vcu.edu/~bverhulst/power/power.html}
+#' Makes MZ and DZ twin data, optionally with moderated A. y default, the three variance components must sum to 1.
+#' 
+#' See examples for how to use this: it is pretty flexible.
+#' 
+#' Note, if you want a power calculator, see \href{http://www.people.vcu.edu/~bverhulst/power/power.html}{here}.
+#' You supply the number of pairs of each zygosity that wish to simulate (nMZpairs, nDZpairs), along with the values of AA, CC,and EE.
+#' 
+#' **Shortcuts**
+#' 
+#' You can omit nDZpairs. You can also give any 2 of A, C, or E and the function will add the value which makes the ACE total = 1.
+#' 
+#' **Moderation**
+#' 
+#' AA can take a list c(avg = .5, min = 0, max = 1). If specified will act like a moderated heritability, with average value avg, and swinging
+#' down to min and up to max across 3 SDs of the moderator.
 #'
-#' @details You supply the number of pairs of each zygosity that wish to simulate (nMZpairs, nDZpairs), along with the values of a, c,and e.
-#' a can take a list c(avg = .5, min = 0, max = 1). If specified will act like a moderated heritability, with average value avg, and swinging
-#' down to min and up to max across 4-SDs of the moderator.
 #'
 #' @param nMZpairs Number of MZ pairs to simulate
 #' @param nDZpairs Number of DZ pairs to simulate (if omitted defaults to nMZpairs)
-#' @param a value for a, defaults to an example of moderation: c(avg=.5, min=0, max=1)
-#' @param c value for c
-#' @param e value for e
-#' @return - list of mzData and dzData data.frames
+#' @param AA value for A variance. Optionally a vecotr: c(avg=.5, min=0, max=1)
+#' @param CC value for C variance.
+#' @param EE value for E variance.
+#' @param nThresh  If supplied, use as thresholds and return mxFactor output? (default is not too)
+#' @param sum2one  Whether to enforce AA + CC + EE summing the one (default = TRUE)
+#' @param varNames name for var (defaults to 'var')
+#' @param seed Allows user to set.seed() if wanting reproducible dataset
+#' @param empirical Passed to mvrnorm
+#' @return - list of mzData and dzData dataframes containing T1 and T2 plus, if needed M1 and M2 (moderator values)
 #' @export
-#' @family Twin Modeling Functions
+#' @family Data Functions
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
-#' str(umx_make_TwinData(nMZpairs = 100, nDZpairs = 100, a = .5, c = .3, e = .4))
-#' str(umx_make_TwinData(nMZpairs = 100, nDZpairs = 100, a = .5, c = .3, e = .4))
-#' str(umx_make_TwinData(nMZpairs = 100, a = c(avg = .5, min = 0, max = 1), c = .3, e = .4))
-umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, a = c(avg = .5, min = 0, max = 1), c = NULL, e = NULL) {
-	# function caps the moderator effect at -3 and +3 SD
-	if(is.null(c) || is.null(e)){
-		stop("You must set a, c, and e")
+#' # =====================================================================
+#' # = Basic Example, with all elements of std univariate data specified =
+#' # =====================================================================
+#' tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 100, AA = .36, CC = .04, EE = .60)
+#' # Show list of 2 data sets
+#' str(tmp)
+#' # = How to consume the built datasets =
+#' mzData = tmp[[1]];
+#' dzData = tmp[[2]];
+#' cov(mzData); cov(dzData)
+#' str(mzData); str(dzData); 
+#' 
+#' # Prefer to work in path coefficient values? (little a?)
+#' tmp = umx_make_TwinData(200, AA = .6^2, CC = .2^2)
+#' # Check the correlations
+#' umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
+#'
+#' # =============
+#' # = Shortcuts =
+#' # =============
+#'
+#' # Omit nDZpairs (equal numbers of both by default)
+#' tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 100, AA = .36, CC = .04, EE = .60)
+#' tmp = umx_make_TwinData(100, AA = 0.5, CC = 0.3) # omit any one of A, C, or E (sums to 1)
+#' cov(tmp[[1]])
+#' # Not limited to unit variance
+#' tmp = umx_make_TwinData(100, AA = 3, CC = 2, EE = 3, sum2one = FALSE) 
+#' cov(tmp[[1]])
+#'
+#' # =====================
+#' # = Moderator Example =
+#' # =====================
+#'
+#' x = umx_make_TwinData(100, AA = c(avg = .7, min = 0, max = 1), CC = .55, EE = .63)
+#' str(x)
+#'
+#' # =====================
+#' # = Threshold Example =
+#' # =====================
+#' tmp = umx_make_TwinData(100, AA = .6, CC = .2, nThresh = 3)
+#' str(tmp)
+#' umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
+#' @md
+umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL, EE = NULL, nThresh = NULL, sum2one = TRUE,  varNames = "var", seed = NULL, empirical = FALSE) {
+	if(!is.null(seed)){
+		set.seed(seed = seed)
 	}
-	if(length(a) == 3){
-		avgA = a["avg"]
+	# Function caps the moderator effect at -3 and +3 SD
+	if(length(AA) == 1){
+		# standard ACE, no moderation
+		if(sum(c(is.null(AA), is.null(CC), is.null(EE))) > 2){
+			stop("You must set at least 2 of AA, CC, and EE", call. = FALSE)
+		}
+		if(is.null(EE)){
+			EE  = (1 - (AA + CC))
+		} else if(is.null(CC)) {
+			CC  = (1 - (AA + EE))
+		} else if(is.null(AA)) {
+			AA  = (1 - (CC + EE))
+		}
+		if(any(c(AA, CC, EE)< 0)){
+			lowValue = c("AA", "CC", "EE")[ which(c(AA, CC, EE) < 0) ]
+			stop(paste("Hmm, each of the AA, CC, and EE variance components must be postive, but ", lowValue, " was negative."), call. = FALSE)		
+		}
+		if(sum2one && (sum(c(AA, CC, EE)) != 1)){
+			stop("Hmm, AA + CC + EE must sum to 1, unless you don't want them to (in which case set sum2one = FALSE)", call. = FALSE)		
+		}
+		# Report to user
+		print(c(AA = AA, CC = CC, EE = EE))
+		print(round(c(a = sqrt(AA), c = sqrt(CC), e = sqrt(EE)), 2))
+		
+		AC  =  AA + CC
+		hAC = (.5 * AA) + CC
+		ACE = AC + EE
+		mzCov = matrix(nrow = 2, byrow = T, c(
+			ACE, AC,
+			AC, ACE)
+		);
+		dzCov = matrix(nrow = 2, byrow = T, c(
+			ACE, hAC,
+			hAC, ACE)
+		);
+		mzData = mvrnorm(n = nMZpairs, mu = c(0, 0), Sigma = mzCov, empirical = empirical);
+		dzData = mvrnorm(n = nDZpairs, mu = c(0, 0), Sigma = dzCov, empirical = empirical);
+		mzData = data.frame(mzData)
+		dzData = data.frame(dzData)
+		names(mzData) = names(dzData) = umx_paste_names(varNames, "_T")
+	} else {
+		# Moderator example
+		if(any(c(is.null(AA), is.null(CC), is.null(EE)))){
+			stop("For moderation, you must set all three of AA, CC, and EE", call. = FALSE)
+		}
+		avgA = AA["avg"]
 		# minA applied at -3 SD
 		# maxA applied at +3 SD
-		SES_2_A_beta = (a["max"] - a["min"])/6
+		SES_2_A_beta = (AA["max"] - AA["min"])/6
 
 		mzData = data.frame(T1 = rep(NA, nMZpairs), T2 = rep(NA, nMZpairs), M1 = rep(NA, nMZpairs), M2 = rep(NA, nMZpairs))
 		dzData = data.frame(T1 = rep(NA, nDZpairs), T2 = rep(NA, nDZpairs), M1 = rep(NA, nDZpairs), M2 = rep(NA, nDZpairs))
@@ -3734,20 +3952,22 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, a = c(avg = .5, min
 		j = 1
 		for (thisSES in SESlist) {
 			# thisSES = 0
-			a = max(0, (avgA + (thisSES * SES_2_A_beta)))
-			# c = 0.0
-			# e = 0.1
-			ac  = a + c
-			ace = a + c + e
+			AA = max(0, (avgA + (thisSES * SES_2_A_beta)))
+			# CC = 0.0
+			# EE = 0.1
+			AC  = AA + CC
+			ACE = AA + CC + EE
 			mzCov = matrix(nrow = 2, byrow = T, c(
-				ace, ac,
-				ac , ace)
+				ACE, AC,
+				AC , ACE)
 			);
 			# MASS:: package
-			mzPair = mvrnorm(n = 1, mu = c(0, 0), Sigma = mzCov);
-			mzData[j,] = c(mzPair, thisSES, thisSES)
+			print(mzCov)
+			mzPair = mvrnorm(n = 1, mu = c(0, 0), Sigma = mzCov, empirical = empirical);
+			mzData[j, ] = c(mzPair, thisSES, thisSES)
 			j = j + 1
 		}
+
 		# ==========
 		# = Do DZs =
 		# ==========
@@ -3755,40 +3975,37 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, a = c(avg = .5, min
 		j = 1
 		for (thisSES in SESlist) {
 			# thisSES = -5
-			a = max(0, (avgA + (thisSES * SES_2_A_beta)))
-			hac = (.5 * a) + c
-			ace = a + c + e
+			AA = max(0, (avgA + (thisSES * SES_2_A_beta)))
+			hAC = (.5 * AA) + CC
+			ACE = AA + CC + EE
 			dzCov = matrix(nrow = 2, byrow = T, c(
-				ace, hac,
-				hac, ace)
+				ACE, hAC,
+				hAC, ACE)
 			);
-			dzPair = mvrnorm(n = 1, mu = c(0, 0), Sigma = dzCov);
+			dzPair = mvrnorm(n = 1, mu = c(0, 0), Sigma = dzCov, empirical = empirical);
 			dzData[j,] = c(dzPair, thisSES, thisSES)
 			j = j + 1
 		}
-
-	} else {
-		# just one set
-		ac  =  a + c
-		hac = (.5 * a) + c
-		ace = ac + e
-		mzCov = matrix(nrow = 2, byrow = T, c(
-			ace, ac,
-			ac, ace)
-		);
-
-		dzCov = matrix(nrow = 2, byrow = T, c(
-			ace, hac,
-			hac, ace)
-		);
-		mzData = mvrnorm(n = nMZpairs, mu = c(0, 0), Sigma = mzCov);
-		dzData = mvrnorm(n = nDZpairs, mu = c(0, 0), Sigma = dzCov);
-		mzData = data.frame(mzData)
-		dzData = data.frame(dzData)
-
-		names(mzData) = c("T1", "T2")	
-		names(dzData) = c("T1", "T2")	
+		names(mzData) = names(dzData) = c(umx_paste_names(varNames, "_T"), "M_T1", "M_T2")
 	}
+	if(!is.null(nThresh)){
+		# TODO combine all columns for more accuracy 
+		tmp = rbind(mzData, dzData)
+		levelLabels = paste0("quantile", 1:(nThresh+1))
+		for (i in 1:length(varNames)) {
+			t1 = paste0(varNames[i], sep = "_T1")
+			t2 = paste0(varNames[i], sep = "_T2")
+			cutPoints = quantile(rbind(tmp[, t1], tmp[, t2]), probs = c((1:nThresh) / (nThresh + 1)), na.rm = TRUE)
+			mzData[,t1] = cut(mzData[,t1], breaks = c(-Inf, cutPoints, Inf), labels = levelLabels) 
+			mzData[,t2] = cut(mzData[,t2], breaks = c(-Inf, cutPoints, Inf), labels = levelLabels) 
+			dzData[,t1] = cut(dzData[,t1], breaks = c(-Inf, cutPoints, Inf), labels = levelLabels) 
+			dzData[,t2] = cut(dzData[,t2], breaks = c(-Inf, cutPoints, Inf), labels = levelLabels) 
+			# Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
+			ordinalVars = umx_paste_names(varNames, "_T")
+			mzData[, ordinalVars] = umxFactor(mzData[, ordinalVars])
+			dzData[, ordinalVars] = umxFactor(dzData[, ordinalVars])
+		}
+	}	
 	return(list(mzData = mzData, dzData = dzData))
 }
 
@@ -3824,7 +4041,7 @@ umx_make_MR_data <- function(nSubjects = 1000, Vqtl = .02, bXY = 0.1, bUX = 0.5,
 	# pQTL = 0.5      # Decreaser allele frequency
 	set.seed(seed)
 	b_qtl_x  = sqrt(Vqtl) # Path coefficient between SNP and X
-	q    = 1 - pQTL # Increaser allele frequency
+	q = 1 - pQTL # Increaser allele frequency
 	a = sqrt(1/(2 * pQTL * q)) # Genotypic value for genetic variable of variance 1.0
 	# Residual variance in variable X (so variance adds up to one)
 	Vex  <- (1- Vqtl - bUX^2)
@@ -3854,7 +4071,7 @@ umx_make_MR_data <- function(nSubjects = 1000, Vqtl = .02, bXY = 0.1, bUX = 0.5,
 #' dataset must consist either of numeric variables or ordered 
 #' factors. When one or more ordered factors are included, 
 #' then a heterogeneous correlation matrix is computed using 
-#' John Fox's polycor package. Pairwise complete observations 
+#' John Fox&rsquo;s polycor package. Pairwise complete observations 
 #' are used for all covariances, and the exact pattern of 
 #' missing data present in the input is placed in the output,
 #' provided a new sample size is not requested. Warnings from

@@ -2,13 +2,13 @@
 % Please edit documentation in R/build_run_modify.r
 \name{umxACE}
 \alias{umxACE}
-\title{umxACE: Build and run a Cholesky (uni- or multi-variate)}
+\title{umxACE: Build and run a 2-group Cholesky (uni- or multi-variate)}
 \usage{
 umxACE(name = "ACE", selDVs, selCovs = NULL, dzData, mzData,
   suffix = NULL, dzAr = 0.5, dzCr = 1, addStd = TRUE, addCI = TRUE,
   numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL, weightVar = NULL,
   equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased",
-  "left_censored"), autoRun = getOption("umx_auto_run"))
+  "WLS"), autoRun = getOption("umx_auto_run"), sep = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE")}
@@ -36,7 +36,7 @@ SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{numObsMZ}{= Number of MZ twins: Set this if you input covariance data}
 
-\item{boundDiag}{= (optional) lbound for diagonal of the a, c, and e matrices.}
+\item{boundDiag}{= (optional) numeric lbound for diagonal of the a, c, and e matrices, e.g. 0}
 
 \item{weightVar}{= If provided, a vector objective will be used to weight the data. (default = NULL)}
 
@@ -44,37 +44,36 @@ SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE)}
 
-\item{thresholds}{How to implement ordinal thresholds c("deviationBased", "left_censored")}
+\item{thresholds}{How to implement ordinal thresholds c("deviationBased", "WLS")}
 
 \item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
+
+\item{sep}{allowed as a synonym for "suffix"}
 }
 \value{
 - \code{\link{mxModel}} of subclass mxModel.ACE
 }
 \description{
-Make a 2-group ACE Cholesky Twin model.
-umxACE supports a core model in behavior genetics, known as the ACE Cholesky model
-(Cardon and Neale, 1996). #' This model decomposes phenotypic variance into Additive genetic,
-unique environmental (E) and, optionally, either common or shared-environment (C) or 
-non-additive genetic effects (D). Scroll down to details for how to use the function, a figure
-and multiple examples.
 A common task in twin modelling involves using the genetic and environmental differences 
 between large numbers of pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
 to model the genetic and environmental structure of one, or, typically, several phenotypes
-(measured behaviors).
+(measured behaviors). umxACE supports modeling with the ACE Cholesky model, a core model 
+in behavior genetics (Cardon and Neale, 1996).
 }
 \details{
 This model decomposes phenotypic variance into Additive genetic,
 unique environmental (E) and, optionally, either common or shared-environment (C) or 
-non-additive genetic effects (D). This latter restriction emerges due to a lack of degrees of 
-freedom to simultaneously model C and D with only MZ and DZ twin pairs {ref?}. The Cholesky or 
-lower-triangle decomposition allows a model which is both sure to be solvable, and also to 
-account for all the variance (with some restrictions) in the data. This model creates as 
-many latent A C and E variables as there are phenotypes, and, moving from left to 
-right, decomposes the variance in each component into successively restricted 
+non-additive genetic effects (D). Scroll down to details for how to use the function, a figure
+and multiple examples.
+
+The Cholesky or lower-triangle decomposition allows a model which is both sure to be 
+solvable, and also to account for all the variance (with some restrictions) in the data. 
+This model creates as many latent A C and E variables as there are phenotypes, and, moving 
+from left to right, decomposes the variance in each component into successively restricted 
 factors. The following figure shows how the ACE model appears as a path diagram:
 
 \figure{ACE.png}
+
 
 \strong{Data Input}
 The function flexibly accepts raw data, and also summary covariance data 
@@ -83,7 +82,7 @@ The function flexibly accepts raw data, and also summary covariance data
 \strong{Ordinal Data}
 In an important capability, the model transparently handles ordinal (binary or multi-level
 ordered factor data) inputs, and can handle mixtures of continuous, binary, and ordinal
-data in any combination. An experimental feature is under development to allow Tobit modelling.
+data in any combination. An experimental feature is under development to allow Tobit modelling. 
 
 The function also supports weighting of individual data rows. In this case,
 the model is estimated for each row individually, then each row likelihood
@@ -96,45 +95,60 @@ The umxACE function supports varying the DZ genetic association (defaulting to .
 to allow exploring assortative mating effects, as well as varying the DZ \dQuote{C} factor
 from 1 (the default for modelling family-level effects shared 100% by twins in a pair),
 to .25 to model dominance effects.
+
+\emph{note}: Only one of C or D may be estimated simultaneously. This restriction reflects the lack
+of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs {ref?}.
 }
 \examples{
 
-# ===========================
-# = Univariate model of BMI =
-# ===========================
+# ============================
+# = How heritable is height? =
+# ============================
 require(umx)
-data(twinData) # ?twinData set from Australian twins.
+data(twinData) # ?twinData from Australian twins.
 # Pick the variables
-selDVs = c("bmi1", "bmi2")
-mzData <- twinData[twinData$zyg == 1,]
-dzData <- twinData[twinData$zyg == 3,]
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-umxSummary(m1, std = FALSE)
+selDVs = c("ht1", "ht2")
+mzData <- twinData[twinData$zygosity \%in\% "MZFF", ]
+dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
+m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData) # -2ll= 9659
+umxSummary(m1, std = FALSE) # unstandardized
+# tip: with report = "html", umxSummary can print the table to your browser!
 plot(m1)
 
-# =========================================
-# = ADE model (DZ correlation set to .25) =
-# =========================================
+# ========================================================
+# = Evidence for dominance ? (DZ correlation set to .25) =
+# ========================================================
 m2 = umxACE("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
 umxCompare(m2, m1) # ADE is better
-umxSummary(m2, compare = m1) # nb: though this is ADE, columns are labeled ACE
+umxSummary(m2, comparison = m1) # nb: though this is ADE, columns are labeled ACE
 
+# ==============================
+# = Univariate model of weight =
+# ==============================
 
+# Things to note:
+# 1. This variable has a large variance, but umx picks good starts.
+# 2. umxACE can figure out variable names: provide "sep" and "wt" -> "wt1" "wt2"
+# 3. umxACE picks the variables it needs from the data.
+# 4. You can use boundDiag to lbound a, c, and e at 0 (prevents mirror-solutions).
+m1 = umxACE(selDVs = "wt", dzData = dzData, mzData = mzData, sep = "", boundDiag = 0)
+# We can modify this model, dropping shared environment, and see a comparison
+m2 = umxModify(m1, update = "c_r1c1", comparison = TRUE)
 # =====================================
 # = Bivariate height and weight model =
 # =====================================
 data(twinData)
-selDVs = c("ht", "wt") # umx will add suffix (in this case "") + "1" or '2'
 mzData <- twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"),]
 dzData <- twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
 mzData <- mzData[1:80,] # quicker run to keep CRAN happy
 dzData <- dzData[1:80,]
+selDVs = c("ht", "wt") # umx will add suffix (in this case "") + "1" or '2'
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
 umxSummary(m1)
 
-# ================================================================
-# = Well done! Now you can make and compare twin models in R :-) =
-# ================================================================
+# =========================================================
+# = Well done! Now you can make modify twin models in umx =
+# =========================================================
 
 
 # ===================
@@ -142,7 +156,7 @@ umxSummary(m1)
 # ===================
 require(umx)
 data(twinData)
-# Cut bmi colum to form ordinal obesity variables
+# Cut bmi column to form ordinal obesity variables
 ordDVs = c("obese1", "obese2")
 selDVs = c("obese")
 obesityLevels = c('normal', 'overweight', 'obese')
@@ -185,18 +199,17 @@ plot(m1)
 require(umx)
 data(twinData)
 # Cut to form category of 20\% obese subjects
+# and make into mxFactors (ensure ordered is TRUE, and require levels)
 cutPoints <- quantile(twinData[, "bmi1"], probs = .2, na.rm = TRUE)
 obesityLevels = c('normal', 'obese')
 twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-# Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
 ordDVs = c("obese1", "obese2")
 twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obesityLevels)
+
 selDVs = c("wt", "obese")
-mzData <- twinData[twinData$zyg == 1, umx_paste_names(selDVs, "", 1:2)]
-dzData <- twinData[twinData$zyg == 3, umx_paste_names(selDVs, "", 1:2)]
-mzData <- mzData[1:80,] # just top 80 so example runs in a couple of secs
-dzData <- dzData[1:80,]
+mzData <- twinData[twinData$zygosity \%in\% "MZFF", umx_paste_names(selDVs, "", 1:2)]
+dzData <- twinData[twinData$zygosity \%in\% "DZFF", umx_paste_names(selDVs, "", 1:2)]
 \dontrun{
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
 umxSummary(m1)
@@ -211,7 +224,7 @@ data(twinData)
 selDVs = c("wt1", "wt2")
 mz = cov(twinData[twinData$zyg == 1, selDVs], use = "complete")
 dz = cov(twinData[twinData$zyg == 3, selDVs], use = "complete")
-m1 = umxACE(selDVs=selDVs, dzData=dz, mzData=mz, numObsDZ=nrow(dzData), numObsMZ=nrow(mzData))
+m1 = umxACE(selDVs = selDVs, dzData = dz, mzData = mz, numObsDZ=569, numObsMZ=351)
 umxSummary(m1)
 plot(m1)
 }
@@ -228,5 +241,5 @@ Other Twin Modeling Functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx_make_TwinData}}, \code{\link{umx}}
+  \code{\link{umx}}
 }

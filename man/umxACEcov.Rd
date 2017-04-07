@@ -53,21 +53,42 @@ umxACEcov supplements the \code{\link{umxACE}} Cholesky model with covariates.
 \examples{
 require(umx)
 data(twinData)
-# dupliate age to  age1 & age2
+# replicate age to age1 & age2
 twinData$age1 = twinData$age2 = twinData$age
 selDVs  = c("bmi") # Set the DV
 selCovs = c("age") # Set the IV
-selVars = umx_paste_names(c(selDVs, selCovs), sep = "", suffixes = 1:2)
+selVars = umx_paste_names(selDVs, covNames = selCovs, sep = "", suffixes = 1:2)
 # 80 rows so example runs fast
-mzData = subset(twinData, zyg == 1, selVars)[1:80, ]
-dzData = subset(twinData, zyg == 3, selVars)[1:80, ]
-# This will also work on OpenMx 2.5 or better
-# mzData = subset(twinData, zygosity == "MZFF", selVars)[1:80, ]
-# dzData = subset(twinData, zygosity == "DZFF", selVars)[1:80, ]
+mzData = subset(twinData, zygosity == "MZFF", selVars)[1:80, ]
+dzData = subset(twinData, zygosity == "DZFF", selVars)[1:80, ]
 m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs,
-	dzData = dzData, mzData = mzData, suffix = "", autoRun = TRUE)
+   dzData = dzData, mzData = mzData, suffix = "", autoRun = TRUE
+)
 umxSummary(m1)
 plot(m1)
+# ====================
+# = A bivariate test =
+# ====================
+selDVs  = c("ht", "wt") # Set the DV
+selCovs = c("age") # Set the IV
+selVars = umx_paste_names(selDVs, covNames = selCovs, sep = "", suffixes = 1:2)
+# 80 rows so example runs fast enough on CRAN
+mzData = subset(twinData, zygosity == "MZFF", selVars)[1:80, ]
+dzData = subset(twinData, zygosity == "DZFF", selVars)[1:80, ]
+m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs,
+   dzData = dzData, mzData = mzData, suffix = "", autoRun = TRUE
+)
+
+
+# Univariate bmi without covariate of age for comparison
+m2     = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix="")
+x      = umx_residualize("bmi", "age", suffixes=1:2, twinData)
+mzData = subset(x, zygosity == "MZFF", selVars)[1:80, ]
+dzData = subset(x, zygosity == "DZFF", selVars)[1:80, ]
+m3     = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix="")
+
+
+
 }
 \references{
 - Neale, M. C., & Martin, N. G. (1989). The effects of age, sex, 
@@ -88,5 +109,5 @@ Other Twin Modeling Functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx_make_TwinData}}, \code{\link{umx}}
+  \code{\link{umx}}
 }
