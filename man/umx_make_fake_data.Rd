@@ -19,7 +19,7 @@ umx_make_fake_data(dataset, digits = 2, n = NA, use.names = TRUE,
 
 \item{use.levels}{= Whether to use existing levels (default = TRUE)}
 
-\item{use.miss}{Whether to have data missting as in original (defaults to TRUE)}
+\item{use.miss}{Whether to have data missing as in original (defaults to TRUE)}
 
 \item{mvt.method}{= Passed to hetcor (default = "eigen")}
 
@@ -36,7 +36,7 @@ must be either a matrix or a data frame. Each column of the
 dataset must consist either of numeric variables or ordered 
 factors. When one or more ordered factors are included, 
 then a heterogeneous correlation matrix is computed using 
-John Fox&rsquo;s polycor package. Pairwise complete observations 
+John Fox's polycor package. Pairwise complete observations 
 are used for all covariances, and the exact pattern of 
 missing data present in the input is placed in the output,
 provided a new sample size is not requested. Warnings from
@@ -51,7 +51,8 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
   \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_TwinData}},
   \code{\link{umx_make_bin_cont_pair_data}},
@@ -60,5 +61,5 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},
   \code{\link{umx_scale_wide_twin_data}},
   \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}},
-  \code{\link{umx}}
+  \code{\link{umx_wide2long}}, \code{\link{umx}}
 }

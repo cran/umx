@@ -2,13 +2,13 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_check_parallel}
 \alias{umx_check_parallel}
-\title{umx_check_parallel}
+\title{Check if OpenMx is using OpenMP, test cores, and get timings}
 \usage{
-umx_check_parallel(nCores = -1, testScript = NULL, rowwiseParallel = TRUE,
-  nSubjects = 1000)
+umx_check_parallel(nCores = c(1, parallel::detectCores()/2),
+  testScript = NULL, rowwiseParallel = TRUE, nSubjects = 1000)
 }
 \arguments{
-\item{nCores}{How many cores to run (defaults to -1 (all available))}
+\item{nCores}{How many cores to run (defaults to c(1, max/2). -1 = all available.}
 
 \item{testScript}{A user-provided script to run (NULL)}
 
@@ -20,7 +20,28 @@ umx_check_parallel(nCores = -1, testScript = NULL, rowwiseParallel = TRUE,
 - NULL
 }
 \description{
-Shows how many cores you are using, and runs a test script so user can check CPU usage
+Shows how many cores you are using, and runs a test script so user can check CPU usage.
+}
+\details{
+Some historical (starting 2017-09-06) speeds on my late 2015 iMac, 3.3 GHz Quad-core i7 desktop.
+
+R: 3.4.1 (2017-06-30); MacOS: 10.13
+
+umx: 1.9.0; OpenMx: 2.7.16.26 [GIT v2.7.16-26-gd46131ce-dirty] / 2.7.16.31
+
+\tabular{rllll}{
+date       \tab type            \tab x core  \tab 01 min, XX.XX sec \tab                              \cr                  
+date       \tab type            \tab y core  \tab XX min, XX.XX sec \tab \eqn{\Delta}{\u0394}: -xx.xxx)    \cr
+2017-10-16 \tab v2.7.18-9-g159b7337-dirty            \tab x core  \tab 01 min, 07.30 sec \tab                              \cr                  
+2017-10-16 \tab v2.7.18-9-g159b7337-dirty            \tab y core  \tab 00 min, 22.63 sec \tab \eqn{\Delta}{\u0394}: -44.676)    \cr
+2017-10-16 \tab Clang OpenMP    \tab 1 core  \tab 01 min, 08.38 sec \tab                              \cr                  
+2017-10-16 \tab Clang OpenMP    \tab 4 core  \tab 00 min, 24.89 sec \tab \eqn{\Delta}{\u0394}: -43.488)    \cr
+2017-09-07 \tab Clang OpenMP    \tab 1 core  \tab 01 min, 12.90 sec \tab                              \cr
+2017-09-07 \tab Clang OpenMP    \tab 4 core  \tab 00 min, 32.20 sec \tab \eqn{\Delta}{\u0394}: -40.70 sec  \cr
+2017-09-07 \tab Clang notOpenMP \tab 1 core  \tab 01 min, 09.90 sec \tab                              \cr
+2017-09-07 \tab TRAVIS          \tab 1 core  \tab 01 min, 06.20 sec \tab                              \cr
+2017-09-07 \tab TRAVIS          \tab 4 core  \tab 00 min, 21.10 sec \tab \eqn{\Delta}{\u0394}: -45.00 sec  \cr
+}
 }
 \examples{
 \dontrun{

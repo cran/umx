@@ -2,112 +2,144 @@
 % Please edit documentation in R/build_run_modify.r
 \name{umxACEcov}
 \alias{umxACEcov}
-\title{umxACEcov: Build and run a Cholesky with covariates in the covariance}
+\title{Run a Cholesky with covariates, either fixed (def var in the means) or random (in the expected covariance matrix)}
 \usage{
-umxACEcov(name = "ACEcov", selDVs, selCovs, dzData, mzData, suffix = NULL,
-  dzAr = 0.5, dzCr = 1, addStd = TRUE, addCI = TRUE, boundDiag = NULL,
+umxACEcov(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NULL,
+  dzAr = 0.5, dzCr = 1, addStd = TRUE, addCI = TRUE, boundDiag = 0,
   equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased",
-  "left_censored"), autoRun = getOption("umx_auto_run"))
+  "left_censored"), autoRun = getOption("umx_auto_run"), suffix = NULL,
+  optimizer = NULL)
 }
 \arguments{
-\item{name}{The name of the model (defaults to"ACE")}
+\item{name}{The name of the model (defaults to"ACE").}
 
-\item{selDVs}{The variables to include from the data (do not include suffixes)}
+\item{selDVs}{The variables to include from the data (do not include suffixes).}
 
-\item{selCovs}{The covariates to include from the data (do not include suffixes)}
+\item{selCovs}{The covariates to include from the data (do not include suffixes).}
 
-\item{dzData}{The DZ dataframe}
+\item{dzData}{The DZ dataframe.}
 
-\item{mzData}{The MZ dataframe}
+\item{mzData}{The MZ dataframe.}
 
-\item{suffix}{suffix for twin 1 and twin 2, often "_T" Used to expand selDVs into
-full column names, i,e "dep" -->  c("dep_T1", "dep_T2")}
+\item{sep}{Separator text between basename for twin variable names. Often "_T".
+Used to expand selDVs into full column names, i.e., "dep" --> c("dep_T1", "dep_T2").}
 
-\item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating)}
+\item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating).}
 
-\item{dzCr}{The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model)}
+\item{dzCr}{The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).}
 
-\item{addStd}{Whether to add the algebras to compute a std model (defaults to TRUE)}
+\item{addStd}{Whether to add the algebras to compute a std model (defaults to TRUE).}
 
-\item{addCI}{Whether to add intervals to compute CIs (defaults to TRUE)}
+\item{addCI}{Whether to add intervals to compute CIs (defaults to TRUE).}
 
-\item{boundDiag}{= Whether to bound the diagonal of the a, c, and e matrices}
+\item{boundDiag}{= Whether to bound the diagonal of the a, c, and e matrices.}
 
-\item{equateMeans}{Whether to equate the means across twins (defaults to TRUE)}
+\item{equateMeans}{Whether to equate the means across twins (defaults to TRUE).}
 
-\item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE)}
+\item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE).}
 
-\item{thresholds}{How to implement ordinal thresholds: c("deviationBased", "left_censored")}
+\item{thresholds}{How to implement ordinal thresholds: c("deviationBased", "left_censored").}
 
-\item{autoRun}{Whether to run the model and return it, or just return it}
+\item{autoRun}{Whether to run the model and return it, or just return it.}
+
+\item{suffix}{synonym for 'sep' (see above).}
+
+\item{optimizer}{optionally set the optimizer. Default (NULL) does nothing.}
 }
 \value{
 - \code{\link{mxModel}} of subclass mxModel.ACEcov
 }
 \description{
-Make a 2-group ACE Cholesky Twin model with covariates modeled (see Details below)
+Often, researchers include covariates in 2-group Cholesky \code{\link{umxACE}} twin models.
+A simple method is to regressing covariates from the data (see \code{\link{umx_residualize}}).
+A second method (supported in umxACEcov) is to include the covariates in the means model. This is the
+'fixed' option for covariates models them in the mean as definition variables.
+On the plus side, there is no distributional assumption for this method. A downside of this approach is that all 
+covariates must be non-NA, thus dropping any rows where one or more covariates are missing.
+This is wasteful of data.
 }
 \details{
-umxACEcov supplements the \code{\link{umxACE}} Cholesky model with covariates.
+The umxACEcov 'random' option models the covariates in the expected covariance matrix, thus allowing
+all data to be preserved. The downside is that this method has a strong assumption
+of multivariate normality. Covariates like age, which are perfectly correlated in twins cannot be used.
+Covariates like sex, which are ordinal, violate the normality assumption.
+
+The following figure shows how the ACE model with random covariates appears as a path diagram:
+\figure{ACEcovVarianceModel.png}
 }
 \examples{
 require(umx)
 data(twinData)
-# replicate age to age1 & age2
+# Replicate age to age1 & age2
 twinData$age1 = twinData$age2 = twinData$age
-selDVs  = c("bmi") # Set the DV
-selCovs = c("age") # Set the IV
-selVars = umx_paste_names(selDVs, covNames = selCovs, sep = "", suffixes = 1:2)
-# 80 rows so example runs fast
-mzData = subset(twinData, zygosity == "MZFF", selVars)[1:80, ]
-dzData = subset(twinData, zygosity == "DZFF", selVars)[1:80, ]
-m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs,
-   dzData = dzData, mzData = mzData, suffix = "", autoRun = TRUE
-)
-umxSummary(m1)
-plot(m1)
-# ====================
-# = A bivariate test =
-# ====================
+# 80 rows so example runs fast for CRAN
+mzData = subset(twinData, zygosity == "MZFF")[1:80, ]
+dzData = subset(twinData, zygosity == "DZFF")[1:80, ]
+\dontrun{
+mzData = subset(twinData, zygosity == "MZFF")
+dzData = subset(twinData, zygosity == "DZFF")
+}
+
+# =====================================================================
+# = Trying to use identical var (like age) as a random cov is ILLEGAL =
+# =====================================================================
+\dontrun{
+m1 = umxACEcov(selDVs = "bmi", selCovs = "age", dzData = dzData, mzData = mzData, sep = "")
+}
+
+# ========================================================
+# = Use an lm-based age-residualisation approach instead =
+# ========================================================
+
+resid_data = umx_residualize("bmi", "age", suffixes=1:2, twinData)
+mzData = subset(resid_data, zygosity == "MZFF")
+dzData = subset(resid_data, zygosity == "DZFF")
+m2     = umxACE("resid", selDVs = "bmi", dzData = dzData, mzData = mzData, suffix = "")
+
+# Univariate BMI without covariate of age for comparison
+mzData = subset(twinData, zygosity == "MZFF")
+dzData = subset(twinData, zygosity == "DZFF")
+m3 = umxACE("raw_bmi", selDVs = "bmi", dzData = dzData, mzData = mzData, suffix = "")
+
+\dontrun{
+# ===========================================================================
+# = A bivariate example (need a dataset with a VIABLE COVARIATE to do this) =
+# ===========================================================================
 selDVs  = c("ht", "wt") # Set the DV
-selCovs = c("age") # Set the IV
+selCovs = c("income") # Set the COV
 selVars = umx_paste_names(selDVs, covNames = selCovs, sep = "", suffixes = 1:2)
-# 80 rows so example runs fast enough on CRAN
+# 80 rows so example runs fast on CRAN
 mzData = subset(twinData, zygosity == "MZFF", selVars)[1:80, ]
 dzData = subset(twinData, zygosity == "DZFF", selVars)[1:80, ]
 m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs,
    dzData = dzData, mzData = mzData, suffix = "", autoRun = TRUE
 )
-
-
-# Univariate bmi without covariate of age for comparison
-m2     = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix="")
-x      = umx_residualize("bmi", "age", suffixes=1:2, twinData)
-mzData = subset(x, zygosity == "MZFF", selVars)[1:80, ]
-dzData = subset(x, zygosity == "DZFF", selVars)[1:80, ]
-m3     = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix="")
-
-
+}
 
 }
 \references{
-- Neale, M. C., & Martin, N. G. (1989). The effects of age, sex, 
+Neale, M. C., & Martin, N. G. (1989). The effects of age, sex, 
 and genotype on self-report drunkenness following a challenge dose of alcohol. 
-Behavior Genetics, 19, 63-78. doi:10.1007/BF01065884
+Behavior Genetics, 19, 63-78. doi:\url{https://doi.org/10.1007/BF01065884}.
 
-Schwabe, I., Boomsma, D. I., Zeeuw, E. L., & Berg, S. M. (2015). A New Approach 
+Schwabe, I., Boomsma, D. I., Zeeuw, E. L., & Berg, S. M. (2015). A New Approach
 to Handle Missing Covariate Data in Twin Research : With an Application to
-Educational Achievement Data. Behavior Genetics. doi:10.1007/s10519-015-9771-1
+Educational Achievement Data. Behavior Genetics. doi:\url{https://doi.org/10.1007/s10519-015-9771-1}.
 }
 \seealso{
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACE}},
-  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
-  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEv}},
+  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxReduceACE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 }

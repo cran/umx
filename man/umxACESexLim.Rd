@@ -2,7 +2,7 @@
 % Please edit documentation in R/build_run_modify.r
 \name{umxACESexLim}
 \alias{umxACESexLim}
-\title{umxACESexLim: Build and run a sex-limitaiton twin model (not working yet)}
+\title{umxACESexLim: Build and run a sex-limitation twin model (not working yet)}
 \usage{
 umxACESexLim(name = "ACE_sexlim", selDVs, mzmData, dzmData, mzfData, dzfData,
   dzoData, suffix = NULL, autoRun = getOption("umx_auto_run"))
@@ -23,7 +23,7 @@ umxACESexLim(name = "ACE_sexlim", selDVs, mzmData, dzmData, mzfData, dzfData,
 \item{dzoData}{The DZ opposite-sex dataframe. (be sure and get in right order)}
 
 \item{suffix}{The suffix for twin 1 and twin 2, often "_T". If set, you can
-omit suffixes in SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
+omit suffixes in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
 }
@@ -38,7 +38,7 @@ This is a multi-variate capable Quantitative & Qualitative Sex-Limitation script
 ACE Cholesky modeling. It implements a correlation approach to ensure that order of variables
 does NOT affect ability of model to account for DZOS data.
  
-Restrictions include the assumtion that twin means and variances can be equated across birth
+Restrictions include the assumption that twin means and variances can be equated across birth
 order within zygosity groups.
 
 Note: Qualitative sex differences are differences in the latent A, C, or E latent variables
@@ -53,7 +53,7 @@ require(umx);
 # = Load and Process Data =
 # =========================
 data('us_skinfold_data')
-# rescale vars
+# rescale variables
 us_skinfold_data[,c('bic_T1', 'bic_T2')] <- us_skinfold_data[,c('bic_T1', 'bic_T2')]/3.4
 us_skinfold_data[,c('tri_T1', 'tri_T2')] <- us_skinfold_data[,c('tri_T1', 'tri_T2')]/3
 us_skinfold_data[,c('caf_T1', 'caf_T2')] <- us_skinfold_data[,c('caf_T1', 'caf_T2')]/3
@@ -94,13 +94,17 @@ umxCompare(m2, m1)
 }
 \seealso{
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACEcov}}, \code{\link{umxACE}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
   \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
   \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
   \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
   \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxPlotIP}}, \code{\link{umxReduceACE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 }

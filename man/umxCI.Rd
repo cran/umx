@@ -2,10 +2,11 @@
 % Please edit documentation in R/fit_and_reporting.r
 \name{umxCI}
 \alias{umxCI}
-\title{umxCI}
+\title{Add (and, optionally, run) confidence intervals to a structural model.}
 \usage{
 umxCI(model = NULL, which = c("ALL", NA, "list of your making"),
-  remove = FALSE, run = c("no", "yes", "if necessary"),
+  remove = FALSE, run = c("no", "yes", "if necessary", "show"),
+  interval = 0.95, type = c("both", "lower", "upper"),
   showErrorCodes = TRUE)
 }
 \arguments{
@@ -15,7 +16,12 @@ umxCI(model = NULL, which = c("ALL", NA, "list of your making"),
 
 \item{remove}{= FALSE (if set, removes existing specified CIs from the model)}
 
-\item{run}{Whether or not to compute the CIs. Valid values = "no" (default), "yes", "if necessary".}
+\item{run}{Whether or not to compute the CIs. Valid values = "no" (default), "yes", "if necessary".
+'show' means print the intervals if computed, or list their names if not.}
+
+\item{interval}{The interval for newly added CIs (defaults to 0.95)}
+
+\item{type}{The type of CI (defaults to "both", options are "lower" and  "upper")}
 
 \item{showErrorCodes}{Whether to show errors (default == TRUE)}
 }
@@ -34,7 +40,7 @@ This function also reports any problems computing a CI. The codes are standard O
 \item 3: The nonlinear constraints and bounds could not be satisfied. The problem may have no feasible solution.
 \item 4: The major iteration limit was reached (Mx status BLUE).
 \item 6: The model does not satisfy the first-order optimality conditions to the required accuracy, and no improved point for the merit function could be found during the final linesearch (Mx status RED)
-\item 7: The function derivates returned by funcon or funobj appear to be incorrect.
+\item 7: The function derivatives returned by funcon or funobj appear to be incorrect.
 \item 9: An input parameter was invalid
 }
 
@@ -45,22 +51,29 @@ require(umx)
 data(demoOneFactor)
 latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- mxModel("One Factor", type = "RAM", 
-	manifestVars = manifests, latentVars = latents, 
-	mxPath(from = latents, to = manifests),
-	mxPath(from = manifests, arrows = 2),
-	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
+	umxPath(latents, to = manifests),
+	umxPath(var = manifests),
+	umxPath(var = latents, fixedAt = 1)
 )
-m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 m1$intervals # none yet list()
 m1 = umxCI(m1)
 m1$intervals # $G_to_x1
 m1 = umxCI(m1, remove = TRUE) # Add CIs for all free parameters, and return model
+data(twinData) 
+selDVs = c("bmi1","bmi2")
+mzData <- as.matrix(subset(twinData, zygosity == "MZFF", selDVs))
+dzData <- as.matrix(subset(twinData, zygosity == "DZFF", selDVs))
+m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
 \dontrun{
-umxCI(model, run = "yes") # force update of CIs
+umxCI(m1, run = "show") # show what will be requested
+umxCI(m1, run = "yes") # actually compute the CIs
 # Don't force update of CIs, but if they were just added, then calculate them
-umxCI(model, run = "if necessary")
+umxCI(m1, run = "if necessary")
+m1 = umxCI(m1, remove = TRUE) # remove them all
+m1$intervals # none!
+umxParameters(m1) # see what's available
+m1 = umxCI(m1, "a_r1c1", run = "yes")
 }
 }
 \references{
@@ -71,16 +84,17 @@ umxCI(model, run = "if necessary")
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{confint.MxModel}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
+  \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCompare}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxConfint}}, \code{\link{umxExpCov}},
+  \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACEv}},
   \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
   \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

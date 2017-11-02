@@ -3,7 +3,7 @@
 \name{umxPlotGxE}
 \alias{umxPlotGxE}
 \alias{plot.MxModel.GxE}
-\title{umxPlotGxE}
+\title{Plot the results of a GxE univariate test for moderation of ACE components.}
 \usage{
 umxPlotGxE(x, xlab = NA, location = "topleft", separateGraphs = FALSE,
   ...)
@@ -24,7 +24,9 @@ see ?legend for alternatives like bottomright}
 -
 }
 \description{
-Plot GxE results (univariate environmental moderation of ACE components)
+Plot GxE results (univariate environmental moderation of ACE components).
+Options include plotting the raw and standardized graphs separately, or in a combined panel.
+You can also set the label for the x axis (xlab), and choose the location of the legend.
 }
 \examples{
 require(umx)
@@ -50,31 +52,38 @@ umxPlotGxE(x = m1, xlab = "SES", separateGraphs = TRUE, location = "topleft")
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{confint.MxModel}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
+  \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxExpCov}},
-  \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
+  \code{\link{umxCompare}}, \code{\link{umxConfint}},
+  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
+  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
   \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 
 Other Plotting functions: \code{\link{plot.MxModel}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}}
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACEv}},
+  \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotIP}}
 
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}},
+  \code{\link{umxReduceACE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 }

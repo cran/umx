@@ -19,7 +19,7 @@ umx_swap_a_block(theData, rowSelector, T1Names, T2Names)
 - dataframe
 }
 \description{
-Swap a block of rows of a datset between two lists variables (typically twin 1 and twin2)
+Swap a block of rows of a dataset between two lists variables (typically twin 1 and twin2)
 }
 \examples{
 test = data.frame(
@@ -39,7 +39,8 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
   \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_TwinData}},
   \code{\link{umx_make_bin_cont_pair_data}},
@@ -48,5 +49,6 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_read_lower}}, \code{\link{umx_reorder}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},
   \code{\link{umx_scale_wide_twin_data}},
-  \code{\link{umx_scale}}, \code{\link{umx}}
+  \code{\link{umx_scale}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}
 }

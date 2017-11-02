@@ -9,7 +9,7 @@ umxRAM(model = NA, ..., data = NULL, name = NA, comparison = TRUE,
   remove_unused_manifests = TRUE, showEstimates = c("none", "raw", "std",
   "both", "list of column names"), refModels = NULL,
   thresholds = c("deviationBased", "direct", "ignore", "left_censored"),
-  autoRun = getOption("umx_auto_run"))
+  autoRun = getOption("umx_auto_run"), optimizer = NULL)
 }
 \arguments{
 \item{model}{A model to update (or set to string to use as name for new model)}
@@ -32,11 +32,13 @@ umxRAM(model = NA, ..., data = NULL, name = NA, comparison = TRUE,
 
 \item{showEstimates}{Whether to show estimates. Defaults to no (alternatives = "raw", "std", etc.)}
 
-\item{refModels}{pass in reference models if available. Use FALSE to supress computing these if not provided.}
+\item{refModels}{pass in reference models if available. Use FALSE to suppress computing these if not provided.}
 
 \item{thresholds}{Whether to use deviation-based threshold modeling for ordinal data (if any is detected), direct, or do nothing.}
 
 \item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
+
+\item{optimizer}{optionally set the optimizer (default NULL does nothing)}
 }
 \value{
 - \code{\link{mxModel}}
@@ -57,7 +59,7 @@ Like \code{\link{mxModel}}, you list the theoretical causal paths. Unlike mxMode
 \item{You don't need to mxRun the model: it will run automatically, and print a summary}
 }
 
-umxRAM is like lm, ggplot2 etc: you give the data in a data = parameter
+umxRAM is like lm, ggplot2 etc.: you give the data in a data = parameter
 A common error is to include data in the main list, a bit like
 saying lm(y ~ x + df) instead of lm(y ~ x, data = dd).
 
@@ -75,7 +77,7 @@ and \code{exog.variances = TRUE}). Also identification helpers like \code{fix = 
 and \code{fix = "firstLoadings"}.
 
 To be honest, these are not only more trouble than they are worth, they encourage errors and 
-poor modelling. I suggest user learn the handful of \code{\link{umxPath}}
+poor modeling. I suggest user learn the handful of \code{\link{umxPath}}
 short cuts and stay clean and explicit!
 }
 \examples{
@@ -88,6 +90,7 @@ m1 = umxRAM("tim", data = mtcars,
 	umxPath("wt", with = "disp"),
 	umxPath(v.m. = c("wt", "disp", "mpg"))
 )
+plot(m1, std=TRUE, means=FALSE)
 
 # ====================================
 # = A cov model, with steps laid out =
@@ -111,13 +114,27 @@ umxSummary(m1, show = "std")
 
 # 5. Display path diagram
 plot(m1)
-plot(m1, resid = "line")
+plot(m1, std = TRUE, resid = "line")
 
-# ===================================================================================
-# = For playing around, umxRAM supports a vector of manifest names in place of data =
-# ===================================================================================
+# ===============================
+# = Using umxRAM in Sketch mode =
+# ===============================
+# No data needed: just list variable names!
+# Resulting model will be plotted automatically
+m1 = umxRAM("what does unique pairs do, I wonder", data = c("B", "C"),
+# B<->B, C<->C, B<->C
+umxPath(unique.pairs = c("B", "C"))
+)
 
-m1 = umxRAM("play", data = paste0("x", 1:4),
+m1 = umxRAM("ring around the rosey", data = c("B", "C"),
+# A->B, A->C, B->A, B->C, C->A, C->B
+umxPath(fromEach = c("A", "B", "C"))
+)
+m1 = umxRAM("fromEach with to", data = c("B", "C"),
+# B->D, C->D
+umxPath(fromEach = c("B", "C"), to= "D")
+)
+m1 = umxRAM("CFA_play", data = paste0("x", 1:4),
 	umxPath("g", to = paste0("x", 1:4)),
 	umxPath(var = paste0("x", 1:4)),
 	umxPath(v1m0 = "g")
@@ -148,6 +165,7 @@ m1$S$labels
 Other Core Modelling Functions: \code{\link{plot.MxModel}},
   \code{\link{umxDiagnose}}, \code{\link{umxLatent}},
   \code{\link{umxMatrix}}, \code{\link{umxPath}},
-  \code{\link{umxReduce}}, \code{\link{umxRun}},
+  \code{\link{umxReduceACE}}, \code{\link{umxReduceGxE}},
+  \code{\link{umxRun}}, \code{\link{umxSuperModel}},
   \code{\link{umx}}
 }

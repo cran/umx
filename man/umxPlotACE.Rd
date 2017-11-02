@@ -34,13 +34,10 @@ Make a graphical display of an ACE model
 \examples{
 require(umx)
 data(twinData)
-labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = labList)
-selDVs = c("bmi1", "bmi2")
-mzData <- subset(twinData, ZYG == "MZFF", selDVs)
-dzData <- subset(twinData, ZYG == "DZFF", selDVs)
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-plot(m1)
+selDVs = "bmi"
+mzData <- subset(twinData, zygosity == "MZFF")
+dzData <- subset(twinData, zygosity == "DZFF")
+m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
 plot(m1, std = FALSE) # don't standardize
 }
 \references{
@@ -48,21 +45,23 @@ plot(m1, std = FALSE) # don't standardize
 }
 \seealso{
 Other Plotting functions: \code{\link{plot.MxModel}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}}
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACEv}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxPlotIP}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{confint.MxModel}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
+  \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxExpCov}},
-  \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
+  \code{\link{umxCompare}}, \code{\link{umxConfint}},
+  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
+  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotACEv}}, \code{\link{umxPlotCP}},
   \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

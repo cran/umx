@@ -2,7 +2,7 @@
 % Please edit documentation in R/build_run_modify.r
 \name{umxGxE_window}
 \alias{umxGxE_window}
-\title{umxGxE_window}
+\title{Implement the moving-window form of GxE analysis.}
 \usage{
 umxGxE_window(selDVs = NULL, moderator = NULL, mzData = mzData,
   dzData = dzData, suffix = NA, weightCov = FALSE, target = NULL,
@@ -35,14 +35,14 @@ e.g.: 'bmi' --> c("bmi_T1", "bmi_T2")}
 }
 \description{
 Make a 2-group GxE (moderated ACE) model using LOSEM. In GxE interaction studies, typically,
-the hypothesis that the strength of genetic influence varies parametrically (usuaally linear effects
+the hypothesis that the strength of genetic influence varies parametrically (usually linear effects
 on path estimates) across levels of environment. Of course, the function linking genetic influence
 and context is not necessarily linear, but may react more steeply at the extremes, or take other, unknown forms.
 To avoid obscuring the underlying shape of the interaction effect, local structural equation
 modeling (LOSEM) may be used, and GxE_window implements this. LOSEM is a non-parametric,
 estimating latent interaction effects across the range of a measured moderator using a
 windowing function which is walked along the context dimension, and which weights subjects
-near the centrre of the window highly relative to subjects far above or below the window centre.
+near the center of the window highly relative to subjects far above or below the window center.
 This allows detecting and visualizing arbitrary GxE (or CxE or ExE) interaction forms.
 }
 \examples{
@@ -50,22 +50,17 @@ library(umx);
 # ==============================
 # = 1. Open and clean the data =
 # ==============================
-# umxGxE_window takes a dataframe consisting of a moderator and two DV columns: one for each twin
+# umxGxE_window takes a dataframe consisting of a moderator and two DV columns: one for each twin.
+# The model assumes two groups (MZ and DZ). Moderator can't be missing
 mod = "age" # The name of the moderator column in the dataset
 selDVs = c("bmi1", "bmi2") # The DV for twin 1 and twin 2
 data(twinData) # Dataset of Australian twins, built into OpenMx
-# The twinData consist of two cohorts. First we label them
-# TODO: Q for OpenMx team: can I add a cohort column to this dataset?
-twinData$cohort = 1; twinData$cohort[twinData$zyg \%in\% 6:10] = 2
-twinData$zyg[twinData$cohort == 2] = twinData$zyg[twinData$cohort == 2]-5
-# And set a plain-English label
-labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = labList)
-# The model also assumes two groups: MZ and DZ. Moderator can't be missing
+# The twinData consist of two cohorts: "younger" and "older".
+# zygosity is a factor. levels =  MZFF, MZMM, DZFF, DZMM, DZOS.
 # Delete missing moderator rows
-twinData = twinData[!is.na(twinData[mod]),]
-mzData = subset(twinData, ZYG == "MZFF", c(selDVs, mod))
-dzData = subset(twinData, ZYG == "DZFF", c(selDVs, mod))
+twinData = twinData[!is.na(twinData[mod]), ]
+mzData = subset(twinData, zygosity == "MZFF", c(selDVs, mod))
+dzData = subset(twinData, zygosity == "DZFF", c(selDVs, mod))
 
 # ========================
 # = 2. Run the analyses! =
@@ -95,13 +90,18 @@ Nonparametric Estimates of Gene x Environment Interaction Using Local Structural
 }
 \seealso{
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE}},
-  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxReduceACE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 }

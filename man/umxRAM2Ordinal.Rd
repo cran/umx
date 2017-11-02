@@ -17,9 +17,9 @@ umxRAM2Ordinal(model, verbose = T, thresholds = c("deviationBased",
 
 \item{name}{= A new name for the modified model (NULL means leave it as it)}
 
-\item{showEstimates}{= Whether to show estimates in the summary (if autorunning) TRUE}
+\item{showEstimates}{= Whether to show estimates in the summary (if autoRun) TRUE}
 
-\item{refModels}{pass in reference models if available. Use FALSE to supress computing these if not provided.}
+\item{refModels}{pass in reference models if available. Use FALSE to suppress computing these if not provided.}
 
 \item{autoRun}{= whether to run the model before returning it: defaults to getOption("umx_auto_run"))}
 }
@@ -27,7 +27,7 @@ umxRAM2Ordinal(model, verbose = T, thresholds = c("deviationBased",
 - \code{\link{mxModel}}
 }
 \description{
-umxRAM2Ordinal: Convert a RAM model whose data contain ordinal vars to a threshold-based model
+umxRAM2Ordinal: Convert a RAM model whose data contain ordinal variables to a threshold-based model
 }
 \examples{
 \dontrun{

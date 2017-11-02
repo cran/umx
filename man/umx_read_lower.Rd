@@ -10,7 +10,7 @@ umx_read_lower(file = "", diag = TRUE, names = as.character(paste("X",
 \arguments{
 \item{file}{Path to a file to read (Default "" will read from user input)}
 
-\item{diag}{Whether the data unclude the diagonal or not: Defaults to TRUE}
+\item{diag}{Whether the data include the diagonal. Defaults to TRUE}
 
 \item{names}{The default names for the variables.
 Defaults to as.character(paste("X", 1:n, sep=""))}
@@ -61,7 +61,8 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
   \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_TwinData}},
   \code{\link{umx_make_bin_cont_pair_data}},
@@ -70,5 +71,5 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},
   \code{\link{umx_scale_wide_twin_data}},
   \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}},
-  \code{\link{umx}}
+  \code{\link{umx_wide2long}}, \code{\link{umx}}
 }

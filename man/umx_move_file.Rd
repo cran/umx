@@ -2,15 +2,15 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_move_file}
 \alias{umx_move_file}
-\title{umx_move_file}
+\title{Move files}
 \usage{
-umx_move_file(baseFolder = NA, findStr = NULL, fileNameList = NA,
+umx_move_file(baseFolder = NA, regex = NULL, fileNameList = NA,
   destFolder = NA, test = TRUE, overwrite = FALSE)
 }
 \arguments{
-\item{baseFolder}{The folder to search in. If set to "Finder" (and you are on OS X) it will use the current frontmost Finder window. If it is blank, a choose folder dialog will be thrown.}
+\item{baseFolder}{The folder to search in. If set to "Finder" (and you are on OS X) it will use the current front-most Finder window. If it is blank, a choose folder dialog will be thrown.}
 
-\item{findStr}{= regex string select files to move (WARNING: NOT IMPLEMENTED YET)}
+\item{regex}{= regex string select files to move (WARNING: NOT IMPLEMENTED YET)}
 
 \item{fileNameList}{List of files to move}
 
@@ -24,8 +24,8 @@ umx_move_file(baseFolder = NA, findStr = NULL, fileNameList = NA,
 -
 }
 \description{
-move files. On OS X, the function can access the current frontmost Finder window.
-The file moves are fast and, because you can use regular expressions, powerful
+On OS X, umx_move_file can access the current front-most Finder window.
+The file moves are fast and, because you can use regular expressions, powerful.
 }
 \examples{
 \dontrun{

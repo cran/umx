@@ -25,7 +25,7 @@ umx_cont_2_quantiles(x, nlevels = NULL, type = c("mxFactor", "ordered",
 \description{
 Recode a continuous variable into n-quantiles (default = deciles (10 levels)).
 It returns an \code{\link{mxFactor}}, with the levels labeled with the max value
-in each quantile (i.e., open on the left-side). quantiles are labeld "quantile1"
+in each quantile (i.e., open on the left-side). quantiles are labeled "quantile1"
 "quantile2" etc.
 }
 \details{
@@ -68,6 +68,7 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxFactor}}, \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}}, \code{\link{umx_cov2raw}},
+  \code{\link{umx_long2wide}},
   \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_TwinData}},
@@ -78,5 +79,5 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},
   \code{\link{umx_scale_wide_twin_data}},
   \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}},
-  \code{\link{umx}}
+  \code{\link{umx_wide2long}}, \code{\link{umx}}
 }

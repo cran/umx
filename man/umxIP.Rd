@@ -8,7 +8,7 @@ umxIP(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1,
   freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE,
   equateMeans = TRUE, dzAr = 0.5, dzCr = 1, correlatedA = FALSE,
   addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL,
-  autoRun = getOption("umx_auto_run"), sep = NULL)
+  autoRun = getOption("umx_auto_run"), optimizer = NULL, sep = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "IP")}
@@ -20,7 +20,7 @@ umxIP(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1,
 \item{mzData}{The MZ dataframe}
 
 \item{suffix}{The suffix for twin 1 and twin 2, often "_T". If set, you can
-omit suffixes in SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
+omit suffixes in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{nFac}{How many common factors (default = 1)}
 
@@ -42,11 +42,13 @@ omit suffixes in SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{addCI}{Whether to add the interval requests for CIs (defaults to TRUE)}
 
-\item{numObsDZ}{= todo: implement ordinal Number of DZ twins: Set this if you input covariance data}
+\item{numObsDZ}{= TODO: implement ordinal Number of DZ twins: Set this if you input covariance data}
 
-\item{numObsMZ}{= todo: implement ordinal Number of MZ twins: Set this if you input covariance data}
+\item{numObsMZ}{= TODO: implement ordinal Number of MZ twins: Set this if you input covariance data}
 
 \item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
+
+\item{optimizer}{optionally set the optimizer (default NULL does nothing)}
 
 \item{sep}{allowed as a synonym for "suffix"}
 }
@@ -55,20 +57,17 @@ omit suffixes in SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 }
 \description{
 Make a 2-group Independent Pathway twin model (Common-factor independent-pathway multivariate model)
-The following figure shows the IP model diagramatically:
+The following figure shows the IP model diagrammatically:
 \figure{IP.png}
 }
 \examples{
 require(umx)
 data(twinData)
-zygList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = zygList)
-mzData <- subset(twinData, ZYG == "MZFF")
-dzData <- subset(twinData, ZYG == "DZFF")
+mzData <- subset(twinData, zygosity == "MZFF")
+dzData <- subset(twinData, zygosity == "DZFF")
 selDVs = c("ht", "wt") # These will be expanded into "ht1" "ht2"
 m1 = umxIP(selDVs = selDVs, suffix = "", dzData = dzData, mzData = mzData)
-umxSummary(m1)
-plot(m1)
+# umxSummary(m1)
 }
 \references{
 - \url{http://www.github.com/tbates/umx}
@@ -77,13 +76,18 @@ plot(m1)
 - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxReduceACE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_and_reporting.r
 \name{umxFitIndices}
 \alias{umxFitIndices}
-\title{umxFitIndices}
+\title{Get additional fit-indices for a model with umxFitIndices}
 \usage{
 umxFitIndices(model, refModels = mxRefModels(model, run = TRUE))
 }
@@ -54,16 +54,17 @@ umxAPA(umxFitIndices(m1), digits = 3)
 \seealso{
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{confint.MxModel}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
+  \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxExpCov}},
-  \code{\link{umxExpMeans}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxCompare}}, \code{\link{umxConfint}},
+  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACEv}},
   \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
   \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

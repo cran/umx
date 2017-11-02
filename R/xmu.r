@@ -1,8 +1,25 @@
-# devtools::document("~/bin/umx"); devtools::install("~/bin/umx");
-# ========================================
-# = Not used directly by users =
-# ========================================
+#
+#   Copyright 2007-2017 Copyright 2007-2017 Timothy C. Bates
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+# 
+#        http://www.apache.org/licenses/LICENSE-2.0
+# 
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 
+# ==============================================================================
+# = Not used directly by users subject to arbitrary change and deprecation !!  =
+# ==============================================================================
+
+# =====================
+# = Reporting helpers =
+# =====================
 xmu_safe_summary <- function(model1, model2, summary = TRUE) {
 	# model = mxRun(model)
 	tryCatch({
@@ -15,6 +32,65 @@ xmu_safe_summary <- function(model1, model2, summary = TRUE) {
 		message("Error incurred trying to run summary ")
 		message(e)
 	})
+}
+
+# ===================================
+# = Data and model checking helpers =
+# ===================================
+
+#' Check basic aspects of input for twin models
+#'
+#' @description
+#' Check that DVs are in the data, that the data have rows, set the optimizer if requested
+#'
+#' @param selDVs the variables expected to be in the data
+#' @param dzData the dat for DZ twins
+#' @param mzData the MZ twin data
+#' @param optimizer if you want to change it
+#' @param suffix creating variable names
+#' @param nSib Likely 2 (the default)
+#' @return -
+#' @export
+#' @family Twin Modeling Functions
+#' @family Miscellaneous Functions
+#' @seealso - \code{\link{umxLabel}}
+#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+#' # TODO examples
+xmu_twin_check <- function(selDVs, dzData = dzData, mzData = mzData, optimizer = NULL, suffix = suffix, nSib = 2) {
+	# 1. Set optimizer
+	if(!is.null(optimizer)){
+		umx_set_optimizer(optimizer)
+	}
+	
+	# 2. check data has rows
+	if(nrow(dzData) == 0){ stop("Your DZ dataset has no rows!") }
+	if(nrow(mzData) == 0){ stop("Your MZ dataset has no rows!") }
+	
+	# 3. enforce presence of suffix
+	if(is.null(suffix)){
+		stop("The umx twin functions are moving to specifying variable names and  just separator like '_T'.
+		If your column names are like 'obese_T1' and 'obese_T2' etc., Please set selVars = 'obese', sep = '_T'")		
+	} else if(length(suffix) > 1){
+		stop("sep should be just one word, like '_T'. I will add 1 and 2 afterwards... \n",
+		"i.e., you have to name your variables 'obese_T1' and 'obese_T2' etc.")
+	}
+	# 4. expand and check all names in the data
+	selDVs = umx_paste_names(selDVs, suffix, 1:nSib)
+	umx_check_names(selDVs, mzData)
+	umx_check_names(selDVs, dzData)
+
+	# 5. Check data are numeric
+	if(!umx_is_class(mzData[, selDVs], classes = c("integer", "double", "numeric","factor"), all = TRUE)) {
+		bad = selDVs[!umx_is_class(mzData[, selDVs], classes = c("integer", "double", "numeric","factor"), all = FALSE)]
+		stop("variables must be integer, numeric or factor. The following are not: ", omxQuotes(bad))
+	}
+
+	# 6. Look for name conflicts
+	badNames = umx_grep(selDVs, grepString = "^[ACDEacde][0-9]*$")
+	if(!identical(character(0), badNames)){
+		stop("The data contain variables that look like parts of the a, c, e model, i.e., a1 is illegal.\n",
+		"BadNames included: ", omxQuotes(badNames) )
+	}
 }
 
 #' xmu_check_levels_identical
@@ -67,11 +143,15 @@ xmu_check_levels_identical <- function(df, selDVs, sep, action = c("stop", "igno
 	return(allIdentical)
 }
 
+# ==========================
+# = Model building helpers =
+# ==========================
+
 #' xmuLabel_MATRIX_Model (not a user function)
 #'
 #' This function will label all the free parameters in a (non-RAM) OpenMx \code{\link{mxModel}}
 #' nb: We don't assume what each matrix is for. Instead, the function just sticks labels like "a_r1c1" into each cell
-#' i.e., matrixname _ r rowNumber c colNumber
+#' i.e., matrix-name + _ + r + rowNumber + c + colNumber
 #' 
 #' End users should just call \code{\link{umxLabel}}
 #' 
@@ -313,7 +393,7 @@ xmuLabel_Matrix <- function(mx_matrix = NA, baseName = NA, setfree = FALSE, drop
 #' xmuMakeThresholdsMatrices (not a user function)
 #'
 #' You should not be calling this directly.
-#' This is not as reliable a strategy and likely to be superceeded...
+#' This is not as reliable a strategy and likely to be superseded...
 #'
 #' @param df a \code{\link{data.frame}} containing the data for your \code{\link{mxData}} statement
 #' @param droplevels a binary asking if empty levels should be dropped (defaults to FALSE)
@@ -367,10 +447,10 @@ xmuMakeThresholdsMatrices <- function(df, droplevels = FALSE, verbose = FALSE) {
 	)
 }
 
-#' Make deviation threshold matrics
+#' Make a deviation-based mxRAMObjective for ordinal models.
 #'
 #' Purpose: return a mxRAMObjective(A = "A", S = "S", F = "F", M = "M", thresholds = "thresh"), mxData(df, type = "raw")
-#' usecase see: umxMakeThresholdMatrix
+#' use-case see: umxMakeThresholdMatrix
 #'
 #' @param df a dataframe
 #' @param droplevels whether to droplevels or not
@@ -706,7 +786,7 @@ xmuMinLevels <- function(df, what = c("value", "name")) {
 #'
 #' Make two-headed paths
 #'
-#' @param pathList A pathlist
+#' @param pathList A list of paths
 #' @return - added items
 #' @export
 #' @family xmu internal not for end user
@@ -751,14 +831,24 @@ xmuMakeOneHeadedPathsFromPathList <- function(sourceList, destinationList) {
 	return(toAdd)
 }
 
+#' Internal umx function to help plotting graphviz
+#'
+#' @description
+#' Helper to print a digraph to file and open it
+#' @param model an \code{\link{mxModel}} to get the name from 
+#' @param file either "name" (use model name) or a file name
+#' @param digraph graphviz code for a model
+#' @return -
+#' @family xmu
 xmu_dot_maker <- function(model, file, digraph){
 	if(!is.na(file)){
 		if(file == "name"){
-			file = paste0(model$name, ".gv")
+			file = paste0(model$name, ".", umx_set_plot_file_suffix(silent = TRUE))
 		}
 		cat(digraph, file = file) # write to file
 		if(umx_set_plot_format(silent = TRUE) == "DiagrammeR"){
-			DiagrammeR::DiagrammeR(diagram = file, type = "grViz")
+				# message("attempting plot")
+				print(DiagrammeR::DiagrammeR(diagram = file, type = "grViz"))
 		} else {
 			if(umx_check_OS("OSX")){
 				umx_open(file);
@@ -911,6 +1001,7 @@ xmu_dot_make_paths <- function(mxMat, stringIn, heads = NULL, fixed = TRUE, comm
 # handle sem-style strings
 
 xmu_string2path <- function(from) {
+	# TODO implement sem strings to umxPaths
 	if(!is.null(from)){
 		if(length(from) > 1){
 			isSEMstyle = grepl("[<>]", x = from[1])	
@@ -918,18 +1009,18 @@ xmu_string2path <- function(from) {
 			isSEMstyle = grepl("[<>]", x = from)				
 		}
 		if(isSEMstyle){
-			stop("sem-style string syntax not yet implemented. In the mean time, try the other features, like with, var, means = , fixedAt = , fixFirst = ")
-
+			message("sem-style string syntax not yet implemented. In the mean time, try other features, such as fixedAt = , with, var, means = , fixFirst = ")
+			# A with B; A to B
 			if("from contains an arrow"){
 				# parse into paths
 			} else {
 				if(!is.null(with)){
-					to = with
-					arrows = 2
+					to      = with
+					arrows  = 2
 					connect = "single"
 				} else {
-					to = to
-					arrows = 1
+					to      = to
+					arrows  = 1
 					connect = "single"
 				}
 			}	
@@ -939,8 +1030,6 @@ xmu_string2path <- function(from) {
 			allOneLine = gsub("\n+", ";", a, ignore.case = TRUE)
 			# regularizedArrows = gsub("[ \t]?^<-?>[ \t]?", "->", allOneLine, ignore.case = TRUE)
 			# regularizedArrows = gsub("[ \t]?-?>[ \t]?", "<-", regularizedArrows, ignore.case = TRUE)
-
-			# TODO remove duplicate ; 
 			pathList = umx_explode(";", allOneLine)
 			for (aPath in pathList) {
 				if(length(umx_explode("<->", aPath))==3){

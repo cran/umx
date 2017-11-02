@@ -5,7 +5,7 @@
 \title{umxEquate: Equate two or more paths}
 \usage{
 umxEquate(model, master, slave, free = c(TRUE, FALSE, NA), verbose = TRUE,
-  name = NULL, autoRun = getOption("umx_auto_run"), comparison = TRUE)
+  name = NULL, autoRun = FALSE, comparison = TRUE)
 }
 \arguments{
 \item{model}{An \code{\link{mxModel}} within which to equate parameters}
@@ -14,7 +14,7 @@ umxEquate(model, master, slave, free = c(TRUE, FALSE, NA), verbose = TRUE,
 
 \item{slave}{A list of slave labels which will be updated to match master labels, thus equating the parameters}
 
-\item{free}{Should parameter(s) initally be free? (default = TRUE)}
+\item{free}{Should parameter(s) initially be free? (default = TRUE)}
 
 \item{verbose}{Whether to give verbose feedback (default = TRUE)}
 
@@ -28,7 +28,7 @@ umxEquate(model, master, slave, free = c(TRUE, FALSE, NA), verbose = TRUE,
 - \code{\link{mxModel}}
 }
 \description{
-In addition to dropping or adding parameters, a second common task in modelling
+In addition to dropping or adding parameters, a second common task in modeling
 is to equate parameters. umx provides a convenience function to equate parameters 
 by setting one or more parameters (the "slave" set) equal to one or more "master" 
 parameters. These parameters are picked out via their labels, and setting two or more
@@ -57,14 +57,18 @@ m1 <- mxModel("One Factor", type = "RAM",
 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
 )
 m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-m2 = umxEquate(m1, master = "G_to_x1", slave = "G_to_x2", name = "Equate x1 and x2 loadings")
-m2 = mxRun(m2) # have to run the model again...
-umxCompare(m1, m2) # not good :-)
+# By default, umxEquate just equates master and slave labels
+m2 = umxEquate(m1, master = "G_to_x1", slave = "G_to_x2", name = "Eq x1 x2 loadings")
+# Set autoRun = TRUE and comparison = TRUE to run and output a comparison
+m2 = umxEquate(m1, master = "G_to_x1", slave = "G_to_x2", name = "Eq x1 x2 loadings", 
+	     autoRun = TRUE, comparison = TRUE)
 }
 \references{
 - \url{http://www.github.com/tbates/umx}
 }
 \seealso{
+\code{\link{umxModify}}, \code{\link{umxCompare}}
+
 Other Modify or Compare Models: \code{\link{umxAdd1}},
   \code{\link{umxDrop1}}, \code{\link{umxFixAll}},
   \code{\link{umxMI}}, \code{\link{umxSetParameters}},

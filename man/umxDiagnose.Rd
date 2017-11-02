@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_and_reporting.r
 \name{umxDiagnose}
 \alias{umxDiagnose}
-\title{mxDiagnostic}
+\title{Diagnose problems in a model - this is a work in progress.}
 \usage{
 umxDiagnose(model, tryHard = FALSE, diagonalizeExpCov = FALSE)
 }
@@ -17,7 +17,8 @@ umxDiagnose(model, tryHard = FALSE, diagonalizeExpCov = FALSE)
 - helpful messages and perhaps a modified model
 }
 \description{
-Diagnose problems in a model - this is a work in progress.
+The goal of this function is to diagnose problems in a model and return suggestions to the user.
+It is a work in progress, and probably is not of any use as yet.
 }
 \examples{
 require(umx)
@@ -41,6 +42,7 @@ umxDiagnose(m1)
 Other Core Modelling Functions: \code{\link{plot.MxModel}},
   \code{\link{umxLatent}}, \code{\link{umxMatrix}},
   \code{\link{umxPath}}, \code{\link{umxRAM}},
-  \code{\link{umxReduce}}, \code{\link{umxRun}},
+  \code{\link{umxReduceACE}}, \code{\link{umxReduceGxE}},
+  \code{\link{umxRun}}, \code{\link{umxSuperModel}},
   \code{\link{umx}}
 }

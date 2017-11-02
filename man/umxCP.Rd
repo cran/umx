@@ -8,7 +8,7 @@ umxCP(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1,
   freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE,
   correlatedA = FALSE, equateMeans = T, dzAr = 0.5, dzCr = 1,
   addStd = T, addCI = T, numObsDZ = NULL, numObsMZ = NULL,
-  autoRun = getOption("umx_auto_run"), sep = NULL)
+  autoRun = getOption("umx_auto_run"), optimizer = NULL, sep = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "CP")}
@@ -20,7 +20,7 @@ umxCP(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1,
 \item{mzData}{The MZ dataframe}
 
 \item{suffix}{The suffix for twin 1 and twin 2, often "_T". If set, you can
-omit suffixes in SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
+omit suffixes in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{nFac}{How many common factors (default = 1)}
 
@@ -48,6 +48,8 @@ omit suffixes in SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
 
+\item{optimizer}{optionally set the optimizer (default NULL does nothing)}
+
 \item{sep}{allowed as a synonym for "suffix"}
 }
 \value{
@@ -68,7 +70,7 @@ Common-pathway path diagram:
 
 \figure{CP.png}
 
-As can be seen, each phenotype also by default has A, C, and E influences specific to that phenotye.
+As can be seen, each phenotype also by default has A, C, and E influences specific to that phenotype.
 
 
 Like the \code{\link{umxACE}} model, the CP model decomposes phenotypic variance
@@ -91,24 +93,22 @@ data in any combination.
 \strong{Additional features}
 The umxCP function supports varying the DZ genetic association (defaulting to .5)
 to allow exploring assortative mating effects, as well as varying the DZ \dQuote{C} factor
-from 1 (the default for modelling family-level effects shared 100% by twins in a pair),
+from 1 (the default for modeling family-level effects shared 100% by twins in a pair),
 to .25 to model dominance effects.
 }
 \examples{
 require(umx)
 data(twinData) 
-zygList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = zygList)
 twinData$wt1 = twinData$wt1/10 # help CSOLNP by putting wt on a similar scale to ht
 twinData$wt2 = twinData$wt2/10 # help CSOLNP by putting wt on a similar scale to ht
 selDVs = c("ht", "wt")
-mzData <- subset(twinData, ZYG == "MZFF", umx_paste_names(selDVs, "", 1:2))
-dzData <- subset(twinData, ZYG == "DZFF", umx_paste_names(selDVs, "", 1:2))
-umx_set_optimizer("SLSQP") #preferably NPSOL: CSOLNP needs setup to run this model.
+mzData <- subset(twinData, zygosity == "MZFF")
+dzData <- subset(twinData, zygosity == "DZFF")
+umx_set_optimizer("SLSQP") # preferably NPSOL: CSOLNP needs setup to run this model.
 m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = "")
 umxSummary(m1)
-umxGetParameters(m1, "^c", free = TRUE)
-m2 = umxModify(m1, update = "(cs_.*$)|(c_cp_)", regex = TRUE, name = "dropC")
+umxParameters(m1, patt = "^c")
+m2 = umxModify(m1, regex = "(cs_.*$)|(c_cp_)", name = "dropC")
 umxSummaryCP(m2, comparison = m1, file = NA)
 umxCompare(m1, m2)
 }
@@ -119,13 +119,18 @@ umxCompare(m1, m2)
 - \code{\link{umxACE}()} for more examples of twin modeling, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
-  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxReduceACE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 }

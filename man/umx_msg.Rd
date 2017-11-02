@@ -2,32 +2,35 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_msg}
 \alias{umx_msg}
-\title{umx_msg}
+\title{Print the name and compact contents of variable.}
 \usage{
 umx_msg(x)
 }
 \arguments{
-\item{x}{the thing you want to print}
+\item{x}{the thing you want to pretty-print}
 }
 \value{
 - NULL
 }
 \description{
 Helper function to make dumping  "ObjectName has the value: <objectvalue>" easy.
+This is primarily useful for inline debugging, where seeing "nVar = NULL" can be useful,
+and the code \code{umxMsg(nVar)} makes this easy.
 }
 \examples{
 a = "brian"
 umx_msg(a)
 b = c("brian", "sally", "jane")
 umx_msg(b)
+umx_msg(mtcars)
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
+- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
 Other Utility Functions: \code{\link{qm}},
-  \code{\link{umx_find_object}}, \code{\link{umx_grep}},
-  \code{\link{umx_names}}, \code{\link{umx_paste_names}},
-  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
-  \code{\link{umx_rename}}, \code{\link{umx}}
+  \code{\link{umx_find_object}}, \code{\link{umx_names}},
+  \code{\link{umx_paste_names}}, \code{\link{umx_pb_note}},
+  \code{\link{umx_print}}, \code{\link{umx_rename}},
+  \code{\link{umx}}
 }

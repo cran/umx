@@ -2,20 +2,20 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_trim}
 \alias{umx_trim}
-\title{umx_trim}
+\title{Trim whitespace surrounding a string.}
 \usage{
 umx_trim(string, removeThis = NULL)
 }
 \arguments{
 \item{string}{to trim}
 
-\item{removeThis}{if not NULl then this string is removed whereever found in 'string'}
+\item{removeThis}{if not NULL then this string is removed wherever found in 'string'}
 }
 \value{
 - string
 }
 \description{
-returns string w/o leading or trailing whitespace
+Returns string w/o leading or trailing whitespace
 }
 \examples{
 umx_trim(" dog") # "dog"
@@ -24,9 +24,10 @@ umx_trim("\\t dog \\n") # "dog"
 umx_trim("xlsx dog.xlsx", "\\\\.xlsx$") # "dog"
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
+- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
 Other String Functions: \code{\link{umx_explode_twin_names}},
-  \code{\link{umx_explode}}, \code{\link{umx_rot}}
+  \code{\link{umx_explode}}, \code{\link{umx_grep}},
+  \code{\link{umx_rot}}
 }

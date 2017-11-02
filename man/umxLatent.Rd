@@ -73,6 +73,7 @@ plot(m2)
 Other Core Modelling Functions: \code{\link{plot.MxModel}},
   \code{\link{umxDiagnose}}, \code{\link{umxMatrix}},
   \code{\link{umxPath}}, \code{\link{umxRAM}},
-  \code{\link{umxReduce}}, \code{\link{umxRun}},
+  \code{\link{umxReduceACE}}, \code{\link{umxReduceGxE}},
+  \code{\link{umxRun}}, \code{\link{umxSuperModel}},
   \code{\link{umx}}
 }

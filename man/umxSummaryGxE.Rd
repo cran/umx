@@ -8,7 +8,7 @@
 umxSummaryGxE(model = NULL, digits = 2, xlab = NA, location = "topleft",
   separateGraphs = FALSE, file = getOption("umx_auto_plot"),
   returnStd = NULL, std = NULL, reduce = FALSE, CIs = NULL,
-  report = c("1", "2", "html"), ...)
+  report = c("markdown", "html"), ...)
 }
 \arguments{
 \item{model}{A fitted \code{\link{umxGxE}} model to summarize}
@@ -39,7 +39,7 @@ umxSummaryGxE(model = NULL, digits = 2, xlab = NA, location = "topleft",
 - optional \code{\link{mxModel}}
 }
 \description{
-Summarise a Moderation model, as returned by \code{\link{umxGxE}}
+Summarize a Moderation model, as returned by \code{\link{umxGxE}}
 }
 \examples{
 # The total sample has been subdivided into a young cohort, 
@@ -48,14 +48,12 @@ Summarise a Moderation model, as returned by \code{\link{umxGxE}}
 # 3 == DZ females 4 == DZ males 5 == DZ opposite sex pairs
 require(umx)
 data(twinData) 
-labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = labList)
 twinData$age1 = twinData$age2 = twinData$age
 selDVs  = c("bmi1", "bmi2")
 selDefs = c("age1", "age2")
 selVars = c(selDVs, selDefs)
-mzData  = subset(twinData, ZYG == "MZFF", selVars)
-dzData  = subset(twinData, ZYG == "DZMM", selVars)
+mzData  = subset(twinData, zygosity == "MZFF", selVars)
+dzData  = subset(twinData, zygosity == "DZMM", selVars)
 # Exclude cases with missing Def
 mzData <- mzData[!is.na(mzData[selDefs[1]]) & !is.na(mzData[selDefs[2]]),]
 dzData <- dzData[!is.na(dzData[selDefs[1]]) & !is.na(dzData[selDefs[2]]),]
@@ -73,13 +71,18 @@ umxSummaryGxE(m1, separateGraphs = FALSE)
 - \code{\link{umxGxE}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, and ACE models.
 
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxPlotIP}}, \code{\link{umxReduceACE}},
   \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryIP}}, \code{\link{umx}}
+  \code{\link{umxSummaryIP}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_wide2long}}, \code{\link{umx}},
+  \code{\link{xmu_twin_check}}
 }

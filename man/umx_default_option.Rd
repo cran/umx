@@ -3,7 +3,7 @@
 \name{umx_default_option}
 \alias{umx_default_option}
 \alias{umx_match.arg}
-\title{umx_default_option}
+\title{Select first item in list of options, while being flexible about choices.}
 \usage{
 umx_default_option(x, option_list, check = TRUE)
 }
@@ -18,24 +18,26 @@ umx_default_option(x, option_list, check = TRUE)
 - one validated option
 }
 \description{
-Handle parameter options given as a default list in a function.
-This is just a version of x = \code{\link{match.arg}}(x) which
-allows items not in the list.
+Like a smart version of \code{\link{match.arg}}: Handles selecting parameter options when default is a list.
+Unlike  x = \code{\link{match.arg}}(x) this allows items not in the list.
 }
 \examples{
-\dontrun{
 option_list = c("default", "par.observed", "empirical")
 umx_default_option("par.observed", option_list)
+
+# An example of checking a bad item and stopping
+\dontrun{
 umx_default_option("bad", option_list)
+}
 umx_default_option("allow me", option_list, check = FALSE)
 umx_default_option(option_list, option_list)
 option_list = c(NULL, "par.observed", "empirical")
-umx_default_option(option_list, option_list) # fails with NULL!!!!!
+ # fails with NULL!!!!!
+umx_default_option(option_list, option_list)
 option_list = c(NA, "par.observed", "empirical")
 umx_default_option(option_list, option_list) # use NA instead
 option_list = c(TRUE, FALSE, NA)
 umx_default_option(option_list, option_list) # works with non character
-}
 }
 \references{
 - \url{http://www.github.com/tbates/umx}

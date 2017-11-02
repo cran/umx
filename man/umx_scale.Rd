@@ -2,38 +2,52 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_scale}
 \alias{umx_scale}
-\title{umx_scale}
+\title{Scale data columns, skipping non-scalable columns}
 \usage{
-umx_scale(df, varsToScale = NULL, coerce = FALSE)
+umx_scale(df, varsToScale = NULL, coerce = FALSE, attr = FALSE,
+  verbose = FALSE)
 }
 \arguments{
-\item{df}{a dataframe to scale}
+\item{df}{A dataframe to scale (or a numeric vector)}
 
-\item{varsToScale}{(leave blank for all)}
+\item{varsToScale}{(leave blank to scale all)}
 
 \item{coerce}{Whether to coerce non-numerics to numeric (Defaults to FALSE)}
+
+\item{attr}{to strip off the attributes scale creates (FALSE by default)}
+
+\item{verbose}{Whether to report which columns were scaled (default FALSE)}
 }
 \value{
 - new dataframe with scaled variables
 }
 \description{
-Scale data columns, skipping ordinal
+umx_scale applies scale to a data.frame. It scale numeric columns, and is smart enough
+to skip non-scalable columns (string, factor, etc.).
+}
+\details{
+Also strips-off the attributes which scale adds ("scaled:center" and 
+"scaled:scale" (set attr= TRUE) to keep these.
 }
 \examples{
 data(twinData) 
-df = umx_scale(twinData, varsToScale = NULL)
+df = umx_scale(twinData, varsToScale = c("wt1", "wt2"))
+df = umx_scale(twinData,  attr= TRUE)
 plot(wt1 ~ wt2, data = df)
 }
 \references{
 - \url{http://www.github.com/tbates/umx}
 }
 \seealso{
+umx_scale_wide_twin_data
+
 Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxFactor}}, \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
   \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_TwinData}},
   \code{\link{umx_make_bin_cont_pair_data}},
@@ -42,5 +56,6 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_read_lower}}, \code{\link{umx_reorder}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},
   \code{\link{umx_scale_wide_twin_data}},
-  \code{\link{umx_swap_a_block}}, \code{\link{umx}}
+  \code{\link{umx_swap_a_block}},
+  \code{\link{umx_wide2long}}, \code{\link{umx}}
 }

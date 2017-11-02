@@ -4,13 +4,16 @@
 \alias{umx_names}
 \title{umx_names}
 \usage{
-umx_names(df, pattern = ".*", ignore.case = TRUE, perl = FALSE,
-  value = TRUE, fixed = FALSE, useBytes = FALSE, invert = FALSE)
+umx_names(df, pattern = ".*", replacement = NULL, ignore.case = TRUE,
+  perl = FALSE, value = TRUE, fixed = FALSE, useBytes = FALSE,
+  invert = FALSE)
 }
 \arguments{
-\item{df}{dataframe to get names from}
+\item{df}{dataframe from which to get names.}
 
-\item{pattern}{= "find.*"}
+\item{pattern}{used to filter-out only some names (supports wild card/regular expressions)}
+
+\item{replacement}{if not NULL, replaces the found string.}
 
 \item{ignore.case}{default = TRUE (opposite default to grep)}
 
@@ -32,17 +35,32 @@ Convenient equivalent of grep("fa[rl].*", names(df), value = TRUE, ignore.case =
 Can handle dataframe (uses names), model (uses parameter names), or a vector of strings.
 }
 \examples{
-umx_names(mtcars, "mpg") #"mpg" "cyl" "disp" "hp" "drat" "wt" "qsec" "vs" "am" "gear" "carb"
+umx_names(mtcars, "mpg") # just "mpg" matches
 umx_names(mtcars, "^d") # "disp", drat
 umx_names(mtcars, "r[ab]") # "drat", "carb"
+umx_names(mtcars, "mpg", replacement = "hello") # "mpg" replaced with "hello"
+\dontrun{
+# TODO umx_names: Add GFF examples to umx_names
+
+umx_names(nl, "1$")
+# "zyg" "sex1"  "age1"  "gff1"  "fc1"   "qol1"  "hap1"  "sat1"  "AD1" "SOMA1" "SOC1"  "THOU1"
+umx_names(nl, "2$")
+
+umx_names(nl, "b$")
+umx_names(nl, "s$")
+umx_names(nl, "[^12bs]$")
+# "divorce"
+}
 }
 \references{
 - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
+- \code{\link{grep}}, \code{\link{sub}}
+
 Other Utility Functions: \code{\link{qm}},
-  \code{\link{umx_find_object}}, \code{\link{umx_grep}},
-  \code{\link{umx_msg}}, \code{\link{umx_paste_names}},
-  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
-  \code{\link{umx_rename}}, \code{\link{umx}}
+  \code{\link{umx_find_object}}, \code{\link{umx_msg}},
+  \code{\link{umx_paste_names}}, \code{\link{umx_pb_note}},
+  \code{\link{umx_print}}, \code{\link{umx_rename}},
+  \code{\link{umx}}
 }

@@ -4,7 +4,7 @@
 \alias{plot.MxModel}
 \alias{plot}
 \alias{umxPlot}
-\title{Create a graphical figure from an MxModel}
+\title{Create and display a graphical path diagram for a model.}
 \usage{
 \method{plot}{MxModel}(x = NA, std = FALSE, digits = 2, file = "name",
   pathLabels = c("none", "labels", "both"), fixed = TRUE, means = TRUE,
@@ -35,22 +35,21 @@
 \item{...}{Optional parameters}
 }
 \description{
-Create graphical path diagrams from your OpenMx models!
+plot() produces SEM diagrams in graphviz format, and relies on \code{\link{DiagrammeR}} (or a 
+graphviz application) to create the image. 
+The commercial application \dQuote{OmniGraffle} is great for editing these images.
 }
 \details{
-plot() produces SEM diagrams in graphviz format, and relies on DiagrammeR (or a 
-graphviz application) to create the image. 
-The commercial application Omnigraffle is great for editing these images.
+On unix and windows, \code{\link{plot}}() will create a pdf and open it in your default pdf reader.
 
-On unix and windows, plot() will create a pdf and open it in your default pdf reader.
+\emph{Note:} DiagrammeR is supported out of the box.  By default, plots open in your browser.
 
-If you use umx_set_plot_format("graphviz"), files will open in with a graphviz helper.
-
-\emph{Note:} DiagrammeR is supported out of the box. If you use graphviz, we try and use that app, but YOU HAVE TO INSTALL IT!
+If you use umx_set_plot_format("graphviz"), they will open in a graphviz helper app (if installed).
+If you use graphviz, we try and use that app, but YOU HAVE TO INSTALL IT!
 On OS X we try and open an app: you may need to associate the \sQuote{.gv}
 extension with the graphviz app.
 Find the .gv file made by plot, get info (cmd-I), then choose \dQuote{open with}, 
-select Graphviz.app (or OmniGraffle professional),
+select graphviz.app (or OmniGraffle professional),
 then set \dQuote{change all}.
 }
 \examples{
@@ -74,37 +73,43 @@ plot(m1)
 Other Core Modelling Functions: \code{\link{umxDiagnose}},
   \code{\link{umxLatent}}, \code{\link{umxMatrix}},
   \code{\link{umxPath}}, \code{\link{umxRAM}},
-  \code{\link{umxReduce}}, \code{\link{umxRun}},
+  \code{\link{umxReduceACE}}, \code{\link{umxReduceGxE}},
+  \code{\link{umxRun}}, \code{\link{umxSuperModel}},
   \code{\link{umx}}
 
 Other Plotting functions: \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}}
+  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxPlotIP}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{confint.MxModel}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{logLik.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxExpCov}},
-  \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
+  \code{\link{umxCompare}}, \code{\link{umxConfint}},
+  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
+  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
   \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
   \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 
 Other Twin Modeling Functions: \code{\link{umxACESexLim}},
-  \code{\link{umxACEcov}}, \code{\link{umxACE}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
   \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
   \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
   \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
   \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxPlotIP}}, \code{\link{umxReduceACE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 }

@@ -38,15 +38,15 @@ x = umx_rename(x, replace = c(cyl = "cylinder"))
 # alternate style
 x = umx_rename(x, old = c("disp"), replace = c("displacement"))
 umx_check_names("displacement", data = x, die = TRUE)
-# This will warn that "disp" doesn't exist (anymore)
+# This will warn that "disp" does not exist (anymore)
 x = umx_rename(x, old = c("disp"), replace = c("displacement"))
 x = umx_rename(x, grep = "lacement", replace = "") # using grep to revert to disp
 umx_names(x, "^d") # all names begining with a d
 }
 \seealso{
 Other Utility Functions: \code{\link{qm}},
-  \code{\link{umx_find_object}}, \code{\link{umx_grep}},
-  \code{\link{umx_msg}}, \code{\link{umx_names}},
-  \code{\link{umx_paste_names}}, \code{\link{umx_pb_note}},
-  \code{\link{umx_print}}, \code{\link{umx}}
+  \code{\link{umx_find_object}}, \code{\link{umx_msg}},
+  \code{\link{umx_names}}, \code{\link{umx_paste_names}},
+  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
+  \code{\link{umx}}
 }

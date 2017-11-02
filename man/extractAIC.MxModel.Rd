@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_and_reporting.r
 \name{extractAIC.MxModel}
 \alias{extractAIC.MxModel}
-\title{extractAIC from MxModel}
+\title{Extract AIC from MxModel}
 \usage{
 \method{extractAIC}{MxModel}(fit, scale, k, ...)
 }
@@ -19,9 +19,8 @@
 - AIC value
 }
 \description{
-Returns the AIC for an OpenMx model
-helper function for \code{\link{logLik.MxModel}} (which enables AIC(model); logLik(model); BIC(model)
-Original Author: brandmaier
+Returns the AIC for an OpenMx model.
+Original Author: Brandmaier
 }
 \examples{
 require(umx)
@@ -41,20 +40,21 @@ AIC(m1)
 - \url{http://openmx.ssri.psu.edu/thread/931#comment-4858}
 }
 \seealso{
-- \code{\link{AIC}}, \code{\link{umxCompare}}, \code{\link{logLik.MxModel}}
+- \code{\link{AIC}}, \code{\link{umxCompare}}, \code{\link{logLik}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{confint.MxModel}}, \code{\link{loadings}},
-  \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
+  \code{\link{loadings}}, \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxExpCov}},
-  \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
+  \code{\link{umxCompare}}, \code{\link{umxConfint}},
+  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
+  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
   \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
   \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

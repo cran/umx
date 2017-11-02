@@ -2,66 +2,73 @@
 % Please edit documentation in R/build_run_modify.r
 \name{umxACE}
 \alias{umxACE}
-\title{umxACE: Build and run a 2-group Cholesky (uni- or multi-variate)}
+\title{Build and run a 2-group Cholesky twin model (uni-variate or multi-variate)}
 \usage{
-umxACE(name = "ACE", selDVs, selCovs = NULL, dzData, mzData,
-  suffix = NULL, dzAr = 0.5, dzCr = 1, addStd = TRUE, addCI = TRUE,
-  numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL, weightVar = NULL,
-  equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased",
-  "WLS"), autoRun = getOption("umx_auto_run"), sep = NULL)
+umxACE(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
+  "random"), dzData, mzData, suffix = NULL, dzAr = 0.5, dzCr = 1,
+  addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL,
+  boundDiag = 0, weightVar = NULL, equateMeans = TRUE, bVector = FALSE,
+  thresholds = c("deviationBased", "WLS"),
+  autoRun = getOption("umx_auto_run"), sep = NULL, optimizer = NULL,
+  intervals = FALSE)
 }
 \arguments{
-\item{name}{The name of the model (defaults to"ACE")}
+\item{name}{The name of the model (defaults to"ACE").}
 
-\item{selDVs}{The variables to include from the data}
+\item{selDVs}{The variables to include from the data: preferably, just "dep" not c("dep_T1", "dep_T2").}
 
 \item{selCovs}{(optional) covariates to include from the data (do not include suffix in names)}
 
-\item{dzData}{The DZ dataframe}
+\item{covMethod}{How to treat covariates: "fixed" (default) or "random".}
 
-\item{mzData}{The MZ dataframe}
+\item{dzData}{The DZ dataframe.}
 
-\item{suffix}{The suffix for twin 1 and twin 2, often "_T". If set, simplifies
-SelDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
+\item{mzData}{The MZ dataframe.}
 
-\item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating)}
+\item{suffix}{Allowed as a synonym for "suffix".}
 
-\item{dzCr}{The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model)}
+\item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating).}
 
-\item{addStd}{Whether to add the algebras to compute a std model (defaults to TRUE)}
+\item{dzCr}{The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).}
 
-\item{addCI}{Whether to add intervals to compute CIs (defaults to TRUE)}
+\item{addStd}{Whether to add the algebras to compute a std model (defaults to TRUE).}
 
-\item{numObsDZ}{= Number of DZ twins: Set this if you input covariance data}
+\item{addCI}{Whether to add intervals to compute CIs (defaults to TRUE).}
 
-\item{numObsMZ}{= Number of MZ twins: Set this if you input covariance data}
+\item{numObsDZ}{= Number of DZ twins: Set this if you input covariance data.}
 
-\item{boundDiag}{= (optional) numeric lbound for diagonal of the a, c, and e matrices, e.g. 0}
+\item{numObsMZ}{= Number of MZ twins: Set this if you input covariance data.}
 
-\item{weightVar}{= If provided, a vector objective will be used to weight the data. (default = NULL)}
+\item{boundDiag}{= Numeric lbound for diagonal of the a, c, and e matrices. Defaults to 0 since umx version 1.8}
 
-\item{equateMeans}{Whether to equate the means across twins (defaults to TRUE)}
+\item{weightVar}{= If provided, a vector objective will be used to weight the data. (default = NULL).}
 
-\item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE)}
+\item{equateMeans}{Whether to equate the means across twins (defaults to TRUE).}
 
-\item{thresholds}{How to implement ordinal thresholds c("deviationBased", "WLS")}
+\item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE).}
 
-\item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
+\item{thresholds}{How to implement ordinal thresholds c("deviationBased", "WLS").}
 
-\item{sep}{allowed as a synonym for "suffix"}
+\item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned).}
+
+\item{sep}{The separator in twin variable names, often "_T", e.g. "dep_T1". Simplifies selDVs.}
+
+\item{optimizer}{Optionally set the optimizer (default NULL does nothing).}
+
+\item{intervals}{Whether to run mxCI confidence intervals (default = FALSE)}
 }
 \value{
 - \code{\link{mxModel}} of subclass mxModel.ACE
 }
 \description{
-A common task in twin modelling involves using the genetic and environmental differences 
-between large numbers of pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
-to model the genetic and environmental structure of one, or, typically, several phenotypes
-(measured behaviors). umxACE supports modeling with the ACE Cholesky model, a core model 
-in behavior genetics (Cardon and Neale, 1996).
-}
-\details{
-This model decomposes phenotypic variance into Additive genetic,
+Implementing a core task in twin modeling, umxACE models the genetic and environmental
+structure of one or more phenotypes (measured variables) using the Cholesky ACE model
+(Cardon and Neale, 1996).
+
+Classical twin modeling uses the genetic and environmental differences 
+among pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together.
+
+The Cholesky decomposes this phenotypic variance into Additive genetic,
 unique environmental (E) and, optionally, either common or shared-environment (C) or 
 non-additive genetic effects (D). Scroll down to details for how to use the function, a figure
 and multiple examples.
@@ -73,8 +80,8 @@ from left to right, decomposes the variance in each component into successively 
 factors. The following figure shows how the ACE model appears as a path diagram:
 
 \figure{ACE.png}
-
-
+}
+\details{
 \strong{Data Input}
 The function flexibly accepts raw data, and also summary covariance data 
 (in which case the user must also supple numbers of observations for the two input data sets).
@@ -82,18 +89,18 @@ The function flexibly accepts raw data, and also summary covariance data
 \strong{Ordinal Data}
 In an important capability, the model transparently handles ordinal (binary or multi-level
 ordered factor data) inputs, and can handle mixtures of continuous, binary, and ordinal
-data in any combination. An experimental feature is under development to allow Tobit modelling. 
+data in any combination. An experimental feature is under development to allow Tobit modeling. 
 
 The function also supports weighting of individual data rows. In this case,
 the model is estimated for each row individually, then each row likelihood
-is multiplied by its weight, and these weighted likelyhoods summed to form
-the model-likelihood, which is to be minimised.
+is multiplied by its weight, and these weighted likelihoods summed to form
+the model-likelihood, which is to be minimized.
 This feature is used in the non-linear GxE model functions.
 
 \strong{Additional features}
 The umxACE function supports varying the DZ genetic association (defaulting to .5)
 to allow exploring assortative mating effects, as well as varying the DZ \dQuote{C} factor
-from 1 (the default for modelling family-level effects shared 100% by twins in a pair),
+from 1 (the default for modeling family-level effects shared 100% by twins in a pair),
 to .25 to model dominance effects.
 
 \emph{note}: Only one of C or D may be estimated simultaneously. This restriction reflects the lack
@@ -156,7 +163,7 @@ umxSummary(m1)
 # ===================
 require(umx)
 data(twinData)
-# Cut bmi column to form ordinal obesity variables
+# Cut BMI column to form ordinal obesity variables
 ordDVs = c("obese1", "obese2")
 selDVs = c("obese")
 obesityLevels = c('normal', 'overweight', 'obese')
@@ -178,7 +185,7 @@ umxSummary(m1)
 # ============================================
 data(twinData)
 selDVs = c("wt", "obese")
-# Cut bmi column to form ordinal obesity variables
+# Cut BMI column to form ordinal obesity variables
 ordDVs = c("obese1", "obese2")
 obesityLevels = c('normal', 'overweight', 'obese')
 cutPoints <- quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
@@ -233,13 +240,18 @@ plot(m1)
 }
 \seealso{
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
-  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxCF_SexLim}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxReduceACE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 }

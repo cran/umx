@@ -5,15 +5,17 @@
 \alias{umxReRun}
 \title{umxModify: Add, set, or drop model paths by label.}
 \usage{
-umxModify(lastFit, update = NULL, regex = FALSE, free = FALSE,
-  value = 0, freeToStart = NA, name = NULL, verbose = FALSE,
-  intervals = FALSE, comparison = FALSE, autoRun = TRUE,
-  dropList = "deprecated")
+umxModify(lastFit, update = NULL, master = NULL, regex = FALSE,
+  free = FALSE, value = 0, freeToStart = NA, name = NULL,
+  verbose = FALSE, intervals = FALSE, comparison = FALSE,
+  autoRun = TRUE, dropList = "deprecated")
 }
 \arguments{
 \item{lastFit}{The \code{\link{mxModel}} you wish to update and run.}
 
 \item{update}{What to update before re-running. Can be a list of labels, a regular expression (set regex = TRUE) or an object such as mxCI etc.}
+
+\item{master}{If you set master, then the labels in update will be equated (slaved) to those provided in master.}
 
 \item{regex}{Whether or not update is a regular expression (defaults to FALSE). If you provide a string, it
 over-rides the contents of update, and sets regex to TRUE.}
@@ -49,7 +51,7 @@ As an example, this one-liner drops a path labelled "Cs", and returns the update
 \code{fit2 = umxModify(fit1, update = "Cs", name = "newModelName", comparison = TRUE)}
 
 Regular expressions are a powerful feature: they let you drop collections of paths by matching patterns
-fit2 = umxModify(fit1, regex = "C[sr]", name = "drop_Cs_andCr", comparison = TRUE)
+fit2 = umxModify(fit1, regex = "C[sr]", name = "drop_Cs_and_Cr", comparison = TRUE)
 
 If you are just starting out, you might find it easier to be more explicit. Like this:
 

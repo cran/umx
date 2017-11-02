@@ -19,7 +19,7 @@ umxMatrix(name = NA, type = "Full", nrow = NA, ncol = NA,
 
 \item{ncol}{Number of columns in the matrix: Must be set}
 
-\item{free}{Whether cells are free (Defaul FALSE)}
+\item{free}{Whether cells are free (Default FALSE)}
 
 \item{values}{The values of the matrix (Default NA)}
 
@@ -33,7 +33,7 @@ umxMatrix(name = NA, type = "Full", nrow = NA, ncol = NA,
 
 \item{dimnames}{NA}
 
-\item{condenseSlots}{Whether to save memory by NULLing out unused matrix elements, like labels, ubnound etc. Default = getOption('mxCondenseMatrixSlots')}
+\item{condenseSlots}{Whether to save memory by NULLing out unused matrix elements, like labels, ubounds etc. Default = getOption('mxCondenseMatrixSlots')}
 
 \item{...}{Additional parameters (!! not currently supported by umxMatrix)}
 
@@ -61,6 +61,7 @@ umxMatrix("test", "Full", 1, 1)
 Other Core Modelling Functions: \code{\link{plot.MxModel}},
   \code{\link{umxDiagnose}}, \code{\link{umxLatent}},
   \code{\link{umxPath}}, \code{\link{umxRAM}},
-  \code{\link{umxReduce}}, \code{\link{umxRun}},
+  \code{\link{umxReduceACE}}, \code{\link{umxReduceGxE}},
+  \code{\link{umxRun}}, \code{\link{umxSuperModel}},
   \code{\link{umx}}
 }

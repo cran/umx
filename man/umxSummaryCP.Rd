@@ -3,11 +3,11 @@
 \name{umxSummaryCP}
 \alias{umxSummaryCP}
 \alias{umxSummary.MxModel.CP}
-\title{umxSummaryCP}
+\title{Present the results of a Common-pathway twin model in table and graphical form}
 \usage{
-umxSummaryCP(model, digits = 2, file = umx_set_auto_plot(silent = TRUE),
-  returnStd = FALSE, extended = FALSE, showRg = TRUE, comparison = NULL,
-  std = TRUE, CIs = FALSE, ...)
+umxSummaryCP(model, digits = 2, file = getOption("umx_auto_plot"),
+  returnStd = FALSE, extended = FALSE, showRg = FALSE,
+  comparison = NULL, std = TRUE, CIs = FALSE, ...)
 }
 \arguments{
 \item{model}{A fitted \code{\link{umxCP}} model to summarize}
@@ -20,7 +20,7 @@ umxSummaryCP(model, digits = 2, file = umx_set_auto_plot(silent = TRUE),
 
 \item{extended}{how much to report (FALSE)}
 
-\item{showRg}{Whether to show the genetic correlations (FALSE) (Not implemented!)}
+\item{showRg}{Whether to show the genetic correlations (FALSE)}
 
 \item{comparison}{Whether to run mxCompare on a comparison model (NULL)}
 
@@ -34,18 +34,16 @@ umxSummaryCP(model, digits = 2, file = umx_set_auto_plot(silent = TRUE),
 - optional \code{\link{mxModel}}
 }
 \description{
-Summarise a Commmon Pathway model, as returned by \code{\link{umxCP}}
+Summarizes a Common-Pathway model, as returned by \code{\link{umxCP}}
 }
 \examples{
 require(umx)
 data(twinData) 
-zygList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = zygList)
 twinData$wt1 = twinData$wt1/10 # help CSOLNP by putting wt on a similar scale to ht
 twinData$wt2 = twinData$wt2/10 # help CSOLNP by putting wt on a similar scale to ht
 selDVs = c("ht", "wt")
-mzData <- subset(twinData, ZYG == "MZFF", umx_paste_names(selDVs, "", 1:2))
-dzData <- subset(twinData, ZYG == "DZFF", umx_paste_names(selDVs, "", 1:2))
+mzData <- subset(twinData, zygosity == "MZFF", umx_paste_names(selDVs, "", 1:2))
+dzData <- subset(twinData, zygosity == "DZFF", umx_paste_names(selDVs, "", 1:2))
 m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = "")
 umxSummaryCP(m1, file = NA) # suppress plot creation with file
 umxSummary(m1, file = NA) # generic summary is the same
@@ -61,13 +59,18 @@ umxSummaryCP(m1, file = "Figure 3", std = TRUE)
 - \code{\link{umxCP}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxPlotIP}}, \code{\link{umxReduceACE}},
   \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryGxE}},
-  \code{\link{umxSummaryIP}}, \code{\link{umx}}
+  \code{\link{umxSummaryIP}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_wide2long}}, \code{\link{umx}},
+  \code{\link{xmu_twin_check}}
 }

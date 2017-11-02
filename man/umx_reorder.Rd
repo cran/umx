@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_reorder}
 \alias{umx_reorder}
-\title{umx_reorder}
+\title{Reorder or drop variables from a correlation/covariance matrix.}
 \usage{
 umx_reorder(old, newOrder)
 }
@@ -15,7 +15,7 @@ umx_reorder(old, newOrder)
 - the re-ordered/resized matrix
 }
 \description{
-Reorder the variables in a correlation matrix. Can also remove one or more variables from a matrix using this function
+Reorder the variables in a correlation matrix. Can also remove one or more variables from a matrix using this function.
 }
 \examples{
 oldMatrix = cov(mtcars)
@@ -32,7 +32,8 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
   \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_TwinData}},
   \code{\link{umx_make_bin_cont_pair_data}},
@@ -42,5 +43,5 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},
   \code{\link{umx_scale_wide_twin_data}},
   \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}},
-  \code{\link{umx}}
+  \code{\link{umx_wide2long}}, \code{\link{umx}}
 }

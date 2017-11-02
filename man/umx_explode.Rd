@@ -15,16 +15,17 @@ umx_explode(delimiter = character(), string)
 - a vector of strings, e.g. c("d", "o", "g")
 }
 \description{
-Takes a string and returns an array of delimtted strings (by default, each character)
+Takes a string and returns an array of delimited strings (by default, each character)
 }
 \examples{
 umx_explode("", "dog") # "d" "o" "g"
 umx_explode(" ", "cats and dogs") # [1] "cats" "and"  "dogs"
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://www.php.net/}
+- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://php.net/manual/en/function.explode.php}
 }
 \seealso{
 Other String Functions: \code{\link{umx_explode_twin_names}},
-  \code{\link{umx_rot}}, \code{\link{umx_trim}}
+  \code{\link{umx_grep}}, \code{\link{umx_rot}},
+  \code{\link{umx_trim}}
 }

@@ -15,7 +15,7 @@ umx_set_auto_run(autoRun = NA, silent = FALSE)
 - Current umx_auto_run setting
 }
 \description{
-Set autorun default for models like umxACE umxGxE etc
+Set autoRun default for models like umxACE umxGxE etc.
 }
 \examples{
 library(umx)
@@ -34,6 +34,7 @@ Other Get and set: \code{\link{umx_get_checkpoint}},
   \code{\link{umx_set_condensed_slots}},
   \code{\link{umx_set_cores}},
   \code{\link{umx_set_optimizer}},
+  \code{\link{umx_set_plot_file_suffix}},
   \code{\link{umx_set_plot_format}},
   \code{\link{umx_set_table_format}}
 }

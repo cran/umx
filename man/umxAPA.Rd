@@ -3,7 +3,7 @@
 \name{umxAPA}
 \alias{umxAPA}
 \alias{summaryAPA}
-\title{umxAPA}
+\title{Creates nicely formatted journal style summaries of lm models, p-values, data-frames etc.}
 \usage{
 umxAPA(obj, se = NULL, std = FALSE, digits = 2, use = "complete",
   min = 0.001, addComparison = NA, report = c("table", "html"),
@@ -32,9 +32,9 @@ umxAPA(obj, se = NULL, std = FALSE, digits = 2, use = "complete",
 - string
 }
 \description{
-This function creates object summaries used in reporting models, effects, and summarizing data.
+umxAPA creates summaries from a range of inputs. Use it for reporting lm models, effects, and summarizing data.
 
-1. Given an lm, will return a formated effect, including 95\% CI 
+1. Given an lm, will return a formatted effect, including 95\% CI 
 in square brackets, for one of the effects (specified by name in se). e.g.:
 \code{\link{umxAPA}}(m1, "wt") yields:
 
@@ -58,27 +58,48 @@ mean_sd \tab 6.19 (1.79) \tab  3.22 (0.98) \tab 20.09 (6.03)
 4. Given only a number as obj will be treated as a p-value as returned in APA format.
 }
 \examples{
-# Generate a formatted string describing a regression:  
+# =============================
+# = Report regression results =
+# =============================
 umxAPA(lm(mpg ~ wt + disp, mtcars))
 umxAPA(lm(mpg ~ wt + disp, mtcars), "disp")
-# Generate a summary table of correlations + Mean and SD:
+# ===============================================================
+# = Generate summary of dataframe: Correlations + Means and SDs =
+# ===============================================================
 umxAPA(mtcars[,1:3])
 umxAPA(mtcars[,1:3], digits = 3)
 umxAPA(mtcars[,1:3], lower = FALSE)
 umxAPA(mtcars[,1:3], report = "html")
-# Generate a CI string based on effect and se
+# ===============================================
+# = Generate a CI string based on effect and se =
+# ===============================================
 umxAPA(.4, .3)
-# format p-value
+# ====================
+# = Format a p-value =
+# ====================
 umxAPA(.0182613)
 umxAPA(.000182613)
+# ====================
+# = Format a p-value =
+# ====================
+data(twinData)
+selDVs = c("wt1", "wt2")
+mzData <- subset(twinData, zygosity \%in\% c("MZFF", "MZMM"))
+dzData <- subset(twinData, zygosity \%in\% c("DZFF", "DZMM", "DZOS"))
+x = cor.test(~ wt1 + wt2, data = mzData)
+umxAPA(x)
 }
 \references{
 - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 }
 \seealso{
 Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{umxGetParameters}}, \code{\link{umxSummary}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
-  \code{\link{umx_print}}, \code{\link{umx_show}},
-  \code{\link{umx_time}}, \code{\link{umx}}
+  \code{\link{tmx_is.identified}},
+  \code{\link{umxFactorScores}},
+  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
+  \code{\link{umxSummary}}, \code{\link{umx_APA_pval}},
+  \code{\link{umx_aggregate}},
+  \code{\link{umx_parameters}}, \code{\link{umx_print}},
+  \code{\link{umx_show}}, \code{\link{umx_time}},
+  \code{\link{umx}}
 }

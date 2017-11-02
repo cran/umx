@@ -16,16 +16,11 @@ umx_merge_CIs(m1, m2)
 }
 \description{
 if you compute some CIs in one model and some in another (copy of the same model, perhaps to get some parallelism),
-this is a simple helper to cludge them together.
+this is a simple helper to kludge them together.
 }
 \examples{
 \dontrun{
 umx_merge_CIs(m1, m2)
-# TODO remove duplicates...
-# TODO (check they are the same as well!)
-# TODO Support arbitrarily long list of input models with ...
-# TODO check the models are the same, with same fit
-# TODO check the models have CIs
 }
 }
 \references{
@@ -37,7 +32,8 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
   \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_TwinData}},
   \code{\link{umx_make_bin_cont_pair_data}},
@@ -46,5 +42,5 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},
   \code{\link{umx_scale_wide_twin_data}},
   \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}},
-  \code{\link{umx}}
+  \code{\link{umx_wide2long}}, \code{\link{umx}}
 }

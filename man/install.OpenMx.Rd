@@ -6,19 +6,28 @@
 \alias{umx_update_OpenMx}
 \title{Easily install the latest parallel/NPSOL enabled build of OpenMx.}
 \usage{
-install.OpenMx(loc = c("UVa", "latest", "travis"), url = NULL)
+install.OpenMx(loc = c("UVa", "travis", "CRAN", "open travis build page"),
+  url = NULL, lib, repos = getOption("repos"))
 }
 \arguments{
-\item{loc}{Where to install from: "UVa" (the default), "latest" (travis build),
-or open the "travis" list of builds.}
+\item{loc}{Which install to get: "UVa" (the default), "travis" (latest build),
+or open the travis list of builds on the web to view/pick a url.}
 
 \item{url}{A custom URL if you have/need one (probably not)}
+
+\item{lib}{Where to install the package}
+
+\item{repos}{Which repository to use (ignored currently)}
 }
 \value{
 -
 }
 \description{
-You can install from UVa, from travis latest, from a custom url, or open the list of travis builds.
+You can:
+1. Install from UVa (default: This is where we maintain binaries supporting parallel processing and NPSOL)
+2. Install the latest travis built (currently mac only)
+3. Install from a custom url.
+4. Open the list of travis builds in a browser.
 }
 \examples{
 \dontrun{
@@ -30,5 +39,7 @@ install.OpenMx()
 }
 \seealso{
 Other Miscellaneous Functions: \code{\link{umx_get_options}},
-  \code{\link{umx_open_CRAN_page}}, \code{\link{umx_pad}}
+  \code{\link{umx_is_class}}, \code{\link{umx_is_numeric}},
+  \code{\link{umx_open_CRAN_page}}, \code{\link{umx_pad}},
+  \code{\link{xmu_twin_check}}
 }

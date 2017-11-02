@@ -2,18 +2,18 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_make_TwinData}
 \alias{umx_make_TwinData}
-\title{Simulate twin data with control over A, C, E, and moderation}
+\title{Simulate twin data with control over A, C, and E parameters, as well as moderation of A.}
 \usage{
 umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL,
   EE = NULL, nThresh = NULL, sum2one = TRUE, varNames = "var",
-  seed = NULL, empirical = FALSE)
+  seed = NULL, empirical = FALSE, MZr = NULL, DZr = NULL)
 }
 \arguments{
 \item{nMZpairs}{Number of MZ pairs to simulate}
 
 \item{nDZpairs}{Number of DZ pairs to simulate (if omitted defaults to nMZpairs)}
 
-\item{AA}{value for A variance. Optionally a vecotr: c(avg=.5, min=0, max=1)}
+\item{AA}{value for A variance. Optionally a vector: c(avg= .5, min= 0, max= 1)}
 
 \item{CC}{value for C variance.}
 
@@ -28,6 +28,10 @@ umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL,
 \item{seed}{Allows user to set.seed() if wanting reproducible dataset}
 
 \item{empirical}{Passed to mvrnorm}
+
+\item{MZr}{If MZr and DZr are set (default = NULL), the function simply returns dataframes of the request size and correlation}
+
+\item{DZr}{NULL}
 }
 \value{
 \itemize{
@@ -35,9 +39,11 @@ umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL,
 }
 }
 \description{
-Makes MZ and DZ twin data, optionally with moderated A. y default, the three variance components must sum to 1.
+Makes MZ and DZ twin data, optionally with moderated A. By default, the three variance components must sum to 1.
 
 See examples for how to use this: it is pretty flexible.
+
+If you provide 2 varNames, they will be used. If you provide one, it will be expanded to var_T1 and var_T2
 
 Note, if you want a power calculator, see \href{http://www.people.vcu.edu/~bverhulst/power/power.html}{here}.
 You supply the number of pairs of each zygosity that wish to simulate (nMZpairs, nDZpairs), along with the values of AA, CC,and EE.
@@ -48,7 +54,7 @@ You can omit nDZpairs. You can also give any 2 of A, C, or E and the function wi
 
 \strong{Moderation}
 
-AA can take a list c(avg = .5, min = 0, max = 1). If specified will act like a moderated heritability, with average value avg, and swinging
+AA can take a list c(avg = .5, min = 0, max = 1). If specified will act like a moderated heritability, with average value = avg, and swinging
 down to min and up to max across 3 SDs of the moderator.
 }
 \examples{
@@ -94,6 +100,13 @@ str(x)
 tmp = umx_make_TwinData(100, AA = .6, CC = .2, nThresh = 3)
 str(tmp)
 umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
+
+
+# ========================
+# = Just use MZr and DZr =
+# ========================
+tmp = umx_make_TwinData(100, MZr = .86, DZr= .60, varNames = "IQ")
+umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
 }
 \references{
 \itemize{
@@ -106,7 +119,8 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}},
   \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
+  \code{\link{umx_cov2raw}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_bin_cont_pair_data}},
   \code{\link{umx_make_fake_data}},
@@ -115,5 +129,5 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_residualize}}, \code{\link{umx_round}},
   \code{\link{umx_scale_wide_twin_data}},
   \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}},
-  \code{\link{umx}}
+  \code{\link{umx_wide2long}}, \code{\link{umx}}
 }

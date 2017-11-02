@@ -2,12 +2,12 @@
 % Please edit documentation in R/build_run_modify.r
 \name{umxPath}
 \alias{umxPath}
-\title{umxPath: Easier (but powerful) specification of RAM paths.}
+\title{Easier (and powerful) specification of paths in SEM.}
 \usage{
 umxPath(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
-  unique.bivariate = NULL, unique.pairs = NULL, forms = NULL,
-  Cholesky = NULL, defn = NULL, means = NULL, v1m0 = NULL,
-  v.m. = NULL, v0m0 = NULL, v.m0 = NULL, fixedAt = NULL,
+  unique.bivariate = NULL, unique.pairs = NULL, fromEach = NULL,
+  forms = NULL, Cholesky = NULL, defn = NULL, means = NULL,
+  v1m0 = NULL, v.m. = NULL, v0m0 = NULL, v.m0 = NULL, fixedAt = NULL,
   freeAt = NULL, firstAt = NULL, connect = c("single", "all.pairs",
   "all.bivariate", "unique.pairs", "unique.bivariate"), arrows = 1,
   free = TRUE, values = NA, labels = NA, lbound = NA, ubound = NA,
@@ -16,23 +16,25 @@ umxPath(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 \arguments{
 \item{from}{either a source variable e.g "A" or c("A","B"), OR a sem-style path description, e.g. "A-> B" or "C <> B"}
 
-\item{to}{one or more target variables for one-headed paths, e.g "A" or c("A","B")}
+\item{to}{one or more target variables for one-headed paths, e.g "A" or c("A","B").}
 
-\item{with}{same as "to = vars, arrows = 2". nb: from, to= and var=  must be left empty (their default)}
+\item{with}{2-headed path from<--> with. to= and var=  must be left empty.}
 
-\item{var}{equivalent to setting "from = vars, arrows = 2". nb: from, to, and with must be left empty (their default)}
+\item{var}{equivalent to setting from and arrows = 2". nb: from, to, and with must be left empty.}
 
-\item{cov}{equivalent to setting "from = X, to = Y, arrows = 2". nb: from, to, and with must be left empty (their default)}
+\item{cov}{convenience equivalent to with for 2 variabales. nb: from, to, and with must be left empty.}
 
 \item{unique.bivariate}{equivalent to setting "connect = "unique.bivariate", arrows = 2".
 nb: from, to, and with must be left empty (their default)}
 
 \item{unique.pairs}{equivalent to setting "connect = "unique.pairs", arrows = 2" (don't use from, to, or with)}
 
-\item{forms}{Paired with from, this will build a formative variable. from vars form the latent.
-Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate among froms.}
+\item{fromEach}{Like all.bivariate, but with one head arrows. 'to' can be set.}
 
-\item{Cholesky}{Treat \strong{Cholesky} vars as latent and \strong{to} as measured, and connect as in an ACE model.}
+\item{forms}{Build a formative variable. 'from' variables form the latent.
+Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate between 'from' variables.}
+
+\item{Cholesky}{Treat \strong{Cholesky} variables as latent and \strong{to} as measured, and connect as in an ACE model.}
 
 \item{defn}{latent variable, var@0 mean fixed, with label-based as data source}
 
@@ -72,9 +74,9 @@ Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate
 - 1 or more \code{\link{mxPath}}s
 }
 \description{
-The goal of this function is to enable quck-to-write, quick-to-read, flexible path descriptions for RAM models in OpenMx.
+The goal of this function is to enable quick-to-write, quick-to-read, flexible path descriptions for RAM models in OpenMx.
 
-It introduces the following new words to our vocabulary for describing paths: \strong{with}, \strong{var}, \strong{cov}, \strong{means}, \strong{v1m0}, \strong{v.m0}, \strong{v.m.}, \strong{fixedAt}, \strong{freeAt}, \strong{firstAt}, \strong{unique.bivariate}, \strong{unique.pairs}, \strong{Cholesky}, \strong{defn}, \strong{forms}.
+It introduces the following new words to our vocabulary for describing paths: \strong{with}, \strong{var}, \strong{cov}, \strong{means}, \strong{v1m0}, \strong{v0m0,} \strong{v.m0}, \strong{v.m.}, \strong{fixedAt}, \strong{freeAt}, \strong{firstAt}, \strong{unique.bivariate}, \strong{unique.pairs}, \strong{fromEach}, \strong{Cholesky}, \strong{defn}, \strong{forms}.
 
 The new preposition \dQuote{with} means you no-longer need set arrows = 2 on covariances. Instead, you can say:
 
@@ -106,12 +108,18 @@ For free variance and means use:
 
 \code{umxPath(v.m. = "A")}
 
-umxPath exposes \dQuote{unique.bivariate} so you don't have to remember
+umxPath exposes \dQuote{unique.bivariate} and \dQuote{unique.pairs} so you don't have to remember
 how to fill in connect = in mxPath (you can still use connect if you wish).
 
-So, to create paths A<->B, B<->C, and A<->C, you would say:
+So, to create paths creates A<->A, B<->B, and A->B, you would say:
 
+\code{umxPath(unique.pairs = c('A',"B"))} 
+
+To create paths A<->B, B<->C, and A<->C, you would say:
 \code{umxPath(unique.bivariate = c('A',"B","C"))}
+
+\code{umxPath(fromEach = c('A',"B","C"))} Creates one-headed arrows on the all.bivariate pattern
+
 
 Setting up a latent trait, you can fix the loading of the first path with
 
@@ -119,11 +127,11 @@ Setting up a latent trait, you can fix the loading of the first path with
 
 This is equivalent to \code{mxPath(from = A, to = c(B,C,D), free = c(F, T, T), values = c(1, .5, .4))}.
 
-A new feature is the ability to create Cholesky-pattern connections:
+To create Cholesky-pattern connections:
 
 \code{umxPath(Cholesky = c("A1", "A2"), to c("var1", "var2"))}
 
-Finally, a feature, not implemented in this release, but intended for the future is
+Finally, not implemented in this release, but intended for the future is
 John Fox "sem"-package style notation,
 
 i.e., "A -> B; X <-> B; "
@@ -153,6 +161,7 @@ umxPath("A", with = "B", fixedAt = .5) # 2-head path fixed at .5
 umxPath("A", with = c("B", "C"), firstAt = 1) # first covariance fixed at 1
 umxPath(cov = c("A", "B"))  # Covariance A <-> B
 umxPath(unique.bivariate = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
+umxPath(fromEach = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
 umxPath(unique.pairs = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
 umxPath(Cholesky = c("A1","A2"), to = c("m1", "m2")) # Cholesky
 # A worked example
@@ -198,6 +207,7 @@ umxSummary(m1, show = "std")
 Other Core Modelling Functions: \code{\link{plot.MxModel}},
   \code{\link{umxDiagnose}}, \code{\link{umxLatent}},
   \code{\link{umxMatrix}}, \code{\link{umxRAM}},
-  \code{\link{umxReduce}}, \code{\link{umxRun}},
+  \code{\link{umxReduceACE}}, \code{\link{umxReduceGxE}},
+  \code{\link{umxRun}}, \code{\link{umxSuperModel}},
   \code{\link{umx}}
 }

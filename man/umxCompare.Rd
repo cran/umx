@@ -2,10 +2,10 @@
 % Please edit documentation in R/fit_and_reporting.r
 \name{umxCompare}
 \alias{umxCompare}
-\title{umxCompare}
+\title{Print a comparison table of one or more \code{\link{mxModel}}s, formatted nicely.}
 \usage{
 umxCompare(base = NULL, comparison = NULL, all = TRUE, digits = 3,
-  report = c("2", "1", "html"), file = "tmp.html")
+  report = c("markdown", "inline", "html", "report"), file = "tmp.html")
 }
 \arguments{
 \item{base}{The base \code{\link{mxModel}} for comparison}
@@ -14,24 +14,28 @@ umxCompare(base = NULL, comparison = NULL, all = TRUE, digits = 3,
 
 \item{all}{Whether to make all possible comparisons if there is more than one base model (defaults to T)}
 
-\item{digits}{rounding for p etc.}
+\item{digits}{rounding for p-values etc.}
 
-\item{report}{Optionally (report = "2") add sentences for inclusion in a paper, or ("html")
+\item{report}{"markdown" (default), "inline" (a sentence suitable for inclusion in a paper), or "html".
 create a web table and open your default browser.
 (handy for getting tables into Word, and other text systems!)}
 
-\item{file}{file to write html too if report=3 (defaults to "tmp.html")}
+\item{file}{file to write html too if report = "html" (defaults to "tmp.html")}
 }
 \description{
 umxCompare compares two or more \code{\link{mxModel}}s. It has several nice features:
+
 1. It supports direct control of rounding, and reports p-values rounded to APA style.
-2. It reports the table in your preferred markdown format (relies on knitr)
-3. The table columns are arranged in a method suitable for easy comparison for readers.
-4. By default, it also reports the output as an ENglish sentence suitable for a paper.
-5. It can open tabular output in a browser (report = "html")
-}
-\details{
-note: If you leave comparison blank, it will just give fit info for the base model
+
+2. It reports the table in your preferred format (default is markdown, options include latex)
+
+3. Table columns are arranged to make for easy comparison for readers.
+
+4. report = 'inline', will provide an English sentence suitable for a paper.
+
+5. report = "html" opens a web table in your browser to paste into a word processor.
+
+\emph{Note}: If you leave comparison blank, it will just give fit info for the base model
 }
 \examples{
 require(umx)
@@ -49,7 +53,7 @@ m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 m2 = umxModify(m1, update = "G_to_x2", name = "drop_path_2_x2")
 umxCompare(m1, m2)
 mxCompare(m1, m2) # what OpenMx gives by default
-umxCompare(m1, m2, report = "2") # Add English-sentence descriptions
+umxCompare(m1, m2, report = "report") # Add English-sentence descriptions
 \dontrun{
 umxCompare(m1, m2, report = "html") # Open table in browser
 }
@@ -65,16 +69,17 @@ umxCompare(c(m1, m2), c(m2, m3), all = TRUE)
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{confint.MxModel}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
+  \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxConfint}}, \code{\link{umxExpCov}},
+  \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACEv}},
   \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
   \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

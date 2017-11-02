@@ -22,7 +22,9 @@ umxValues(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE)
 For models to be estimated, it is essential that path values start at credible values. umxValues takes on that task for you.
 umxValues can set start values for the free parameters in both RAM and Matrix \code{\link{mxModel}}s. It can also take an mxMatrix as input.
 It tries to be smart in guessing starts from the values in your data and the model type.
-note: If you give it a numeric input, it will use obj as the mean, return a list of length n, with sd = sd
+}
+\details{
+\emph{note}: If you give umxValues a numeric input, it will use obj as the mean, and return a list of length n, with sd = sd.
 }
 \examples{
 require(umx)
@@ -41,7 +43,6 @@ m1 = umxValues(m1)
 mxEval(S, m1) # plausible variances
 umx_print(mxEval(S,m1), 3, zero.print = ".") # plausible variances
 umxValues(14, sd = 1, n = 10) # Return vector of length 10, with mean 14 and sd 1
-# todo: handle complex guided matrix value starts...
 }
 \references{
 - \url{http://www.github.com/tbates/umx}, \url{https://tbates.github.io}

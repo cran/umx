@@ -3,10 +3,10 @@
 \name{umxSummaryIP}
 \alias{umxSummaryIP}
 \alias{umxSummary.MxModel.IP}
-\title{umxSummaryIP}
+\title{Present the results of an independent-pathway twin model in table and graphical form}
 \usage{
 umxSummaryIP(model, digits = 2, file = getOption("umx_auto_plot"),
-  returnStd = FALSE, std = TRUE, showRg = TRUE, comparison = NULL,
+  returnStd = FALSE, std = TRUE, showRg = FALSE, comparison = NULL,
   CIs = FALSE, ...)
 }
 \arguments{
@@ -16,11 +16,11 @@ umxSummaryIP(model, digits = 2, file = getOption("umx_auto_plot"),
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
-\item{returnStd}{Whether to return the standardized form of the model (default = F)}
+\item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
 
 \item{std}{= Whether to show the standardized model (TRUE)}
 
-\item{showRg}{= whether to show the genetic correlations (F)}
+\item{showRg}{= whether to show the genetic correlations (FALSE)}
 
 \item{comparison}{Whether to run mxCompare on a comparison model (NULL)}
 
@@ -32,16 +32,14 @@ umxSummaryIP(model, digits = 2, file = getOption("umx_auto_plot"),
 - optional \code{\link{mxModel}}
 }
 \description{
-Summarise a Independent Pathway model, as returned by \code{\link{umxIP}}
+Summarize a Independent Pathway model, as returned by \code{\link{umxIP}}
 }
 \examples{
 require(umx)
 data(twinData)
-labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = labList)
 selDVs = c("ht1", "wt1", "ht2", "wt2")
-mzData <- subset(twinData, ZYG == "MZFF")
-dzData <- subset(twinData, ZYG == "DZFF")
+mzData <- subset(twinData, zygosity == "MZFF")
+dzData <- subset(twinData, zygosity == "DZFF")
 m1 = umxIP(selDVs = selDVs, dzData = dzData, mzData = mzData)
 m1 = umxRun(m1)
 umxSummaryIP(m1)
@@ -57,13 +55,18 @@ umxSummaryIP(m1, digits = 2, file = "Figure3", showRg = FALSE, CIs = TRUE);
 - \code{\link{umxIP}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxPlotIP}}, \code{\link{umxReduceACE}},
   \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umx}}
+  \code{\link{umxSummaryGxE}}, \code{\link{umx_long2wide}},
+  \code{\link{umx_wide2long}}, \code{\link{umx}},
+  \code{\link{xmu_twin_check}}
 }

@@ -1,10 +1,74 @@
-# umx 1.8.0 (Bleeding edge - expected to drop May 2017, R 3.4.0 (You Stupid Darkness)
-* *TIP*: umxAPA can format lots of things for you: from effects in lm -try it out!
-* Numerous fixes to umxACEcov, to the point where this is now usable multivariate!
-	* older versions worked with 1 DV only, and had poor start values
+# umx 1.9.0 (October 2017, R 3.4.2)
+* *TIP*: Filter paths by estimated size with `umx_parameters(model, "below", .1)`
+* *TIP*: `?umxRAM` has a sketch mode. just set `data` to a list of manifest variable names.
+* NEW `?umxACEv` Beta1: Variance component version of ACE. Hammer on it for Boulder workshop!
+* NEW: CIs in output tables!
+* NEW `?umxACEcov_fixed` Beta1: Handles main effects of covariates in the means of continuous variables.
+* NEW `umxModify` can now equate parameters (set master = ), update is slave set of labels.
+	* As a result, umxEquate now doesn't autoRun by default. Let me know if this is a pain.
+* NEW: Dataset on general family functioning in twins. ?GFF
+* NEW: `umxSuperModel` function to automate multiple-group model creation.
+* NEW: `optimiser` parameter for umxACE and other twin models: Set the optimizer in your model code!
+* NEW: `umx_is_numeric` boolean check if variables in a dataframe are numeric.
+* NEW: `umx_is_class` boolean check if variables in a dataframe match a desired class.
+* NEW: `umx_twin_check` internal function for common input checks.
+* NEW: `umx_set_plot_file_suffix(c("gv", "dot")` function (to control the filename used for figures)/
+* FIXED: `umxACE` was broken with large cov inputs h/t @NathanGillespie.
+* FIXED: `umxAggregate` now actually supports user functions as input...
+* BEGINNING: to add `umxACEv` variance components method
+* IMPROVED: `umxPath(Cholesky = )` method: supports labels, bounds, lbound at 0.
+* IMPROVED: `umxPath(Cholesky = )` method: return one statement instead of a list for clarity.
+* IMPROVED: `umxACE` and `umxReduce.ACE` run intervals
+* IMPROVED: `umxReduce` works better with `umxACE` models.
+* IMPROVED: `umxEFA` Supports `minManifests`.
+* IMPROVED: `umxEFA` Works better when returning a single factor score.
+* IMPROVED: `umxParameters` now supports `digits`.
+* IMPROVED: `umxSummary` "inline" reporting now includes AIC.
+* IMPROVED: `umx_aggregate` works  with factor input/
+	* umx_aggregate(sex_T1 ~ zyg_2grp, data = x)
+* IMPROVED: `umx_long2wide` can `passalong` variables.
+* IMPROVED: `umx_wide2long` much more powerful
+* IMPROVED: `umx_msg` supports dataframes
+* IMPROVED: `umxACE` gains ability to set plot format: `format = "graphviz" or "DiagrammeR"`
+* IMPROVED: `umx_set_auto_plot` take TRUE/FALSE as input.
+* IMPROVED: `umx_names`: added a replace option to munge the names
+* IMPROVED: `umxRAM` in "sketch mode" now plots models automatically.
+* IMPROVED: `install.OpenMx` from UVa, travis, or open travis build page.
+* IMPROVED: `umx_cor` automatically drops non-numeric columns.
+* IMPROVED: `umxCI` now supports setting interval and one- or two-sided type (h/t @Conor Dolan).
+* INTERNAL: Switch from `R2HTML` to `xtable`
+* MINOR: `umxParameters` now supports non-run models
+
+# umx 1.8.0 (September 2017, R 3.4.1 (Single Candle)
+* *TIP*: `?umxAPA` can format lots of things for you: from dataframes to p-values - try it out! Let me know what you'd like.
+* NEW `?umx_parameters` function, report parameter estimates, filtering by name and value!
+	* aliased as `umxParameters`
+	* `umx_parameters(model, "below", .1, "loading")`
+* NEW `?umx_long2wide`: Merges long data on famID, for an unlimited number of individuals in a family (twinIDs).
+* NEW `?umx_wide2long`: Takes a wide df (currently limited to 2 per family), & returns a long-format version.
+* FIXED: Removed superfluous print call from `umx_MakeTwinData`.
+* IMPROVED: html tables by switching to `xtable` (`R2HTML` is abandoned & strips decimals from AIC, ignores c(nsmall)...
+* IMPROVED: Plotting: Models now plot by default. Turn off with `umx_set_auto_plot(FALSE)`.
+* IMPROVED `forEach` option in `umxPath`. This is a one.headed version of "unique.pairs".
+* IMPROVED: Output: Twin models now show summary when `autoRun`.
+* IMPROVED: Graphics: `umxGxE` plot colors now use the universal ACE -> RGB scheme.
+* IMPROVED: `umxACEcov` Now tries to detect violations: Age and Sex are good examples.
+* IMPROVED: Stability: bound diag to 0 by default in `umxACE`.
+* IMPROVED: Stability: Stop on covs that are identical across twins in `umxACEcov`!
+* IMPROVED: Better default model name for  `umxACEcov`;
+* IMPROVED: More helpful default core list for `umx_check_parallel` (1 and n-1);
+* IMPROVED: Output formatting of times in `umx_check_parallel`
+* IMPROVED: `umxReduce` does a much better job reporting automated umxGxE model reduction.
+* IMPROVED: `umxAPA` handles lme models.
+* IMPROVED: `umxPrint` error messages.
+* DOCUMENT `logic.MxModel` now has an Rd page.
+* CHANGE: Showing Rg (genetic correlation) table is now off by default for umx twin model summaries.
+* CHANGE: `confint`. OpenMx now supports this, so I dropped it from umx (added alias to `umxConfint`).
+* CHANGE: `anova`. OpenMx now supports, this so I dropped it from `umx`.
+* CHANGE: `umx_fix_first_loadings` now skips latents with fixed variance.
 
 # umx 1.7.5 (April 04 2017, R 3.3.3 Another Canoe)
-* *TIP*: In twin models, mzData and dzData can contain unused variables: These will be removed for you!
+* *TIP*: In twin models, mzData and dzData can contain unused variables (umx removes them for you!)
 * NEW: umxVersion (returns mxVersion() + umx version).
 * IMPROVED: umxACE start values much better for univariate models.
 * NEWFEATURES: umx_make_TwinData
@@ -33,7 +97,7 @@
 	* BUGFIX: umx_cont_2_quantiles lowest threshold was empty
 * NEWFEATURES: `umxAPA` now reports mode for factor data
 * NEWFEATURES: Allow `umxLabel` to rename the returned model
-* IMPROVED: Allow sep as a synonym for suffix in uxmACE, umxCP, umxIP
+* IMPROVED: sep is now the preferred seperator (synonym for suffix in uxmACE, umxCP, umxIP)
 * DOCUMENT: Examples use zygosity string from twinData instead of numeric code
 * DOCUMENT: Fix typo in umxPath docs
 * INCOMPATIBLE: renamed umx_cov_diag to umx_var
@@ -58,6 +122,7 @@
 # umx 1.5.0 (December 2016)
 * Features + OpenMx 1.7.3 compatibility release
 * IMPROVED: umxRAM returns invisibly
+* IMPROVED: umx_aggregate can summarise multiple DVs in a table
 * IMPROVED: umx_aggregate can return a formatted table (kable = TRUE)
 * IMPROVED: umxAPA returns lower-triangle of data.frame correlations (by default)
 * REMOVED: umxSE now included in OpenMx 2.7.0!

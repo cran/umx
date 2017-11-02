@@ -4,9 +4,9 @@
 \alias{umxGxE}
 \title{umxGxE: Implements ACE models with moderation of paths, e.g. by SES.}
 \usage{
-umxGxE(name = "G_by_E", selDVs, selDefs, dzData, mzData, suffix = NULL,
+umxGxE(name = "G_by_E", selDVs, selDefs, dzData, mzData, sep = NULL,
   lboundACE = NA, lboundM = NA, dropMissingDef = FALSE,
-  autoRun = getOption("umx_auto_run"))
+  autoRun = getOption("umx_auto_run"), optimizer = NULL, suffix = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "G_by_E")}
@@ -19,7 +19,7 @@ umxGxE(name = "G_by_E", selDVs, selDefs, dzData, mzData, suffix = NULL,
 
 \item{mzData}{The MZ dataframe containing the Twin 1 and Twin 2 DV and moderator (4 columns)}
 
-\item{suffix}{Expand variable base names, i.e., "_T" makes var -> var_T1 and var_T2}
+\item{sep}{Expand variable base names, i.e., "_T" makes var -> var_T1 and var_T2}
 
 \item{lboundACE}{= numeric: If !is.na, then lbound the main effects at this value (default = NA)}
 
@@ -28,13 +28,17 @@ umxGxE(name = "G_by_E", selDVs, selDefs, dzData, mzData, suffix = NULL,
 \item{dropMissingDef}{Whether to automatically drop missing def var rows for the user (gives a warning) default = FALSE}
 
 \item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+
+\item{optimizer}{optionally set the optimizer (default NULL does nothing)}
+
+\item{suffix}{Use sep instead (deprecated)}
 }
 \value{
 - GxE \code{\link{mxModel}}
 }
 \description{
 Make a 2-group GxE (moderated ACE) model (Purcell, 2002). GxE interaction studies test the hypothesis that the strength
-of genetic (or environmental) influence varies parametrically (usuaally linear effects on path estimates)
+of genetic (or environmental) influence varies parametrically (usually linear effects on path estimates)
 across levels of environment. umxGxE allows detecting,
 testing, and visualizing  G xE (or C or E x E) interaction forms.
 }
@@ -52,27 +56,37 @@ selVars = c(selDVs, selDefs)
 mzData  = subset(twinData, zyg == 1, selVars)[1:80,]
 dzData  = subset(twinData, zyg == 3, selVars)[1:80,]
 m1 = umxGxE(selDVs = selDVs, selDefs = selDefs, 
-	dzData = dzData, mzData = mzData, dropMissing = TRUE)
+	dzData = dzData, mzData = mzData, dropMissingDef = TRUE)
 # Plot Moderation
 umxSummaryGxE(m1)
 umxSummary(m1, location = "topright")
 umxSummary(m1, separateGraphs = FALSE)
 m2 = umxModify(m1, "am_.*", regex=TRUE, comparison = TRUE)
+\dontrun{
+# The umxReduce function knows how to test all relevant hypotheses
+# about model reduction for GxE models, reporting these in a nice table.
+umxReduce(m1)
+}
 }
 \references{
 - Purcell, S. (2002). Variance components models for gene-environment interaction in twin analysis. \emph{Twin Research}, \strong{6}, 554-571. Retrieved from https://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=PubMed&dopt=Citation&list_uids=12573187
 }
 \seealso{
-- \code{\link{plot}()} and \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
+- \code{\link{plot}()}, \code{\link{umxSummary}}, \code{\link{umxReduce}}
 
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxIP}},
+  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxReduceACE}},
+  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 }

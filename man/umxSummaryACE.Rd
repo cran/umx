@@ -3,11 +3,11 @@
 \name{umxSummaryACE}
 \alias{umxSummaryACE}
 \alias{umxSummary.MxModel.ACE}
-\title{umxSummaryACE}
+\title{Shows a compact, publication-style, summary of a umx Cholesky ACE model}
 \usage{
 umxSummaryACE(model, digits = 2, file = getOption("umx_auto_plot"),
   comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE,
-  report = c("1", "2", "html"), returnStd = FALSE, extended = FALSE,
+  report = c("markdown", "html"), returnStd = FALSE, extended = FALSE,
   zero.print = ".", ...)
 }
 \arguments{
@@ -40,18 +40,28 @@ Defaults to NA = do not create plot output}
 - optional \code{\link{mxModel}}
 }
 \description{
-Summarise a Cholesky model returned by \\code{\link{umxACE}}.
+Summarize a fitted Cholesky model returned by \code{\link{umxACE}}. Can control digits, report comparison model fits,
+optionally show the Rg (genetic and environmental correlations), and show confidence intervals. the report parameter allows
+drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
+}
+\details{
+See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
+
+View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModel.ACE}}.
+
+View documentation on the IP model subclass here: \code{\link{umxSummary.MxModel.IP}}.
+
+View documentation on the CP model subclass here: \code{\link{umxSummary.MxModel.CP}}.
+
+View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModel.GxE}}.
 }
 \examples{
 require(umx)
 data(twinData)
-labList = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")
-twinData$ZYG = factor(twinData$zyg, levels = 1:5, labels = labList)
 selDVs = c("bmi1", "bmi2")
-mzData <- subset(twinData, ZYG == "MZFF", selDVs)
-dzData <- subset(twinData, ZYG == "DZFF", selDVs)
+mzData <- subset(twinData, zygosity == "MZFF")
+dzData <- subset(twinData, zygosity == "DZFF")
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-m1 = umxRun(m1)
 umxSummaryACE(m1)
 \dontrun{
 umxSummaryACE(m1, file = NA);
@@ -66,29 +76,33 @@ stdFit = umxSummaryACE(m1, returnStd = TRUE);
 - \code{\link{umxACE}}
 
 Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxACESexLim}},
+  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
+  \code{\link{umxPlotIP}}, \code{\link{umxReduceACE}},
   \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryCP}}, \code{\link{umxSummaryGxE}},
-  \code{\link{umxSummaryIP}}, \code{\link{umx}}
+  \code{\link{umxSummaryACEv}}, \code{\link{umxSummaryCP}},
+  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
+  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
+  \code{\link{umx}}, \code{\link{xmu_twin_check}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{confint.MxModel}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{logLik.MxModel}}, \code{\link{plot.MxModel}},
+  \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxExpCov}},
-  \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
+  \code{\link{umxCompare}}, \code{\link{umxConfint}},
+  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
+  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
+  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
   \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
   \code{\link{umxPlotIP}},
   \code{\link{umxSummary.MxModel}},
-  \code{\link{umx_drop_ok}},
+  \code{\link{umxSummaryACEv}}, \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

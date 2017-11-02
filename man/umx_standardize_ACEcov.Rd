@@ -4,10 +4,12 @@
 \alias{umx_standardize_ACEcov}
 \title{umx_standardize_ACEcov}
 \usage{
-umx_standardize_ACEcov(fit)
+umx_standardize_ACEcov(model, ...)
 }
 \arguments{
-\item{fit}{an \code{\link{umxACEcov}} model to standardize}
+\item{model}{an \code{\link{umxACEcov}} model to standardize}
+
+\item{...}{Other options}
 }
 \value{
 - Standardized \code{\link{umxACEcov}} model
@@ -20,7 +22,7 @@ require(umx)
 data(twinData)
 twinData$age1 = twinData$age2 = twinData$age
 selDVs  = c("bmi")
-selCovs = c("age")
+selCovs = c("ht") # silly example
 selVars = umx_paste_names(c(selDVs, selCovs), sep = "", suffixes= 1:2)
 mzData = subset(twinData, zyg == 1, selVars)[1:80, ]
 dzData = subset(twinData, zyg == 3, selVars)[1:80, ]
@@ -32,7 +34,8 @@ fit = umx_standardize_ACEcov(m1)
 - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
-Other zAdvanced Helpers: \code{\link{umx_standardize_ACE}},
+Other zAdvanced Helpers: \code{\link{umx_standardize_ACEv}},
+  \code{\link{umx_standardize_ACE}},
   \code{\link{umx_standardize_CP}},
   \code{\link{umx_standardize_IP}}, \code{\link{umx}}
 }
