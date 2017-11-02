@@ -1824,14 +1824,19 @@ umx_make_sql_from_excel <- function(theFile = "Finder") {
 #' @export
 #' @family Miscellaneous Utility Functions
 #' @examples
+#' \dontrun{
 #' umx_write_to_clipboard("hello")
+#' }
 umx_write_to_clipboard <- function(x) {
 	if(umx_check_OS("OSX")){
 		clipboard <- pipe("pbcopy", "w")
 		write.table(x, file = clipboard, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 		close(clipboard)
-	} else {
+	} else if (umx_check_OS("Windows")){
 		write.table(x, file = "clipboard", sep = "\t", col.names = NA)
+	}else{
+		message("clipboard not implemented for *nix - awaiting a reliable solution. See:
+		https://stackoverflow.com/questions/13438556/how-do-i-copy-and-paste-data-into-r-from-the-clipboard#13438558")
 	}
 }
 
