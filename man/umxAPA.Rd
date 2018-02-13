@@ -6,13 +6,15 @@
 \title{Creates nicely formatted journal style summaries of lm models, p-values, data-frames etc.}
 \usage{
 umxAPA(obj, se = NULL, std = FALSE, digits = 2, use = "complete",
-  min = 0.001, addComparison = NA, report = c("table", "html"),
-  lower = TRUE)
+  min = 0.001, addComparison = NA, report = c("markdown", "html"),
+  lower = TRUE, test = c("Chisq", "LRT", "Rao", "F", "Cp"))
 }
 \arguments{
 \item{obj}{Either a model (\link{lm}), a beta-value, or a data.frame}
 
-\item{se}{If b is a model, then name of the parameter of interest, else the SE (standard-error)}
+\item{se}{If b is a model, then se can be the name of the parameter of interest. Otherwise, SE will b
+used as a standard-error (returning a CI) OR if a CI is offered (vector of lower and upper)
+the SE will be returned.}
 
 \item{std}{If obj is an lm, whether to re-run the model on standardized data and report std betas}
 
@@ -24,9 +26,11 @@ umxAPA(obj, se = NULL, std = FALSE, digits = 2, use = "complete",
 
 \item{addComparison}{for a p-value, whether to add "</=" default (NA) adds "<" if necessary}
 
-\item{report}{what to return (default = markdown table). Use "html" to open a web page table}
+\item{report}{what to return (default = markdown table). Use "html" to open a web table.}
 
 \item{lower}{whether to report on the lower triangle of correlations for a data.frame (Default = TRUE)}
+
+\item{test}{for glm, which test to use to generate p-values options = "Chisq", "LRT", "Rao", "F", "Cp"}
 }
 \value{
 - string
@@ -58,48 +62,73 @@ mean_sd \tab 6.19 (1.79) \tab  3.22 (0.98) \tab 20.09 (6.03)
 4. Given only a number as obj will be treated as a p-value as returned in APA format.
 }
 \examples{
-# =============================
-# = Report regression results =
-# =============================
+
+# ========================================
+# = Report lm (regression/anova) results =
+# ========================================
 umxAPA(lm(mpg ~ wt + disp, mtcars))
 umxAPA(lm(mpg ~ wt + disp, mtcars), "disp")
-# ===============================================================
-# = Generate summary of dataframe: Correlations + Means and SDs =
-# ===============================================================
+
+# try an lme, glm, or htest
+df = mtcars
+df$mpg_thresh = 0
+df$mpg_thresh[df$mpg>16] = 1
+m1 = glm(mpg_thresh ~ wt + gear,data = df, family = binomial)
+umxAPA(m1)
+
+# A t-Test
+m1 = t.test(1:10, y = c(7:20))
+umxAPA(m1)
+
+# ========================================================
+# = Summarize a DATA FRAME: Correlations + Means and SDs =
+# ========================================================
 umxAPA(mtcars[,1:3])
 umxAPA(mtcars[,1:3], digits = 3)
 umxAPA(mtcars[,1:3], lower = FALSE)
+\dontrun{
 umxAPA(mtcars[,1:3], report = "html")
+}
+
 # ===============================================
-# = Generate a CI string based on effect and se =
+# = CONFIDENCE INTERVAL text from effect and se =
 # ===============================================
-umxAPA(.4, .3)
+umxAPA(.4, .3) # parameter 2 interpreted as SE
+# Input beta and CI, and back out the SE
+umxAPA(-0.030, c(-0.073, 0.013), digits = 3)
+
 # ====================
 # = Format a p-value =
 # ====================
 umxAPA(.0182613)
 umxAPA(.000182613)
-# ====================
-# = Format a p-value =
-# ====================
+
+# ========================
+# = report a correlation =
+# ========================
 data(twinData)
 selDVs = c("wt1", "wt2")
 mzData <- subset(twinData, zygosity \%in\% c("MZFF", "MZMM"))
 dzData <- subset(twinData, zygosity \%in\% c("DZFF", "DZMM", "DZOS"))
 x = cor.test(~ wt1 + wt2, data = mzData)
 umxAPA(x)
+
+# ========================
+# = report a correlation =
+# ========================
+data(twinData)
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+- \url{https://github.com/tbates/umx}, \url{https://my.ilstu.edu/~jhkahn/apastats.html}
 }
 \seealso{
 Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}},
+  \code{\link{tmx_is.identified}}, \code{\link{umxEval}},
   \code{\link{umxFactorScores}},
   \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umx_APA_pval}},
-  \code{\link{umx_aggregate}},
-  \code{\link{umx_parameters}}, \code{\link{umx_print}},
-  \code{\link{umx_show}}, \code{\link{umx_time}},
-  \code{\link{umx}}
+  \code{\link{umxSummary}}, \code{\link{umx_APA_model_CI}},
+  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
+  \code{\link{umx_names}}, \code{\link{umx_parameters}},
+  \code{\link{umx_print}}, \code{\link{umx_show}},
+  \code{\link{umx_time}}, \code{\link{umx}}
 }

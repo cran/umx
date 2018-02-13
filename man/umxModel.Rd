@@ -2,7 +2,7 @@
 % Please edit documentation in R/build_run_modify.r
 \name{umxModel}
 \alias{umxModel}
-\title{Catches users typing umxModel instead of umxRAM}
+\title{Catches users typing umxModel instead of umxRAM.}
 \usage{
 umxModel(...)
 }
@@ -26,7 +26,8 @@ umxModel()
 \seealso{
 - \code{\link{umxRAM}}, \code{\link{mxModel}}
 
-Other xmu internal not for end user: \code{\link{xmuHasSquareBrackets}},
+Other xmu internal not for end user: \code{\link{umx}},
+  \code{\link{xmuHasSquareBrackets}},
   \code{\link{xmuLabel_MATRIX_Model}},
   \code{\link{xmuLabel_Matrix}},
   \code{\link{xmuLabel_RAM_Model}}, \code{\link{xmuMI}},

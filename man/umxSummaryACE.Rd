@@ -62,7 +62,7 @@ selDVs = c("bmi1", "bmi2")
 mzData <- subset(twinData, zygosity == "MZFF")
 dzData <- subset(twinData, zygosity == "DZFF")
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-umxSummaryACE(m1)
+umxSummary(m1)
 \dontrun{
 umxSummaryACE(m1, file = NA);
 umxSummaryACE(m1, file = "name", std = TRUE)
@@ -75,34 +75,29 @@ stdFit = umxSummaryACE(m1, returnStd = TRUE);
 \seealso{
 - \code{\link{umxACE}}
 
-Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}},
-  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
-  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxReduceACE}},
-  \code{\link{umxSummaryACEcov}},
+Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
+  \code{\link{umxACEcov}}, \code{\link{umxACEv}},
+  \code{\link{umxACE}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_biv}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxSexLim}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}}, \code{\link{umxSummaryCP}},
+  \code{\link{umxSummaryGxE_biv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
-  \code{\link{umx}}, \code{\link{xmu_twin_check}}
+  \code{\link{umxSummarySexLim}}, \code{\link{umx}},
+  \code{\link{xmu_twin_check}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
   \code{\link{umxCompare}}, \code{\link{umxConfint}},
   \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}},
+  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
   \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}}, \code{\link{umx_drop_ok}},
+  \code{\link{umxSummaryACEv}},
+  \code{\link{umxSummarySexLim}},
+  \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

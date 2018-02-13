@@ -7,8 +7,7 @@
 umxACEcov(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NULL,
   dzAr = 0.5, dzCr = 1, addStd = TRUE, addCI = TRUE, boundDiag = 0,
   equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased",
-  "left_censored"), autoRun = getOption("umx_auto_run"), suffix = NULL,
-  optimizer = NULL)
+  "left_censored"), autoRun = getOption("umx_auto_run"), optimizer = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE").}
@@ -41,8 +40,6 @@ Used to expand selDVs into full column names, i.e., "dep" --> c("dep_T1", "dep_T
 \item{thresholds}{How to implement ordinal thresholds: c("deviationBased", "left_censored").}
 
 \item{autoRun}{Whether to run the model and return it, or just return it.}
-
-\item{suffix}{synonym for 'sep' (see above).}
 
 \item{optimizer}{optionally set the optimizer. Default (NULL) does nothing.}
 }
@@ -91,15 +88,15 @@ m1 = umxACEcov(selDVs = "bmi", selCovs = "age", dzData = dzData, mzData = mzData
 # = Use an lm-based age-residualisation approach instead =
 # ========================================================
 
-resid_data = umx_residualize("bmi", "age", suffixes=1:2, twinData)
+resid_data = umx_residualize("bmi", "age", suffixes = 1:2, twinData)
 mzData = subset(resid_data, zygosity == "MZFF")
 dzData = subset(resid_data, zygosity == "DZFF")
-m2     = umxACE("resid", selDVs = "bmi", dzData = dzData, mzData = mzData, suffix = "")
+m2     = umxACE("resid", selDVs = "bmi", dzData = dzData, mzData = mzData, sep = "")
 
 # Univariate BMI without covariate of age for comparison
 mzData = subset(twinData, zygosity == "MZFF")
 dzData = subset(twinData, zygosity == "DZFF")
-m3 = umxACE("raw_bmi", selDVs = "bmi", dzData = dzData, mzData = mzData, suffix = "")
+m3 = umxACE("raw_bmi", selDVs = "bmi", dzData = dzData, mzData = mzData, sep = "")
 
 \dontrun{
 # ===========================================================================
@@ -107,12 +104,12 @@ m3 = umxACE("raw_bmi", selDVs = "bmi", dzData = dzData, mzData = mzData, suffix 
 # ===========================================================================
 selDVs  = c("ht", "wt") # Set the DV
 selCovs = c("income") # Set the COV
-selVars = umx_paste_names(selDVs, covNames = selCovs, sep = "", suffixes = 1:2)
+selVars = umx_paste_names(selDVs, covNames = selCovs, sep = "", sep = 1:2)
 # 80 rows so example runs fast on CRAN
 mzData = subset(twinData, zygosity == "MZFF", selVars)[1:80, ]
 dzData = subset(twinData, zygosity == "DZFF", selVars)[1:80, ]
 m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs,
-   dzData = dzData, mzData = mzData, suffix = "", autoRun = TRUE
+   dzData = dzData, mzData = mzData, sep = "", autoRun = TRUE
 )
 }
 
@@ -127,19 +124,16 @@ to Handle Missing Covariate Data in Twin Research : With an Application to
 Educational Achievement Data. Behavior Genetics. doi:\url{https://doi.org/10.1007/s10519-015-9771-1}.
 }
 \seealso{
-Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}},
-  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEv}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxReduceACE}},
+Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_biv}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxSexLim}},
   \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
+  \code{\link{umxSummaryGxE_biv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
-  \code{\link{umx}}, \code{\link{xmu_twin_check}}
+  \code{\link{umxSummarySexLim}}, \code{\link{umx}},
+  \code{\link{xmu_twin_check}}
 }

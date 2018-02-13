@@ -27,9 +27,12 @@ x = umxVersion(); x
 - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 }
 \seealso{
-- \code{\link{packageVersion}}
+- \code{\link{packageVersion}}, \code{\link{install.OpenMx}}
 
-Other Miscellaneous Utility Functions: \code{\link{umx_grep}},
-  \code{\link{umx_make}},
-  \code{\link{umx_write_to_clipboard}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
+  \code{\link{qm}}, \code{\link{umxBrownie}},
+  \code{\link{umx_find_object}}, \code{\link{umx_make}},
+  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
+  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
+  \code{\link{umx}}
 }

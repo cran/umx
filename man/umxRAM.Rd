@@ -9,7 +9,7 @@ umxRAM(model = NA, ..., data = NULL, name = NA, comparison = TRUE,
   remove_unused_manifests = TRUE, showEstimates = c("none", "raw", "std",
   "both", "list of column names"), refModels = NULL,
   thresholds = c("deviationBased", "direct", "ignore", "left_censored"),
-  autoRun = getOption("umx_auto_run"), optimizer = NULL)
+  autoRun = getOption("umx_auto_run"), optimizer = NULL, verbose = FALSE)
 }
 \arguments{
 \item{model}{A model to update (or set to string to use as name for new model)}
@@ -39,6 +39,8 @@ umxRAM(model = NA, ..., data = NULL, name = NA, comparison = TRUE,
 \item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
 
 \item{optimizer}{optionally set the optimizer (default NULL does nothing)}
+
+\item{verbose}{Whether to tell the user what latents and manifests were created etc. (Default = FALSE)}
 }
 \value{
 - \code{\link{mxModel}}
@@ -130,10 +132,12 @@ m1 = umxRAM("ring around the rosey", data = c("B", "C"),
 # A->B, A->C, B->A, B->C, C->A, C->B
 umxPath(fromEach = c("A", "B", "C"))
 )
+
 m1 = umxRAM("fromEach with to", data = c("B", "C"),
 # B->D, C->D
 umxPath(fromEach = c("B", "C"), to= "D")
 )
+
 m1 = umxRAM("CFA_play", data = paste0("x", 1:4),
 	umxPath("g", to = paste0("x", 1:4)),
 	umxPath(var = paste0("x", 1:4)),
@@ -160,12 +164,10 @@ m1$S$labels
 - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
-\code{\link{umxPath}}, \code{\link{umxSummary}}, \code{\link{plot}}
+\code{\link{umxPath}}, \code{\link{umxSummary}}, \code{\link{plot}}, , \code{\link{umxSuperModel}}
 
 Other Core Modelling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxDiagnose}}, \code{\link{umxLatent}},
   \code{\link{umxMatrix}}, \code{\link{umxPath}},
-  \code{\link{umxReduceACE}}, \code{\link{umxReduceGxE}},
   \code{\link{umxRun}}, \code{\link{umxSuperModel}},
   \code{\link{umx}}
 }

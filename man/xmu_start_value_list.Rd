@@ -26,7 +26,7 @@ umxValues(100, 15)  # 1 start, with mean 100 and sd 15
 }
 \seealso{
 Other xmu internal not for end user: \code{\link{umxModel}},
-  \code{\link{xmuHasSquareBrackets}},
+  \code{\link{umx}}, \code{\link{xmuHasSquareBrackets}},
   \code{\link{xmuLabel_MATRIX_Model}},
   \code{\link{xmuLabel_Matrix}},
   \code{\link{xmuLabel_RAM_Model}}, \code{\link{xmuMI}},

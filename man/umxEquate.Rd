@@ -4,7 +4,7 @@
 \alias{umxEquate}
 \title{umxEquate: Equate two or more paths}
 \usage{
-umxEquate(model, master, slave, free = c(TRUE, FALSE, NA), verbose = TRUE,
+umxEquate(model, master, slave, free = c(TRUE, FALSE, NA), verbose = FALSE,
   name = NULL, autoRun = FALSE, comparison = TRUE)
 }
 \arguments{
@@ -41,27 +41,27 @@ value during model fitting.
 also equate one parameter to another by setting its label to the 
 "square bracket" address of the master, e.g. "a[r,c]".
 
-Tip: To find labels of free parameters use \code{\link{umxGetParameters}} with free = T
-Tip: To find labels by name, use the regex parameter of \code{\link{umxGetParameters}}
+\emph{Tip}: To find labels of free parameters use \code{\link{umxGetParameters}} 
+with free = TRUE
+
+\emph{Tip}: To find labels by name, use the regex parameter of \code{\link{umxGetParameters}}
 }
 \examples{
 require(umx)
 data(demoOneFactor)
 latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- mxModel("One Factor", type = "RAM", 
-	manifestVars = manifests, latentVars = latents, 
-	mxPath(from = latents, to = manifests),
-	mxPath(from = manifests, arrows = 2),
-	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
+	umxPath(latents, to = manifests),
+	umxPath(var = manifests),
+	umxPath(var = latents, fixedAt = 1)
 )
-m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 # By default, umxEquate just equates master and slave labels
 m2 = umxEquate(m1, master = "G_to_x1", slave = "G_to_x2", name = "Eq x1 x2 loadings")
 # Set autoRun = TRUE and comparison = TRUE to run and output a comparison
-m2 = umxEquate(m1, master = "G_to_x1", slave = "G_to_x2", name = "Eq x1 x2 loadings", 
-	     autoRun = TRUE, comparison = TRUE)
+m2 = umxEquate(m1, autoRun = TRUE, comparison = TRUE, name = "Eq x1 x2",
+	     master = "G_to_x1", slave = "G_to_x2"
+)
 }
 \references{
 - \url{http://www.github.com/tbates/umx}
@@ -71,7 +71,8 @@ m2 = umxEquate(m1, master = "G_to_x1", slave = "G_to_x2", name = "Eq x1 x2 loadi
 
 Other Modify or Compare Models: \code{\link{umxAdd1}},
   \code{\link{umxDrop1}}, \code{\link{umxFixAll}},
-  \code{\link{umxMI}}, \code{\link{umxSetParameters}},
+  \code{\link{umxMI}}, \code{\link{umxModify}},
+  \code{\link{umxSetParameters}},
   \code{\link{umxUnexplainedCausalNexus}},
   \code{\link{umx}}
 }

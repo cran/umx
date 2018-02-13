@@ -96,9 +96,11 @@ To specify a mean, you just say
 
 \code{umxPath(mean = "A")}, which is equivalent to \code{mxPath(from = "one", to = "A")}.
 
-To fix a path at a value, instead of to \code{mxPath(from = A, to = A, arrows = 2, free = FALSE, values = 1)} you can say:
+To fix a path at a value, you can say:
 
 \code{umxPath(var = "A", fixedAt = 1)} .
+
+instead of \code{mxPath(from = A, to = A, arrows = 2, free = FALSE, values = 1)} 
 
 The common task of creating a variable with variance fixed at 1 and mean at 0 is done thus:
 
@@ -121,9 +123,9 @@ To create paths A<->B, B<->C, and A<->C, you would say:
 \code{umxPath(fromEach = c('A',"B","C"))} Creates one-headed arrows on the all.bivariate pattern
 
 
-Setting up a latent trait, you can fix the loading of the first path with
+Setting up a latent trait, you can scale with a fixed first path thus:
 
-\code{mxPath(A, to = c(B,C,D), fixFirst = TRUE)}  
+\code{umxPath("A", to = c("B","C","D"),  firstAt = 1)}  
 
 This is equivalent to \code{mxPath(from = A, to = c(B,C,D), free = c(F, T, T), values = c(1, .5, .4))}.
 
@@ -144,8 +146,20 @@ There are also new terms to describe fixing values: \dQuote{fixedAt} and \dQuote
 Finally, (in future) it will allow sem-style \dQuote{A->B} string specification.
 }
 \examples{
+# A worked example
+data(demoOneFactor)
+latents  = c("G")
+manifests = names(demoOneFactor)
+myData = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+m1 <- umxRAM("One Factor", data = myData,
+	umxPath(latents, to = manifests),
+	umxPath(var = manifests),
+	umxPath(var = latents, fixedAt = 1.0)
+)
+umxSummary(m1, show = "std")
 require(umx)
-# Some examples of paths with umxPath
+#
+# Examples of each path type, and option
 umxPath("A", to = "B") # One-headed path from A to B
 umxPath("A", to = "B", fixedAt = 1) # same, with value fixed @1
 umxPath("A", to = c("B", "C"), fixedAt = 1:2) # same, with more than 1 value
@@ -164,21 +178,11 @@ umxPath(unique.bivariate = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, 
 umxPath(fromEach = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
 umxPath(unique.pairs = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
 umxPath(Cholesky = c("A1","A2"), to = c("m1", "m2")) # Cholesky
-# A worked example
-data(demoOneFactor)
-latents  = c("G")
-manifests = names(demoOneFactor)
-myData = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
-m1 <- umxRAM("One Factor", data = myData,
-	umxPath(latents, to = manifests),
-	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
-)
-umxSummary(m1, show = "std")
 
 # ====================
 # = Cholesky example =
 # ====================
+\dontrun{
 latents   = paste0("A", 1:3)
 manifests = names(demoOneFactor)
 myData = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
@@ -187,7 +191,7 @@ m1 <- umxRAM("Chol", data = myData,
 	umxPath(var = manifests),
 	umxPath(var = latents, fixedAt = 1.0)
 )
-umxSummary(m1, show = "std")
+}
 
 # The following NOT YET implemented!!
 # umxPath("A <-> B") # same path as above using a string
@@ -205,9 +209,7 @@ umxSummary(m1, show = "std")
 - \code{\link{mxPath}}
 
 Other Core Modelling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxDiagnose}}, \code{\link{umxLatent}},
   \code{\link{umxMatrix}}, \code{\link{umxRAM}},
-  \code{\link{umxReduceACE}}, \code{\link{umxReduceGxE}},
   \code{\link{umxRun}}, \code{\link{umxSuperModel}},
   \code{\link{umx}}
 }

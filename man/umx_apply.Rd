@@ -33,11 +33,10 @@ umx_apply(mean, by = "rows", of = mtcars[1:3,], na.rm = TRUE)
 \seealso{
 - \code{\link{umx_aggregate}}
 
-Other Misc: \code{\link{umxEval}},
-  \code{\link{umx_APA_model_CI}},
-  \code{\link{umx_add_variances}},
-  \code{\link{umx_default_option}},
-  \code{\link{umx_get_bracket_addresses}},
-  \code{\link{umx_object_as_str}},
-  \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
+Other Miscellaneous Stats Helpers: \code{\link{reliability}},
+  \code{\link{umxCov2cor}}, \code{\link{umxHetCor}},
+  \code{\link{umx_cor}}, \code{\link{umx_fun_mean_sd}},
+  \code{\link{umx_means}}, \code{\link{umx_r_test}},
+  \code{\link{umx_round}}, \code{\link{umx_var}},
+  \code{\link{umx}}
 }

@@ -4,11 +4,11 @@
 \alias{umxCP}
 \title{umxCP: Build and run a Common pathway twin model}
 \usage{
-umxCP(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1,
+umxCP(name = "CP", selDVs, dzData, mzData, sep = NULL, nFac = 1,
   freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE,
   correlatedA = FALSE, equateMeans = T, dzAr = 0.5, dzCr = 1,
   addStd = T, addCI = T, numObsDZ = NULL, numObsMZ = NULL,
-  autoRun = getOption("umx_auto_run"), optimizer = NULL, sep = NULL)
+  autoRun = getOption("umx_auto_run"), optimizer = NULL, suffix = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "CP")}
@@ -19,7 +19,7 @@ umxCP(name = "CP", selDVs, dzData, mzData, suffix = NULL, nFac = 1,
 
 \item{mzData}{The MZ dataframe}
 
-\item{suffix}{The suffix for twin 1 and twin 2, often "_T". If set, you can
+\item{sep}{The suffix for twin 1 and twin 2, often "_T". If set, selDVs is just the base variable names.
 omit suffixes in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{nFac}{How many common factors (default = 1)}
@@ -50,7 +50,7 @@ omit suffixes in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2")}
 
 \item{optimizer}{optionally set the optimizer (default NULL does nothing)}
 
-\item{sep}{allowed as a synonym for "suffix"}
+\item{suffix}{allowed as a synonym for sep (will be deprecated).}
 }
 \value{
 - \code{\link{mxModel}}
@@ -95,6 +95,23 @@ The umxCP function supports varying the DZ genetic association (defaulting to .5
 to allow exploring assortative mating effects, as well as varying the DZ \dQuote{C} factor
 from 1 (the default for modeling family-level effects shared 100% by twins in a pair),
 to .25 to model dominance effects.
+
+\strong{Matrices and Labels in CP model}
+A good way to see which matrices are used in umxCP is to run an example model and plot it.
+
+The diagonals of matrices as, cs, and es contain the path loadings specific to each variable. So labels relevant to modifying these are of the form "as_r1c1", "as_r2c2" etc.
+All the shared matrices are in the model "top". So to see the 'as' values, you can simply execute:
+
+m1$top#as$values
+
+The common-pathway loadings on the factors are in matrices a_cp, c_cp, e_cp.
+
+The common factors themselves are in the matrix cp_loadings (an nVar * 1 matrix)
+
+Less commonly-modified matrices are the mean matrix `expMean`. This has 1 row, and the columns are laid out for each variable for twin 1, followed by each variable for twin 2.
+So, in a model where the means for twin 1 and twin 2 had been equated (set = to T1), you could make them independent again with this script:
+
+m1$top$expMean$labels[1,4:6] =  c("expMean_r1c4", "expMean_r1c5", "expMean_r1c6")
 }
 \examples{
 require(umx)
@@ -118,19 +135,16 @@ umxCompare(m1, m2)
 \seealso{
 - \code{\link{umxACE}()} for more examples of twin modeling, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 
-Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}},
-  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCF_SexLim}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxReduceACE}},
+Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
+  \code{\link{umxACEcov}}, \code{\link{umxACEv}},
+  \code{\link{umxACE}}, \code{\link{umxGxE_biv}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxSexLim}},
   \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
+  \code{\link{umxSummaryGxE_biv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
-  \code{\link{umx}}, \code{\link{xmu_twin_check}}
+  \code{\link{umxSummarySexLim}}, \code{\link{umx}},
+  \code{\link{xmu_twin_check}}
 }

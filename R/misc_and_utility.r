@@ -29,11 +29,23 @@
 
 #' A recipe Easter-egg for umx
 #'
+#' @description
 #' How to cook steak.
+#' @details TODO: add info on skillet choice, meat-cuts. Keji book as reference.
 #'
 #' @return - 
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @seealso - \code{\link{omxBrownie}}
+#' @references - \url{https://github.com/tbates/umx}
+#' @examples
+#' umxBrownie()
 umxBrownie <- function() {
-		
+	message("Rub steak in a table spoon of salt, put it back in the fridge for 1-4 hours.\n",
+	"Place steak on a hot cast-iron skillet, with a little peanut oil.\n",
+	"Turn steaks as often as you wish. Control heat to below smoke point.\n",
+	"Remove and eat when internal temp reaches 130 \u0080 F.\n"
+	)
 }
 # ==============================
 # = Get and set OpenMx options =
@@ -44,7 +56,7 @@ umxBrownie <- function() {
 #'
 #' @return - message
 #' @export
-#' @family Miscellaneous Functions
+#' @family Get and set
 #' @examples
 #' umx_get_options()
 umx_get_options <- function() {
@@ -749,7 +761,7 @@ umx_is_endogenous <- function(model, manifests_only = TRUE) {
 #' @param values = List of values (default = NULL)
 #' @return - \code{\link{mxModel}}
 #' @export
-#' @family Misc
+#' @family Advanced Model Building Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
 #' @examples
 #' require(umx)
@@ -1101,7 +1113,7 @@ umx_factor <- umxFactor
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Miscellaneous Utility Functions
-#' @seealso - \code{\link{packageVersion}}
+#' @seealso - \code{\link{packageVersion}}, \code{\link{install.OpenMx}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' x = umxVersion(); x
@@ -1112,7 +1124,8 @@ umxVersion <- function (model = NULL, verbose = TRUE, return = "umx") {
         message(msg)
     }
 	OpenMx_vers = mxVersion(model = model, verbose = verbose)
-    
+	message('You can update OpenMx thusly:\ninstall.OpenMx(loc = c("UVa", "travis", "CRAN", "open travis build page")')
+	
 	if(return == "umx"){
 		invisible(umx_vers)
 	} else {
@@ -1128,7 +1141,7 @@ umxVersion <- function (model = NULL, verbose = TRUE, return = "umx") {
 #' @param package An \R package name.
 #' @return - 
 #' @export
-#' @family Miscellaneous Functions
+#' @family Miscellaneous Utility Functions
 #' @examples
 #' \dontrun{
 #' umx_open_CRAN_page("umx")
@@ -1148,7 +1161,7 @@ umx_open_CRAN_page <- function(package = "umx") {
 #' @param n The final length of each object.
 #' @return - padded object
 #' @export
-#' @family Miscellaneous Functions
+#' @family Data Functions
 #' @references - \url{https://github.com/kevinushey/Kmisc/tree/master/man}
 #' @examples
 #' umx_pad(1:3, 4)
@@ -1199,7 +1212,7 @@ umx_pad <- function(x, n) {
 #' @return - object
 #' @export
 #' @seealso - \code{\link{umx_aggregate}} 
-#' @family Misc
+#' @family Miscellaneous Stats Helpers
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' umx_apply(mean, mtcars, by = "columns")
@@ -1254,7 +1267,7 @@ umx_as_numeric <- function(df, force = FALSE) {
 #' @return - a list of objects matching the class and name
 #' @export
 #' @references - 
-#' @family Utility Functions
+#' @family Miscellaneous Utility Functions
 #' @examples
 #' \dontrun{
 #' umx_find_object("^m[0-9]") # mxModels beginning "m1" etc.
@@ -1289,7 +1302,7 @@ umx_find_object <- function(pattern = ".*", requiredClass = "MxModel") {
 #' @param test whether to report a "dry run" - and not actually change anything (defaults to false)
 #' @return - dataframe with columns renamed.
 #' @export
-#' @family Utility Functions
+#' @family Data Functions
 #' @examples
 #' # Re-name "cyl" to "cylinder"
 #' x = mtcars
@@ -1391,7 +1404,6 @@ umx_rename <- function(x, replace = NULL, old = NULL, grep = NULL, test = FALSE)
 #' @param useNames whether to search the names as well as the labels (for SPSS files with label metadata)
 #' @return - list of matched column names and/or labels
 #' @seealso - \code{\link{grep}} \code{\link{umx_names}} \code{\link{umx_aggregate}}
-#' @family Miscellaneous Utility Functions
 #' @family String Functions
 #' @export
 #' @references - \url{http://www.github.com/tbates/umx}
@@ -1568,7 +1580,7 @@ dl_from_dropbox <- function(x, key=NULL){
 #' @param body of the note
 #' @param auth_key optional authkey (default = NA, set to value of your key to store key.
 #' @export
-#' @family Utility Functions
+#' @family Miscellaneous Utility Functions
 #' @seealso - \code{\link{umx_msg}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
@@ -1727,11 +1739,11 @@ umx_check_OS <- function(target=c("OSX", "SunOS", "Linux", "Windows"), action = 
 	return(isTarget)
 }
 
-#' umx_make_sql_from_excel
+#' Convert an excel spreadsheet in a text file on sql statements.
 #'
 #' Unlikely to be of use to anyone but the package author :-)
 #' Read an xlsx file and convert into SQL insert statements (placed on the clipboard)
-#' On OS X, the function can access the current front-most Finder window.
+#' On MacOS, the function can access the current front-most Finder window.
 #' 
 #' The file name should be the name of the test.
 #' Columns should be headed:
@@ -1739,6 +1751,16 @@ umx_check_OS <- function(target=c("OSX", "SunOS", "Linux", "Windows"), action = 
 #' 
 #' The SQL fields generated are:
 #' itemID, test, native_item_number, item_text, direction, scale, format, author
+#' @details
+#' tabbedPlus: list scored from 0 to n-1
+#' 
+#' tabbedVertPlus: tabbed, but vertical lay-out 
+#' 
+#' number	2+2<itemBreak>min='0' max='7' step='1'
+#' 
+#' 5fm Scored 1-5, anchored: Strongly Disagree | Disagree  | Neutral | Agree | Strongly Agree
+#' 
+#' intro (not) scored, and sequenced as item 0
 #'
 #' @param theFile The xlsx file to read. If set to "Finder" (and you are on OS X) it will use the current front-most Finder window. If it is blank, a choose file dialog will be thrown.
 #' @family File Functions
@@ -1747,8 +1769,10 @@ umx_check_OS <- function(target=c("OSX", "SunOS", "Linux", "Windows"), action = 
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' \dontrun{
-#' # An example xcel spreadsheet
+#' # An example Excel spreadsheet
+#' # local uncompiled path
 #' fp = system.file("inst/extdata", "GQ6.sql.xlsx", package = "umx")
+#' # installed path
 #' fp = system.file("extdata", "GQ6.sql.xlsx", package = "umx")
 #' umx_open(fp)
 #' umx_make_sql_from_excel() # Using file selected in front-most Finder window
@@ -1762,9 +1786,10 @@ umx_make_sql_from_excel <- function(theFile = "Finder") {
 	} else if(theFile == "") {
 		theFile = file.choose(new = FALSE) ## choose a file
 		message("Using selected file:", theFile)
-	}else{
-		umx_check(file.exists(theFile), message= paste0("file:'", theFile, "' does not exist..."))
+	} else if(theFile == "make") {
+		theFile = system.file("extdata", "GQ6.sql.xlsx", package = "umx")
 	}
+	umx_check(file.exists(theFile), message= paste0("file:'", theFile, "' does not exist..."))
 	# remove suffix (i.e., .xlsx )
 	testName = umx_trim(basename(theFile), "\\..+$")
 	
@@ -1822,7 +1847,8 @@ umx_make_sql_from_excel <- function(theFile = "Finder") {
 #' @param x something to put on the clipboard
 #' @return - 
 #' @export
-#' @family Miscellaneous Utility Functions
+#' @family String Functions
+#' @family File Functions
 #' @examples
 #' \dontrun{
 #' umx_write_to_clipboard("hello")
@@ -1844,9 +1870,13 @@ umx_write_to_clipboard <- function(x) {
 # = Various Stats helpers =
 # =========================
 
-#' umx_cor
-#'
 #' Report correlations and their p-values
+#'
+#' For reporting correlations and their p-values in a compact table. Handles rounding, and skipping non-numeric columns.
+#' 
+#' To compute heterochoric correlations, see \code{\link{umxHetCor}}.
+#'
+#' note: The Hmisc package has a more robust function called rcorr 
 #'
 #' @param X a matrix or dataframe
 #' @param df the degrees of freedom for the test
@@ -1854,7 +1884,8 @@ umx_write_to_clipboard <- function(x) {
 #' @param digits rounding of answers
 #' @param type Unused argument for future directions
 #' @return - Matrix of correlations and p-values
-#' @family Stats Functions
+#' @seealso umxHetCor
+#' @family Miscellaneous Stats Helpers
 #' @export
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
@@ -1913,7 +1944,7 @@ rowMin <- function(df, na.rm= TRUE) {
 #' @param digits how many digits to round to (defaults to getOption("digits"))
 #' @param coerce whether to make the column numeric if it is not (default = FALSE)
 #' @return - \code{\link{mxModel}}
-#' @family Data Functions
+#' @family Miscellaneous Stats Helpers
 #' @export
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
@@ -1956,7 +1987,7 @@ specify_decimal <- function(x, k){
 #' @param S A square, symmetric, numeric covariance matrix
 #' @return - 
 #' @export
-#' @family Stats Functions
+#' @family Miscellaneous Stats Helpers
 #' @references - \url{https://cran.r-project.org/package=Rcmdr}
 #' @examples
 #' # treat vehicle aspects as items of a test
@@ -2018,20 +2049,21 @@ print.reliability <- function (x, digits = 4, ...){
 #'
 #' @description
 #' You can:
-#' 1. Install from UVa (default: This is where we maintain binaries supporting parallel processing and NPSOL)
-#' 2. Install the latest travis built (currently mac only)
-#' 3. Install from a custom url.
-#' 4. Open the list of travis builds in a browser.
+#' 1. Install from UVa (default: This is where we maintain binaries supporting parallel processing and NPSOL).
+#' 2. Install the latest travis built (currently MacOS only).
+#' 3. Install from CRAN.
+#' 4. Open the list of travis builds in a browser window.
 #'
-#' @aliases umx_install_OpenMx umx_update_OpenMx
+#' @aliases umx_update_OpenMx
 #' @param loc Which install to get: "UVa" (the default), "travis" (latest build),
 #' or open the travis list of builds on the web to view/pick a url.
-#' @param url A custom URL if you have/need one (probably not)
-#' @param repos Which repository to use (ignored currently)
-#' @param lib Where to install the package
+#' @param url A custom URL if you have/need one (probably not).
+#' @param repos Which repository to use (ignored currently).
+#' @param lib Where to install the package.
 #' @return - 
 #' @export
-#' @family Miscellaneous Functions
+#' @seealso \code{\link{umxVersion}}
+#' @family Miscellaneous Utility Functions
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' \dontrun{
@@ -2058,12 +2090,9 @@ install.OpenMx <- function(loc = c("UVa", "travis", "CRAN", "open travis build p
 }
 
 #' @export
-umx_install_OpenMx <- install.OpenMx
-
-#' @export
 umx_update_OpenMx <- install.OpenMx
 
-#' umx_make umx using devtools
+#' "make" the umx package using devtools: release to CRAN etc.
 #'
 #' @description
 #' Easily  run devtools "install", "release", "win", or "examples".
@@ -2093,10 +2122,12 @@ umx_make <- function(what = c("install", "examples", "check", "win", "rhub", "re
 		# http://r-pkgs.had.co.nz/check.html
 		devtools::check(pkg = pkg)		
 	} else if (what =="win"){
-		# devtools::make_win(pkg = pkg)
+		# old =
 		devtools::build_win(pkg = pkg)
+
+		# new =
+		# devtools::check_win_devel(pkg = pkg)
 	} else if (what =="rhub"){
-		# devtools::make_rhub(pkg = pkg)
 		# devtools::check_rhub(pkg = pkg)
 	} else if (what == "release"){
 		devtools::release(pkg = pkg, check = check)
@@ -2116,7 +2147,7 @@ umx_make <- function(what = c("install", "examples", "check", "win", "rhub", "re
 #' @param  x the thing you want to pretty-print
 #' @return - NULL
 #' @export
-#' @family Utility Functions
+#' @family Miscellaneous Utility Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' a = "brian"
@@ -2156,7 +2187,7 @@ umx_msg <- function(x) {
 #'
 #'     umx_paste_names(c("var1", "var2"), suffixes = c("_T1", "_T2"))
 #'
-#' *Note*: for quick typing, `vars` is an alias for `umx_paste_names`
+#' *Note*: for quick typing, `tvars` is an alias for `umx_paste_names`
 #'
 #' **Method 2**: *Use sep and a suffix vector.*
 #' 
@@ -2183,7 +2214,7 @@ umx_msg <- function(x) {
 #' @param prefix a string to pre=pend to each label, e.g c("mean_age", "mean_sex")
 #' @return - vector of suffixed var names, i.e., c("v1_T1", "v2_T1", "v1_T2", "v2_T2", "cov_T1", "cov_T2")
 #' @export
-#' @family Utility Functions
+#' @family String Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' # two styles doing the same thing: first is more general
@@ -2192,7 +2223,7 @@ umx_msg <- function(x) {
 #' varNames = umx_paste_names(c("N", "E", "O", "A", "C"), "_T", 1:2)
 #' umx_paste_names(c("IQ", "C"), cov = c("age"), sep = "_T", suffixes = 1:2)
 #' umx_paste_names(c("IQ", "C"), cov = c("age"), sep = "_T", prefix= "mean_")
-#' # For quick-typing, tVars is an alias for umx_paste_names
+#' # For quick-typing, tvars is an alias for umx_paste_names
 #' tvars(c("IQ", "C"), cov = c("age"), sep = "_T", prefix= "mean_")
 #' @md
 umx_paste_names <- function(varNames, sep = "", suffixes = 1:2, covNames = NULL, prefix = NULL) {
@@ -2222,7 +2253,7 @@ tvars <- umx_paste_names
 #' @param m1 first copy of the model
 #' @param m2 second copy of the model
 #' @return - \code{\link{mxModel}}
-#' @family Data Functions
+#' @family zAdvanced Helpers
 #' @export
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
@@ -2300,7 +2331,7 @@ umxCovData <- function(df, columns = NA, use = c("complete.obs", "everything", "
 #' @param x something that cov2cor can work on (matrix, df, etc.)
 #' @return - a correlation matrix
 #' @export
-#' @family Stats Functions
+#' @family Miscellaneous Stats Helpers
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' umxCov2cor(cov(mtcars))
@@ -2552,14 +2583,18 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 #' @return - A dataframe of text
 #' @export
 #' @seealso \code{\link{umx_set_table_format}} 
-#' @family Utility Functions
+#' @family Miscellaneous Utility Functions
 #' @family Reporting Functions
 #' @examples
 #' umx_print(mtcars[1:10,], digits = 2, zero.print = ".", justify = "left")
+#' \dontrun{
 #' umx_print(mtcars[1:10,], file = "tmp.html")
+#' }
 umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print = "", zero.print = "0", justify = "none", file = c(NA, "tmp.html"), suppress = NULL, ...){
 	# depends on R2HTML::HTML and knitr::kable
-	if(class(x)!="data.frame"){
+	if(class(x)=="character"){
+		print(x)
+	}else if(class(x)!="data.frame"){
 		if(class(x)=="matrix"){
 			x = data.frame(x)
 		} else {
@@ -2567,6 +2602,7 @@ umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print 
 			return()
 		}
 	}
+
 	if(dim(x)[1] == 0){
 		return()
 	} else {
@@ -2699,7 +2735,7 @@ umx_check <- function(boolean.test, action = c("stop", "warning", "message"), me
 #' @param message Some helpful text to append when dieing.
 #' @family Test
 #' @export
-#' @family Building Functions
+#' @family Check or test
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' require(umx)
@@ -2764,26 +2800,28 @@ umx_check_names <- function(namesNeeded, data = NA, die = TRUE, no_others = FALS
 #' Pass in any dataframe and get variances despite some non-numeric columns.
 #' Cells involving these non-numeric columns are set to ordVar (default = 1).
 #'
-#' @param df a dataframe of raw data from which to get variances.
+#' @param df A dataframe of raw data from which to get variances.
 #' @param ordVar The value to return at any ordinal columns (defaults to 1).
 #' @param format to return: options are c("full", "diag", "lower"). Defaults to full, but this is not implemented yet.
-#' @param use passed to \code{\link{cov}} - defaults to "complete.obs" (see param default for other options).
+#' @param use Passed to \code{\link{cov}} - defaults to "complete.obs" (see param default for other options).
+#' @param digits Ignored if NULL. Set for easy printing.
+#' @param strict Whether to allow non-ordered factors to be processed (default = FALSE (no)).
 #' @return - \code{\link{mxModel}}
 #' @export
-#' @family Building Functions
+#' @family Miscellaneous Stats Helpers
 #' @references - \url{http://tbates.github.io}
 #' @examples
 #' tmp     = mtcars[,1:4]
 #' tmp$cyl = ordered(mtcars$cyl) # ordered factor
 #' tmp$hp  = ordered(mtcars$hp)  # binary factor
 #' umx_var(tmp, format = "diag", ordVar = 1, use = "pair")
-#' tmp2 = tmp[, c(1,3)]
+#' tmp2 = tmp[, c(1, 3)]
 #' umx_var(tmp2, format = "diag")
 #' umx_var(tmp2, format = "full")
-umx_var <- function(df, ordVar = 1, format = c("full", "diag", "lower"), use = c("complete.obs", "pairwise.complete.obs", "everything", "all.obs", "na.or.complete")){
+umx_var <- function(df, ordVar = 1, format = c("full", "diag", "lower"), use = c("complete.obs", "pairwise.complete.obs", "everything", "all.obs", "na.or.complete"), digits = NULL, strict = TRUE){
 	format = match.arg(format)
 	use    = match.arg(use)
-	if(any(umx_is_ordered(df))){
+	if(any(umx_is_ordered(df, strict = strict))){
 		nCol = dim(df)[2]
 		out  = diag(ordVar, nCol, nCol)
 		cont = umx_is_ordered(df, continuous.only = TRUE)
@@ -2808,7 +2846,11 @@ umx_var <- function(df, ordVar = 1, format = c("full", "diag", "lower"), use = c
 		 # "lower"
 			out = diag(full)
 		}
-		return(out)
+		if(!is.null(digits)){
+			return(round(out, digits))
+		} else {
+			return(out)
+		}
 	}
 }
 
@@ -2822,7 +2864,7 @@ umx_var <- function(df, ordVar = 1, format = c("full", "diag", "lower"), use = c
 #' @param na.rm passed to mean - defaults to "na.rm"
 #' @return - frame of means
 #' @export
-#' @family Stats Functions
+#' @family Miscellaneous Stats Helpers
 #' @examples
 #' tmp = mtcars[,1:4]
 #' tmp$cyl = ordered(mtcars$cyl) # ordered factor
@@ -3439,7 +3481,7 @@ umx_has_square_brackets <- function (input) {
 #' @param dimnames of the returned algebra
 #' @return - \code{\link{mxAlgebra}}
 #' @export
-#' @family Misc
+#' @family Advanced Model Building Functions
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' \dontrun{
@@ -3456,7 +3498,7 @@ umx_string_to_algebra <- function(algString, name = NA, dimnames = NA) {
 #' @param x an object
 #' @return - name as string
 #' @export
-#' @family Misc
+#' @family String Functions
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' umx_object_as_str(mtcars) # "mtcars"
@@ -3475,7 +3517,7 @@ umx_object_as_str<- function(x) {
 #' @param show Whether to show??? (default = FALSE)
 #' @return - an openmx algebra (formula)
 #' @export
-#' @family Misc
+#' @family Reporting Functions
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' m1 = mxModel("fit",
@@ -3559,7 +3601,7 @@ umx_scale <- function(df, varsToScale = NULL, coerce = FALSE, attr = FALSE, verb
 #' @param all Whether to return a single all() Boolean or each column individually.
 #' @return - Boolean or Boolean vector
 #' @export
-#' @family Miscellaneous Functions
+#' @family Check or test
 #' @seealso - \code{\link{umx_is_numeric}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
@@ -3602,7 +3644,7 @@ umx_is_class <- function(df, classes, all = TRUE){
 #' @param all Whether to return a single all() Boolean or each column individually.
 #' @return - Boolean or Boolean vector
 #' @export
-#' @family Miscellaneous Functions
+#' @family Check or test
 #' @seealso - \code{\link{umx_is_class}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
@@ -3651,7 +3693,7 @@ umx_is_numeric <- function(df, all = TRUE){
 #' @param data The dataframe containing all the variables
 #' @return - dataframe with var residualized in place (i.e under its original column name)
 #' @export
-#' @family Data Functions
+#' @family Twin Data functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' # Residualize mpg on cylinders and displacement
@@ -3758,7 +3800,7 @@ umx_residualize <- function(var, covs = NULL, suffixes = NULL, data){
 #' @return - new dataframe with variables scaled in place
 #' @export
 #' @seealso umx_scale
-#' @family Data Functions
+#' @family Twin Data functions
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' data(twinData) 
@@ -3796,7 +3838,7 @@ umx_scale_wide_twin_data <- function(varsToScale, suffix, data) {
 #' @param check Whether to check that single items are in the list. Set false to accept abbreviations (defaults to TRUE) 
 #' @return - one validated option
 #' @export
-#' @family Misc
+#' @family Get and set
 #' @seealso - \code{\link{match.arg}}
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
@@ -3847,7 +3889,7 @@ umx_match.arg <- umx_default_option
 #' @param ... the components of your matrix
 #' @param rowMarker mark the end of each row
 #' @return - matrix
-#' @family Utility Functions
+#' @family Miscellaneous Utility Functions
 #' @references \url{http://www.sumsar.net/blog/2014/03/a-hack-to-create-matrices-in-R-matlab-style}
 #' @export
 #' @examples
@@ -3963,7 +4005,7 @@ umx_explode <- function(delimiter = character(), string) {
 #' @return - vector of matches
 #' @export
 #' @seealso - \code{\link{grep}}, \code{\link{sub}}
-#' @family Utility Functions
+#' @family Reporting Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' umx_names(mtcars, "mpg") # just "mpg" matches
@@ -4068,8 +4110,7 @@ umx_rot <- function(vec){
 #' @param passalong = Variables you wish to pass-through (keep, even though not twin vars)
 #' @return - dataframe in wide format
 #' @export
-#' @family Data Functions
-#' @family Twin Modeling Functions
+#' @family Twin Data functions
 #' @seealso - \code{\link{merge}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
@@ -4169,8 +4210,7 @@ umx_long2wide <- function(data, famID = NA, twinID = NA, zygosity = NA, vars2kee
 #' @param verbose Report the non-twin and twin columns (default = FALSE).
 #' @return - long-format dataframe
 #' @export
-#' @family Data Functions
-#' @family Twin Modeling Functions
+#' @family Twin Data functions
 #' @examples
 #' long = umx_wide2long(data = twinData, sep = "")
 #' long = umx_wide2long(data = twinData, sep = "", verbose = TRUE)
@@ -4222,9 +4262,69 @@ umx_wide2long <- function(data, sep = "_T", verbose = FALSE) {
 	return(ld)
 }
 
+#' Stack data like stack() does, with more control.
+#'
+#' @description
+#' Operates like \code{\link{stack}}, but can preserve ("passalong") other variables on each row,
+#' and allows the user control over the values and group column names for ease of use.
+#'
+#' @param x a dataframe containing twin data.
+#' @param select The variables to stack (wide 2 long)
+#' @param passalong Variables to preserve on each row (e.g. age)
+#' @param valuesName The name for the new stacked column (default = "values")
+#' @param groupName The name for the column containing the grouping variable (default = "ind")
+#' @return - long-format dataframe
+#' @export
+#' @family Data Functions
+#' @examples
+#' 
+#' # Base-R stack function
+#' df = stack(mtcars, select = c("disp", "hp"), drop=FALSE)
+#' 
+#' # umx_stack, with additional variables passed along 
+#' df= umx_stack(mtcars, select= c("disp", "hp"), passalong= "mpg")
+#' str(df) # ind is a factor, with levels select
+#' ggplot2::qplot(x = mpg, y= values, color=ind, data = df)
+#' df= umx_stack(mtcars, select= c("disp", "hp"), passalong= "mpg")
+#' ggplot2::qplot(x = mpg, y= values, group="ind", data = df)
+umx_stack <- function(x, select, passalong, valuesName = "values", groupName = "ind") {
+	# TODO: rewrite to create the full size in one go, and slot in blocks
+	# initialize new dataframe
+	df = x[c(passalong, select[1])]
+	# rename
+	names(df)= c(passalong, valuesName)
+	# stack remaining columns
+	for(thisVar in select[2:length(select)]) {
+		tmp = x[c(passalong, thisVar)]
+		names(tmp)= c(passalong, valuesName)
+		df = rbind(df, tmp)
+	}
+	# Add column indicating origin of each value
+	df[,groupName]= factor(rep(select, each = dim(x)[1]))
+	return(df)
+}
+
+#' Like the php array_shift function: shifts an item off the beginning of a list
+#' 
+#' Returns x[1]. Has the SIDE EFFECT of assigning x to x[2:end] in the container environment.
+#'
+#' @param x the vector to shift
+#' @return - first item of x
+#' @export
+#' @family Data Functions
+#' @examples
+#' x = c("Alice", "Bob", "Carol")
+#' umx_array_shift(x) # returns "Alice"
+#' x # now only 2 items (altered in containing environment)
+umx_array_shift <- function(x){
+	item1 = x[1]
+	x <<- x[2:length(x)]
+	return(item1)
+}
+
 #' umx_swap_a_block
 #'
-#' Swap a block of rows of a dataset between two lists variables (typically twin 1 and twin2)
+#' Swap a block of rows of a dataset between two sets of variables (typically twin 1 and twin 2)
 #'
 #' @param theData a data frame to swap within
 #' @param rowSelector rows to swap amongst columns
@@ -4272,26 +4372,40 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 #' You can omit nDZpairs. You can also give any 2 of A, C, or E and the function will add the value which makes the ACE total = 1.
 #' 
 #' **Moderation**
-#' 
+#' **Univariate GxE Data**
 #' AA can take a list c(avg = .5, min = 0, max = 1). If specified will act like a moderated heritability, with average value = avg, and swinging
 #' down to min and up to max across 3 SDs of the moderator.
 #'
+#' **Bivariate GxE Data**
+#' 
+#' To simulate data with a moderator that is not shared by both twins.
+#' Moderated heritability is specified via the bivariate relationship (AA, CC, EE) and two moderators in each component.
+#' AA   = list(a11 = .4, a12 = .1, a22 = .15)
+#' CC   = list(c11 = .2, c12 = .1, c22 = .10)
+#' EE   = list(e11 = .4, e12 = .3, e22 = .25)
+#' Amod = list(Beta_a1 = .025, Beta_a2 = .025)
+#' Cmod = list(Beta_c1 = .025, Beta_c2 = .025)
+#' Emod = list(Beta_e1 = .025, Beta_e2 = .025)
 #'
 #' @param nMZpairs Number of MZ pairs to simulate
 #' @param nDZpairs Number of DZ pairs to simulate (if omitted defaults to nMZpairs)
-#' @param AA value for A variance. Optionally a vector: c(avg= .5, min= 0, max= 1)
+#' @param AA value for A variance. NOTE: See options for use in GxE and Bivariate GxE
 #' @param CC value for C variance.
 #' @param EE value for E variance.
-#' @param nThresh  If supplied, use as thresholds and return mxFactor output? (default is not too)
-#' @param sum2one  Whether to enforce AA + CC + EE summing the one (default = TRUE)
+#' @param MZr If MZr and DZr are set (default = NULL), the function simply returns dataframes of the request size and correlation
+#' @param DZr NULL
+#' @param Amod Used for Bivariate GxE data: list(Beta_a1 = .025, Beta_a2 = .025)
+#' @param Cmod Used for Bivariate GxE data: list(Beta_c1 = .025, Beta_c2 = .025)
+#' @param Emod Used for Bivariate GxE data: list(Beta_e1 = .025, Beta_e2 = .025)
 #' @param varNames name for var (defaults to 'var')
 #' @param seed Allows user to set.seed() if wanting reproducible dataset
 #' @param empirical Passed to mvrnorm
-#' @param MZr If MZr and DZr are set (default = NULL), the function simply returns dataframes of the request size and correlation
-#' @param DZr NULL
+#' @param nThresh  If supplied, use as thresholds and return mxFactor output? (default is not too)
+#' @param sum2one  Whether to enforce AA + CC + EE summing the one (default = TRUE)
 #' @return - list of mzData and dzData dataframes containing T1 and T2 plus, if needed M1 and M2 (moderator values)
 #' @export
-#' @family Data Functions
+#' @family Twin Data functions
+#' @seealso - \code{\link{umxGxE_biv}}, \code{\link{umxACE}}, \code{\link{umxGxE}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' # =====================================================================
@@ -4343,15 +4457,47 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 #' # ========================
 #' tmp = umx_make_TwinData(100, MZr = .86, DZr= .60, varNames = "IQ")
 #' umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
+#' 
+#' # Bivariate GxSES example (see umxGxE_biv)
+#' 
+#' AA   = list(a11 = .4, a12 = .1, a22 = .15)
+#' CC   = list(c11 = .2, c12 = .1, c22 = .10)
+#' EE   = list(e11 = .4, e12 = .3, e22 = .25)
+#' Amod = list(Beta_a1 = .025, Beta_a2 = .025)
+#' Cmod = list(Beta_c1 = .025, Beta_c2 = .025)
+#' Emod = list(Beta_e1 = .025, Beta_e2 = .025)
+#' tmp = umx_make_TwinData(5000, AA =AA, CC = CC, EE = EE, Amod = Amod, Cmod =Cmod, Emod =Emod)
+#'# List of 2
+#'#  $ mzData:'data.frame':	5000 obs. of  6 variables:
+#'#   ..$ defM_T1: num [1:5000] -1.424 -1.606 -0.749 -0.358 -0.208 ...
+#'#   ..$ defM_T2: num [1:5000] -1.703 -1.125 -1.136 0.366 -0.864 ...
+#'#   ..$ M_T1   : num [1:5000] -1.424 -1.606 -0.749 -0.358 -0.208 ...
+#'#   ..$ var_T1 : num [1:5000] -1.1197 -0.3074 -0.4156 -0.4149 0.0739 ...
+#'#   ..$ M_T2   : num [1:5000] -1.703 -1.125 -1.136 0.366 -0.864 ...
+#'#   ..$ var_T2 : num [1:5000] 0.381 -1.275 -1.114 1.297 -1.53 ...
+#'#  $ dzData:'data.frame':	5000 obs. of  6 variables:
+#'#   ..$ defM_T1: num [1:5000] 0.253 -0.402 0.545 -1.494 -0.278 ...
+#'#   ..$ defM_T2: num [1:5000] 1.7587 0.3025 -0.3864 0.0737 0.514 ...
+#'#   ..$ M_T1   : num [1:5000] 0.253 -0.402 0.545 -1.494 -0.278 ...
+#'#   ..$ var_T1 : num [1:5000] -0.835 -0.305 -0.299 -1.576 -0.26 ...
+#'#   ..$ M_T2   : num [1:5000] 1.7587 0.3025 -0.3864 0.0737 0.514 ...
+#'#   ..$ var_T2 : num [1:5000] -0.418 0.678 -0.78 -0.312 -0.272 ...
+#' 
+#' # TODO tmx example showing how moderation of A introduces heteroskedasticity in a regression model.
+#' # More residual variance at one extreme of the x axis (moderator) 
+#' # m1 = lm(var_T1~ M_T1, data = x); 
+#' # x = rbind(tmp[[1]], tmp[[2]])
+#' # plot(residuals(m1)~ x$M_T1, data=x)
+ 
 #' @md
-umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL, EE = NULL, nThresh = NULL, sum2one = TRUE,  varNames = "var", seed = NULL, empirical = FALSE, MZr= NULL, DZr= NULL) {
+umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL, EE = NULL, nThresh = NULL, sum2one = TRUE,  varNames = "var", seed = NULL, empirical = FALSE, MZr= NULL, DZr= NULL, Amod = NULL, Cmod = NULL, Emod = NULL) {
 	if(!is.null(seed)){
 		set.seed(seed = seed)
 	}
 	# Function caps the moderator effect at -3 and +3 SD
 	if(!is.null(MZr)){
 		if(is.null(DZr)){
-			stop("Both MZr and DZr must be set if you want to generate that kind of data.")
+			stop("Both MZr and DZr must be set if you want to generate data matching MZ and DZ correlations.")
 		}
 		mzCov = matrix(nrow = 2, byrow = T, c(
 			1, MZr,
@@ -4415,6 +4561,109 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		} else {
 			names(mzData) = names(dzData) = umx_paste_names(varNames, "_T")
 		}
+	}else if(!is.null(Amod)){
+		# Bivariate Moderation example
+		
+		# Moderator (M) path components
+		am = sqrt(AA$a11) # The Cholesky moderator A coefficients.
+		cm = sqrt(CC$c11) # The Cholesky moderator C coefficients.
+		em = sqrt(EE$e11) # The Cholesky moderator E coefficients.
+
+		# Cross paths M -> T in Cholesky
+		a12  = sqrt(AA$a12)	# A covariances in terms of Cholesky paths
+		c12  = sqrt(CC$c12)	# C
+		e12  = sqrt(EE$e12)	# E
+		Beta_a1 = Amod$Beta_a1	# A paths are moderated
+		Beta_c1 = Cmod$Beta_c1	# C mod
+		Beta_e1 = Emod$Beta_e1	# E mod
+
+		# Trait "T"
+		a22 = sqrt(AA$a22)	# A variance components of the trait ModelA (see above)
+		c22 = sqrt(CC$c22)	# C
+		e22 = sqrt(EE$e22)	# E	
+		Beta_a2 = Amod$Beta_a2	# A moderation
+		Beta_c2 = Cmod$Beta_c2	# C
+		Beta_e2 = Emod$Beta_e2	# E
+
+		# We simulate data by generating scores on the latent variables A, C, E of
+		# the moderator and A2, C2, and E2 of the trait, conditional on the moderator. 
+		# These are uncorrelated as the latter is trait | moderator.
+		# This is consistent with the Cholesky decomposition as depicted in model A
+
+		# Define the expected correlation matrices for MZ and DZ
+		sMZtmp = zero = matrix(data = 0, nrow = 6, ncol = 6)
+		diag(sMZtmp) = 1
+		sDZtmp = sMZtmp
+		sMZtmp[4, 1] = sMZtmp[1, 4] = 1.0 # A
+		sDZtmp[4, 1] = sDZtmp[1, 4] = 0.5 # A
+		sMZtmp[5, 2] = sMZtmp[2, 5] = sDZtmp[5, 2] = sDZtmp[2, 5] = 1 # C
+
+		# varNames = c('defm_T1', 'defm_T2', 't_T1', 'm_T1', 'm_T2', 't_T2')
+		# dimnames(sMZtmp) = list(varNames, varNames)
+
+		sigmaMZ = rbind(cbind(sMZtmp, zero),
+						cbind(zero, sMZtmp))
+		sigmaDZ = rbind(cbind(sDZtmp, zero),
+						cbind(zero, sDZtmp))
+
+		# Latent scores: A C E (m)   A C E (t|m)
+		# M data cols 1:6, Trait conditional on M cols 7-12
+		MZLatent = mvrnorm(nMZpairs, mu = rep(0, 12), Sigma = sigmaMZ, empirical = empirical)
+		DZLatent = mvrnorm(nDZpairs, mu = rep(0, 12), Sigma = sigmaDZ, empirical = empirical)
+
+		# Data matrices to be filled with content
+		tdatmz = mdatmz = matrix(data = 0, nrow = nMZpairs, ncol = 2)
+		tdatdz = mdatdz = matrix(data = 0, nrow = nDZpairs, ncol = 2)
+
+		# Create the phenotypic scores
+		for (i in 1:nMZpairs) {
+			# Generate Twin 1 phenotypic moderation score
+			mod = am * MZLatent[i, 1] + cm * MZLatent[i, 2] + em * MZLatent[i, 3] 
+			# create the phenotypic trait score, depending on M and on T|M
+			#           T|M                                            M
+			atmp1 = (a22 + Beta_a2 * mod) * MZLatent[i, 1+6] + (a12 + Beta_a1 * mod) * MZLatent[i, 1]
+			ctmp1 = (c22 + Beta_c2 * mod) * MZLatent[i, 2+6] + (c12 + Beta_c1 * mod) * MZLatent[i, 2]
+			etmp1 = (e22 + Beta_e2 * mod) * MZLatent[i, 3+6] + (e12 + Beta_e1 * mod) * MZLatent[i, 3]
+			j = 1 # J = 1 twin 1 mz.
+			mdatmz[i,j] = mod			# moderator
+			tdatmz[i,j] = atmp1 + ctmp1 + etmp1	# trait
+
+			# twin2
+			mod = am * MZLatent[i, 4] + cm * MZLatent[i, 5] + em * MZLatent[i, 6]
+			atmp1 = (a22 + Beta_a2 * mod) * MZLatent[i, 4+6] + (a12 + Beta_a1 * mod) * MZLatent[i, 4]
+			ctmp1 = (c22 + Beta_c2 * mod) * MZLatent[i, 5+6] + (c12 + Beta_c1 * mod) * MZLatent[i, 5]
+			etmp1 = (e22 + Beta_e2 * mod) * MZLatent[i, 6+6] + (e12 + Beta_e1 * mod) * MZLatent[i, 6]
+			j = 2	# twin 2
+			mdatmz[i, j] = mod
+			tdatmz[i, j] = atmp1 + ctmp1 + etmp1
+		} 
+
+		# Same for DZ twins (might differ in number)
+		for (i in 1:nDZpairs) {
+			j = 1
+			mod = am * DZLatent[i, 1] + cm * DZLatent[i, 2] + em * DZLatent[i, 3]
+			atmp1 = (a22 + Beta_a2 * mod) * DZLatent[i, 1+6] + (a12 + Beta_a1 * mod) * DZLatent[i, 1]
+			ctmp1 = (c22 + Beta_c2 * mod) * DZLatent[i, 2+6] + (c12 + Beta_c1 * mod) * DZLatent[i, 2]
+			etmp1 = (e22 + Beta_e2 * mod) * DZLatent[i, 3+6] + (e12 + Beta_e1 * mod) * DZLatent[i, 3]
+			mdatdz[i,j] = mod
+			tdatdz[i,j] = atmp1 + ctmp1 + etmp1
+			j = 2 # twin 2
+			mod = am * DZLatent[i, 4] + cm * DZLatent[i, 5] + em * DZLatent[i, 6]
+			atmp1 = (a22 + Beta_a2 * mod) * DZLatent[i, 4+6] + (a12 + Beta_a1 * mod) * DZLatent[i, 4]
+			ctmp1 = (c22 + Beta_c2 * mod) * DZLatent[i, 5+6] + (c12 + Beta_c1 * mod) * DZLatent[i, 5]
+			etmp1 = (e22 + Beta_e2 * mod) * DZLatent[i, 6+6] + (e12 + Beta_e1 * mod) * DZLatent[i, 6]
+			mdatdz[i,j] = mod
+			tdatdz[i,j] = atmp1 + ctmp1 + etmp1
+		}
+
+		# Convert to data frames, reorder columns and add names. 
+		mzData = as.data.frame(cbind(mdatmz, mdatmz, tdatmz))
+		dzData = as.data.frame(cbind(mdatdz, mdatdz, tdatdz))
+		mzData = mzData[,c(1, 2, 3, 5, 4, 6)]
+		dzData = dzData[,c(1, 2, 3, 5, 4, 6)]
+		# TODO use var names
+		colnames(mzData) = c('defM_T1', 'defM_T2', 'M_T1', 'var_T1', 'M_T2', 'var_T2')
+		colnames(dzData) = c('defM_T1', 'defM_T2', 'M_T1', 'var_T1', 'M_T2', 'var_T2')
 	} else {
 		# Moderator example
 		if(any(c(is.null(AA), is.null(CC), is.null(EE)))){
@@ -4884,20 +5133,23 @@ umx_make_bin_cont_pair_data <- function(data, vars = NULL, suffixes=NULL){
 
 #' Create a matrix of correlations for variables of diverse types (binary, ordinal, continuous)
 #'
-#' umxHetCor Helper to return just the correlations from John Fox's polycor::hetcor function
+#' umxHetCor is a helper to 
+#' 1. return just the correlations from John Fox's polycor::hetcor function
+#' 2. If you give it a covariance matrix, return the nearest positive-definite correlation matrix.
 #'
-#' @param data A \code{\link{data.frame}} of columns for which to compute heterochoric correlations
+#' @param data A \code{\link{data.frame}} of columns for which to compute heterochoric correlations. OR an existing covariance matrix.
 #' @param ML Whether to use Maximum likelihood computation of correlations (default = FALSE)
-#' @param use How to handle missing data: "complete.obs" (Default), "pairwise.complete.obs" 
-#' @param treatAllAsFactor Whether to treat all columns as factors, whether they are or not.
+#' @param use How to handle missing data: Default= "pairwise.complete.obs". Alternative ="complete.obs".
+#' @param treatAllAsFactor Whether to treat all columns as factors, whether they are or not (Default = FALSE)
 #' @param verbose How much to tell the user about what was done.
 #' @return - A matrix of correlations
 #' @family Data Functions
+#' @family Miscellaneous Stats Helpers
 #' @export
 #' @references - 
 #' @examples
 #' umxHetCor(mtcars[,c("mpg", "am")])
-#' umxHetCor(mtcars[,c("mpg", "am")], treatAllAsFactor = FALSE, verbose = TRUE)
+#' umxHetCor(mtcars[,c("mpg", "am")], treatAllAsFactor = TRUE, verbose = TRUE)
 umxHetCor <- function(data, ML = FALSE, use = c("pairwise.complete.obs", "complete.obs"), treatAllAsFactor = FALSE, verbose = FALSE){
 	# depends on polycor::hetcor
 	use = match.arg(use)
@@ -5128,7 +5380,7 @@ umxPadAndPruneForDefVars <- function(df, varNames, defNames, suffixes, highDefVa
 #' @param newName = NA
 #' @return - a list of bracket style labels
 #' @export
-#' @family Misc
+#' @family Advanced Model Building Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' require(umx)
@@ -5210,7 +5462,7 @@ umx_str2Algebra <- function(algString, name = NA, dimnames = NA) {
 #'
 #' @param model The \code{\link{mxModel}} whose fit will be reported.
 #' @param ... Other parameters.
-#' @family Advanced Helpers
+#' @family Advanced Model Building Functions
 #' \url{http://www.github.com/tbates/umx}
 #' @export
 umx_standardize <- function(model, ...){
@@ -5379,7 +5631,7 @@ umx_standardize.MxModel.ACE <- umx_standardize_ACE
 #' mzData = subset(twinData, zyg == 1, selVars)[1:80, ]
 #' dzData = subset(twinData, zyg == 3, selVars)[1:80, ]
 #' m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs, dzData = dzData, mzData = mzData, 
-#' 	 suffix = "", autoRun = TRUE)
+#' 	 sep = "", autoRun = TRUE)
 #' fit = umx_standardize_ACEcov(m1)
 umx_standardize_ACEcov <- function(model, ...) {
 	if(typeof(model) == "list"){ # call self recursively

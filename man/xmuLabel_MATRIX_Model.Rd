@@ -42,7 +42,7 @@ m4 = umx:::xmuLabel_MATRIX_Model(m2, suffix = "male")
 }
 \seealso{
 Other xmu internal not for end user: \code{\link{umxModel}},
-  \code{\link{xmuHasSquareBrackets}},
+  \code{\link{umx}}, \code{\link{xmuHasSquareBrackets}},
   \code{\link{xmuLabel_Matrix}},
   \code{\link{xmuLabel_RAM_Model}}, \code{\link{xmuMI}},
   \code{\link{xmuMakeDeviationThresholdsMatrices}},

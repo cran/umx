@@ -31,7 +31,7 @@ End users should just call \code{\link{umxLabel}}
 }
 \seealso{
 Other xmu internal not for end user: \code{\link{umxModel}},
-  \code{\link{xmuHasSquareBrackets}},
+  \code{\link{umx}}, \code{\link{xmuHasSquareBrackets}},
   \code{\link{xmuLabel_MATRIX_Model}},
   \code{\link{xmuLabel_Matrix}}, \code{\link{xmuMI}},
   \code{\link{xmuMakeDeviationThresholdsMatrices}},

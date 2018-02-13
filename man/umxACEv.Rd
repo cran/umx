@@ -239,19 +239,16 @@ plot(m1)
 - \url{http://www.github.com/tbates/umx}
 }
 \seealso{
-Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}},
-  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
-  \code{\link{umxACE}}, \code{\link{umxCF_SexLim}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxReduceACE}},
+Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
+  \code{\link{umxACEcov}}, \code{\link{umxACE}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_biv}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxIP}}, \code{\link{umxSexLim}},
   \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
+  \code{\link{umxSummaryGxE_biv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
-  \code{\link{umx}}, \code{\link{xmu_twin_check}}
+  \code{\link{umxSummarySexLim}}, \code{\link{umx}},
+  \code{\link{xmu_twin_check}}
 }

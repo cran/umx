@@ -6,14 +6,15 @@
 \usage{
 umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL,
   EE = NULL, nThresh = NULL, sum2one = TRUE, varNames = "var",
-  seed = NULL, empirical = FALSE, MZr = NULL, DZr = NULL)
+  seed = NULL, empirical = FALSE, MZr = NULL, DZr = NULL, Amod = NULL,
+  Cmod = NULL, Emod = NULL)
 }
 \arguments{
 \item{nMZpairs}{Number of MZ pairs to simulate}
 
 \item{nDZpairs}{Number of DZ pairs to simulate (if omitted defaults to nMZpairs)}
 
-\item{AA}{value for A variance. Optionally a vector: c(avg= .5, min= 0, max= 1)}
+\item{AA}{value for A variance. NOTE: See options for use in GxE and Bivariate GxE}
 
 \item{CC}{value for C variance.}
 
@@ -32,6 +33,12 @@ umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL,
 \item{MZr}{If MZr and DZr are set (default = NULL), the function simply returns dataframes of the request size and correlation}
 
 \item{DZr}{NULL}
+
+\item{Amod}{Used for Bivariate GxE data: list(Beta_a1 = .025, Beta_a2 = .025)}
+
+\item{Cmod}{Used for Bivariate GxE data: list(Beta_c1 = .025, Beta_c2 = .025)}
+
+\item{Emod}{Used for Bivariate GxE data: list(Beta_e1 = .025, Beta_e2 = .025)}
 }
 \value{
 \itemize{
@@ -53,9 +60,20 @@ You supply the number of pairs of each zygosity that wish to simulate (nMZpairs,
 You can omit nDZpairs. You can also give any 2 of A, C, or E and the function will add the value which makes the ACE total = 1.
 
 \strong{Moderation}
-
+\strong{Univariate GxE Data}
 AA can take a list c(avg = .5, min = 0, max = 1). If specified will act like a moderated heritability, with average value = avg, and swinging
 down to min and up to max across 3 SDs of the moderator.
+
+\strong{Bivariate GxE Data}
+
+To simulate data with a moderator that is not shared by both twins.
+Moderated heritability is specified via the bivariate relationship (AA, CC, EE) and two moderators in each component.
+AA   = list(a11 = .4, a12 = .1, a22 = .15)
+CC   = list(c11 = .2, c12 = .1, c22 = .10)
+EE   = list(e11 = .4, e12 = .3, e22 = .25)
+Amod = list(Beta_a1 = .025, Beta_a2 = .025)
+Cmod = list(Beta_c1 = .025, Beta_c2 = .025)
+Emod = list(Beta_e1 = .025, Beta_e2 = .025)
 }
 \examples{
 # =====================================================================
@@ -107,6 +125,37 @@ umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
 # ========================
 tmp = umx_make_TwinData(100, MZr = .86, DZr= .60, varNames = "IQ")
 umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
+
+# Bivariate GxSES example (see umxGxE_biv)
+
+AA   = list(a11 = .4, a12 = .1, a22 = .15)
+CC   = list(c11 = .2, c12 = .1, c22 = .10)
+EE   = list(e11 = .4, e12 = .3, e22 = .25)
+Amod = list(Beta_a1 = .025, Beta_a2 = .025)
+Cmod = list(Beta_c1 = .025, Beta_c2 = .025)
+Emod = list(Beta_e1 = .025, Beta_e2 = .025)
+tmp = umx_make_TwinData(5000, AA =AA, CC = CC, EE = EE, Amod = Amod, Cmod =Cmod, Emod =Emod)
+# List of 2
+#  $ mzData:'data.frame':	5000 obs. of  6 variables:
+#   ..$ defM_T1: num [1:5000] -1.424 -1.606 -0.749 -0.358 -0.208 ...
+#   ..$ defM_T2: num [1:5000] -1.703 -1.125 -1.136 0.366 -0.864 ...
+#   ..$ M_T1   : num [1:5000] -1.424 -1.606 -0.749 -0.358 -0.208 ...
+#   ..$ var_T1 : num [1:5000] -1.1197 -0.3074 -0.4156 -0.4149 0.0739 ...
+#   ..$ M_T2   : num [1:5000] -1.703 -1.125 -1.136 0.366 -0.864 ...
+#   ..$ var_T2 : num [1:5000] 0.381 -1.275 -1.114 1.297 -1.53 ...
+#  $ dzData:'data.frame':	5000 obs. of  6 variables:
+#   ..$ defM_T1: num [1:5000] 0.253 -0.402 0.545 -1.494 -0.278 ...
+#   ..$ defM_T2: num [1:5000] 1.7587 0.3025 -0.3864 0.0737 0.514 ...
+#   ..$ M_T1   : num [1:5000] 0.253 -0.402 0.545 -1.494 -0.278 ...
+#   ..$ var_T1 : num [1:5000] -0.835 -0.305 -0.299 -1.576 -0.26 ...
+#   ..$ M_T2   : num [1:5000] 1.7587 0.3025 -0.3864 0.0737 0.514 ...
+#   ..$ var_T2 : num [1:5000] -0.418 0.678 -0.78 -0.312 -0.272 ...
+
+# TODO tmx example showing how moderation of A introduces heteroskedasticity in a regression model.
+# More residual variance at one extreme of the x axis (moderator) 
+# m1 = lm(var_T1~ M_T1, data = x); 
+# x = rbind(tmp[[1]], tmp[[2]])
+# plot(residuals(m1)~ x$M_T1, data=x)
 }
 \references{
 \itemize{
@@ -114,20 +163,12 @@ umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
 }
 }
 \seealso{
-Other Data Functions: \code{\link{umxCovData}},
-  \code{\link{umxFactor}}, \code{\link{umxHetCor}},
-  \code{\link{umxPadAndPruneForDefVars}},
-  \code{\link{umx_as_numeric}},
-  \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_long2wide}},
-  \code{\link{umx_lower2full}},
-  \code{\link{umx_make_MR_data}},
-  \code{\link{umx_make_bin_cont_pair_data}},
-  \code{\link{umx_make_fake_data}},
-  \code{\link{umx_merge_CIs}},
-  \code{\link{umx_read_lower}}, \code{\link{umx_reorder}},
-  \code{\link{umx_residualize}}, \code{\link{umx_round}},
+\itemize{
+\item \code{\link{umxGxE_biv}}, \code{\link{umxACE}}, \code{\link{umxGxE}}
+}
+
+Other Twin Data functions: \code{\link{umx_long2wide}},
+  \code{\link{umx_residualize}},
   \code{\link{umx_scale_wide_twin_data}},
-  \code{\link{umx_scale}}, \code{\link{umx_swap_a_block}},
   \code{\link{umx_wide2long}}, \code{\link{umx}}
 }

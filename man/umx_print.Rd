@@ -38,23 +38,27 @@ By default, Zeros have the decimals suppressed, and NAs are suppressed altogethe
 }
 \examples{
 umx_print(mtcars[1:10,], digits = 2, zero.print = ".", justify = "left")
+\dontrun{
 umx_print(mtcars[1:10,], file = "tmp.html")
+}
 }
 \seealso{
 \code{\link{umx_set_table_format}}
 
-Other Utility Functions: \code{\link{qm}},
-  \code{\link{umx_find_object}}, \code{\link{umx_msg}},
-  \code{\link{umx_names}}, \code{\link{umx_paste_names}},
-  \code{\link{umx_pb_note}}, \code{\link{umx_rename}},
-  \code{\link{umx}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
+  \code{\link{qm}}, \code{\link{umxBrownie}},
+  \code{\link{umxVersion}}, \code{\link{umx_find_object}},
+  \code{\link{umx_make}}, \code{\link{umx_msg}},
+  \code{\link{umx_open_CRAN_page}},
+  \code{\link{umx_pb_note}}, \code{\link{umx}}
 
 Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{tmx_is.identified}}, \code{\link{umxAPA}},
-  \code{\link{umxFactorScores}},
+  \code{\link{umxEval}}, \code{\link{umxFactorScores}},
   \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umx_APA_pval}},
-  \code{\link{umx_aggregate}},
-  \code{\link{umx_parameters}}, \code{\link{umx_show}},
-  \code{\link{umx_time}}, \code{\link{umx}}
+  \code{\link{umxSummary}}, \code{\link{umx_APA_model_CI}},
+  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
+  \code{\link{umx_names}}, \code{\link{umx_parameters}},
+  \code{\link{umx_show}}, \code{\link{umx_time}},
+  \code{\link{umx}}
 }

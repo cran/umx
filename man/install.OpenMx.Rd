@@ -2,7 +2,6 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{install.OpenMx}
 \alias{install.OpenMx}
-\alias{umx_install_OpenMx}
 \alias{umx_update_OpenMx}
 \title{Easily install the latest parallel/NPSOL enabled build of OpenMx.}
 \usage{
@@ -13,21 +12,21 @@ install.OpenMx(loc = c("UVa", "travis", "CRAN", "open travis build page"),
 \item{loc}{Which install to get: "UVa" (the default), "travis" (latest build),
 or open the travis list of builds on the web to view/pick a url.}
 
-\item{url}{A custom URL if you have/need one (probably not)}
+\item{url}{A custom URL if you have/need one (probably not).}
 
-\item{lib}{Where to install the package}
+\item{lib}{Where to install the package.}
 
-\item{repos}{Which repository to use (ignored currently)}
+\item{repos}{Which repository to use (ignored currently).}
 }
 \value{
 -
 }
 \description{
 You can:
-1. Install from UVa (default: This is where we maintain binaries supporting parallel processing and NPSOL)
-2. Install the latest travis built (currently mac only)
-3. Install from a custom url.
-4. Open the list of travis builds in a browser.
+1. Install from UVa (default: This is where we maintain binaries supporting parallel processing and NPSOL).
+2. Install the latest travis built (currently MacOS only).
+3. Install from CRAN.
+4. Open the list of travis builds in a browser window.
 }
 \examples{
 \dontrun{
@@ -38,8 +37,12 @@ install.OpenMx()
 - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 }
 \seealso{
-Other Miscellaneous Functions: \code{\link{umx_get_options}},
-  \code{\link{umx_is_class}}, \code{\link{umx_is_numeric}},
-  \code{\link{umx_open_CRAN_page}}, \code{\link{umx_pad}},
-  \code{\link{xmu_twin_check}}
+\code{\link{umxVersion}}
+
+Other Miscellaneous Utility Functions: \code{\link{qm}},
+  \code{\link{umxBrownie}}, \code{\link{umxVersion}},
+  \code{\link{umx_find_object}}, \code{\link{umx_make}},
+  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
+  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
+  \code{\link{umx}}
 }

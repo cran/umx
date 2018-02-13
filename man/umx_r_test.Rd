@@ -29,3 +29,11 @@ In the future it will be expanded to handle overlapping correlations, and to tak
 vars = c("mpg", "cyl", "disp", "hp")
 umx_r_test(mtcars, vars)
 }
+\seealso{
+Other Miscellaneous Stats Helpers: \code{\link{reliability}},
+  \code{\link{umxCov2cor}}, \code{\link{umxHetCor}},
+  \code{\link{umx_apply}}, \code{\link{umx_cor}},
+  \code{\link{umx_fun_mean_sd}}, \code{\link{umx_means}},
+  \code{\link{umx_round}}, \code{\link{umx_var}},
+  \code{\link{umx}}
+}

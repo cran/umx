@@ -7,7 +7,8 @@
 \method{umxSummary}{MxModel}(model, refModels = NULL,
   showEstimates = c("raw", "std", "none", "both"), digits = 2,
   report = c("markdown", "html"), filter = c("ALL", "NS", "SIG"),
-  SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE, std = NULL, ...)
+  SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE,
+  std = "deprecated", ...)
 }
 \arguments{
 \item{model}{The \code{\link{mxModel}} whose fit will be reported}
@@ -20,7 +21,7 @@ If NULL will be competed on demand. If FALSE will not be computed. Only needed f
 
 \item{digits}{How many decimal places to report (default = 2)}
 
-\item{report}{If "html", then show results in browser ("1", "table", "html")}
+\item{report}{If "html", then show results in browser (alternative = "markdown")}
 
 \item{filter}{whether to show significant paths (SIG) or NS paths (NS) or all paths (ALL)}
 
@@ -102,15 +103,14 @@ umxSummary(m1, showEstimates = "std", filter = "NS")
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
   \code{\link{umxCompare}}, \code{\link{umxConfint}},
   \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
+  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
+  \code{\link{umxSummaryACEv}},
+  \code{\link{umxSummaryACE}},
+  \code{\link{umxSummarySexLim}},
+  \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

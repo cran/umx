@@ -36,7 +36,7 @@ You can provide complete suffixes like "_T1" and "_T2". This has the benefit of 
 and very general:\preformatted{umx_paste_names(c("var1", "var2"), suffixes = c("_T1", "_T2"))
 }
 
-\emph{Note}: for quick typing, \code{vars} is an alias for \code{umx_paste_names}
+\emph{Note}: for quick typing, \code{tvars} is an alias for \code{umx_paste_names}
 
 \strong{Method 2}: \emph{Use sep and a suffix vector.}
 
@@ -61,7 +61,7 @@ umx_paste_names("bmi", sep = "_T", suffixes = 1:2)
 varNames = umx_paste_names(c("N", "E", "O", "A", "C"), "_T", 1:2)
 umx_paste_names(c("IQ", "C"), cov = c("age"), sep = "_T", suffixes = 1:2)
 umx_paste_names(c("IQ", "C"), cov = c("age"), sep = "_T", prefix= "mean_")
-# For quick-typing, tVars is an alias for umx_paste_names
+# For quick-typing, tvars is an alias for umx_paste_names
 tvars(c("IQ", "C"), cov = c("age"), sep = "_T", prefix= "mean_")
 }
 \references{
@@ -70,9 +70,9 @@ tvars(c("IQ", "C"), cov = c("age"), sep = "_T", prefix= "mean_")
 }
 }
 \seealso{
-Other Utility Functions: \code{\link{qm}},
-  \code{\link{umx_find_object}}, \code{\link{umx_msg}},
-  \code{\link{umx_names}}, \code{\link{umx_pb_note}},
-  \code{\link{umx_print}}, \code{\link{umx_rename}},
-  \code{\link{umx}}
+Other String Functions: \code{\link{umx_explode_twin_names}},
+  \code{\link{umx_explode}}, \code{\link{umx_grep}},
+  \code{\link{umx_object_as_str}}, \code{\link{umx_rot}},
+  \code{\link{umx_trim}},
+  \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
 }

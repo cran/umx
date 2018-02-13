@@ -42,22 +42,22 @@ plot(m1, std = FALSE) # don't standardize
 \seealso{
 Other Plotting functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE_biv}},
+  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umx}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
   \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{plot.MxModel}},
   \code{\link{residuals.MxModel}},
   \code{\link{umxCI_boot}}, \code{\link{umxCI}},
   \code{\link{umxCompare}}, \code{\link{umxConfint}},
   \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
+  \code{\link{umxFitIndices}},
   \code{\link{umxSummary.MxModel}},
   \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
+  \code{\link{umxSummaryACE}},
+  \code{\link{umxSummarySexLim}},
+  \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

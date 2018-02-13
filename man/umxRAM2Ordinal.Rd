@@ -38,8 +38,11 @@ m1 = umxRAM2Ordinal(model)
 - \code{\link{umxRAM}}
 
 Other Advanced Model Building Functions: \code{\link{umxJiggle}},
-  \code{\link{umxLabel}}, \code{\link{umxThresholdMatrix}},
-  \code{\link{umxValues}},
+  \code{\link{umxLabel}}, \code{\link{umxLatent}},
+  \code{\link{umxThresholdMatrix}},
+  \code{\link{umxValues}}, \code{\link{umx_add_variances}},
   \code{\link{umx_fix_first_loadings}},
-  \code{\link{umx_fix_latents}}, \code{\link{umx}}
+  \code{\link{umx_fix_latents}},
+  \code{\link{umx_get_bracket_addresses}},
+  \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
 }

@@ -57,12 +57,13 @@ dzData  = subset(twinData, zygosity == "DZMM", selVars)
 # Exclude cases with missing Def
 mzData <- mzData[!is.na(mzData[selDefs[1]]) & !is.na(mzData[selDefs[2]]),]
 dzData <- dzData[!is.na(dzData[selDefs[1]]) & !is.na(dzData[selDefs[2]]),]
+\dontrun{
 m1 = umxGxE(selDVs = selDVs, selDefs = selDefs, dzData = dzData, mzData = mzData)
-m1 = umxRun(m1)
 # Plot Moderation
 umxSummaryGxE(m1)
 umxSummaryGxE(m1, location = "topright")
 umxSummaryGxE(m1, separateGraphs = FALSE)
+}
 }
 \references{
 - \url{https://github.com/tbates/umx}, \url{http://tbates.github.io}
@@ -70,19 +71,16 @@ umxSummaryGxE(m1, separateGraphs = FALSE)
 \seealso{
 - \code{\link{umxGxE}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, and ACE models.
 
-Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}},
-  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
-  \code{\link{umxIP}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxReduceACE}},
-  \code{\link{umxSummaryACEcov}},
+Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
+  \code{\link{umxACEcov}}, \code{\link{umxACEv}},
+  \code{\link{umxACE}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_biv}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxSexLim}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryIP}}, \code{\link{umx_long2wide}},
-  \code{\link{umx_wide2long}}, \code{\link{umx}},
+  \code{\link{umxSummaryGxE_biv}},
+  \code{\link{umxSummaryIP}},
+  \code{\link{umxSummarySexLim}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }

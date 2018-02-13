@@ -37,10 +37,6 @@ model = umxReduce(model)
 - \url{http://tbates.github.io}
 }
 \seealso{
-Other Core Modelling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxDiagnose}}, \code{\link{umxLatent}},
-  \code{\link{umxMatrix}}, \code{\link{umxPath}},
-  \code{\link{umxRAM}}, \code{\link{umxReduceACE}},
-  \code{\link{umxRun}}, \code{\link{umxSuperModel}},
+Other Twin Reporting Functions: \code{\link{umxReduceACE}},
   \code{\link{umx}}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_make}
 \alias{umx_make}
-\title{umx_make umx using devtools}
+\title{"make" the umx package using devtools: release to CRAN etc.}
 \usage{
 umx_make(what = c("install", "examples", "check", "win", "rhub", "release"),
   pkg = "~/bin/umx", check = TRUE)
@@ -33,7 +33,10 @@ umx_make(what = "release"))  # release to CRAN
 - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 }
 \seealso{
-Other Miscellaneous Utility Functions: \code{\link{umxVersion}},
-  \code{\link{umx_grep}},
-  \code{\link{umx_write_to_clipboard}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
+  \code{\link{qm}}, \code{\link{umxBrownie}},
+  \code{\link{umxVersion}}, \code{\link{umx_find_object}},
+  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
+  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
+  \code{\link{umx}}
 }

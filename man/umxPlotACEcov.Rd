@@ -6,7 +6,7 @@
 \title{Make a graphical display of an ACE model with covariates.}
 \usage{
 umxPlotACEcov(x = NA, file = "name", digits = 2, means = FALSE,
-  std = TRUE, showMeans = "deprecated", ...)
+  std = TRUE, ...)
 }
 \arguments{
 \item{x}{\code{\link{mxModel}} to plot (created by umxACE in order to inherit the MxModel.ACE class)}
@@ -18,8 +18,6 @@ umxPlotACEcov(x = NA, file = "name", digits = 2, means = FALSE,
 \item{means}{Whether to show means paths (default is FALSE)}
 
 \item{std}{Whether to standardize the model (default is TRUE)}
-
-\item{showMeans}{DEPRECATED use "means" instead}
 
 \item{...}{Additional (optional) parameters}
 }
@@ -38,14 +36,11 @@ data(twinData)
 selDVs  = c("bmi")
 selCovs = c("ht")
 selVars = umx_paste_names(c(selDVs, selCovs), sep = "", suffixes= 1:2)
-# just top few pairs so example runs quickly
-mzData = subset(twinData, zyg == 1, selVars)[1:100, ]
-dzData = subset(twinData, zyg == 3, selVars)[1:100, ]
-# TODO update for new dataset variable zygosity
-# mzData = subset(twinData, zygosity == "MZFF", selVars)[1:200, ]
-# dzData = subset(twinData, zygosity == "DZFF", selVars)[1:200, ]
+# Just top few pairs so example runs quickly
+mzData = subset(twinData, zygosity == "MZFF", selVars)[1:100, ]
+dzData = subset(twinData, zygosity == "DZFF", selVars)[1:100, ]
 m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs, dzData = dzData, mzData = mzData, 
-	 suffix = "", autoRun = TRUE)
+	 sep = "", autoRun = TRUE)
 plot(m1)
 plot(m1, std = FALSE) # don't standardize
 }
@@ -53,40 +48,13 @@ plot(m1, std = FALSE) # don't standardize
 - \url{http://tbates.github.io}
 }
 \seealso{
+- \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
+
+- \code{\link{umxACE}}
+
 Other Plotting functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}
-
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{plot.MxModel}},
-  \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
-  \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
+  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE_biv}},
   \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
-
-Other Twin Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxACESexLim}},
-  \code{\link{umxACE_cov_fixed}}, \code{\link{umxACEcov}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCF_SexLim}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
-  \code{\link{umxIP}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxReduceACE}},
-  \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx_long2wide}}, \code{\link{umx_wide2long}},
-  \code{\link{umx}}, \code{\link{xmu_twin_check}}
+  \code{\link{umx}}
 }

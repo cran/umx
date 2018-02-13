@@ -2,12 +2,11 @@
 % Please edit documentation in R/build_run_modify.r
 \name{umxModify}
 \alias{umxModify}
-\alias{umxReRun}
 \title{umxModify: Add, set, or drop model paths by label.}
 \usage{
 umxModify(lastFit, update = NULL, master = NULL, regex = FALSE,
-  free = FALSE, value = 0, freeToStart = NA, name = NULL,
-  verbose = FALSE, intervals = FALSE, comparison = FALSE,
+  free = FALSE, value = 0, newlabels = NULL, freeToStart = NA,
+  name = NULL, verbose = FALSE, intervals = FALSE, comparison = FALSE,
   autoRun = TRUE, dropList = "deprecated")
 }
 \arguments{
@@ -17,12 +16,14 @@ umxModify(lastFit, update = NULL, master = NULL, regex = FALSE,
 
 \item{master}{If you set master, then the labels in update will be equated (slaved) to those provided in master.}
 
-\item{regex}{Whether or not update is a regular expression (defaults to FALSE). If you provide a string, it
-over-rides the contents of update, and sets regex to TRUE.}
+\item{regex}{Whether or not update is a regular expression (default FALSE). If you provide a string, it
+overrides the contents of update, and sets regex to TRUE.}
 
 \item{free}{The state to set "free" to for the parameters whose labels you specify (defaults to free = FALSE, i.e., fixed)}
 
 \item{value}{The value to set the parameters whose labels you specify too (defaults to 0)}
+
+\item{newlabels}{If not NULL, used as a replacement set of labels (can be regular expression). value and free are ignored!}
 
 \item{freeToStart}{Whether to update parameters based on their current free-state. free = c(TRUE, FALSE, NA), (defaults to NA - i.e, not checked)}
 
@@ -32,61 +33,90 @@ over-rides the contents of update, and sets regex to TRUE.}
 
 \item{intervals}{Whether to run confidence intervals (see \code{\link{mxRun}})}
 
-\item{comparison}{Whether to run umxCompare() after umxRun}
+\item{comparison}{Whether to run umxCompare() on the new and old models.}
 
 \item{autoRun}{Whether to run the modified model before returning it (default), or just to modify and return without running.}
 
-\item{dropList}{(deprecated: use 'update' instead.}
+\item{dropList}{DEPRECATED: use 'update' instead.}
 }
 \value{
 - \code{\link{mxModel}}
 }
 \description{
 umxModify allows you to modify, re-run and summarize an \code{\link{mxModel}},
-all in one line of script. 
-You can add paths, or other model elements, set paths or drop them.
-As an example, this one-liner drops a path labelled "Cs", and returns the updated model:
+all in one line of script.
 }
 \details{
+You can add paths, or other model elements, set path values (default is 0), or replace labels.
+As an example, this one-liner drops a path labelled "Cs", and returns the updated model:
+
 \code{fit2 = umxModify(fit1, update = "Cs", name = "newModelName", comparison = TRUE)}
 
 Regular expressions are a powerful feature: they let you drop collections of paths by matching patterns
 fit2 = umxModify(fit1, regex = "C[sr]", name = "drop_Cs_and_Cr", comparison = TRUE)
 
-If you are just starting out, you might find it easier to be more explicit. Like this:
+You may find it easier to be more explicit. Like this:
 
 fit2 = omxSetParameters(fit1, labels = "Cs", values = 0, free = FALSE, name = "newModelName")
 fit2 = mxRun(fit2)
 summary(fit2)
+
+
+\emph{Note}: A (minor) limitation is that you cannot simultaneously set value to 0 
+AND relabel cells (because the default value is 0, so it is ignored when using newlabels).
 }
 \examples{
 require(umx)
+umx_set_optimizer("SLSQP")
 data(demoOneFactor)
 latents  = c("G")
 manifests = names(demoOneFactor)
-umx_set_optimizer("SLSQP")
 
-m1 <- mxModel("One Factor", type = "RAM", 
-	manifestVars = manifests, latentVars = latents, 
-	mxPath(from = latents, to = manifests),
-	mxPath(from = manifests, arrows = 2),
-	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
+	umxPath(latents, to = manifests),
+	umxPath(var = manifests),
+	umxPath(var = latents, fixedAt = 1)
 )
-m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-m2 = umxModify(m1, update = "G_to_x1", name = "drop_X1")
-umxSummary(m2); umxCompare(m1, m2)
-# 1-line version including comparison
+
 m2 = umxModify(m1, update = "G_to_x1", name = "drop_X1", comparison = TRUE)
-# use regular expression to drop multiple paths: e.g. G to x3, x4, x5
-m2 = umxModify(m1, update = "^G_to_x[3-5]", regex = TRUE, name = "no_G_to_x3_5", comp = TRUE)
-# Same, but shorter
-m2 = umxModify(m1, regex  = "^G_to_x[3-5]", name = "no_G_to_x3_5")
+
+# Use regular expression to drop multiple paths: e.g. G to x3, x4, x5
+m2 = umxModify(m1, regex = "^G_to_x[3-5]", name = "no_G_to_x3_5", comp = TRUE)
+
 # Same, but don't autoRun
 m2 = umxModify(m1, regex  = "^G_to_x[3-5]", name = "no_G_to_x3_5", autoRun = FALSE) 
-m2 = umxModify(m1, update = "G_to_x1", value = .2, name = "fix_G_x1_at_point2", comp = TRUE)
+
+# Fix a value at a non-zero value
+m2 = umxModify(m1, update = "G_to_x1", value = .35, name = "fix_G_x1_at_35", comp = TRUE)
+
+# Free a fixed value
 m3 = umxModify(m2, update = "G_to_x1", free = TRUE, name = "free_G_x1_again", comparison = TRUE)
+umxCompare(m1,m3)
+
+# Re-write a label
+newLabel = "A_rose_by_any_other_name"
+newModelName = "model_doth_smell_as_sweet"
+m2 = umxModify(m1, update = "G_to_x1", newlabels= newLabel, name = newModelName, comparison = TRUE)
+# Change labels in 2 places
+labsToUpdate = c("G_to_x1", "G_to_x2")
+newLabel = "G_to_1_or_2"
+m2 = umxModify(m1, update = labsToUpdate, newlabels= newLabel, name = "equated", comparison = TRUE)
+
+# Advanced!
+# Regular expressions let you use pieces of the old names in creating new ones!
+searchString = "G_to_x([0-9])"
+newLabel = "loading_for_path\\\\1" # use value in regex group 1
+m2 = umxModify(m1, regex = searchString, newlabels= newLabel, name = "grep", comparison = TRUE)
+
 }
 \references{
 - \url{http://github.com/tbates/umx}
+}
+\seealso{
+Other Modify or Compare Models: \code{\link{umxAdd1}},
+  \code{\link{umxDrop1}}, \code{\link{umxEquate}},
+  \code{\link{umxFixAll}}, \code{\link{umxMI}},
+  \code{\link{umxSetParameters}},
+  \code{\link{umxUnexplainedCausalNexus}},
+  \code{\link{umx}}
 }
