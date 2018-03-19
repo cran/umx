@@ -1,5 +1,5 @@
 #
-#   Copyright 2007-2017 Copyright 2007-2017 Timothy C. Bates
+#   Copyright 2007-2018 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #' Often, it is appropriate to include covariates in models.
 #' A simple method is to regress covariates from the data using \code{\link{lm}}.
 #' This is a 'fixed' effects approach.
-#' \code{\link{umx_residualize}} makes this easier, even on twin data, and with complex regression formulae.
+#' \code{\link{umx_residualize}} makes this easier, even on twin data, and with complex regression formulas.
 #' 
 #' While these estimates are unbiased, modeling this regression in the means element of the twin model
 #' allows correct tests for significance. Also, if DVs are not continuous, the lm-based approach

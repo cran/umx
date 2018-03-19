@@ -2,13 +2,13 @@
 % Please edit documentation in R/umxACEv.R
 \name{umxACEv}
 \alias{umxACEv}
-\title{Build and run a 2-group Cholesky twin model (uni-variate or multi-variate) with variance estimates.}
+\title{Build and run 2-group uni- or multi-variate ACE models based on VARIANCE (not paths).}
 \usage{
 umxACEv(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
   "random"), dzData, mzData, suffix = NULL, dzAr = 0.5, dzCr = 1,
   addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL,
-  boundDiag = 0, weightVar = NULL, equateMeans = TRUE, bVector = FALSE,
-  thresholds = c("deviationBased", "WLS"),
+  boundDiag = NULL, weightVar = NULL, equateMeans = TRUE,
+  bVector = FALSE, thresholds = c("deviationBased", "WLS"),
   autoRun = getOption("umx_auto_run"), sep = NULL, optimizer = NULL)
 }
 \arguments{
@@ -38,7 +38,7 @@ umxACEv(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 
 \item{numObsMZ}{= Number of MZ twins: Set this if you input covariance data.}
 
-\item{boundDiag}{= Numeric lbound for diagonal of the a, c, and e matrices. Defaults to 0 since umx version 1.8}
+\item{boundDiag}{= Numeric lbound for diagonal of the a, c, and e matrices. Default = NULL (no bound)}
 
 \item{weightVar}{= If provided, a vector objective will be used to weight the data. (default = NULL).}
 
@@ -62,21 +62,21 @@ A common task in twin modeling involves using the genetic and environmental diff
 between large numbers of pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
 to model the genetic and environmental structure of one, or, typically, several phenotypes
 (measured behaviors). umxACEv supports modeling with the ACE Cholesky model, a core model 
-in behavior genetics (Cardon and Neale, 1996).
+in behavior genetics (Neale and Cardon, 1996).
 }
 \details{
 This model decomposes phenotypic variance into Additive genetic,
-unique environmental (E) and, optionally, either common or shared-environment (C) or 
+unique environmental (E) and, optionally, either common environment (shared-environment, C) or 
 non-additive genetic effects (D). Scroll down to details for how to use the function, a figure
 and multiple examples.
 
-The Cholesky or lower-triangle decomposition allows a model which is both sure to be 
-solvable, and also to account for all the variance (with some restrictions) in the data. 
-This model creates as many latent A C and E variables as there are phenotypes, and, moving 
-from left to right, decomposes the variance in each component into successively restricted 
-factors. The following figure shows how the ACE model appears as a path diagram:
+This function does not use the Cholesky decomposition. Instead it directly models variance.
+This ensures unbiased type-I error rates. It means that occasionally
+estimates of variance may be negative. This should be used as an occasion to inspect you model
+choices and data.
+The following figure shows the A components of a trivate ACEv model:
 
-\figure{ACE.png}
+\figure{ACEv.png}
 
 
 \strong{Data Input}
@@ -101,13 +101,50 @@ from 1 (the default for modeling family-level effects shared 100% by twins in a 
 to .25 to model dominance effects.
 
 \emph{note}: Only one of C or D may be estimated simultaneously. This restriction reflects the lack
-of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs {ref?}.
+of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs (Eaves et al. 1978 p267).
 }
 \examples{
+
+# ==============================
+# = Univariate model of weight =
+# ==============================
+require(umx)
+data(twinData) # ?twinData from Australian twins.
+
+# Things to note: ACE model of weight will return a NEGATIVE variance in C.
+#  This is exactly why we have ACEv! It suggests we need a different model
+#  In this case: ADE.
+# Other things to note:
+# 1. umxACEv can figure out variable names: provide "sep" and "wt" -> "wt1" "wt2"
+# 2. umxACEv picks the variables it needs from the data.
+
+selDVs = "wt"
+mzData <- twinData[twinData$zygosity \%in\% "MZFF", ]
+dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
+m1 = umxACEv(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
+
+# ========================================================
+# = Evidence for dominance ? (DZ correlation set to .25) =
+# ========================================================
+m2 = umxACEv("ADE", selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData, dzCr = .25)
+# note: the underlying matrices are still called A, C, and E.
+# I catch this in the summary table, so columns are labeled A, D, and E.
+# However, currently, the plot will say A, C, E.
+
+# We can modify this model, dropping dominance component (still called C), 
+# and see a comparison:
+m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE)
+# =========================================================
+# = Well done! Now you can make modify twin models in umx =
+# =========================================================
 
 # ============================
 # = How heritable is height? =
 # ============================
+# 
+# Note: Height has a large variance. umx can typically picks good starts,
+#    but scaling is advisable.
+# 
 require(umx)
 data(twinData) # ?twinData from Australian twins.
 # Pick the variables
@@ -123,23 +160,12 @@ plot(m1)
 # = Evidence for dominance ? (DZ correlation set to .25) =
 # ========================================================
 m2 = umxACEv("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
-umxCompare(m2, m1) # ADE is better
-umxSummary(m2, comparison = m1) # nb: though this is ADE, columns are labeled ACE
-
-# ==============================
-# = Univariate model of weight =
-# ==============================
-
-# Things to note:
-# 1. This variable has a large variance, but umx picks good starts.
-# 2. umxACEv can figure out variable names: provide "sep" and "wt" -> "wt1" "wt2"
-# 3. umxACEv picks the variables it needs from the data.
-
-# You can use boundDiag to lbound a, c, and e at 0 (prevents mirror-solutions).
-m1 = umxACEv(selDVs = "wt", sep = '', dzData = dzData, mzData = mzData, boundDiag = 0)
+umxCompare(m2, m1) # Is ADE better?
+umxSummary(m2, comparison = m1) # nb: though this is ADE, matrices are still called A,C,E
 
 # We can modify this model, dropping shared environment, and see a comparison:
-m2 = umxModify(m1, update = "C_r1c1", comparison = TRUE)
+m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE)
+
 # =====================================
 # = Bivariate height and weight model =
 # =====================================
@@ -152,11 +178,6 @@ dzData = twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
 mzData = mzData[1:80,] # quicker run to keep CRAN happy
 dzData = dzData[1:80,]
 m1 = umxACEv(selDVs = c("ht", "wt"), suffix = '', dzData = dzData, mzData = mzData)
-
-# =========================================================
-# = Well done! Now you can make modify twin models in umx =
-# =========================================================
-
 
 # ===================
 # = Ordinal example =
@@ -236,7 +257,8 @@ umxSummary(m1)
 plot(m1)
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches 
+to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.nature.com/articles/hdy1978101.pdf}
 }
 \seealso{
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},

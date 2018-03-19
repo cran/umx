@@ -1,4 +1,4 @@
-#   Copyright 2007-2017 Copyright 2007-2017 Timothy C. Bates
+#   Copyright 2007-2018 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -12,26 +12,26 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-#' Build and run a 2-group Cholesky twin model (uni-variate or multi-variate) with variance estimates.
+#' Build and run 2-group uni- or multi-variate ACE models based on VARIANCE (not paths).
 #'
 #' A common task in twin modeling involves using the genetic and environmental differences 
 #' between large numbers of pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
 #' to model the genetic and environmental structure of one, or, typically, several phenotypes
 #' (measured behaviors). umxACEv supports modeling with the ACE Cholesky model, a core model 
-#' in behavior genetics (Cardon and Neale, 1996).
+#' in behavior genetics (Neale and Cardon, 1996).
 #' 
 #' This model decomposes phenotypic variance into Additive genetic,
-#' unique environmental (E) and, optionally, either common or shared-environment (C) or 
+#' unique environmental (E) and, optionally, either common environment (shared-environment, C) or 
 #' non-additive genetic effects (D). Scroll down to details for how to use the function, a figure
 #' and multiple examples.
 #' 
-#' The Cholesky or lower-triangle decomposition allows a model which is both sure to be 
-#' solvable, and also to account for all the variance (with some restrictions) in the data. 
-#' This model creates as many latent A C and E variables as there are phenotypes, and, moving 
-#' from left to right, decomposes the variance in each component into successively restricted 
-#' factors. The following figure shows how the ACE model appears as a path diagram:
+#' This function does not use the Cholesky decomposition. Instead it directly models variance.
+#' This ensures unbiased type-I error rates. It means that occasionally
+#' estimates of variance may be negative. This should be used as an occasion to inspect you model
+#' choices and data.
+#' The following figure shows the A components of a trivate ACEv model:
 #' 
-#' \figure{ACE.png}
+#' \figure{ACEv.png}
 #' 
 #' @details
 #' \strong{Data Input}
@@ -56,7 +56,8 @@
 #' to .25 to model dominance effects.
 #'
 #' \emph{note}: Only one of C or D may be estimated simultaneously. This restriction reflects the lack
-#' of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs {ref?}.
+#' of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs (Eaves et al. 1978 p267).
+#' 
 #' @param name The name of the model (defaults to"ACE").
 #' @param selDVs The variables to include from the data: preferably, just "dep" not c("dep_T1", "dep_T2").
 #' @param selCovs (optional) covariates to include from the data (do not include suffix in names)
@@ -70,7 +71,7 @@
 #' @param addCI Whether to add intervals to compute CIs (defaults to TRUE).
 #' @param numObsDZ = Number of DZ twins: Set this if you input covariance data.
 #' @param numObsMZ = Number of MZ twins: Set this if you input covariance data.
-#' @param boundDiag = Numeric lbound for diagonal of the a, c, and e matrices. Defaults to 0 since umx version 1.8
+#' @param boundDiag = Numeric lbound for diagonal of the a, c, and e matrices. Default = NULL (no bound)
 #' @param weightVar = If provided, a vector objective will be used to weight the data. (default = NULL).
 #' @param equateMeans Whether to equate the means across twins (defaults to TRUE).
 #' @param bVector Whether to compute row-wise likelihoods (defaults to FALSE).
@@ -81,12 +82,50 @@
 #' @return - \code{\link{mxModel}} of subclass mxModel.ACE
 #' @export
 #' @family Twin Modeling Functions
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches 
+#' to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.nature.com/articles/hdy1978101.pdf}
 #' @examples
+#' 
+#' # ==============================
+#' # = Univariate model of weight =
+#' # ==============================
+#' require(umx)
+#' data(twinData) # ?twinData from Australian twins.
+#'
+#' # Things to note: ACE model of weight will return a NEGATIVE variance in C.
+#' #  This is exactly why we have ACEv! It suggests we need a different model
+#' #  In this case: ADE.
+#' # Other things to note:
+#' # 1. umxACEv can figure out variable names: provide "sep" and "wt" -> "wt1" "wt2"
+#' # 2. umxACEv picks the variables it needs from the data.
+#' 
+#' selDVs = "wt"
+#' mzData <- twinData[twinData$zygosity %in% "MZFF", ]
+#' dzData <- twinData[twinData$zygosity %in% "DZFF", ]
+#' m1 = umxACEv(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
+#' 
+#' # ========================================================
+#' # = Evidence for dominance ? (DZ correlation set to .25) =
+#' # ========================================================
+#' m2 = umxACEv("ADE", selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData, dzCr = .25)
+#' # note: the underlying matrices are still called A, C, and E.
+#' # I catch this in the summary table, so columns are labeled A, D, and E.
+#' # However, currently, the plot will say A, C, E.
+#' 
+#' # We can modify this model, dropping dominance component (still called C), 
+#' # and see a comparison:
+#' m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE)
+#' # =========================================================
+#' # = Well done! Now you can make modify twin models in umx =
+#' # =========================================================
 #' 
 #' # ============================
 #' # = How heritable is height? =
 #' # ============================
+#' # 
+#' # Note: Height has a large variance. umx can typically picks good starts,
+#' #    but scaling is advisable.
+#' # 
 #' require(umx)
 #' data(twinData) # ?twinData from Australian twins.
 #' # Pick the variables
@@ -102,24 +141,12 @@
 #' # = Evidence for dominance ? (DZ correlation set to .25) =
 #' # ========================================================
 #' m2 = umxACEv("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
-#' umxCompare(m2, m1) # ADE is better
-#' umxSummary(m2, comparison = m1) # nb: though this is ADE, columns are labeled ACE
-#'
-#' # ==============================
-#' # = Univariate model of weight =
-#' # ==============================
-#'
-#' # Things to note:
-#' # 1. This variable has a large variance, but umx picks good starts.
-#' # 2. umxACEv can figure out variable names: provide "sep" and "wt" -> "wt1" "wt2"
-#' # 3. umxACEv picks the variables it needs from the data.
-#' 
-#' # You can use boundDiag to lbound a, c, and e at 0 (prevents mirror-solutions).
-#' m1 = umxACEv(selDVs = "wt", sep = '', dzData = dzData, mzData = mzData, boundDiag = 0)
+#' umxCompare(m2, m1) # Is ADE better?
+#' umxSummary(m2, comparison = m1) # nb: though this is ADE, matrices are still called A,C,E
 #'
 #' # We can modify this model, dropping shared environment, and see a comparison:
-#' m2 = umxModify(m1, update = "C_r1c1", comparison = TRUE)
-
+#' m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE)
+#'
 #' # =====================================
 #' # = Bivariate height and weight model =
 #' # =====================================
@@ -133,11 +160,6 @@
 #' dzData = dzData[1:80,]
 #' m1 = umxACEv(selDVs = c("ht", "wt"), suffix = '', dzData = dzData, mzData = mzData)
 #' 
-#' # =========================================================
-#' # = Well done! Now you can make modify twin models in umx =
-#' # =========================================================
-#' 
-#'
 #' # ===================
 #' # = Ordinal example =
 #' # ===================
@@ -215,10 +237,10 @@
 #' umxSummary(m1)
 #' plot(m1)
 
-umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed", "random"), dzData, mzData, suffix = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, boundDiag = 0, 
+umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed", "random"), dzData, mzData, suffix = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL, 
 	weightVar = NULL, equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased", "WLS"), autoRun = getOption("umx_auto_run"), sep = NULL, optimizer = NULL) {
 
-		message("This is STRICTLY experimental, and not complete (prep for Boulder 2018 use of variance components modeling)")
+		# message("This is STRICTLY experimental, and not complete (prep for Boulder 2018 use of variance components modeling)")
 		covMethod = match.arg(covMethod)
 		# =================
 		# = Set optimizer =
@@ -647,10 +669,12 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 			umxSummaryACE(thisFit, digits = digits, file = file, showRg = showRg, std = std, comparison = comparison, CIs = CIs, returnStd = returnStd, extended = extended, zero.print = zero.print, report = report)
 		}
 	} else {
-	umx_has_been_run(model, stop = TRUE)
-	if(is.null(comparison)){
-		message(model$name, " -2 \u00d7 log(Likelihood)") # \u00d7 = times sign
-		print(-2 * logLik(model));			
+		umx_has_been_run(model, stop = TRUE)
+		if(is.null(comparison)){
+			# \u00d7 = times sign
+		 	message(paste0(model$name, " -2 \u00d7 log(Likelihood) = ", 
+				round(-2 * logLik(model), digits=digits))
+			)
 	} else {
 		message("Comparison of model with parent model:")
 		umxCompare(comparison, model, digits = 3)
@@ -693,7 +717,7 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 	AClean[upper.tri(AClean)] = NA
 	CClean[upper.tri(CClean)] = NA
 	EClean[upper.tri(EClean)] = NA
-	rowNames = sub("_.1$", "", selDVs[1:nVar])
+	rowNames  = sub("(_T)?1$", "", selDVs[1:nVar])
 	Estimates = data.frame(cbind(AClean, CClean, EClean), row.names = rowNames, stringsAsFactors = FALSE);
 
 	colNames = c("A", "C", "E")
@@ -748,11 +772,11 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 			# CIs exist, get lower and upper CIs as a dataframe
 			CIlist = data.frame(model$output$confidenceIntervals)
 			# Drop rows fixed to zero
-			CIlist = CIlist[(CIlist$lbound != 0 & CIlist$ubound != 0),]
-			# discard rows named NA
+			CIlist = CIlist[(CIlist$lbound != 0 & CIlist$ubound != 0), ]
+			# Discard rows named NA
 			CIlist = CIlist[!grepl("^NA", row.names(CIlist)), ]
 			# TODO fix for singleton CIs
-			# These can be names ("top.a_std[1,1]") or labels ("a11")
+			# These can be names ("top.A_std[1,1]") or labels ("A11")
 			# imxEvalByName finds them both
 			# outList = c();
 			# for(aName in row.names(CIlist)) {
@@ -784,21 +808,21 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 				thisMatrixName = sub(".*\\.([^\\.]*)\\[.*", replacement = "\\1", x = fullName) # .matrix[
 				thisMatrixRow  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\1", x = fullName))
 				thisMatrixCol  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\2", x = fullName))
-				CIparts    = round(CIlist[n, c("estimate", "lbound", "ubound")], digits)
-				thisString = paste0(CIparts[1], " [",CIparts[2], ", ",CIparts[3], "]")
+				CIparts        = round(CIlist[n, c("estimate", "lbound", "ubound")], digits)
+				thisString     = paste0(CIparts[1], " [",CIparts[2], ", ",CIparts[3], "]")
 
-				if(grepl("^a", thisMatrixName)) {
+				if(grepl("^A", thisMatrixName)) {
 					a_CI[thisMatrixRow, thisMatrixCol] = thisString
-				} else if(grepl("^c", thisMatrixName)){
+				} else if(grepl("^C", thisMatrixName)){
 					c_CI[thisMatrixRow, thisMatrixCol] = thisString
-				} else if(grepl("^e", thisMatrixName)){
+				} else if(grepl("^E", thisMatrixName)){
 					e_CI[thisMatrixRow, thisMatrixCol] = thisString
 				} else{
 					stop(paste("Illegal matrix name: must begin with A, C, or E. You sent: ", thisMatrixName))
 				}
 			}
-			# TODO Check the merge of a_, c_ and e_CI INTO the output table works with more than one variable
-			# TODO umxSummaryACE: Add option to use mxSE
+			# TODO umxSummaryACEv: Check the merge of A_, C_ and E_CI INTO the output table works with more than one variable
+			# TODO umxSummaryACEv: Add option to use mxSE
 			# print(A_CI)
 			# print(C_CI)
 			# print(E_CI)
@@ -806,14 +830,14 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 			names(Estimates) = paste0(rep(colNames, each = nVar), rep(1:nVar));
 			Estimates = umx_print(Estimates, digits = digits, zero.print = zero.print)
 			if(report == "html"){
-				# depends on R2HTML::HTML
+				# Depends on R2HTML::HTML
 				R2HTML::HTML(Estimates, file = "tmpCI.html", Border = 0, append = F, sortableDF = T); 
 				umx_open("tmpCI.html")
 			}
 			CI_Fit = model
-			CI_Fit$top$a$values = A_CI
-			CI_Fit$top$c$values = C_CI
-			CI_Fit$top$e$values = E_CI
+			CI_Fit$top$A$values = A_CI
+			CI_Fit$top$C$values = C_CI
+			CI_Fit$top$E$values = E_CI
 		} # end Use CIs
 	} # end list catcher?
 	
@@ -845,7 +869,7 @@ umxSummary.MxModel.ACEv <- umxSummaryACEv
 #' @param file The name of the dot file to write: Default ("name") = use the name of the model. NA = don't plot.
 #' @param digits How many decimals to include in path loadings (default = 2)
 #' @param means Whether to show means paths (default = FALSE)
-#' @param std Whether to standardize the model (default = TRUE)
+#' @param std Whether to standardize the model (default = FALSE)
 #' @param ... Additional (optional) parameters
 #' @return - optionally return the dot code
 #' @export
@@ -877,46 +901,55 @@ umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = 
 	}
 	varCount = length(selDVs)/2;
 	parameterKeyList = omxGetParameters(model);
+	# e.g. expMean_r1c1       A_r1c1       C_r1c1       E_r1c1
+
 	for(thisParam in names(parameterKeyList) ) {
 		value = parameterKeyList[thisParam]
 		if(class(value) == "numeric") {
 			value = round(value, digits)
 		}
-		if (grepl("^[ACE]_r[0-9]+c[0-9]+", thisParam)) { # a c e
-			from    = sub('([ACE])_r([0-9]+)c([0-9]+)', '\\1\\3', thisParam, perl = TRUE);  # a c or e
-			target  = as.numeric(sub('([ACE])_r([0-9]+)c([0-9]+)', '\\2', thisParam, perl = TRUE));
-			target  = selDVs[as.numeric(target)]
-			latents = append(latents, from)
-			showThis = TRUE
+		if (grepl("^[ACE]_r[0-9]+c[0-9]+", thisParam)) { # fires on things like "A_r1c1"
+			from    = sub('([ACE])_r([0-9]+)c([0-9]+)', '\\1\\3', thisParam, perl = TRUE); # "A_r1c1" --> "A1" where 1 is column
+			target  = sub('([ACE])_r([0-9]+)c([0-9]+)', '\\1\\2', thisParam, perl = TRUE); # target is [ACE] + row
+			latents = append(latents, c(from, target))
+			out = paste0(out, "\t", from, " -> ", target, " [dir=both, label = \"", value, "\"]", ";\n")
 		} else { # means probably
-			if(means){
-				showThis = TRUE
-			} else {
-				showThis = FALSE
-			}
 			from   = thisParam;
 			target = sub('r([0-9])c([0-9])', 'var\\2', thisParam, perl=TRUE) 
-		}
-		if(showThis){
-			out = paste0(out, from, " -> ", target, " [label = \"", value, "\"]", ";\n")
+			if(means){
+				out = paste0(out, "\t", from, " -> ", target, " [label = \"", value, "\"]", ";\n")
+			}
 		}
 	}
+	# =========================================
+	# = list latents and draw them as circles =
+	# =========================================
 	preOut = "\t# Latents\n"
 	latents = unique(latents)
 	for(var in latents) {
 	   preOut = paste0(preOut, "\t", var, " [shape = circle];\n")
 	}
 
+	# ===========================================
+	# = list manifests and draw them as squares =
+	# ===========================================
 	preOut = paste0(preOut, "\n\t# Manifests\n")
 	for(var in selDVs[1:varCount]) {
 	   preOut = paste0(preOut, "\t", var, " [shape = square];\n")
 	}
 
-	rankVariables = paste("\t{rank = same; ", paste(selDVs[1:varCount], collapse = "; "), "};\n") # {rank = same; v1T1; v2T1;}
+	selDVs[1:varCount]
+	l_to_v_at_1 = ""
+	for(l in latents) {
+		var  = as.numeric(sub('([ACE])([0-9]+)', '\\2', l, perl = TRUE)); # target is [ACE]n		
+	   l_to_v_at_1 = paste0(l_to_v_at_1, "\t ", l, "-> ", selDVs[var], " [label = \"@1\"];\n")
+	}
+	
+	rankVars = paste("\t{rank = same; ", paste(selDVs[1:varCount], collapse = "; "), "};\n") # {rank = same; v1T1; v2T1;}
 	# grep('a', latents, value=T)
-	rankA   = paste("\t{rank = min; ", paste(grep('a'   , latents, value = TRUE), collapse = "; "), "};\n") # {rank=min; a1; a2}
-	rankCE  = paste("\t{rank = max; ", paste(grep('[ce]', latents, value = TRUE), collapse = "; "), "};\n") # {rank=min; c1; e1}
-	digraph = paste("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, rankVariables, rankA, rankCE, "\n}", sep="");
+	rankA   = paste("\t{rank = min; ", paste(grep('A'   , latents, value = TRUE), collapse = "; "), "};\n") # {rank=min; a1; a2}
+	rankCE  = paste("\t{rank = max; ", paste(grep('[CE]', latents, value = TRUE), collapse = "; "), "};\n") # {rank=min; c1; e1}
+	digraph = paste0("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, l_to_v_at_1, rankVars, rankA, rankCE, "\n}");
 	xmu_dot_maker(model, file, digraph)
 } # end umxPlotACE
 
@@ -943,6 +976,7 @@ plot.MxModel.ACEv <- umxPlotACEv
 #' m1  = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData)
 #' std = umx_standardize(m1)
 umx_standardize_ACEv <- function(model, ...) {
+	message("Standardizing ACE variance-based models not yet perfected: issues with negative variances...")
 	if(typeof(model) == "list"){ # call self recursively
 		for(thisFit in model) {
 			message("Output for Model: ", thisFit$name)
@@ -955,11 +989,14 @@ umx_standardize_ACEv <- function(model, ...) {
 		}
 		selDVs = dimnames(model$top.expCovMZ)[[1]]
 		nVar <- length(selDVs)/2;
-		# Calculate standardised variance components
-
+		# Calculate standardized variance components
 		A  <- mxEval(top.A, model);   # Variances
 		C  <- mxEval(top.C, model);
 		E  <- mxEval(top.E, model);
+		
+		A = cov2cor(abs(A)) * sign(A)
+		C = cov2cor(abs(C)) * sign(C)
+		E = cov2cor(abs(E)) * sign(E)
 		Vtot = A + C + E;  # Total variance
 		I  <- diag(nVar);  # nVar Identity matrix
 		# Inverse of diagonal matrix of standard deviations. In old money, this was (\sqrt(I.Vtot))~

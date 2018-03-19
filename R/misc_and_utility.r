@@ -1,11 +1,31 @@
-# Poems you should know by heart
-# https://en.wikipedia.org/wiki/O_Captain!_My_Captain!
-# https://en.wikipedia.org/wiki/The_Second_Coming_(poem)
-# https://en.wikipedia.org/wiki/Invictus
-# http://www.poetryfoundation.org/poem/173698get
+# Poems one should know by heart:
 
-#
-#   Copyright 2007-2017 Copyright 2007-2017 Timothy C. Bates
+# William Shakespeare
+# [Tomorrow and tomorrow soliloquy](https://www.poetryfoundation.org/poems/56964/speech-tomorrow-and-tomorrow-and-tomorrow)
+# [To be or not to be](https://www.poetryfoundation.org/poems/56965/speech-to-be-or-not-to-be-that-is-the-question)
+# [The Merchant of Venice](https://www.goodreads.com/work/quotes/2682703-the-merchant-of-venice)
+#  * "How far that little candle throws his beams! So shines a good deed in a weary world."
+#  * The quality of mercy is not strained.
+#  * "One half of me is yours, the other half is yours,
+#    Mine own, I would say; but if mine, then yours,
+#    And so all yours."
+#  * If to do were as easy as to know what were good to do, chapels 
+#    had been churches, and poor men's cottages princes’ palaces.
+# * “This above all: to thine own self be true,
+
+# # PERCY BYSSHE SHELLEY
+# [Ozymandias](https://www.poetryfoundation.org/poems/46565/ozymandias)
+
+# Brevia
+#  * [Invictus](https://en.wikipedia.org/wiki/Invictus)
+#  * [Abou ben Adhem](https://www.poetryfoundation.org/poems/44433/abou-ben-adhem)
+#  * [Odi et amo](https://en.wikipedia.org/wiki/Catullus_85)
+
+# # [Yeats](https://en.wikipedia.org/wiki/W._B._Yeats)
+#  * [The Second Coming](https://en.wikipedia.org/wiki/The_Second_Coming_(poem))
+
+
+#   Copyright 2007-2018 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -31,22 +51,28 @@
 #'
 #' @description
 #' How to cook steak.
-#' @details TODO: add info on skillet choice, meat-cuts. Keji book as reference.
+#' @details Equipment matters. You should buy a heavy cast-iron skillet, and a digital internal thermometer.
+#' Preferably cook over a gas flame.
+#' 
+#' *note*: Cheaper cuts like blade steak can come out fine.
+#' 
+#' A great reference is [The Food Lab](https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087) by Kenji Alt Lopez.
 #'
-#' @return - 
 #' @export
 #' @family Miscellaneous Utility Functions
 #' @seealso - \code{\link{omxBrownie}}
-#' @references - \url{https://github.com/tbates/umx}
+#' @references - [The Food Lab](https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087)
 #' @examples
 #' umxBrownie()
+#' @md
 umxBrownie <- function() {
-	message("Rub steak in a table spoon of salt, put it back in the fridge for 1-4 hours.\n",
+	message("Rub steak in a table spoon of salt, put it back in the fridge for an hour (longer is fine).\n",
 	"Place steak on a hot cast-iron skillet, with a little peanut oil.\n",
 	"Turn steaks as often as you wish. Control heat to below smoke point.\n",
 	"Remove and eat when internal temp reaches 130 \u0080 F.\n"
 	)
 }
+
 # ==============================
 # = Get and set OpenMx options =
 # ==============================
@@ -954,7 +980,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' -> list(baseNames = c("Dep"), sep = "_T", twinIndexes = c(1,2))
 #'
 #' @param df vector of names or data.frame containing the data
-#' @param sep text constant separating name from numeric 1:2 twin index
+#' @param sep text constant separating name from numeric 1:2 twin index.
 #' @return - list(baseNames, sep, twinIndexes)
 #' @export
 #' @family String Functions
@@ -962,6 +988,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' require(umx)
 #' data("twinData")
 #' umx_explode_twin_names(twinData, sep = "")
+#' umx_explode_twin_names(twinData, sep = NULL)
 #' # Single-character single variable test case
 #' x = round(10 * rnorm(1000, mean = -.2))
 #' y = round(5 * rnorm(1000))
@@ -1124,7 +1151,7 @@ umxVersion <- function (model = NULL, verbose = TRUE, return = "umx") {
         message(msg)
     }
 	OpenMx_vers = mxVersion(model = model, verbose = verbose)
-	message('You can update OpenMx thusly:\ninstall.OpenMx(loc = c("UVa", "travis", "CRAN", "open travis build page")')
+	message('You can update OpenMx thusly:\ninstall.OpenMx(loc = c("NPSOL", "travis", "CRAN", "open travis build page")')
 	
 	if(return == "umx"){
 		invisible(umx_vers)
@@ -1479,18 +1506,16 @@ umx_grep <- function(df, grepString, output = c("both", "label", "name"), ignore
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' \dontrun{
-#' umx_rename_file(baseFolder = "~/Downloads/", findStr = "", replaceStr = "", test = TRUE)
+#' # "Season 01" --> "S01" in current folder in MacOS Finder
 #' umx_rename_file("[Ss]eason +([0-9]+)", replaceStr="S\1", baseFolder = "Finder", test = TRUE)
 #' }
 umx_rename_file <- function(findStr = NA, replaceStr = NA, baseFolder = "Finder", listPattern = NA, test = TRUE, overwrite = FALSE) {
 	# TODO: umx_rename_file: Add recursive support
-	# cd "/Users/tim/Desktop/"
-	# find "The Strain" -name "*.mp4"  -exec mv {} "The Strain" \;
 	if(is.na(replaceStr)){
 		stop("Please set a replacement string")
 	}
-	replaceStr = Hmisc::escapeRegex(replaceStr)
-	# uppercase = u$1
+	# vain hope to work around R consuming \ characters
+	# replaceStr = Hmisc::escapeRegex(replaceStr)
 	if(baseFolder == "Finder"){
 		baseFolder = system(intern = TRUE, "osascript -e 'tell application \"Finder\" to get the POSIX path of (target of front window as alias)'")
 		message("Using front-most Finder window:", baseFolder)
@@ -1988,7 +2013,7 @@ specify_decimal <- function(x, k){
 #' @return - 
 #' @export
 #' @family Miscellaneous Stats Helpers
-#' @references - \url{https://cran.r-project.org/package=Rcmdr}
+#' @references - https://cran.r-project.org/package=Rcmdr
 #' @examples
 #' # treat vehicle aspects as items of a test
 #' reliability(cov(mtcars))
@@ -2045,14 +2070,18 @@ print.reliability <- function (x, digits = 4, ...){
 # ==================
 # = Code functions =
 # ==================
-#' Easily install the latest parallel/NPSOL enabled build of OpenMx.
+#' Install OpenMx, with choice of builds
 #'
 #' @description
-#' You can:
-#' 1. Install from UVa (default: This is where we maintain binaries supporting parallel processing and NPSOL).
-#' 2. Install the latest travis built (currently MacOS only).
-#' 3. Install from CRAN.
-#' 4. Open the list of travis builds in a browser window.
+#' You can install OpenMx, including the latest parallel/NPSOL enabled build of OpenMx. Options are:
+#' 
+#' 1. "NPSOL": Install from our repository (default: This is where we maintain binaries supporting parallel processing and NPSOL).
+#' 
+#' 2. "travis": Install the latest travis built (currently MacOS only).
+#' 
+#' 3. "CRAN": Install from CRAN.
+#' 
+#' 4. "open travis build page": Open the list of travis builds in a browser window.
 #'
 #' @aliases umx_update_OpenMx
 #' @param loc Which install to get: "UVa" (the default), "travis" (latest build),
@@ -2067,14 +2096,23 @@ print.reliability <- function (x, digits = 4, ...){
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' \dontrun{
-#' install.OpenMx()
+#' install.OpenMx() # gets the NPSOL version
+#' install.OpenMx("NPSOL") # gets the NPSOL version explicitly
+#' install.OpenMx("CRAN") # Get the latest CRAN version
+#' install.OpenMx("open travis build page") # Open web page of travis builds
 #' }
-install.OpenMx <- function(loc = c("UVa", "travis", "CRAN", "open travis build page"), url= NULL, lib, repos = getOption("repos")) {	
+install.OpenMx <- function(loc = c("NPSOL", "travis", "CRAN", "open travis build page", "UVa"), url= NULL, lib, repos = getOption("repos")) {	
 	loc = match.arg(loc)
+	if(loc == "UVa"){
+		loc = "NPSOL"
+		message("next time, use 'NPSOL' instead of 'UVa'")
+	}
+	
 	if(!is.null(url)){
 		install.packages(loc)
-	} else if(loc == "UVa"){
-		source("http://openmx.psyc.virginia.edu/getOpenMx.R")
+	} else if(loc == "NPSOL"){
+		# was http://openmx.psyc.virginia.edu/getOpenMx.R
+		source("https://openmx.ssri.psu.edu/software/getOpenMx.R")
 	}else if(loc == "travis"){
 		if(umx_check_OS("OSX")){
 			install.packages("http://openmx.psyc.virginia.edu/OpenMx2/bin/macosx/travis/OpenMx_latest.tgz")
@@ -2095,9 +2133,9 @@ umx_update_OpenMx <- install.OpenMx
 #' "make" the umx package using devtools: release to CRAN etc.
 #'
 #' @description
-#' Easily  run devtools "install", "release", "win", or "examples".
+#' Easily  run devtools "install", "release", "win", "examples" etc.
 #'
-#' @param what whether to "install", "release" to CRAN, check on "win", "check", or "examples"))
+#' @param what whether to "install", "release" to CRAN, check on "win", "check", "rhub", "spell" check, or check "examples"))
 #' @param pkg the local path to your package. Defaults to my path to umx.
 #' @param check Whether to run check on the package before release (default = TRUE)
 #' @return - 
@@ -2112,7 +2150,7 @@ umx_update_OpenMx <- install.OpenMx
 #' umx_make(what = "win"))      # check on win-builder
 #' umx_make(what = "release"))  # release to CRAN
 #' }
-umx_make <- function(what = c("install", "examples", "check", "win", "rhub", "release" ), pkg = "~/bin/umx", check = TRUE) {
+umx_make <- function(what = c("install", "examples", "check", "win", "rhub", "release", "spell"), pkg = "~/bin/umx", check = TRUE) {
 	what = match.arg(what)
 	if(what == "install"){
 		devtools::document(pkg = pkg); devtools::install(pkg = pkg);
@@ -2131,6 +2169,8 @@ umx_make <- function(what = c("install", "examples", "check", "win", "rhub", "re
 		# devtools::check_rhub(pkg = pkg)
 	} else if (what == "release"){
 		devtools::release(pkg = pkg, check = check)
+	} else if (what == "spell"){
+		devtools::spell_check(pkg = pkg)
 	}
 }
 
@@ -3252,9 +3292,11 @@ umx_has_CIs <- function(model, check = c("both", "intervals", "output")) {
 	}
 }
 
-#' umx_check_model
+#' Check for required features in an OpenMx.
 #'
-#' Check an OpenMx model
+#' Allows the user to straight-forwardly require a specific model type (i.e., 
+#' "RAM", "LISREL", etc.), whether or not the model has data, if it has been run or not. 
+#' You can also test whether is has a means model or not and (in future) test if it has submodels.
 #'
 #' @param obj an object to check
 #' @param type what type the model must be, i.e., "RAM", "LISREL", etc. (defaults to not checking NULL)
@@ -3792,7 +3834,7 @@ umx_residualize <- function(var, covs = NULL, suffixes = NULL, data){
 
 #' umx_scale_wide_twin_data
 #'
-#' Scale wide data across all cases: currently twins
+#' Scale wide data across all cases: currently 2 twins.
 #'
 #' @param varsToScale The base names of the variables ("weight" etc.)
 #' @param suffix The suffix that distinguishes each case, e.g. "_T")
@@ -3810,6 +3852,7 @@ umx_scale_wide_twin_data <- function(varsToScale, suffix, data) {
 	if(length(suffix) != 1){
 		stop("I need one suffix, you gave me ", length(suffix), "\nYou, might, for instance, need to change c('_T1', '_T2') to just '_T'")
 	}
+	# TODO discover suffixes as unique digits following suffix (could be 1:6)
 	namesNeeded = umx_paste_names(varsToScale, sep = suffix, suffixes = 1:2)
 	umx_check_names(namesNeeded, data)
 	t1Traits = paste0(varsToScale, suffix, 1)
@@ -4012,18 +4055,16 @@ umx_explode <- function(delimiter = character(), string) {
 #' umx_names(mtcars, "^d") # "disp", drat
 #' umx_names(mtcars, "r[ab]") # "drat", "carb"
 #' umx_names(mtcars, "mpg", replacement = "hello") # "mpg" replaced with "hello"
-#' \dontrun{
-#' # TODO umx_names: Add GFF examples to umx_names
-#' 
-#' umx_names(nl, "1$")
-#' # "zyg" "sex1"  "age1"  "gff1"  "fc1"   "qol1"  "hap1"  "sat1"  "AD1" "SOMA1" "SOC1"  "THOU1"
-#' umx_names(nl, "2$")
-#' 
-#' umx_names(nl, "b$")
-#' umx_names(nl, "s$")
-#' umx_names(nl, "[^12bs]$")
-#' # "divorce"
-#' }
+#'
+#' # =======================================
+#' # = Examples using built-in GFF dataset =
+#' # =======================================
+#'
+#' umx_names(GFF, "T_1$") # twin 1
+#' # "zyg" "sex1" "age_T1" "gff_T1" "fc_T1" "qol_T1" "hap_T1"...
+#' umx_names(GFF, "2$") # names ending in 2
+#' umx_names(GFF, "[^12bs]$") # doesn't end in `1`, `2`, `b`, or `s`
+#' # "zyg_6grp" "zyg_2grp" "divorce"
 umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE, perl = FALSE, value = TRUE, fixed = FALSE, useBytes = FALSE, invert = FALSE) {
 	if(class(df) == "data.frame"){
 		nameVector = names(df)
@@ -4360,12 +4401,13 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 #' @description
 #' Makes MZ and DZ twin data, optionally with moderated A. By default, the three variance components must sum to 1.
 #' 
-#' See examples for how to use this: it is pretty flexible.
+#' See examples for how to use this: it is pretty flexible).
 #' 
-#' If you provide 2 varNames, they will be used. If you provide one, it will be expanded to var_T1 and var_T2
+#' If you provide 2 varNames, they will be used for twin 1 and twin 2. If you provide one, it will be expanded to var_T1 and var_T2
 #' 
-#' Note, if you want a power calculator, see \href{http://www.people.vcu.edu/~bverhulst/power/power.html}{here}.
 #' You supply the number of pairs of each zygosity that wish to simulate (nMZpairs, nDZpairs), along with the values of AA, CC,and EE.
+#' 
+#' *Note*, if you want a power calculator, see [here](http://www.people.vcu.edu/~bverhulst/power/power.html).
 #' 
 #' **Shortcuts**
 #' 
@@ -4488,7 +4530,6 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 #' # m1 = lm(var_T1~ M_T1, data = x); 
 #' # x = rbind(tmp[[1]], tmp[[2]])
 #' # plot(residuals(m1)~ x$M_T1, data=x)
- 
 #' @md
 umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL, EE = NULL, nThresh = NULL, sum2one = TRUE,  varNames = "var", seed = NULL, empirical = FALSE, MZr= NULL, DZr= NULL, Amod = NULL, Cmod = NULL, Emod = NULL) {
 	if(!is.null(seed)){
@@ -5478,7 +5519,7 @@ umx_standardize.default <- function(model, ...){
 #'
 #' umx_standardize_RAM takes a RAM-style model, and returns standardized version.
 #'
-#' @param model The \code{\link{mxModel}} you wish to standardise
+#' @param model The \code{\link{mxModel}} you wish to standardize
 #' @param ... Other options
 #' @return - standarized RAM model.
 #' @family Reporting functions
@@ -5588,7 +5629,7 @@ umx_standardize_ACE <- function(model, ...) {
 		}
 		selDVs = dimnames(model$top.expCovMZ)[[1]]
 		nVar <- length(selDVs)/2;
-		# Calculate standardised variance components
+		# Calculate standardized variance components
 		a  <- mxEval(top.a, model); # Path coefficients
 		c  <- mxEval(top.c, model);
 		e  <- mxEval(top.e, model);
@@ -5662,7 +5703,7 @@ umx_standardize.MxModel.ACEcov <- umx_standardize_ACEcov
 
 #' umx_standardize_IP
 #'
-#' This function simply copys the standardized IP components into the ai ci ei and as cs es matrices
+#' This function simply copies the standardized IP components into the ai ci ei and as cs es matrices
 #'
 #' @param model an \code{\link{umxIP}} model to standardize
 #' @param ... Other options
@@ -5719,7 +5760,7 @@ umx_standardize_CP <- function(model, ...){
 		selDVs = dimnames(model$top.expCovMZ)[[1]]
 		nVar   = length(selDVs)/2;
 		nFac   = dim(model$top$matrices$a_cp)[[1]]	
-		# Calculate standardised variance components
+		# Calculate standardized variance components
 		a_cp  = mxEval(top.a_cp , model); # nFac * nFac matrix of path coefficients flowing into the cp_loadings array
 		c_cp  = mxEval(top.c_cp , model);
 		e_cp  = mxEval(top.e_cp , model);

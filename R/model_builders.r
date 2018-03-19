@@ -1,5 +1,5 @@
 #
-#   Copyright 2007-2017 Copyright 2007-2017 Timothy C. Bates
+#   Copyright 2007-2018 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 # = Model Builders =
 # ==================
 
-#' umxEFA
+#' FIML-based Exploratory Factor Analysis (EFA)
 #'
 #' Perform full-information maximum-likelihood factor analysis on a data matrix.
-#' as in \code{\link{factanal}}, you need only specify the number of factors and offer up
+#' 
+#' As in \code{\link{factanal}}, you need only specify the number of factors and offer up
 #' some manifest data, e.g:
 #'                                                              
 #' \code{umxEFA(factors = 2, data = mtcars)}
@@ -35,55 +36,68 @@
 #' 
 #' You can request \code{scores} from the model. Unlike factanal, these can cope with missing data.
 #' 
+#' You can also rotate the factors using any rotation function.
+#' 
 #' @details
 #' In an EFA, all items may load on all factors.
+#' 
 #' For identification we need m^2 degrees of freedom. We get m * (m+1)/2 from fixing factor variances to 1 and covariances to 0.
 #' We get another m(m-1)/2 degrees of freedom by fixing the upper-right hand corner of the factor loadings
 #' component of the A matrix. The manifest variances are also lbounded at 0.
 #' 
 #' EFA reports standardized loadings: to do this, we scale the data.
 #' 
-#' Bear in mind that factor scores are indeterminate and can be rotated.
+#' \emph{note}: Bear in mind that factor scores are indeterminate.
 #' 
-#' This is very much early days.
+#' Thanks to @ConorDolan for code implementing the rotation matrix and other suggestions!
 #' 
 #' 
 #' @aliases umxFactanal umxEFA
 #' @param x Either 1: data, 2: A formula (not implemented yet), 3: A vector of variable names, or 4: A name for the model.
 #' @param factors Either number of factors to request or a vector of factor names.
 #' @param data A dataframe of manifest columns you are modeling
-#' @param covmat Covariance matrix of data you are modeling (not implemented)
 #' @param n.obs Number of observations in covmat (if provided, default = NA)
 #' @param rotation A rotation to perform on the loadings (default  = "varimax" (orthogonal))
 #' @param scores Type of scores to produce, if any. The default is none, "Regression" gives Thompson's scores. Other options are 'ML', 'WeightedML', Partial matching allows these names to be abbreviated.
 #' @param minManifests The least number of variables required to return a score for a participant (Default = NA).
 #' @param name A name for your model
 #' @param digits rounding (default = 2)
+#' @param return by default, the resulting MxModel is returned. Say "loadings" to get a fact.anal object.
 #' @param report Report as markdown to the console, or open a table in browser ("html")
+#' @param covmat Covariance matrix of data you are modeling (not implemented)
 #' @return - EFA \code{\link{mxModel}}
 #' @family Super-easy helpers
 #' @export
 #' @seealso - \code{\link{factanal}}, \code{\link{mxFactorScores}}
 #' @references - \url{http://github.com/tbates/umx}
 #' @examples
+#' \dontrun{
 #' myVars <- c("mpg", "disp", "hp", "wt", "qsec")
 #' m1 = umxEFA(mtcars[, myVars], factors =   2, rotation = "promax")
 #' loadings(m1)
+#' 
+#' # Formula interface in base-R factanal()
 #' m2 = factanal(~ mpg + disp + hp + wt + qsec, factors = 2, rotation = "promax", data = mtcars)
 #' loadings(m2)
-#' \dontrun{
 #' plot(m2)
+#' 
+#' # Return a loadings object
+#' x = umxEFA(mtcars[, myVars], factors = 2, return = "loadings")
+#' names(x)
+#' 
 #' m1 = umxEFA(myVars, factors = 2, data = mtcars, rotation = "promax")
 #' m1 = umxEFA(name = "named", factors = "g", data = mtcars[, myVars])
 #' m1 = umxEFA(name = "by_number", factors = 2, rotation = "promax", data = mtcars[, myVars])
 #' x = umxEFA(name = "score", factors = "g", data = mtcars[, myVars], scores= "Regression")
 #' }
-umxEFA <- function(x = NULL, factors = NULL, data = NULL, covmat = NULL, n.obs = NULL, 
+umxEFA <- function(x = NULL, factors = NULL, data = NULL, n.obs = NULL, 
 	scores = c("none", 'ML', 'WeightedML', 'Regression'), minManifests = NA,
-	rotation = c("varimax", "promax", "none"), name = "efa", digits = 2, report = c("markdown", "html")){
+	rotation = c("varimax", "promax", "none"), name = "efa", digits = 2, return = c("model", "loadings"), report = c("markdown", "html"), covmat = NULL){
 	# TODO: umxEFA: Detect ordinal items and switch to UWLS
-	message("umxEFA is beta, send requests to tim.bates@ed.ac.uk")
-	scores = match.arg(scores)
+	rotation = umx_default_option(rotation, c("varimax", "promax", "none"), check = FALSE)
+	scores   = match.arg(scores)
+	return   = match.arg(return)
+
 	# "Bartlett" given Bartlett's weighted least-squares scores. 
 	# name     = "efa"
 	# factors  = 1
@@ -95,12 +109,18 @@ umxEFA <- function(x = NULL, factors = NULL, data = NULL, covmat = NULL, n.obs =
 			stop("covmat and n.obs must be empty when using 'data =' ...")
 		}
 		if(!is.null(x)){
-			if(length(x) > 1) {
+			if (inherits(x,"formula")){
+				if(is.null(data)){
+					stop(paste("If you provide a formula in x to select variable, data must contain a dataframe"))
+				} else {
+					x = all.vars(x)
+					data = data[, x]
+					name = "EFA"
+				}
+			} else if(length(x) > 1) {
 				umx_check_names(x, data)
 				data = data[,x]
-			} else if (inherits(x,"formula")){
-				stop("Nice formula! Sadly I can't handle formulae yet: email tim and abuse him about this failing")
-				# TODO: umxEFA: Handle is.formula()
+				name = "EFA"
 			}else{
 				name = x
 			}
@@ -129,7 +149,6 @@ umxEFA <- function(x = NULL, factors = NULL, data = NULL, covmat = NULL, n.obs =
 
 	# What about for scores? Do we want std loadings in that case?...
 	data = umx_scale(data)
-	rotation = umx_default_option(rotation, c("varimax", "promax", "none"), check = FALSE)
 	if(is.null(factors)){
 		stop("You need to request at least 1 latent factor, e.g.: factors = 4")
 	} else if( length(factors) == 1 && class(factors) == "numeric"){
@@ -160,16 +179,27 @@ umxEFA <- function(x = NULL, factors = NULL, data = NULL, covmat = NULL, n.obs =
 	if(rotation != "none" && nFac > 1){
 		x = loadings.MxModel(m1)
 		x = eval(parse(text = paste0(rotation, "(x)")))
+		print("Rotation results")
 		print(x) # print out the nice rotation result
-		m1$A$values[manifests, factors] = x$loadings[1:nManifests, 1:nFac] # stash the rotated result
+		rm = x$rotmat
+		print("Factor Correlation Matrix")
+		print(solve(t(rm) %*% rm))
+
+		# stash the rotated result in the model A matrix
+		m1$A$values[manifests, factors] = x$loadings[1:nManifests, 1:nFac] 
 	} else {
+		print("Results")
 		print(loadings(m1))
 	}
 	umxSummary(m1, digits = digits, report = report);
 	if(scores != "none"){
 		x = umxFactorScores(m1, type = scores, minManifests = minManifests)
 	} else {
-		invisible(m1)
+		if(return == ""){
+			invisible(x)
+		} else {
+			invisible(m1)
+		}
 	}
 }
 
@@ -193,8 +223,11 @@ umxFactanal <- umxEFA
 #' @examples
 #' m1 = umxEFA(mtcars, factors = 2)
 #' x = umxFactorScores(m1, type = c('Regression'), minManifests = 3)
+#' \dontrun{
 #' m1 = umxEFA(mtcars, factors = 1)
 #' x = umxFactorScores(m1, type = c('Regression'), minManifests = 3)
+#' x
+#' }
 umxFactorScores <- function(model, type = c('ML', 'WeightedML', 'Regression'), minManifests = NA) {
 	suppressMessages({
 		scores = mxFactorScores(model, type = type, minManifests = minManifests)
@@ -233,7 +266,7 @@ umxFactorScores <- function(model, type = c('ML', 'WeightedML', 'Regression'), m
 #' @return - 
 #' @export
 #' @family Super-easy helpers
-#' @seealso - \code{\link{umxRAM}}, \code{\link[sem]{tsls}}
+#' @seealso - \code{\link{umx_make_MR_data}}, \code{\link[sem]{tsls}}, \code{\link{umxRAM}}
 #' @references - Fox, J. (1979) Simultaneous equation models and two-stage least-squares.
 #' In Schuessler, K. F. (ed.) \emph{Sociological Methodology}, Jossey-Bass., 
 #' Greene, W. H. (1993) \emph{Econometric Analysis}, Second Edition, Macmillan.

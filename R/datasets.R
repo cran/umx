@@ -13,8 +13,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-#' # How I coded this data from the Boulder example
-#' 
+# How I coded this data from the Boulder example
+#
 # GFF = read.table("~/bin/umx/data/DHBQ_bs.dat", header = T, sep = "\t", as.is = c(T), na.strings = -999)
 # x   = umx_rename(GFF, old = "zyg2"     , replace = "zyg_2grp"); names(x)
 # x   = umx_rename(x  , old = "zyg"      , replace = "zyg_6grp"); names(x)
@@ -62,7 +62,7 @@
 #' their brothers and sisters. (see details)
 #'
 #' @details
-#' Several scales in the data are described in  van der Aa et al (2010).
+#' Several scales in the data are described in  van der Aa et al. (2010).
 #' General Family Functioning (GFF) refers to adolescents' evaluations general family health
 #' vs. pathology. It assesses problem solving, communication, roles within the household,
 #' affection, and control. GFF was assessed with a Dutch translation of the General Functioning
@@ -126,6 +126,7 @@
 #' }
 #' @docType data
 #' @keywords datasets
+#' @family datasets
 #' @name GFF
 #' @usage data(GFF)
 #' @format A data frame with 1000 rows and 8 variables:
@@ -177,6 +178,7 @@ NULL
 #' 
 #' @docType data
 #' @keywords datasets
+#' @family datasets
 #' @name us_skinfold_data
 #' @references Moskowitz, W. B., Schwartz, P. F., & Schieken, R. M. (1999).
 #' Childhood passive smoking, race, and coronary artery disease risk:

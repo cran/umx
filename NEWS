@@ -1,6 +1,27 @@
-# umx 2.0.1 (Feb 12 2018, R 3.4.3 Higher goals edition)
+# umx 2.4.0 March 21 2018, R 3.4.3 post Boulder Workshop edition)
+* NEW: `umxIP` nFac now allows specifying different numbers of a, c, and e factors!
+* NEW: `umxACEv` plot works (shows correlated factors)
+* NEW: `umxACEv` standardize mostly functional.
+* NEW: `umxEFA` can now take a formula to select variables.
+* IMPROVED: `umxIP` and CP examples improved (3-variables, GFF data)
+* IMPROVED: `umxIP` *reporting* of `as`, `cs`, `es` simplified into compact stack.
+* IMPROVED: `umxCP` *reporting* of `as`, `cs`, `es` simplified into compact stack.
+* IMPROVED: `umxPlotCP` labelling of variables improved (catching more _Tn).
+* IMPROVED: `umxEFA` reports factor correlation matrix (thanks @ConorDolan)!
+* IMPROVED: `umxEFA` can return a loadings object.
+* IMPROVED: `umx_make`not supports spelling check.
+* IMPROVED: `umxACEv` diagonal now unbounded by default (which is it's whole purpose)
+* IMPROVED: `umxACEv` got major improvements to help file.
+* IMPROVED: `umxSummaryCP` got ability to print to html.
+* IMPROVED: `plot` made more robust to unexpected labels (now that umxModify can make newLabels)!
+* MINOR: `umx_names` Added GFF examples.
+* DROPPED: deleted deprecated showStd and showMeans parameters from plot ACE.
+* BUGFIX: `umxSummaryIP` was assuming nFac = 1
+
+# umx 2.0.2 (Feb 12 2018, R 3.4.3 Higher goals edition)
 * NEW: `umxSummary` works with multi-group models!
 	* (make these with `umxSuperModel`)
+* NEW: `umxModify` supports multiple find strings and replace strings!
 * IMPROVED: `umxAPA` supports glm, more robust input checking.
 * FIXED: `umxEquate` allows vectors of labels.
 * DOCS: `umxGetParameters` has better help.

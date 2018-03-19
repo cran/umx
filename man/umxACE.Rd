@@ -63,7 +63,7 @@ umxACE(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 \description{
 Implementing a core task in twin modeling, umxACE models the genetic and environmental
 structure of one or more phenotypes (measured variables) using the Cholesky ACE model
-(Cardon and Neale, 1996).
+(Neale and Cardon, 1996).
 
 Classical twin modeling uses the genetic and environmental differences 
 among pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together.
@@ -105,8 +105,10 @@ from 1 (the default for modeling family-level effects shared 100% by twins in a 
 to .25 to model dominance effects.
 
 \strong{Matrices and Labels in ACE model}
-a, c, and e contain the path loadings of the Cholesky ACE factor model.
-So labels relevant to modifying the model are of the form "a_r1c1", "c_r1c1" etc.
+
+Matrices 'a'', 'c', and 'e' contain the path loadings of the Cholesky ACE factor model.
+
+So, labels relevant to modifying the model are of the form "a_r1c1", "c_r1c1" etc.
 
 Variables are in rows, and factors are in columns. So to drop the influence of factor 2 on variable 3, you would say
 
@@ -118,7 +120,7 @@ So, in a model where the means for twin 1 and twin 2 had been equated (set = to 
 m1$top$expMean$labels[1,4:6] =  c("expMean_r1c4", "expMean_r1c5", "expMean_r1c6")
 
 \emph{note}: Only one of C or D may be estimated simultaneously. This restriction reflects the lack
-of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs (Cardon and Neale, 1996).
+of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs (Eaves et al. 1978 p267).
 }
 \examples{
 
@@ -141,7 +143,7 @@ plot(m1)
 # ========================================================
 m2 = umxACE("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
 umxCompare(m2, m1) # ADE is better
-umxSummary(m2, comparison = m1) # nb: though this is ADE, columns are labeled ACE
+umxSummary(m2, comparison = m1) # nb: though this is ADE, matrices are still called A, C & E
 
 # ==============================
 # = Univariate model of weight =
@@ -154,9 +156,10 @@ umxSummary(m2, comparison = m1) # nb: though this is ADE, columns are labeled AC
 # 2. umxACE can figure out variable names: provide sep= "_T" and selVar = "wt" -> "wt_T1" "wt_T2"
 
 # 3. umxACE picks the variables it needs from the data.
-# 4. You can use boundDiag to lbound a, c, and e at 0 (prevents mirror-solutions).
+# 4. note: the default boundDiag = 0 lower-bounds a, c, and e at 0 (prevents mirror-solutions).
+        # can remove this by setting boundDiag = NULL
+m1 = umxACE(selDVs = "wt", dzData = dzData, mzData = mzData, sep = "", boundDiag = NULL)
 
-m1 = umxACE(selDVs = "wt", dzData = dzData, mzData = mzData, sep = "", boundDiag = 0)
 # MODEL MODIFICATION
 # We can modify this model, say testing shared environment, and see a comparison:
 
@@ -169,8 +172,8 @@ mzData <- twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"),]
 dzData <- twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
 mzData <- mzData[1:80,] # quicker run to keep CRAN happy
 dzData <- dzData[1:80,]
-selDVs = c("ht", "wt") # umx will add suffix (in this case "") + "1" or '2'
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
+selDVs = c("ht", "wt") # umx will add sep (in this case "") + "1" or '2'
+m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
 
 # =========================================================
@@ -257,9 +260,12 @@ umxSummary(m1)
 plot(m1)
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches 
+to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.nature.com/articles/hdy1978101.pdf}
 }
 \seealso{
+- \code{\link{plot.MxModel.ACE}}, \code{\link{plot.MxModel.ACE}}, \code{\link{umxSummaryACE}}, \code{\link{umxModify}}
+
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACEcov}}, \code{\link{umxACEv}},
   \code{\link{umxCP}}, \code{\link{umxGxE_biv}},

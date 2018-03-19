@@ -1,5 +1,5 @@
 #
-#   Copyright 2007-2017 Copyright 2007-2017 Timothy C. Bates
+#   Copyright 2007-2018 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -280,7 +280,7 @@ xmuLabel_RAM_Model <- function(model, suffix = "", labelFixedCells = TRUE, overR
 #' End users should just call \code{\link{umxLabel}}
 #'
 #' Purpose: label the cells of an mxMatrix
-#' Detail: Defaults to the handy "matrixname_r1c1" where 1 is the row or column
+#' Detail: Defaults to the handy "name_r1c1" where name is the matrix name, and r1c1 = row 1 col 1.
 #' Use case: You should not use this: call umxLabel
 #' umx:::xmuLabel_Matrix(mxMatrix("Lower", 3, 3, values = 1, name = "a", byrow = TRUE), jiggle = .05, boundDiag = NA);
 #' umx:::xmuLabel_Matrix(mxMatrix("Full" , 3, 3, values = 1, name = "a", byrow = TRUE));

@@ -1,4 +1,4 @@
-#   Copyright 2007-2017 Copyright 2007-2017 Timothy C. Bates
+#   Copyright 2007-2018 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -1271,7 +1271,7 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' @description
 #' Implementing a core task in twin modeling, umxACE models the genetic and environmental
 #' structure of one or more phenotypes (measured variables) using the Cholesky ACE model
-#' (Cardon and Neale, 1996).
+#' (Neale and Cardon, 1996).
 #' 
 #' Classical twin modeling uses the genetic and environmental differences 
 #' among pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together.
@@ -1313,8 +1313,10 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' to .25 to model dominance effects.
 #'
 #' \strong{Matrices and Labels in ACE model}
-#' a, c, and e contain the path loadings of the Cholesky ACE factor model.
-#' So labels relevant to modifying the model are of the form "a_r1c1", "c_r1c1" etc.
+#' 
+#' Matrices 'a'', 'c', and 'e' contain the path loadings of the Cholesky ACE factor model.
+#' 
+#' So, labels relevant to modifying the model are of the form "a_r1c1", "c_r1c1" etc.
 #'
 #' Variables are in rows, and factors are in columns. So to drop the influence of factor 2 on variable 3, you would say
 #'
@@ -1326,7 +1328,7 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' m1$top$expMean$labels[1,4:6] =  c("expMean_r1c4", "expMean_r1c5", "expMean_r1c6")
 #'
 #' \emph{note}: Only one of C or D may be estimated simultaneously. This restriction reflects the lack
-#' of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs (Cardon and Neale, 1996).
+#' of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs (Eaves et al. 1978 p267).
 #' @param name The name of the model (defaults to"ACE").
 #' @param selDVs The variables to include from the data: preferably, just "dep" not c("dep_T1", "dep_T2").
 #' @param selCovs (optional) covariates to include from the data (do not include suffix in names)
@@ -1352,7 +1354,9 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' @return - \code{\link{mxModel}} of subclass mxModel.ACE
 #' @export
 #' @family Twin Modeling Functions
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @seealso - \code{\link{plot.MxModel.ACE}}, \code{\link{plot.MxModel.ACE}}, \code{\link{umxSummaryACE}}, \code{\link{umxModify}}
+#' @references - Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches 
+#' to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.nature.com/articles/hdy1978101.pdf}
 #' @examples
 #' 
 #' # ============================
@@ -1374,7 +1378,7 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' # ========================================================
 #' m2 = umxACE("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
 #' umxCompare(m2, m1) # ADE is better
-#' umxSummary(m2, comparison = m1) # nb: though this is ADE, columns are labeled ACE
+#' umxSummary(m2, comparison = m1) # nb: though this is ADE, matrices are still called A, C & E
 #'
 #' # ==============================
 #' # = Univariate model of weight =
@@ -1387,10 +1391,10 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' # 2. umxACE can figure out variable names: provide sep= "_T" and selVar = "wt" -> "wt_T1" "wt_T2"
 #' 
 #' # 3. umxACE picks the variables it needs from the data.
-#' # 4. You can use boundDiag to lbound a, c, and e at 0 (prevents mirror-solutions).
-#' 
-#' m1 = umxACE(selDVs = "wt", dzData = dzData, mzData = mzData, sep = "", boundDiag = 0)
-
+#' # 4. note: the default boundDiag = 0 lower-bounds a, c, and e at 0 (prevents mirror-solutions).
+#'         # can remove this by setting boundDiag = NULL
+#' m1 = umxACE(selDVs = "wt", dzData = dzData, mzData = mzData, sep = "", boundDiag = NULL)
+#'
 #' # MODEL MODIFICATION
 #' # We can modify this model, say testing shared environment, and see a comparison:
 #' 
@@ -1404,14 +1408,14 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' dzData <- twinData[twinData$zygosity %in% c("DZFF", "DZMM", "DZOS"), ]
 #' mzData <- mzData[1:80,] # quicker run to keep CRAN happy
 #' dzData <- dzData[1:80,]
-#' selDVs = c("ht", "wt") # umx will add suffix (in this case "") + "1" or '2'
-#' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
+#' selDVs = c("ht", "wt") # umx will add sep (in this case "") + "1" or '2'
+#' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 #' umxSummary(m1)
-#' 
+#'
 #' # =========================================================
 #' # = Well done! Now you can make modify twin models in umx =
 #' # =========================================================
-#' 
+#'
 #'
 #' # ===================
 #' # = Ordinal example =
@@ -1511,7 +1515,7 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed", 
 		# If given covariates, call umxACEcov
 		if(!is.null(selCovs)){
 			if(covMethod == "fixed"){
-				stop("Implementing this for version 2.0")
+				stop("Fixed covaraites are on the roadmap for umx in 2018. Til then, use umx_residualize on the data first.")
 				# umxACEdefcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun)
 			} else if(covMethod == "random") {
 				umxACEcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun)
@@ -2280,20 +2284,19 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NU
 #' @seealso - \code{\link{umxACE}()} for more examples of twin modeling, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
+#' \dontrun{
 #' require(umx)
-#' data(twinData) 
-#' twinData$wt1 = twinData$wt1/10 # help CSOLNP by putting wt on a similar scale to ht
-#' twinData$wt2 = twinData$wt2/10 # help CSOLNP by putting wt on a similar scale to ht
-#' selDVs = c("ht", "wt")
-#' mzData <- subset(twinData, zygosity == "MZFF")
-#' dzData <- subset(twinData, zygosity == "DZFF")
-#' umx_set_optimizer("SLSQP") # preferably NPSOL: CSOLNP needs setup to run this model.
-#' m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = "")
+#' data(GFF)
+#' mzData <- subset(GFF, zyg_2grp == "MZ")
+#' dzData <- subset(GFF, zyg_2grp == "DZ")
+#' selDVs = c("gff","fc","qol","hap","sat","AD") # These will be expanded into "gff_T1" "gff_T2" etc.
+#' m1 = umxCP(selDVs = selDVs, sep = "_T", nFac = 3, dzData = dzData, mzData = mzData)
 #' umxSummary(m1)
 #' umxParameters(m1, patt = "^c")
 #' m2 = umxModify(m1, regex = "(cs_.*$)|(c_cp_)", name = "dropC")
 #' umxSummaryCP(m2, comparison = m1, file = NA)
 #' umxCompare(m1, m2)
+#' }
 umxCP <- function(name = "CP", selDVs, dzData, mzData, sep = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, correlatedA = FALSE, equateMeans=T, dzAr=.5, dzCr=1, addStd = T, addCI = T, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run"), optimizer = NULL, suffix = NULL) {
 	nSib = 2
 	# =================
@@ -2477,7 +2480,7 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, sep = NULL, nFac = 1, fre
 #' @param mzData The MZ dataframe
 #' @param suffix The suffix for twin 1 and twin 2, often "_T". If set, you can
 #' omit suffixes in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2")
-#' @param nFac How many common factors (default = 1)
+#' @param nFac How many common factors for a, c, and e. If 1 number number is given, applies to all three.
 #' @param freeLowerA Whether to leave the lower triangle of A free (default = F)
 #' @param freeLowerC Whether to leave the lower triangle of C free (default = F)
 #' @param freeLowerE Whether to leave the lower triangle of E free (default = F)
@@ -2498,16 +2501,27 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, sep = NULL, nFac = 1, fre
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
+#' \dontrun{
 #' require(umx)
-#' data(twinData)
-#' mzData <- subset(twinData, zygosity == "MZFF")
-#' dzData <- subset(twinData, zygosity == "DZFF")
-#' selDVs = c("ht", "wt") # These will be expanded into "ht1" "ht2"
-#' m1 = umxIP(selDVs = selDVs, suffix = "", dzData = dzData, mzData = mzData)
-#' # umxSummary(m1)
-umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, equateMeans = TRUE, dzAr = .5, dzCr = 1, correlatedA = FALSE, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run"), optimizer = NULL, sep=NULL) {
+#' data(GFF)
+#' mzData <- subset(GFF, zyg_2grp == "MZ")
+#' dzData <- subset(GFF, zyg_2grp == "DZ")
+#' selDVs = c("gff","fc","qol","hap","sat","AD") # These will be expanded into "gff_T1" "gff_T2" etc.
+#' m1 = umxIP(selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData)
+#' m1 = umxIP(selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData, 
+#' 	nFac = c(a=3, c = 1, e = 1)
+#' )
+#' umxSummary(m1)
+#' plot(m1)
+#' 
+#' }
+umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = c(a=1, c=1, e=1), freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, equateMeans = TRUE, dzAr = .5, dzCr = 1, correlatedA = FALSE, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run"), optimizer = NULL, sep=NULL) {
 	# TODO implement correlatedA
-
+	if(length(nFac)==1){
+		nFac = c(a = nFac, c = nFac, e = nFac)
+	} else if (length(nFac)!=3){
+		stop("nFac must be either 1 number or 3. You gave me ", length(nFac))
+	}
 	# =================
 	# = Set optimizer =
 	# =================
@@ -2566,9 +2580,9 @@ umxIP <- function(name = "IP", selDVs, dzData, mzData, suffix = NULL, nFac = 1, 
 			umxLabel(mxMatrix("Full", 1, nVar*nSib, free=T, values=obsMZmeans, dimnames=list("means", selDVs), name="expMean")), # Means 
 			# (not yet equated for the two twins)
 			# Matrices ac, cc, and ec to store a, c, and e path coefficients for independent general factors
-			umxMatrix("ai", "Full", nVar, nFac, free=TRUE, values=.6, jiggle=.05), # latent common factor Additive genetic path 
-			umxMatrix("ci", "Full", nVar, nFac, free=TRUE, values=.0, jiggle=.05), # latent common factor Common #environmental path coefficient
-			umxMatrix("ei", "Full", nVar, nFac, free=TRUE, values=.6, jiggle=.05), # latent common factor Unique environmental path #coefficient
+			umxMatrix("ai", "Full", nVar, nFac['a'], free=TRUE, values=.6, jiggle=.05), # latent common factor Additive genetic path 
+			umxMatrix("ci", "Full", nVar, nFac['c'], free=TRUE, values=.0, jiggle=.05), # latent common factor Common #environmental path coefficient
+			umxMatrix("ei", "Full", nVar, nFac['e'], free=TRUE, values=.6, jiggle=.05), # latent common factor Unique environmental path #coefficient
 			# Matrices as, cs, and es to store a, c, and e path coefficients for specific factors
 			umxMatrix("as", "Lower", nVar, nVar, free=TRUE, values=.6, jiggle=.05), # Additive genetic path 
 			umxMatrix("cs", "Lower", nVar, nVar, free=TRUE, values=.0, jiggle=.05), # Common environmental path 
@@ -4160,19 +4174,11 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' i.e., "A -> B; X <-> B; "
 #' 
 #' 
-#' @param from either a source variable e.g "A" or c("A","B"), OR a sem-style path description, e.g. "A-> B" or "C <> B"
-#' @param to one or more target variables for one-headed paths, e.g "A" or c("A","B").
-#' @param with 2-headed path from<--> with. to= and var=  must be left empty.
-#' @param var equivalent to setting from and arrows = 2". nb: from, to, and with must be left empty.
-#' @param cov convenience equivalent to with for 2 variabales. nb: from, to, and with must be left empty.
-#' @param unique.bivariate equivalent to setting "connect = "unique.bivariate", arrows = 2".
-#' nb: from, to, and with must be left empty (their default)
-#' @param fromEach Like all.bivariate, but with one head arrows. 'to' can be set.
-#' @param unique.pairs equivalent to setting "connect = "unique.pairs", arrows = 2" (don't use from, to, or with)
-#' @param forms Build a formative variable. 'from' variables form the latent.
-#' Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate between 'from' variables.
-#' @param Cholesky Treat \strong{Cholesky} variables as latent and \strong{to} as measured, and connect as in an ACE model.
-#' @param defn latent variable, var@0 mean fixed, with label-based as data source
+#' @param from One or more source variables e.g "A" or c("A","B")
+#' @param to One or more target variables for one-headed paths, e.g "A" or c("A","B").
+#' @param with 2-headed path <--> from 'from' to 'with'.
+#' @param var Equivalent to setting 'from' and 'arrows' = 2. nb: from, to, and with must be left empty.
+#' @param cov Convenience to allow 2 variables to covary (equivalent to 'from' and 'with'). nb: leave from, to, etc. empty
 #' @param means equivalent to "from = 'one', to = x. nb: from, to, with and var must be left empty (their default).
 #' @param v1m0 variance of 1 and mean of zero in one call.
 #' @param v.m. variance and mean, both free.
@@ -4181,6 +4187,14 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' @param fixedAt Equivalent to setting "free = FALSE, values = x" nb: free and values must be left empty (their default)
 #' @param freeAt Equivalent to setting "free = TRUE, values = x" nb: free and values must be left empty (their default)
 #' @param firstAt first value is fixed at this (values passed to free are ignored: warning if not a single TRUE)
+#' @param unique.bivariate equivalent to setting from, and "connect = "unique.bivariate", arrows = 2".
+#' nb: from, to, and with must be left empty (their default)
+#' @param unique.pairs equivalent to setting "connect = "unique.pairs", arrows = 2" (don't use from, to, or with)
+#' @param fromEach Like all.bivariate, but with one head arrows. 'to' can be set.
+#' @param forms Build a formative variable. 'from' variables form the latent.
+#' Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate between 'from' variables.
+#' @param Cholesky Treat \strong{Cholesky} variables as latent and \strong{to} as measured, and connect as in an ACE model.
+#' @param defn Makes a latent variable, var@0 mean fixed, set label to 'data.<defn>'
 #' @param connect as in mxPath - nb: Only used when using from and to
 #' @param arrows as in mxPath - nb: Only used when using from and to
 #' @param free whether the value is free to be optimised
@@ -4250,7 +4264,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' # # manifests is a reserved word, as is latents.
 #' # # It allows the string syntax to use the manifestVars variable
 #' # umxPath("A -> manifests") 
-umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL, unique.bivariate = NULL, unique.pairs = NULL, fromEach = NULL, forms = NULL, Cholesky = NULL, defn = NULL, means = NULL, v1m0 = NULL, v.m. = NULL, v0m0 = NULL, v.m0 = NULL, fixedAt = NULL, freeAt = NULL, firstAt = NULL, connect = c("single", "all.pairs", "all.bivariate", "unique.pairs", "unique.bivariate"), arrows = 1, free = TRUE, values = NA, labels = NA, lbound = NA, ubound = NA, hasMeans = NULL) {
+umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL, means = NULL, v1m0 = NULL, v.m. = NULL, v0m0 = NULL, v.m0 = NULL, fixedAt = NULL, freeAt = NULL, firstAt = NULL, unique.bivariate = NULL, unique.pairs = NULL, fromEach = NULL, forms = NULL, Cholesky = NULL, defn = NULL, connect = c("single", "all.pairs", "all.bivariate", "unique.pairs", "unique.bivariate"), arrows = 1, free = TRUE, values = NA, labels = NA, lbound = NA, ubound = NA, hasMeans = NULL) {
 	connect = match.arg(connect) # set to single if not overridden by user.
 	xmu_string2path(from)
 	n = 0
@@ -4612,6 +4626,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 #' @family String Functions
 #' @family Miscellaneous Stats Helpers
 #' @family Miscellaneous Utility Functions
+#' @family datasets
 #' @family Advanced Model Building Functions
 #' @family zAdvanced Helpers
 #' @family xmu internal not for end user
