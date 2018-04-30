@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_and_reporting.r
 \name{umxPlotIP}
 \alias{umxPlotIP}
-\alias{plot.MxModel.IP}
+\alias{plot.MxModelIP}
 \title{Draw a graphical figure for a Independent Pathway model}
 \usage{
 umxPlotIP(x = NA, file = "name", digits = 2, means = FALSE,
@@ -47,5 +47,5 @@ Other Plotting functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACEv}},
   \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
   \code{\link{umxPlotGxE_biv}}, \code{\link{umxPlotGxE}},
-  \code{\link{umx}}
+  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
 }

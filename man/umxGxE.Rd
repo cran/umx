@@ -6,7 +6,7 @@
 \usage{
 umxGxE(name = "G_by_E", selDVs, selDefs, dzData, mzData, sep = NULL,
   lboundACE = NA, lboundM = NA, dropMissingDef = FALSE,
-  autoRun = getOption("umx_auto_run"), optimizer = NULL, suffix = NULL)
+  autoRun = getOption("umx_auto_run"), optimizer = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "G_by_E")}
@@ -30,8 +30,6 @@ umxGxE(name = "G_by_E", selDVs, selDefs, dzData, mzData, sep = NULL,
 \item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
 
 \item{optimizer}{optionally set the optimizer (default NULL does nothing)}
-
-\item{suffix}{Use sep instead (deprecated)}
 }
 \value{
 - GxE \code{\link{mxModel}}
@@ -50,12 +48,11 @@ The following figure the GxE model as a path diagram:
 require(umx)
 data(twinData) 
 twinData$age1 = twinData$age2 = twinData$age
-selDVs  = c("bmi1", "bmi2")
-selDefs = c("age1", "age2")
-selVars = c(selDVs, selDefs)
-mzData  = subset(twinData, zygosity == "MZFF", selVars)[1:80,]
-dzData  = subset(twinData, zygosity == "DZFF", selVars)[1:80,]
-m1 = umxGxE(selDVs = selDVs, selDefs = selDefs, 
+selDVs  = "bmi"
+selDefs = "age"
+mzData  = subset(twinData, zygosity == "MZFF")[1:80,]
+dzData  = subset(twinData, zygosity == "DZFF")[1:80,]
+m1 = umxGxE(selDVs = "bmi", selDefs = "age", sep = "", 
 	dzData = dzData, mzData = mzData, dropMissingDef = TRUE)
 # Plot Moderation
 umxSummaryGxE(m1)
@@ -80,11 +77,12 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACE}}, \code{\link{umxCP}},
   \code{\link{umxGxE_biv}}, \code{\link{umxGxE_window}},
   \code{\link{umxIP}}, \code{\link{umxSexLim}},
-  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE_biv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}}, \code{\link{umx}},
+  \code{\link{umxSummarySexLim}},
+  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }

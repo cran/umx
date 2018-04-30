@@ -47,7 +47,7 @@ xmu_safe_summary <- function(model1, model2, summary = TRUE) {
 #' @param dzData the dat for DZ twins
 #' @param mzData the MZ twin data
 #' @param optimizer if you want to change it
-#' @param suffix creating variable names
+#' @param sep seperator between base-name and numeric suffix when creating variable names.
 #' @param nSib Likely 2 (the default)
 #' @return -
 #' @export
@@ -56,26 +56,28 @@ xmu_safe_summary <- function(model1, model2, summary = TRUE) {
 #' @seealso - \code{\link{umxLabel}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' # TODO examples
-xmu_twin_check <- function(selDVs, dzData = dzData, mzData = mzData, optimizer = NULL, suffix = suffix, nSib = 2) {
+xmu_twin_check <- function(selDVs, dzData = dzData, mzData = mzData, optimizer = NULL, sep = NULL, nSib = 2) {
 	# 1. Set optimizer
 	if(!is.null(optimizer)){
 		umx_set_optimizer(optimizer)
 	}
 	
-	# 2. check data has rows
+	# 2. Check data has rows
 	if(nrow(dzData) == 0){ stop("Your DZ dataset has no rows!") }
 	if(nrow(mzData) == 0){ stop("Your MZ dataset has no rows!") }
 	
-	# 3. enforce presence of suffix
-	if(is.null(suffix)){
-		stop("The umx twin functions are moving to specifying variable names and  just separator like '_T'.
-		If your column names are like 'obese_T1' and 'obese_T2' etc., Please set selVars = 'obese', sep = '_T'")		
-	} else if(length(suffix) > 1){
+	# 3. Enforce presence of suffix
+	if(is.null(sep)){
+		stop("Please use sep = . Set `selDVs` to the base variable names, and `sep` to the separator, and I will create the full variable names from that")
+	} else if(length(sep) != 1){
 		stop("sep should be just one word, like '_T'. I will add 1 and 2 afterwards... \n",
-		"i.e., you have to name your variables 'obese_T1' and 'obese_T2' etc.")
+		"i.e., set selDVs to 'obese', sep to '_T' and I look for 'obese_T1' and 'obese_T2' in the data...\n",
+		"PS: variables have to end in 1 or 2, i.e  'example_T1' and 'example_T2'")
 	}
+
+
 	# 4. expand and check all names in the data
-	selDVs = umx_paste_names(selDVs, suffix, 1:nSib)
+	selDVs = umx_paste_names(selDVs, sep = sep, suffixes = 1:nSib)
 	umx_check_names(selDVs, mzData)
 	umx_check_names(selDVs, dzData)
 
@@ -271,6 +273,42 @@ xmuLabel_RAM_Model <- function(model, suffix = "", labelFixedCells = TRUE, overR
 		model = mxModel(model, name= name)
 	}
 	return(model)
+}
+
+#' Internal function to help building simplex models
+#'
+#' @description
+#' internal function to help building simplex models is a function which 
+# Sets the bottom corner free in a matrix, e.g. labels:
+# FALSE, FALSE, FALSE, FALSE,
+# TRUE , FALSE, FALSE, FALSE,
+# FALSE, TRUE , FALSE, FALSE,
+# FALSE, FALSE, TRUE , FALSE
+# Values
+# 0 , 0, 0, 0,
+# .9, 0, 0, 0,
+# 0 ,.9, 0, 0,
+# 0 , 0,.9, 0
+#'
+#' @param x an \code{\link{umxMatrix}} of which to free the bottom triangle.
+#' @param start a default start value for the freed items.
+#' @return - \code{\link{umxMatrix}}
+#' @export
+#' @family xmu internal not for end user
+#' @seealso - \code{\link{umxMatrix}}
+#' @examples
+#' x = umxMatrix('test', 'Full', nrow = 4, ncol = 4)
+#' xmu_simplex_corner(x, start = .9)
+#' # See how we have a diag free, but offset 1-down?
+#' umx_print( xmu_simplex_corner(x, start = .9)$values, zero=".")
+xmu_simplex_corner <- function(x, start = .9) {
+	nVar = dim(x)[1]
+	nVar_minus1 = nVar-1
+	for (thisRow in 2:nVar) {
+		x$free[thisRow, (thisRow-1)] = TRUE
+		x$values[thisRow, (thisRow-1)] = start		
+	}
+	return(x)
 }
 
 #' xmuLabel_Matrix (not a user function)
@@ -900,7 +938,6 @@ xmu_dot_make_residuals <- function(mxMat, latents = NULL, fixed = TRUE, digits =
 			if(thisPathFree | (thisPathVal !=0 && fixed)) {
 				if((to == from)) {
 					if(resid =="circle"){
-						# TODO support latents north (see mxGraphviz)
 						if(from %in% latents){
 							circleString = paste0(from, ' -> ', from, '[label="', prefix, thisPathVal, '", dir=both, headport=n, tailport=n]')
 						} else {

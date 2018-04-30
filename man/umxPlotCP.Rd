@@ -2,8 +2,8 @@
 % Please edit documentation in R/fit_and_reporting.r
 \name{umxPlotCP}
 \alias{umxPlotCP}
-\alias{plot.MxModel.CP}
-\title{Draw a graphical figure for a Common Pathway model}
+\alias{plot.MxModelCP}
+\title{Draw and display a graphical figure of Common Pathway model}
 \usage{
 umxPlotCP(x = NA, file = "name", digits = 2, means = FALSE,
   std = TRUE, format = c("current", "graphviz", "DiagrammeR"), ...)
@@ -46,5 +46,5 @@ Other Plotting functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACEv}},
   \code{\link{umxPlotACE}}, \code{\link{umxPlotGxE_biv}},
   \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umx}}
+  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
 }

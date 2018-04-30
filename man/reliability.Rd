@@ -20,7 +20,7 @@ Compute and report Coefficient alpha (extracted from Rcmdr to avoid its dependen
 reliability(cov(mtcars))
 }
 \references{
-- https://cran.r-project.org/package=Rcmdr
+- \url{https://cran.r-project.org/package=Rcmdr}
 }
 \seealso{
 Other Miscellaneous Stats Helpers: \code{\link{umxCov2cor}},

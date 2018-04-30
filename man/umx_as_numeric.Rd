@@ -19,25 +19,30 @@ Convert each column of a dataframe to numeric
 }
 \examples{
 df = mtcars
-# make one variable non-numeric
+# make mpg into string
+df$mpg = as.character(df$mpg)
+df$cyl = factor(df$cyl)
+df = umx_as_numeric(df); str(df)
+df = umx_as_numeric(df, force=TRUE); str(df)
+# Make one variable alpha
 df$mpg = c(letters,letters[1:6]); str(df)
-df = umx_as_numeric(df)
+df = umx_as_numeric(df, force=TRUE); str(df)
 }
 \references{
 - \url{http://www.github.com/tbates/umx}
 }
 \seealso{
 Other Data Functions: \code{\link{umxCovData}},
-  \code{\link{umxFactor}}, \code{\link{umxHetCor}},
+  \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
-  \code{\link{umx_array_shift}},
-  \code{\link{umx_cont_2_quantiles}},
   \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},
   \code{\link{umx_make_bin_cont_pair_data}},
-  \code{\link{umx_make_fake_data}}, \code{\link{umx_pad}},
+  \code{\link{umx_make_fake_data}},
+  \code{\link{umx_polychoric}},
+  \code{\link{umx_polypairwise}},
+  \code{\link{umx_polytriowise}},
   \code{\link{umx_read_lower}}, \code{\link{umx_rename}},
-  \code{\link{umx_reorder}}, \code{\link{umx_scale}},
-  \code{\link{umx_stack}}, \code{\link{umx_swap_a_block}},
-  \code{\link{umx}}
+  \code{\link{umx_reorder}}, \code{\link{umx_stack}},
+  \code{\link{umx_swap_a_block}}, \code{\link{umx}}
 }

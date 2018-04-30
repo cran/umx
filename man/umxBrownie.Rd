@@ -15,7 +15,7 @@ Preferably cook over a gas flame.
 
 \emph{note}: Cheaper cuts like blade steak can come out fine.
 
-A great reference is \href{https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087}{The Food Lab} by Kenji Alt Lopez.
+A great reference is The Food Lab by Kenji Alt Lopez. https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087.
 }
 \examples{
 umxBrownie()
@@ -31,9 +31,12 @@ umxBrownie()
 }
 
 Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
-  \code{\link{qm}}, \code{\link{umxVersion}},
+  \code{\link{qm}}, \code{\link{umxFactor}},
+  \code{\link{umxVersion}}, \code{\link{umx_array_shift}},
+  \code{\link{umx_cont_2_quantiles}},
   \code{\link{umx_find_object}}, \code{\link{umx_make}},
   \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
-  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
+  \code{\link{umx_pad}}, \code{\link{umx_pb_note}},
+  \code{\link{umx_print}}, \code{\link{umx_scale}},
   \code{\link{umx}}
 }

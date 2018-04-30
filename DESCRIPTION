@@ -1,6 +1,6 @@
 Package: umx
-Version: 2.4.0
-Date: 2018-03-06
+Version: 2.6.5
+Date: 2018-05-01
 Title: Structural Equation and Twin Modeling in R
 Authors@R: c(person("Timothy C", "Bates", role = c("aut", "cre"),
     email = "timothy.c.bates@gmail.com", comment = c(ORCID = "0000-0002-1153-9007")))
@@ -9,7 +9,7 @@ License: GPL-3
 Encoding: UTF-8
 URL: http://github.com/tbates/umx
 Description: Quickly create, run, and report structural equation and twin models.
-    See '?umx' to learn more.
+    See '?umx'  for help, and file.show(system.file("NEWS", package="umx")) for NEWS.
 Depends: R (>= 3.2.0), OpenMx (>= 2.7.9)
 Imports: cowplot, ggplot2, DiagrammeR, knitr, MASS, Matrix, mvtnorm,
         nlme, numDeriv, polycor, R2HTML, RCurl, sfsmisc, xtable,
@@ -19,7 +19,7 @@ BugReports: http://github.com/tbates/umx/issues
 LazyData: true
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2018-03-19 15:03:48 UTC; tim
+Packaged: 2018-04-30 17:25:02 UTC; tim
 Author: Timothy C Bates [aut, cre] (<https://orcid.org/0000-0002-1153-9007>)
 Repository: CRAN
-Date/Publication: 2018-03-19 15:22:09 UTC
+Date/Publication: 2018-04-30 18:01:58 UTC

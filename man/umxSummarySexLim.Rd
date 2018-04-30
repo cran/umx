@@ -2,7 +2,7 @@
 % Please edit documentation in R/umxSexLim.R
 \name{umxSummarySexLim}
 \alias{umxSummarySexLim}
-\alias{umxSummary.MxModel.SexLim}
+\alias{umxSummary.MxModelSexLim}
 \title{Shows a compact, publication-style, summary of a umx Sex Limitation model}
 \usage{
 umxSummarySexLim(model, digits = 2, file = getOption("umx_auto_plot"),
@@ -47,13 +47,13 @@ drawing the tables to a web browser where they may readily be copied into non-ma
 \details{
 See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
 
-View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModel.ACE}}.
+View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModelACE}}.
 
-View documentation on the IP model subclass here: \code{\link{umxSummary.MxModel.IP}}.
+View documentation on the IP model subclass here: \code{\link{umxSummary.MxModelIP}}.
 
-View documentation on the CP model subclass here: \code{\link{umxSummary.MxModel.CP}}.
+View documentation on the CP model subclass here: \code{\link{umxSummary.MxModelCP}}.
 
-View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModel.GxE}}.
+View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModelGxE}}.
 }
 \examples{
 # =========================
@@ -101,12 +101,14 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACE}}, \code{\link{umxCP}},
   \code{\link{umxGxE_biv}}, \code{\link{umxGxE_window}},
   \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
+  \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE_biv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umx}}, \code{\link{xmu_twin_check}}
+  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
+  \code{\link{xmu_twin_check}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
@@ -118,6 +120,8 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
   \code{\link{umxSummary.MxModel}},
   \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umx_drop_ok}},
+  \code{\link{umxSummaryACE}},
+  \code{\link{umxSummarySimplex}},
+  \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

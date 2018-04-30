@@ -56,7 +56,7 @@
 #' 
 #' *note*: Cheaper cuts like blade steak can come out fine.
 #' 
-#' A great reference is [The Food Lab](https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087) by Kenji Alt Lopez.
+#' A great reference is The Food Lab by Kenji Alt Lopez. https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087.
 #'
 #' @export
 #' @family Miscellaneous Utility Functions
@@ -975,9 +975,11 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 
 #' Break twin variable names (BMI_T1, BMI_T2) into base variable names (BMI, "_T", 1:2)
 #'
+#' @description
 #' Break names like Dep_T1 into a list of base names, a separator, and a 
-#' vector of twin indexes. e.g. c("Dep_T1", "Dep_T2") 
-#' -> list(baseNames = c("Dep"), sep = "_T", twinIndexes = c(1,2))
+#' vector of twin indexes. e.g.: c("Dep_T1", "Dep_T2", "Anx_T1", "Anx_T2") will become:
+#' 
+#' list(baseNames = c("Dep", "Anx"), sep = "_T", twinIndexes = c(1,2))
 #'
 #' @param df vector of names or data.frame containing the data
 #' @param sep text constant separating name from numeric 1:2 twin index.
@@ -989,7 +991,8 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' data("twinData")
 #' umx_explode_twin_names(twinData, sep = "")
 #' umx_explode_twin_names(twinData, sep = NULL)
-#' # Single-character single variable test case
+#' 
+#' # Ignore this: just a single-character/single variable test case
 #' x = round(10 * rnorm(1000, mean = -.2))
 #' y = round(5 * rnorm(1000))
 #' x[x < 0] = 0; y[y < 0] = 0
@@ -1033,7 +1036,7 @@ umx_explode_twin_names <- function(df, sep = "_T") {
 #' # will try and ensure factor levels same across all twins.
 #' @return - \code{\link{mxFactor}}
 #' @export
-#' @family Data Functions
+#' @family Miscellaneous Utility Functions
 #' @seealso - \code{\link{umxFactanal}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
@@ -1108,7 +1111,6 @@ umxFactor <- function(x = character(), levels= NULL, labels = levels, exclude = 
 			if(is.null(levels)) {
 				levels = levels(x)
 			} else {
-				# TODO umxFactor: Check provided levels match the data!
 				if(!levels(x) == levels){
 					message("the levels you provided are not those I see in the data")
 				}
@@ -1175,7 +1177,16 @@ umxVersion <- function (model = NULL, verbose = TRUE, return = "umx") {
 #' }
 umx_open_CRAN_page <- function(package = "umx") {
 	for (p in package) {
-	system(paste0("open 'https://cran.r-project.org/package=", p, "'"))		
+		result = tryCatch({
+		    print(packageVersion(p))
+		}, warning = function(x) {
+		    print("not installed locally")
+		}, error = function(x) {
+		    print("not installed locally")
+		}, finally={
+		    # print("cleanup-code")
+		})		
+		system(paste0("open 'https://cran.r-project.org/package=", p, "'"))		
 	}
 }
 
@@ -1188,7 +1199,7 @@ umx_open_CRAN_page <- function(package = "umx") {
 #' @param n The final length of each object.
 #' @return - padded object
 #' @export
-#' @family Data Functions
+#' @family Miscellaneous Utility Functions
 #' @references - \url{https://github.com/kevinushey/Kmisc/tree/master/man}
 #' @examples
 #' umx_pad(1:3, 4)
@@ -1268,9 +1279,14 @@ umx_apply <- function(FUN, of, by = "columns", ...) {
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' df = mtcars
-#' # make one variable non-numeric
+#' # make mpg into string
+#' df$mpg = as.character(df$mpg)
+#' df$cyl = factor(df$cyl)
+#' df = umx_as_numeric(df); str(df)
+#' df = umx_as_numeric(df, force=TRUE); str(df)
+#' # Make one variable alpha
 #' df$mpg = c(letters,letters[1:6]); str(df)
-#' df = umx_as_numeric(df)
+#' df = umx_as_numeric(df, force=TRUE); str(df)
 umx_as_numeric <- function(df, force = FALSE) {
 	# TODO umx_as_numeric: Handle matrices, vectors...
 	colsToConvert = names(df)
@@ -1855,7 +1871,9 @@ umx_make_sql_from_excel <- function(theFile = "Finder") {
 				itemText = paste0(itemText, "<itemBreak>", paste(items[!is.na(items)], collapse = "<itemBreak>"))
 			}
 		}
-		o[itemNumber, ] = paste(pre, testName, itemNumber, itemText, direction, scale, type, testName, end, sep = "', '")
+		thisRow = paste(pre, testName, itemNumber, itemText, direction, scale, type, testName, end, sep = "', '")
+		thisRow = umx_names(thisRow, pattern = ", '');", replacement = ");")
+		o[itemNumber, ] = thisRow
 		itemNumber = itemNumber + 1
 	}
 	umx_write_to_clipboard(x = o)
@@ -1975,14 +1993,21 @@ rowMin <- function(df, na.rm= TRUE) {
 #' @examples
 #' head(umx_round(mtcars, coerce = FALSE))
 #' head(umx_round(mtcars, coerce = TRUE))
-
+#'
 umx_round <- function(df, digits = getOption("digits"), coerce = FALSE) {
 	if(is.matrix(df)){
 		df = data.frame(df)
 	}
-
 	if(!is.data.frame(df)){
-		stop("df input for umx_round must be a dataframe")
+		if(is.null(dim(df))){
+			if(coerce){
+				return(round(as.numeric(df), digits))
+			}else{
+				return(round(df, digits))
+			}
+		} else {
+			stop("df input for umx_round must be a dataframe")
+		}
 	}
 	# for each column, if numeric, round
 	rows = dim(df)[1]
@@ -2001,6 +2026,35 @@ umx_round <- function(df, digits = getOption("digits"), coerce = FALSE) {
 	return(df)
 }
 
+#' Show model logLik of model or print comparison table
+#'
+#' @description
+#' Just a helper to show the logLik of a model or print a comparison table is a function which 
+#'
+#' @param model an \code{\link{mxModel}} to report on
+#' @param comparison If not NULL, used as comparison model
+#' @param digits (default = 2)
+#' @return - 
+#' @export
+#' @family Reporting Functions
+#' @seealso - \code{\link{umxSummary}}
+#' @examples
+#' \dontrun{
+#' umx_show_fit_or_comparison(model, comparison, digits=3)
+#' }
+#'
+umx_show_fit_or_comparison <- function(model, comparison = NULL, digits = 2) {
+	if(is.null(comparison)){
+		# \u00d7 = times sign
+		message(paste0(model$name, " -2 \u00d7 log(Likelihood) = ", 
+			round(-2 * logLik(model), digits = digits))
+		)
+	} else {
+		message("Comparison of model with parent model:")
+		umxCompare(comparison, model, digits = digits)
+	}		
+}
+
 specify_decimal <- function(x, k){
 	format(round(x, k), nsmall = k)
 }
@@ -2013,7 +2067,7 @@ specify_decimal <- function(x, k){
 #' @return - 
 #' @export
 #' @family Miscellaneous Stats Helpers
-#' @references - https://cran.r-project.org/package=Rcmdr
+#' @references - \url{https://cran.r-project.org/package=Rcmdr}
 #' @examples
 #' # treat vehicle aspects as items of a test
 #' reliability(cov(mtcars))
@@ -2111,19 +2165,22 @@ install.OpenMx <- function(loc = c("NPSOL", "travis", "CRAN", "open travis build
 	if(!is.null(url)){
 		install.packages(loc)
 	} else if(loc == "NPSOL"){
+		source("https://openmx.ssri.psu.edu/getOpenMx.R")
+		# was source("https://openmx.ssri.psu.edu/software/getOpenMx.R")
 		# was http://openmx.psyc.virginia.edu/getOpenMx.R
-		source("https://openmx.ssri.psu.edu/software/getOpenMx.R")
+		# was source("https://openmx.ssri.psu.edu/software/getOpenMx.R")		
 	}else if(loc == "travis"){
 		if(umx_check_OS("OSX")){
-			install.packages("http://openmx.psyc.virginia.edu/OpenMx2/bin/macosx/travis/OpenMx_latest.tgz")
-			# install.packages("http://openmx.psyc.virginia.edu/OpenMx2/bin/macosx/travis/OpenMx_latest.tgz", lib = lib, repos=repos)
+			install.packages("https://vipbg.vcu.edu/vipbg/OpenMx2/software/bin/macosx/travis/OpenMx_latest.tgz")
+			# was ("http://openmx.psyc.virginia.edu/OpenMx2/bin/macosx/travis/OpenMx_latest.tgz")
+			# , lib = lib, repos=repos
 		} else {
 			stop(paste("Sorry, travis builds are only available for MacOS :-("))
 		}
 	} else if(loc == "CRAN"){
 		install.packages("OpenMx", lib= lib, repos = repos)
 	} else if(loc == "open travis build page"){
-		browseURL("http://openmx.psyc.virginia.edu/OpenMx2/bin/macosx/travis")
+		browseURL("https://vipbg.vcu.edu/vipbg/OpenMx2/software/bin/macosx/travis")
 	}
 }
 
@@ -2137,7 +2194,8 @@ umx_update_OpenMx <- install.OpenMx
 #'
 #' @param what whether to "install", "release" to CRAN, check on "win", "check", "rhub", "spell" check, or check "examples"))
 #' @param pkg the local path to your package. Defaults to my path to umx.
-#' @param check Whether to run check on the package before release (default = TRUE)
+#' @param check Whether to run check on the package before release (default = TRUE).
+#' @param spelling Whether to check spelling before release (default = "en_US": set NULL to not check).
 #' @return - 
 #' @export
 #' @family Miscellaneous Utility Functions
@@ -2150,7 +2208,7 @@ umx_update_OpenMx <- install.OpenMx
 #' umx_make(what = "win"))      # check on win-builder
 #' umx_make(what = "release"))  # release to CRAN
 #' }
-umx_make <- function(what = c("install", "examples", "check", "win", "rhub", "release", "spell"), pkg = "~/bin/umx", check = TRUE) {
+umx_make <- function(what = c("install", "examples", "check", "win", "rhub", "release", "spell"), pkg = "~/bin/umx", check = TRUE, spelling = "en_US") {
 	what = match.arg(what)
 	if(what == "install"){
 		devtools::document(pkg = pkg); devtools::install(pkg = pkg);
@@ -2168,7 +2226,7 @@ umx_make <- function(what = c("install", "examples", "check", "win", "rhub", "re
 	} else if (what =="rhub"){
 		# devtools::check_rhub(pkg = pkg)
 	} else if (what == "release"){
-		devtools::release(pkg = pkg, check = check)
+		devtools::release(pkg = pkg, check = check, spelling = spelling)
 	} else if (what == "spell"){
 		devtools::spell_check(pkg = pkg)
 	}
@@ -2219,6 +2277,8 @@ umx_msg <- function(x) {
 #' `umx_paste_names` adds suffixes to names so you can work with that nice short list.
 #' So, you provide `bmi`, and you get back fully specified family-wise names: `c("bmi_T1", "bmi_T2")`
 #' 
+#' *note*: `tvars` is a shortcut for `umx_paste_names`
+#' 
 #' @details
 #' **Method 1**: *Use complete suffixes*
 #' 
@@ -2255,6 +2315,7 @@ umx_msg <- function(x) {
 #' @return - vector of suffixed var names, i.e., c("v1_T1", "v2_T1", "v1_T2", "v2_T2", "cov_T1", "cov_T2")
 #' @export
 #' @family String Functions
+#' @seealso \code{\link{namez}}
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' # two styles doing the same thing: first is more general
@@ -2539,7 +2600,7 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 		stop("You must set the first parameter to 'start', 'stop', a model, or a list of models.\nYou offered up a", class(x))
 	}
 	formatStr = umx_default_option(formatStr, c("simple", "std", "custom %H %M %OS3"), check = FALSE)
-	# TODO umx_time: Output a nicely formatted table
+	# TODO umx_time: Improve table formating
 	for(i in 1:length(x)) {			
 		if(length(x) > 1) {
 			m = x[[i]]
@@ -2627,6 +2688,7 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 #' @family Reporting Functions
 #' @examples
 #' umx_print(mtcars[1:10,], digits = 2, zero.print = ".", justify = "left")
+#' umx_print(mtcars[1,1:2], digits = 2, zero.print = "")
 #' \dontrun{
 #' umx_print(mtcars[1:10,], file = "tmp.html")
 #' }
@@ -2635,10 +2697,11 @@ umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print 
 	if(class(x)=="character"){
 		print(x)
 	}else if(class(x)!="data.frame"){
-		if(class(x)=="matrix"){
+		if(class(x)=="matrix" |class(x)=="numeric"){
 			x = data.frame(x)
 		} else {
-			message("Sorry, umx_print currently only prints data.frames. File a request to print '", class(x), "' objects\n or perhaps you want umx_msg?")
+			message("Sorry, umx_print currently only prints data.frames, matrices, and vectors.\n
+			File a request to print '", class(x), "' objects\n or perhaps you want umx_msg?")
 			return()
 		}
 	}
@@ -3232,9 +3295,8 @@ umx_is_cov <- function(data = NULL, boolean = FALSE, verbose = FALSE) {
 #' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 #' umx_has_means(m1)
 umx_has_means <- function(model) {
-	# TODO umx_has_means check run?
 	if(!umx_is_RAM(model)){
-		stop("TODO umx_has_means Can only run on RAM models so far")
+		stop("TODO umx_has_means can only test RAM models so far")
 	}
 	return(!is.null(model$matrices$M))
 }
@@ -3304,6 +3366,7 @@ umx_has_CIs <- function(model, check = c("both", "intervals", "output")) {
 #' @param beenRun whether the model has been run or not (defaults to not checking NULL)
 #' @param hasMeans whether the model should have a means model or not (defaults to not checking NULL)
 #' @param checkSubmodels whether to check submodels (not implemented yet) (default = FALSE)
+#' @param callingFn = To help user interprete error, add the name of the calling function.
 #' @return - boolean
 #' @export
 #' @family Test
@@ -3327,20 +3390,22 @@ umx_has_CIs <- function(model, check = c("both", "intervals", "output")) {
 #' umx_check_model(m1, hasMeans = TRUE)
 #' umx_check_model(m1, beenRun = FALSE)
 #' }
-umx_check_model <- function(obj, type = NULL, hasData = NULL, beenRun = NULL, hasMeans = NULL, checkSubmodels = FALSE) {
+umx_check_model <- function(obj, type = NULL, hasData = NULL, beenRun = NULL, hasMeans = NULL, checkSubmodels = FALSE, callingFn = "a function") {
 	# TODO umx_check_model check hasSubmodels = FALSE
-	# TODO umx_check_model fix so it respects true and false...
 	if (!umx_is_MxModel(obj)) {
-		stop("'model' must be an mxModel")
+		stop("'obj' must be an mxModel")
 	}
 	if(is.null(type)){
-		#no check
+		# No check
 	}else if(type == "RAM"){
 		if (!umx_is_RAM(obj)) {
-			stop("'model' must be an RAMModel")
+			stop(paste0("'obj' must be an RAMModel for use with ", callingFn))
 		}
 	} else {
-		message(paste("type", sQuote(type), "not handled yet"))
+		# Assume type is a class string
+		if(class(obj)[1] != type){
+			stop("You used ", callingFn, " on a model of class ", class(obj)[1], "not ", omxQuotes(type))
+		}
 	}
 	if(checkSubmodels){
 		if (length(obj$submodels) > 0) {
@@ -3417,7 +3482,7 @@ umx_reorder <- function(old, newOrder) {
 #' @param returnCutpoints just return the cutpoints, for use directly
 #' @return - recoded variable as an \code{\link{mxFactor}}
 #' @export
-#' @family Data Functions
+#' @family Miscellaneous Utility Functions
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' x = umx_cont_2_quantiles(rnorm(1000), nlevels = 10, verbose = TRUE)
@@ -3585,13 +3650,13 @@ umxEval <- function(expstring, model, compute = FALSE, show = FALSE) {
 #'
 #' @param df A dataframe to scale (or a numeric vector)
 #' @param varsToScale (leave blank to scale all)
-#' @param coerce Whether to coerce non-numerics to numeric (Defaults to FALSE)
+#' @param coerce Whether to coerce non-numerics to numeric (Defaults to FALSE.
 #' @param verbose Whether to report which columns were scaled (default FALSE)
 #' @param attr to strip off the attributes scale creates (FALSE by default)
 #' @return - new dataframe with scaled variables
 #' @export
 #' @seealso umx_scale_wide_twin_data
-#' @family Data Functions
+#' @family Miscellaneous Utility Functions
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' data(twinData) 
@@ -3612,8 +3677,7 @@ umx_scale <- function(df, varsToScale = NULL, coerce = FALSE, attr = FALSE, verb
 			varsToScale = names(df)
 		}
 		if(coerce){
-			# TODO umx_scale: implement coerce
-			stop("coerce not implemented yet")
+			df[, varsToScale] = umx_as_numeric(df[, varsToScale])
 		}
 		varsToScale = varsToScale[umx_is_numeric(df[,varsToScale], all = FALSE)]
 		if(verbose){
@@ -3837,8 +3901,9 @@ umx_residualize <- function(var, covs = NULL, suffixes = NULL, data){
 #' Scale wide data across all cases: currently 2 twins.
 #'
 #' @param varsToScale The base names of the variables ("weight" etc.)
-#' @param suffix The suffix that distinguishes each case, e.g. "_T")
+#' @param sep The suffix that distinguishes each case, e.g. "_T")
 #' @param data a wide dataframe
+#' @param suffix  (deprecated: use sep instead)
 #' @return - new dataframe with variables scaled in place
 #' @export
 #' @seealso umx_scale
@@ -3846,17 +3911,21 @@ umx_residualize <- function(var, covs = NULL, suffixes = NULL, data){
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' data(twinData) 
-#' df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), suffix = "" )
+#' df = umx_scale_wide_twin_data(data = twinData, varsToScale = c("ht", "wt"), sep = "" )
 #' plot(wt1 ~ wt2, data = df)
-umx_scale_wide_twin_data <- function(varsToScale, suffix, data) {
-	if(length(suffix) != 1){
-		stop("I need one suffix, you gave me ", length(suffix), "\nYou, might, for instance, need to change c('_T1', '_T2') to just '_T'")
+umx_scale_wide_twin_data <- function(varsToScale, sep, data, suffix = "deprecated") {
+	if(suffix != "deprecated"){
+		message("Hi! Next time, use sep instead of suffix, when calling umx_scale_wide_twin_data")
+		sep = suffix
+	}
+	if(length(sep) != 1){
+		stop("I need one sep, you gave me ", length(sep), "\nYou, might, for instance, need to change c('_T1', '_T2') to just '_T'")
 	}
 	# TODO discover suffixes as unique digits following suffix (could be 1:6)
-	namesNeeded = umx_paste_names(varsToScale, sep = suffix, suffixes = 1:2)
+	namesNeeded = umx_paste_names(varsToScale, sep = sep, suffixes = 1:2)
 	umx_check_names(namesNeeded, data)
-	t1Traits = paste0(varsToScale, suffix, 1)
-	t2Traits = paste0(varsToScale, suffix, 2)
+	t1Traits = paste0(varsToScale, sep, 1)
+	t2Traits = paste0(varsToScale, sep, 2)
 	for (i in 1:length(varsToScale)) {
 		T1 = data[,t1Traits[i]]
 		T2 = data[,t2Traits[i]]
@@ -4033,29 +4102,56 @@ umx_explode <- function(delimiter = character(), string) {
 
 #' umx_names
 #'
-#' Convenient equivalent of grep("fa[rl].*", names(df), value = TRUE, ignore.case = TRUE)
-#' Can handle dataframe (uses names), model (uses parameter names), or a vector of strings.
+#' @description 
+#' Convenient equivalent of running [grep] on [names], with value = TRUE and ignore.case = TRUE.
+#' 
+#' Plus:`umx_names` can handle dataframes, a model, model summary, or a vector of strings as input. 
+#' 
+#' In these cases, it will search column names, parameter or summary output names, or 
+#' the literal string values themselves respectively.
+#' 
+#' In addition, `umx_names` can do [replacement][grep] of a found string (see exmples). It can also collapse the result (using [paste0])
+#' 
+#' *Note*: `namez` (with a z) is a shortcut for `umx_names`, which makes it easy to replace where you'd otherwise use [names].
+#' 
+#' You can learn more about the matching options (like inverting the selection etc.) in the help for base-R [grep].
 #'
+#' @aliases namez
 #' @param df dataframe from which to get names.
-#' @param pattern used to filter-out only some names (supports wild card/regular expressions)
-#' @param replacement if not NULL, replaces the found string.
+#' @param pattern Used to find only matching names (supports grep/regular expressions)
+#' @param replacement If not NULL, replaces the found string. Use backreferences ("\1" to "\9") to refer to (subexpressions).
 #' @param ignore.case default = TRUE (opposite default to grep)
-#' @param perl = FALSE
-#' @param value = default = TRUE (opposite default to grep)
-#' @param fixed = FALSE
-#' @param useBytes = FALSE
-#' @param invert = FALSE
+#' @param perl Should Perl-compatible regexps be used? Default = FALSE
+#' @param value Return matching elements themselves (TRUE) or their indices (FALSE) default = TRUE (opposite default to grep)
+#' @param fixed = FALSE (grep option If TRUE, pattern is a string to be matched as is. Overrides all conflicting arguments.)
+#' @param useBytes = FALSE logical. grep option. If TRUE, matching is by byte rather than by character.
+#' @param invert Return indices or values for elements that do not match (default = FALSE)
+#' @param collapse "as.is" leaves alone. as.vector formats as pastable code, i.e., "c('a', 'b')", not "a"  "b" (default NULL), etc.
 #' @return - vector of matches
 #' @export
-#' @seealso - \code{\link{grep}}, \code{\link{sub}}
+#' @seealso - Base-R pattern matching functions: \code{\link{grep}}.
+#' And \code{\link{umx_check_names}} to check for existence of names in a dataframe. 
 #' @family Reporting Functions
+#' @family String Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @md
 #' @examples
-#' umx_names(mtcars, "mpg") # just "mpg" matches
-#' umx_names(mtcars, "^d") # "disp", drat
+#' umx_names(mtcars, "mpg") # only "mpg" matches this
+#' #
+#' # easy alias namez
+#' namez(mtcars, "mpg") # vars beginning with 'd' = "disp", drat
+#' 
+#' # regular expressions
 #' umx_names(mtcars, "r[ab]") # "drat", "carb"
+#' namez(mtcars, "^d") # vars beginning with 'd' = "disp", drat
 #' umx_names(mtcars, "mpg", replacement = "hello") # "mpg" replaced with "hello"
-#'
+#' 
+#' # Other options
+#' umx_names(mtcars, "mpg", invert = TRUE) # non-matches (instead of matches)
+#' umx_names(mtcars, "disp", value = FALSE) # Return indices of matches 
+#' umx_names(mtcars, "^d" , fixed = TRUE)  # vars containing literal '^d' (none...)
+#' namez(mtcars, "m", collapse = "as.vector") # paste-able R-code for a vector
+#' 
 #' # =======================================
 #' # = Examples using built-in GFF dataset =
 #' # =======================================
@@ -4065,8 +4161,12 @@ umx_explode <- function(delimiter = character(), string) {
 #' umx_names(GFF, "2$") # names ending in 2
 #' umx_names(GFF, "[^12bs]$") # doesn't end in `1`, `2`, `b`, or `s`
 #' # "zyg_6grp" "zyg_2grp" "divorce"
-umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE, perl = FALSE, value = TRUE, fixed = FALSE, useBytes = FALSE, invert = FALSE) {
-	if(class(df) == "data.frame"){
+umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE, perl = FALSE, value = TRUE, fixed = FALSE, useBytes = FALSE, invert = FALSE, collapse = c("as.is", "as.vector", "as.formula")) {
+	collapse = match.arg(collapse)
+	if(fixed){
+		ignore.case = FALSE
+	}
+	if(class(df) %in%  c("summary.mxmodel", "data.frame")){
 		nameVector = names(df)
 	} else if(class(df) == "character"){
 		nameVector = df
@@ -4077,13 +4177,27 @@ umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE
 		stop(paste0("umx_names requires a dataframe or something else with names() or parameters(), ", umx_object_as_str(df), " is a ", typeof(df)))
 	}
 	if(is.null(replacement)){
-		grep(pattern = pattern, x = nameVector, ignore.case = ignore.case, perl = perl, value = value,
+		tmp =  grep(pattern = pattern, x = nameVector, ignore.case = ignore.case, perl = perl, value = value,
 	     fixed = fixed, useBytes = useBytes, invert = invert)
 	} else {
-		sub(pattern = pattern, replacement = replacement, x = nameVector, ignore.case = FALSE, perl = perl,
+		tmp = sub(pattern = pattern, replacement = replacement, x = nameVector, ignore.case = FALSE, perl = perl,
 		    fixed = fixed, useBytes = useBytes)
 	}
+	if(collapse == "as.is"){
+		tmp
+	}else if(collapse == "as.vector"){
+		tmp = paste(tmp, collapse  = "', '")
+		paste0("c('", tmp, "')")
+	}else if(collapse == "as.formula"){
+		tmp = paste(tmp, collapse  = " + ")
+		paste0("~ ", tmp)
+	} else {
+		paste(tmp, collapse  = collapse)
+	}
 }
+
+#' @export
+namez <- umx_names
 
 #' Trim whitespace surrounding a string.
 #'
@@ -4258,10 +4372,7 @@ umx_long2wide <- function(data, famID = NA, twinID = NA, zygosity = NA, vars2kee
 #' str(long)
 #' str(twinData)
 umx_wide2long <- function(data, sep = "_T", verbose = FALSE) {
-	# TODO umx_wide2long Assumes 2 twins: Good to generalize to unlimited family size.
-	# TODO umx_wide2long Detect data overwriting? like if age exists, but data have age1 and age2?
-	# TODO umx_wide2long Report non-twin columns
-	# TODO umx_wide2long Report twin columns
+	# TODO umx_wide2long Assumes 2 twins: Generalize to unlimited family size.
 
 	# 1. get the suffixed names
 	T1 = umx_names(data, paste0(".", sep, "1"))
@@ -4352,7 +4463,7 @@ umx_stack <- function(x, select, passalong, valuesName = "values", groupName = "
 #' @param x the vector to shift
 #' @return - first item of x
 #' @export
-#' @family Data Functions
+#' @family Miscellaneous Utility Functions
 #' @examples
 #' x = c("Alice", "Bob", "Carol")
 #' umx_array_shift(x) # returns "Alice"
@@ -4447,7 +4558,7 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 #' @return - list of mzData and dzData dataframes containing T1 and T2 plus, if needed M1 and M2 (moderator values)
 #' @export
 #' @family Twin Data functions
-#' @seealso - \code{\link{umxGxE_biv}}, \code{\link{umxACE}}, \code{\link{umxGxE}}
+#' @seealso - \code{\link{umx_make_TwinData}}, \code{\link{umxGxE_biv}}, \code{\link{umxACE}}, \code{\link{umxGxE}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' # =====================================================================
@@ -4799,6 +4910,7 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 #' @return - data.frame
 #' @export
 #' @family Data Functions
+#' @seealso umx_make_TwinData
 #' @examples
 #' df = umx_make_MR_data(10000)
 #' str(df)
@@ -5352,16 +5464,18 @@ umx_lower2full <- function(lower.data, diag = NULL, byrow = TRUE, dimnames = NUL
 #' @param df the dataframe to process
 #' @param varNames list of names of the variables being analysed
 #' @param defNames list of covariates
-#' @param suffixes suffixes that map names on columns in df (i.e., c("T1", "T2"))
+#' @param suffixes that map names on columns in df (i.e., c("T1", "T2"))
 #' @param highDefValue What to replace missing definition variables (covariates) with. Default = 99
 #' @param rm = how to handle missing values in the varNames. Default is "drop_missing_def", "pad_with_mean")
-#' @return - dataframes
+#' @return - dataframe
 #' @export
 #' @family Data Functions
 #' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' \dontrun{
-#' df = umxPadAndPruneForDefVars(df, "E", "age", c("_T1", "_T2"))
+#' data(twinData)
+#' sum(is.na(twinData$ht1))
+#' df = umxPadAndPruneForDefVars(twinData, varNames = "ht", defNames = "wt", c("1", "2"))
 #' }
 umxPadAndPruneForDefVars <- function(df, varNames, defNames, suffixes, highDefValue = 99, rm = c("drop_missing_def", "pad_with_mean")) {
 	# df = twinData
@@ -5649,7 +5763,7 @@ umx_standardize_ACE <- function(model, ...) {
 	}
 }
 #' @export
-umx_standardize.MxModel.ACE <- umx_standardize_ACE
+umx_standardize.MxModelACE <- umx_standardize_ACE
 
 
 #' umx_standardize_ACEcov
@@ -5698,7 +5812,7 @@ umx_standardize_ACEcov <- function(model, ...) {
 }
 
 #' @export
-umx_standardize.MxModel.ACEcov <- umx_standardize_ACEcov
+umx_standardize.MxModelACEcov <- umx_standardize_ACEcov
 
 
 #' umx_standardize_IP
@@ -5731,7 +5845,7 @@ umx_standardize_IP <- function(model, ...){
 	return(model)
 }
 #' @export
-umx_standardize.MxModel.IP <- umx_standardize_IP
+umx_standardize.MxModelIP <- umx_standardize_IP
 
 #' umx_standardize_CP
 #'
@@ -5788,5 +5902,5 @@ umx_standardize_CP <- function(model, ...){
 	}
 }
 #' @export
-umx_standardize.MxModel.CP <- umx_standardize_CP
+umx_standardize.MxModelCP <- umx_standardize_CP
 

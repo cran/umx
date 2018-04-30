@@ -2,7 +2,7 @@
 % Please edit documentation in R/umxGxE_biv.R
 \name{umxSummaryGxE_biv}
 \alias{umxSummaryGxE_biv}
-\alias{umxSummary.MxModel.GxE_biv}
+\alias{umxSummary.MxModelGxE_biv}
 \title{Summarize a bivariate GxE twin model}
 \usage{
 umxSummaryGxE_biv(model = NULL, digits = 2, xlab = NA,
@@ -48,7 +48,7 @@ umxSummaryGxE_biv summarize a Moderation model, as returned by \code{\link{umxGx
 data(twinData) 
 selDVs  = "wt"
 selDefs = "ht"
-df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), suffix = "")
+df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), sep = "")
 mzData  = subset(df, zygosity \%in\%  c("MZFF", "MZMM"))
 dzData  = subset(df, zygosity \%in\%  c("DZFF", "DZMM", "DZOS"))
 
@@ -72,10 +72,12 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACE}}, \code{\link{umxCP}},
   \code{\link{umxGxE_biv}}, \code{\link{umxGxE_window}},
   \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
+  \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}}, \code{\link{umx}},
+  \code{\link{umxSummarySexLim}},
+  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }

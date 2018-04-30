@@ -17,21 +17,22 @@
 #' A common task in twin modeling involves using the genetic and environmental differences 
 #' between large numbers of pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
 #' to model the genetic and environmental structure of one, or, typically, several phenotypes
-#' (measured behaviors). umxACEv supports modeling with the ACE Cholesky model, a core model 
-#' in behavior genetics (Neale and Cardon, 1996).
+#' (measured behaviors).
 #' 
-#' This model decomposes phenotypic variance into Additive genetic,
+#' The ACE variance-based model decomposes phenotypic variance into additive genetic (A),
 #' unique environmental (E) and, optionally, either common environment (shared-environment, C) or 
 #' non-additive genetic effects (D). Scroll down to details for how to use the function, a figure
 #' and multiple examples.
 #' 
-#' This function does not use the Cholesky decomposition. Instead it directly models variance.
-#' This ensures unbiased type-I error rates. It means that occasionally
-#' estimates of variance may be negative. This should be used as an occasion to inspect you model
-#' choices and data.
 #' The following figure shows the A components of a trivate ACEv model:
 #' 
 #' \figure{ACEv.png}
+#' 
+#' *NOTE*: This function does not use the Cholesky decomposition. Instead it directly models variance.
+#' This ensures unbiased type-I error rates. It means that occasionally
+#' estimates of variance may be negative. This should be used as an occasion to inspect you model
+#' choices and data. `umxACEv` can be used as a base model to validate the ACE Cholesky model, 
+#' a core model in behavior genetics (Neale and Cardon, 1992).
 #' 
 #' @details
 #' \strong{Data Input}
@@ -60,7 +61,7 @@
 #' 
 #' @param name The name of the model (defaults to"ACE").
 #' @param selDVs The variables to include from the data: preferably, just "dep" not c("dep_T1", "dep_T2").
-#' @param selCovs (optional) covariates to include from the data (do not include suffix in names)
+#' @param selCovs (optional) covariates to include from the data (do not include sep in names)
 #' @param covMethod How to treat covariates: "fixed" (default) or "random".
 #' @param dzData The DZ dataframe.
 #' @param mzData The MZ dataframe.
@@ -78,7 +79,6 @@
 #' @param thresholds How to implement ordinal thresholds c("deviationBased", "WLS").
 #' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned).
 #' @param optimizer Optionally set the optimizer (default NULL does nothing).
-#' @param suffix Allowed as a synonym for "suffix".
 #' @return - \code{\link{mxModel}} of subclass mxModel.ACE
 #' @export
 #' @family Twin Modeling Functions
@@ -158,7 +158,7 @@
 #' dzData = twinData[twinData$zygosity %in% c("DZFF", "DZMM", "DZOS"), ]
 #' mzData = mzData[1:80,] # quicker run to keep CRAN happy
 #' dzData = dzData[1:80,]
-#' m1 = umxACEv(selDVs = c("ht", "wt"), suffix = '', dzData = dzData, mzData = mzData)
+#' m1 = umxACEv(selDVs = c("ht", "wt"), sep = '', dzData = dzData, mzData = mzData)
 #' 
 #' # ===================
 #' # = Ordinal example =
@@ -179,7 +179,7 @@
 #' mzData <- mzData[1:80,] # just top 80 pairs to run fast
 #' dzData <- dzData[1:80,]
 #' str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
-#' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
+#' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 #' umxSummary(m1)
 #' 
 #' # ============================================
@@ -199,7 +199,7 @@
 #' dzData <- twinData[twinData$zyg == 3,]
 #' mzData <- mzData[1:80,] # just top 80 so example runs in a couple of secs
 #' dzData <- dzData[1:80,]
-#' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
+#' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 #' plot(m1)
 #' 
 #' # =======================================
@@ -217,10 +217,10 @@
 #' twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obesityLevels)
 #' 
 #' selDVs = c("wt", "obese")
-#' mzData <- twinData[twinData$zygosity %in% "MZFF", umx_paste_names(selDVs, "", 1:2)]
-#' dzData <- twinData[twinData$zygosity %in% "DZFF", umx_paste_names(selDVs, "", 1:2)]
+#' mzData <- twinData[twinData$zygosity %in% "MZFF", ]
+#' dzData <- twinData[twinData$zygosity %in% "DZFF", ]
 #' \dontrun{
-#' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
+#' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 #' umxSummary(m1)
 #' }
 #' 
@@ -236,9 +236,11 @@
 #' m1 = umxACEv(selDVs = selDVs, dzData = dz, mzData = mz, numObsDZ=569, numObsMZ=351)
 #' umxSummary(m1)
 #' plot(m1)
-
-umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed", "random"), dzData, mzData, suffix = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL, 
-	weightVar = NULL, equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased", "WLS"), autoRun = getOption("umx_auto_run"), sep = NULL, optimizer = NULL) {
+#' 
+umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, covMethod = c("fixed", "random"), 
+	dzData, mzData, sep = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, 
+	boundDiag = NULL, weightVar = NULL, equateMeans = TRUE, bVector = FALSE, 
+	thresholds = c("deviationBased", "WLS"), autoRun = getOption("umx_auto_run"), optimizer = NULL) {
 
 		# message("This is STRICTLY experimental, and not complete (prep for Boulder 2018 use of variance components modeling)")
 		covMethod = match.arg(covMethod)
@@ -248,19 +250,15 @@ umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 		if(!is.null(optimizer)){
 			umx_set_optimizer(optimizer)
 		}
-		# Allow sep as synonym for suffix
-		if(!is.null(sep)){
-			suffix = sep
-		}
 		# If given covariates, call umxACEvcov
 		if(!is.null(selCovs)){
 			if(covMethod == "fixed"){
 				stop("Implementing fixed means effects for version 2.0")
-				# umxACEvdefcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, suffix = suffix, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun)
+				# umxACEvdefcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun)
 			} else if(covMethod == "random") {
 				message("umxACEvcov not yet implemented")
 				# TODO implement umxACEvcov or refactor
-				# umxACEvcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, suffix = suffix, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun)
+				# umxACEvcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun)
 			}
 		} else {
 			if(nrow(dzData) == 0){ stop("Your DZ dataset has no rows!") }
@@ -277,12 +275,12 @@ umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 				"BadNames included: ", omxQuotes(badNames) )
 			}
 
-			if(!is.null(suffix)){
-				if(length(suffix) > 1){
+			if(!is.null(sep)){
+				if(length(sep) > 1){
 					stop("sep should be just one word, like '_T'. I will add 1 and 2 afterwards... \n",
 					"i.e., you have to name your variables 'obese_T1' and 'obese_T2' etc.")
 				}
-				selDVs = umx_paste_names(selDVs, suffix, 1:2)
+				selDVs = umx_paste_names(selDVs, sep, 1:2)
 			}
 			umx_check_names(selDVs, mzData)
 			umx_check_names(selDVs, dzData)
@@ -319,13 +317,13 @@ umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 				factorVarNames = ordVarNames = binVarNames = contVarNames = c()
 			}
 
-			if(nFactors > 0 & is.null(suffix)){
-				stop("Please set suffix.\n",
+			if(nFactors > 0 & is.null(sep)){
+				stop("Please set sep.\n",
 				"Why: You have included ordinal or binary variables. I need to know which variables are for twin 1 and which for twin2.\n",
 				"The way I do this is enforcing some naming rules. For example, if you have 2 variables:\n",
 				" obesity and depression called: 'obesity_T1', 'dep_T1', 'obesity_T2' and 'dep_T2', you should call umxACEv with:\n",
-				"selDVs = c('obesity','dep'), suffix = '_T' \n",
-				"suffix is just one word, appearing in all variables (e.g. '_T').\n",
+				"selDVs = c('obesity','dep'), sep = '_T' \n",
+				"sep is just one word, appearing in all variables (e.g. '_T').\n",
 				"This is assumed to be followed by '1' '2' etc...")
 			}
 
@@ -409,7 +407,7 @@ umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 					# for better guessing with low-frequency cells
 					allData = rbind(mzData, dzData)
 					# threshMat is is a matrix, or a list of 2 matrices and an algebra
-					threshMat = umxThresholdMatrix(allData, sep = suffix, thresholds = thresholds, threshMatName = "threshMat", verbose = FALSE)
+					threshMat = umxThresholdMatrix(allData, sep = sep, thresholds = thresholds, threshMatName = "threshMat", verbose = FALSE)
 					mzExpect = mxExpectationNormal("top.expCovMZ", "top.expMean", thresholds = "top.threshMat")
 					dzExpect = mxExpectationNormal("top.expCovDZ", "top.expMean", thresholds = "top.threshMat")			
 					top = mxModel("top", umxLabel(meansMatrix), threshMat)
@@ -446,7 +444,7 @@ umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 					# For better guessing with low-freq cells
 					allData = rbind(mzData, dzData)
 					# threshMat may be a three item list of matrices and algebra
-					threshMat = umxThresholdMatrix(allData, sep = suffix, thresholds = thresholds, threshMatName = "threshMat", verbose = TRUE)
+					threshMat = umxThresholdMatrix(allData, sep = sep, thresholds = thresholds, threshMatName = "threshMat", verbose = TRUE)
 
 					mzExpect  = mxExpectationNormal("top.expCovMZ", "top.expMean", thresholds = "top.threshMat")
 					dzExpect  = mxExpectationNormal("top.expCovDZ", "top.expMean", thresholds = "top.threshMat")
@@ -577,7 +575,6 @@ umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 				# mxAlgebra(vec2diag(1/diag2vec(Vtot)), name = "Vtot"), # total variance --> SD
 				mxAlgebra(name = "Vtot", A + C+ E),        # Total variance
 				mxAlgebra(name = "InvSD", sqrt(solve(I * Vtot))), # total variance --> 1/SD
-				# TODO test that these are identical in all cases
 
 				# Standardised _variance_ coefficients ready to be stacked together
 				# A_std = InvSD %&% A 
@@ -599,7 +596,7 @@ umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 		}
 		# Trundle through and make sure values with the same label have the same start value... means for instance.
 		model = omxAssignFirstParameters(model)
-		model = as(model, "MxModel.ACEv") # set class so that S3 plot() dispatches.
+		model = as(model, "MxModelACEv") # set class so that S3 plot() dispatches.
 		
 		if(autoRun){
 			model = mxRun(model)
@@ -618,15 +615,15 @@ umxACEv <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 #'
 #' See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
 #' 
-#' View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModel.ACE}}.
+#' View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModelACE}}.
 #' 
-#' View documentation on the IP model subclass here: \code{\link{umxSummary.MxModel.IP}}.
+#' View documentation on the IP model subclass here: \code{\link{umxSummary.MxModelIP}}.
 #' 
-#' View documentation on the CP model subclass here: \code{\link{umxSummary.MxModel.CP}}.
+#' View documentation on the CP model subclass here: \code{\link{umxSummary.MxModelCP}}.
 #' 
-#' View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModel.GxE}}.
+#' View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModelGxE}}.
 #' 
-#' @aliases umxSummary.MxModel.ACEv
+#' @aliases umxSummary.MxModelACEv
 #' @param model an \code{\link{mxModel}} to summarize
 #' @param digits round to how many digits (default = 2)
 #' @param file The name of the dot file to write: "name" = use the name of the model.
@@ -669,18 +666,10 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 			umxSummaryACE(thisFit, digits = digits, file = file, showRg = showRg, std = std, comparison = comparison, CIs = CIs, returnStd = returnStd, extended = extended, zero.print = zero.print, report = report)
 		}
 	} else {
-		umx_has_been_run(model, stop = TRUE)
-		if(is.null(comparison)){
-			# \u00d7 = times sign
-		 	message(paste0(model$name, " -2 \u00d7 log(Likelihood) = ", 
-				round(-2 * logLik(model), digits=digits))
-			)
-	} else {
-		message("Comparison of model with parent model:")
-		umxCompare(comparison, model, digits = 3)
-	}
+	umx_has_been_run(model, stop = TRUE)
+	umx_show_fit_or_comparison(model, comparison = comparison, digits = digits)
 	selDVs = dimnames(model$top.expCovMZ)[[1]]
-	nVar <- length(selDVs)/2;
+	nVar   = length(selDVs)/2;
 	# TODO umxSummaryACEv these already exist if a_std exists..
 	# TODO replace all this with umx_standardizeACE
 	# Calculate standardized variance components
@@ -768,6 +757,14 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 		if(hasCIs & CIs) {
 			# TODO umxACE CI code: Need to refactor into some function calls...
 			# TODO and then add to umxSummaryIP and CP
+			# 1. Get labels that are free: doesn't matter if they're my format or not
+			# 2. Turn each into a bracket[la,ble] (or labels for equates)
+			# 3. get the value of the parameter
+			# 4. for tables, that’s it: just print them out
+			# 5. for plots, tag labels with type+name of from- and to- vars
+			# 	* This requires some custom code for each model type.
+			# 6. Hence the umx_stash_CIs idea... if it would generalize.
+
 			message("Creating CI-based report!")
 			# CIs exist, get lower and upper CIs as a dataframe
 			CIlist = data.frame(model$output$confidenceIntervals)
@@ -857,14 +854,13 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 }
 
 #' @export
-
-umxSummary.MxModel.ACEv <- umxSummaryACEv
+umxSummary.MxModelACEv <- umxSummaryACEv
 
 #' Produce a graphical display of an ACE variance-components twin model
 #'
 #' Plots an ACE model graphically, opening the result in the browser (or a graphviz application).
 #'
-#' @aliases plot.MxModel.ACEv
+#' @aliases plot.MxModelACEv
 #' @param x \code{\link{umxACEv}} model to plot.
 #' @param file The name of the dot file to write: Default ("name") = use the name of the model. NA = don't plot.
 #' @param digits How many decimals to include in path loadings (default = 2)
@@ -885,7 +881,7 @@ umxSummary.MxModel.ACEv <- umxSummaryACEv
 #' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
 #' plot(m1, std = FALSE) # don't standardize
 umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, ...) {
-	if(!class(x) == "MxModel.ACEv"){
+	if(!class(x) == "MxModelACEv"){
 		stop("The first parameter of umxPlotACE must be an ACEv model, you gave me a ", class(x))
 	}
 	model = x # Just to be clear that x is a model
@@ -954,7 +950,7 @@ umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = 
 } # end umxPlotACE
 
 #' @export
-plot.MxModel.ACEv <- umxPlotACEv
+plot.MxModelACEv <- umxPlotACEv
 
 
 #' Standardize an ACE variance components model (ACEv)
@@ -1010,4 +1006,4 @@ umx_standardize_ACEv <- function(model, ...) {
 	}
 }
 #' @export
-umx_standardize.MxModel.ACEv <- umx_standardize_ACEv
+umx_standardize.MxModelACEv <- umx_standardize_ACEv

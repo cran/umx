@@ -39,7 +39,7 @@
 #' data(twinData)
 #' selDVs  = "wt"
 #' selDefs = "ht"
-#' df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), suffix = "")
+#' df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), sep = "")
 #' mzData  = subset(df, zygosity %in%  c("MZFF", "MZMM"))
 #' dzData  = subset(df, zygosity %in%  c("DZFF", "DZMM", "DZOS"))
 #'
@@ -53,8 +53,7 @@
 #' umxSummary(m1, separateGraphs = FALSE)
 #' m2 = umxModify(m1, update = c("cBeta2_r1c1", "eBeta1_r1c1", "eBeta2_r1c1"), comparison = TRUE)
 #' #
-#' # TODO: The umxReduce function knows how to test all relevant hypotheses
-#' # about model reduction for GxE models, reporting these in a nice table.
+#' # TODO: teach umxReduce to test all relevant hypotheses for umxGxE_biv
 #' umxReduce(m1)
 #' }
 umxGxE_biv <- function(name = "GxE_biv", selDVs, selDefs, dzData, mzData, sep = NULL, lboundACE = NA, lboundM = NA, dropMissingDef = FALSE, autoRun = getOption("umx_auto_run"), optimizer = NULL) {
@@ -276,7 +275,7 @@ umxGxE_biv <- function(name = "GxE_biv", selDVs, selDefs, dzData, mzData, sep = 
 	if(!is.na(lboundM)){
 		model = omxSetParameters(model, labels = c('am_r1c1', 'cm_r1c1', 'em_r1c1'), lbound = lboundM)
 	}
-	model = as(model, "MxModel.GxE_biv")
+	model = as(model, "MxModelGxE_biv")
 	if(autoRun){
 		tryCatch({
 			model = mxRun(model)
@@ -298,7 +297,7 @@ umxGxE_biv <- function(name = "GxE_biv", selDVs, selDefs, dzData, mzData, sep = 
 #'
 #' umxSummaryGxE_biv summarize a Moderation model, as returned by \code{\link{umxGxE_biv}}.
 #'
-#' @aliases umxSummary.MxModel.GxE_biv
+#' @aliases umxSummary.MxModelGxE_biv
 #' @param model A fitted \code{\link{umxGxE_biv}} model to summarize
 #' @param digits round to how many digits (default = 2)
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
@@ -321,7 +320,7 @@ umxGxE_biv <- function(name = "GxE_biv", selDVs, selDefs, dzData, mzData, sep = 
 #' data(twinData) 
 #' selDVs  = "wt"
 #' selDefs = "ht"
-#' df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), suffix = "")
+#' df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), sep = "")
 #' mzData  = subset(df, zygosity %in%  c("MZFF", "MZMM"))
 #' dzData  = subset(df, zygosity %in%  c("DZFF", "DZMM", "DZOS"))
 #'
@@ -342,18 +341,10 @@ umxSummaryGxE_biv <- function(model = NULL, digits = 2, xlab = NA, location = "t
 	}
 
 	if(is.null(model)){
-		message("umxSummaryGxE_biv calls plot.MxModel.GxE_biv for a twin moderation plot. A use example is:\n umxSummaryGxE_biv(model, location = \"topright\")")
+		message("umxSummaryGxE_biv calls plot.MxModelGxE_biv for a twin moderation plot. A use example is:\n umxSummaryGxE_biv(model, location = \"topright\")")
 		stop();
 	}
-	if(is.null(comparison)){
-		 # \u00d7 = times sign
-		 message(paste0(model$name, " -2 \u00d7 log(Likelihood) = ", 
-			round(-2 * logLik(model), digits=digits))
-		)
-	} else {
-		message("Comparison of model with parent model:")
-		umxCompare(comparison, model, digits = 3)
-	}
+	umx_show_fit_or_comparison(model, comparison = comparison, digits = digits)
 	selDVs = model$MZm$expectation$dims
 	nVar <- length(selDVs)/2;
 	# TODO umxSummaryACE these already exist if a_std exists..
@@ -401,7 +392,7 @@ umxSummaryGxE_biv <- function(model = NULL, digits = 2, xlab = NA, location = "t
 }
 
 #' @export
-umxSummary.MxModel.GxE_biv <- umxSummaryGxE_biv
+umxSummary.MxModelGxE_biv <- umxSummaryGxE_biv
 
 
 #' Plot the results of a GxE univariate test for moderation of ACE components.
@@ -410,7 +401,7 @@ umxSummary.MxModel.GxE_biv <- umxSummaryGxE_biv
 #' Options include plotting the raw and standardized graphs separately, or in a combined panel.
 #' You can also set the label for the x axis (xlab), and choose the location of the legend.
 #'
-#' @aliases plot.MxModel.GxE_biv
+#' @aliases plot.MxModelGxE_biv
 #' @param x A fitted \code{\link{umxGxE_biv}} model to plot
 #' @param xlab String to use for the x label (default = NA, which will use the variable name)
 #' @param location Where to plot the legend (default = "topleft")
@@ -439,7 +430,7 @@ umxSummary.MxModel.GxE_biv <- umxSummaryGxE_biv
 #' umxPlotGxE_biv(m1, xlab = "wt", separateGraphs = TRUE, location = "topleft")
 #' }
 umxPlotGxE_biv <- function(x, xlab = NA, location = "topleft", separateGraphs = FALSE, ...) {
-	if(class(x) != "MxModel.GxE_biv"){
+	if(class(x) != "MxModelGxE_biv"){
 		stop("The first parameter of umxPlotGxE must be a GxE_biv model, you gave me a ", class(x))
 	}
 	model = x # to remind us that x has to be a umxGxE_biv model
@@ -450,11 +441,11 @@ umxPlotGxE_biv <- function(x, xlab = NA, location = "topleft", separateGraphs = 
 	if(is.na(xlab)){
 		xlab = selDefs[1]
 	}
-	mzdef1 = as.vector(mzData[,selDefs[1]])
-	mzdef2 = as.vector(mzData[,selDefs[2]])
-	dzdef1 = as.vector(dzData[,selDefs[1]])
-	dzdef2 = as.vector(dzData[,selDefs[2]])
-	allValuesOfDefVar= c(mzdef1,mzdef2, dzdef1, dzdef2)
+	mzdef1 = as.vector(mzData[, selDefs[1]])
+	mzdef2 = as.vector(mzData[, selDefs[2]])
+	dzdef1 = as.vector(dzData[, selDefs[1]])
+	dzdef2 = as.vector(dzData[, selDefs[2]])
+	allValuesOfDefVar= c(mzdef1, mzdef2, dzdef1, dzdef2)
 	defVarValues = sort(unique(allValuesOfDefVar))
 	
 	a11 = model$top.a11$values
@@ -511,4 +502,4 @@ umxPlotGxE_biv <- function(x, xlab = NA, location = "topleft", separateGraphs = 
 }
 
 #' @export
-plot.MxModel.GxE_biv <- umxPlotGxE_biv
+plot.MxModelGxE_biv <- umxPlotGxE_biv

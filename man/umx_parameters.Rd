@@ -35,6 +35,8 @@ parameters(x, thresh = c("all", "above", "below", "NS", "sig"), b = NULL,
 Often you want to see the estimates from a model, and often you don't want all of them.
 \code{\link{umx_parameters}} helps in this case, allowing you to select parameters matching a name filter,
 and also to only show parameters above or below a certain value.
+
+If pattern is a vector, each regular expression is matched, and all unique matches to the whole vector are returned.
 }
 \details{
 It is on my TODO list to implement filtering by significance, and to add standardizing.
@@ -68,6 +70,7 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{umxSummary}}, \code{\link{umx_APA_model_CI}},
   \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
   \code{\link{umx_names}}, \code{\link{umx_print}},
+  \code{\link{umx_show_fit_or_comparison}},
   \code{\link{umx_show}}, \code{\link{umx_time}},
   \code{\link{umx}}
 }

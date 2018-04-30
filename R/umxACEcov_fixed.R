@@ -96,7 +96,7 @@ umxACE_cov_fixed <- function(name = "ACEcov", selDVs, selCovs = NULL, dzData, mz
 		thresholds = match.arg(thresholds)
 		if(!is.null(sep)){ suffix = sep }
 		if(dzCr == .25 && name == "ACEcov"){ name = "ADEcov"}
-		xmu_twin_check(selDVs= c(selDVs, selCovs), dzData = dzData, mzData = mzData, optimizer = optimizer, suffix = suffix)
+		xmu_twin_check(selDVs= c(selDVs, selCovs), dzData = dzData, mzData = mzData, optimizer = optimizer, sep = sep)
 
 		if(is.null(selCovs)){
 			stop("You need to give me some covariates (if there are none, just use umxACE)")
@@ -437,7 +437,7 @@ umxACE_cov_fixed <- function(name = "ACEcov", selDVs, selCovs = NULL, dzData, mz
 	}
 	# Trundle through and make sure values with the same label have the same start value... means for instance.
 	model = omxAssignFirstParameters(model)
-	model = as(model, "MxModel.ACE") # set class so that S3 plot() dispatches.
+	model = as(model, "MxModelACE") # set class so that S3 plot() dispatches.
 	
 	if(autoRun){
 		model = mxRun(model)

@@ -12,7 +12,7 @@ umx_APA_model_CI(model, cellLabel, prefix = "top.", suffix = "_std",
 
 \item{cellLabel}{the label of the cell to interrogate for a CI, e.g. "ai_r1c1"}
 
-\item{prefix}{This submodel to look in (i.e. "top.")}
+\item{prefix}{The submodel to look in (i.e. "top.")}
 
 \item{suffix}{The suffix for algebras ("_std")}
 
@@ -21,7 +21,7 @@ umx_APA_model_CI(model, cellLabel, prefix = "top.", suffix = "_std",
 \item{verbose}{= FALSE}
 }
 \value{
-- the CI string, e.g. ".73 [-.2, .98]"
+- the CI string, e.g. ".73[-.20,.98]"
 }
 \description{
 Look up CIs for free parameters in a model, and return as APA-formatted text string
@@ -42,6 +42,7 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{umxSummary}}, \code{\link{umx_APA_pval}},
   \code{\link{umx_aggregate}}, \code{\link{umx_names}},
   \code{\link{umx_parameters}}, \code{\link{umx_print}},
+  \code{\link{umx_show_fit_or_comparison}},
   \code{\link{umx_show}}, \code{\link{umx_time}},
   \code{\link{umx}}
 }

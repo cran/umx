@@ -228,7 +228,7 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 	}
 
 	# Tests: equate means would be expMeanGm, expMeanGf, expMeanGo
-	model = as(model, "MxModel.SexLim") # set class so umxSummary, plot, etc. work.
+	model = as(model, "MxModelSexLim") # set class so umxSummary, plot, etc. work.
 	if(autoRun){
 		model = mxRun(model)
 		tryCatch({
@@ -253,15 +253,15 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 #'
 #' See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
 #' 
-#' View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModel.ACE}}.
+#' View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModelACE}}.
 #' 
-#' View documentation on the IP model subclass here: \code{\link{umxSummary.MxModel.IP}}.
+#' View documentation on the IP model subclass here: \code{\link{umxSummary.MxModelIP}}.
 #' 
-#' View documentation on the CP model subclass here: \code{\link{umxSummary.MxModel.CP}}.
+#' View documentation on the CP model subclass here: \code{\link{umxSummary.MxModelCP}}.
 #' 
-#' View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModel.GxE}}.
+#' View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModelGxE}}.
 
-#' @aliases umxSummary.MxModel.SexLim
+#' @aliases umxSummary.MxModelSexLim
 #' @param model a \code{\link{umxSexLim}} model to summarize
 #' @param digits round to how many digits (default = 2)
 #' @param file The name of the dot file to write: "name" = use the name of the model.
@@ -319,7 +319,7 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 #' stdFit = umxSummarySexLim(m1, returnStd = TRUE);
 #' }
 umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
-	message("umxSummarySexLim is a work-in-progress.\nUse summary() for any relevant stats currently not being tabulated or plotted")
+	message("umxSummarySexLim is a new feature. If any desired stats are not presented, let me know what's missing")
 	report = match.arg(report)
 	# Depends on R2HTML::HTML
 	if(typeof(model) == "list"){ # call self recursively
@@ -329,16 +329,7 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 		}
 	} else {
 	umx_has_been_run(model, stop = TRUE)
-	if(is.null(comparison)){
-		 # \u00d7 = times sign
-		 message(paste0(model$name, " -2 \u00d7 log(Likelihood) = ", 
-			round(-2 * logLik(model), digits=digits))
-		)
-	} else {
-		message("Comparison of model with parent model:")
-		umxCompare(comparison, model, digits = 3)
-	}
-
+	umx_show_fit_or_comparison(model, comparison = comparison, digits = digits)
 	selVars = model$MZm$expectation$dims
 	selDVs  = dimnames(model$top$VarsZm$result)[[1]]
 	nVar    = length(selDVs)
@@ -351,24 +342,24 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 		tmpm = model$top$VarsZm$result
 		tmpf = model$top$VarsZf$result
 		Am = diag(tmpm[1:5, 1:nVar])
-		Cm = diag(tmpm[1:5, (nVar+1):(nVar*2)])
-		Em = diag(tmpm[1:5, (nVar*2+1):(nVar*3)])
+		Cm = diag(tmpm[1:5, (nVar + 1):(nVar * 2)])
+		Em = diag(tmpm[1:5, (nVar * 2 + 1):(nVar * 3)])
 		Af = diag(tmpf[1:5, 1:nVar])
-		Cf = diag(tmpf[1:5, (nVar+1):(nVar*2)])
-		Ef = diag(tmpf[1:5, (nVar*2+1):(nVar*3)])
+		Cf = diag(tmpf[1:5, (nVar + 1):(nVar * 2)])
+		Ef = diag(tmpf[1:5, (nVar * 2 + 1):(nVar * 3)])
 		Estimates = data.frame(rbind(Am, Cm, Em, Af, Cf, Ef))
 		names(Estimates) = selDVs
 		umx_print(Estimates, digits = 2)
 
 		tmpm = model$top$CorsZm$result
 		RAm = tmpm[1:5, 1:nVar]
-		RCm = tmpm[1:5, (nVar+1):(nVar*2)]
-		REm = tmpm[1:5, (nVar*2+1):(nVar*3)]
+		RCm = tmpm[1:5, (nVar + 1):(nVar * 2)]
+		REm = tmpm[1:5, (nVar * 2 + 1):(nVar * 3)]
 
 		tmpf = model$top$CorsZf$result
 		RAf = tmpf[1:5, 1:nVar]
-		RCf = tmpf[1:5, (nVar+1):(nVar*2)]
-		REf = tmpf[1:5, (nVar*2+1):(nVar*3)]
+		RCf = tmpf[1:5, (nVar + 1):(nVar * 2)]
+		REf = tmpf[1:5, (nVar * 2 + 1):(nVar * 3)]
 
 		message("Genetic Factor Correlations")
 		RAboth = RAm
@@ -416,7 +407,6 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 		# names(unStandardizedEstimates) = paste0(rep(colNames, each = nVar), rep(1:nVar));
 		# umx_print(unStandardizedEstimates, digits = digits, zero.print = zero.print)
 	}
-
 
 	hasCIs = umx_has_CIs(model)
 		if(hasCIs & CIs) {
@@ -496,8 +486,7 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 			# CI_Fit$top$e$values = e_CI
 		} # end Use CIs
 	} # end list catcher?
-	
-	
+
 	if(!is.na(file)) {
 		# message("making dot file")
 		if(hasCIs & CIs){
@@ -516,4 +505,4 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 }
 
 #' @export
-umxSummary.MxModel.SexLim <- umxSummarySexLim
+umxSummary.MxModelSexLim <- umxSummarySexLim

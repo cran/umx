@@ -38,6 +38,7 @@ By default, Zeros have the decimals suppressed, and NAs are suppressed altogethe
 }
 \examples{
 umx_print(mtcars[1:10,], digits = 2, zero.print = ".", justify = "left")
+umx_print(mtcars[1,1:2], digits = 2, zero.print = "")
 \dontrun{
 umx_print(mtcars[1:10,], file = "tmp.html")
 }
@@ -47,10 +48,13 @@ umx_print(mtcars[1:10,], file = "tmp.html")
 
 Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
   \code{\link{qm}}, \code{\link{umxBrownie}},
-  \code{\link{umxVersion}}, \code{\link{umx_find_object}},
-  \code{\link{umx_make}}, \code{\link{umx_msg}},
-  \code{\link{umx_open_CRAN_page}},
-  \code{\link{umx_pb_note}}, \code{\link{umx}}
+  \code{\link{umxFactor}}, \code{\link{umxVersion}},
+  \code{\link{umx_array_shift}},
+  \code{\link{umx_cont_2_quantiles}},
+  \code{\link{umx_find_object}}, \code{\link{umx_make}},
+  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
+  \code{\link{umx_pad}}, \code{\link{umx_pb_note}},
+  \code{\link{umx_scale}}, \code{\link{umx}}
 
 Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{tmx_is.identified}}, \code{\link{umxAPA}},
@@ -59,6 +63,7 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{umxSummary}}, \code{\link{umx_APA_model_CI}},
   \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
   \code{\link{umx_names}}, \code{\link{umx_parameters}},
+  \code{\link{umx_show_fit_or_comparison}},
   \code{\link{umx_show}}, \code{\link{umx_time}},
   \code{\link{umx}}
 }

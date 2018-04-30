@@ -5,14 +5,16 @@
 \title{"make" the umx package using devtools: release to CRAN etc.}
 \usage{
 umx_make(what = c("install", "examples", "check", "win", "rhub", "release",
-  "spell"), pkg = "~/bin/umx", check = TRUE)
+  "spell"), pkg = "~/bin/umx", check = TRUE, spelling = "en_US")
 }
 \arguments{
 \item{what}{whether to "install", "release" to CRAN, check on "win", "check", "rhub", "spell" check, or check "examples"))}
 
 \item{pkg}{the local path to your package. Defaults to my path to umx.}
 
-\item{check}{Whether to run check on the package before release (default = TRUE)}
+\item{check}{Whether to run check on the package before release (default = TRUE).}
+
+\item{spelling}{Whether to check spelling before release (default = "en_US": set NULL to not check).}
 }
 \value{
 -
@@ -35,8 +37,11 @@ umx_make(what = "release"))  # release to CRAN
 \seealso{
 Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
   \code{\link{qm}}, \code{\link{umxBrownie}},
-  \code{\link{umxVersion}}, \code{\link{umx_find_object}},
-  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
+  \code{\link{umxFactor}}, \code{\link{umxVersion}},
+  \code{\link{umx_array_shift}},
+  \code{\link{umx_cont_2_quantiles}},
+  \code{\link{umx_find_object}}, \code{\link{umx_msg}},
+  \code{\link{umx_open_CRAN_page}}, \code{\link{umx_pad}},
   \code{\link{umx_pb_note}}, \code{\link{umx_print}},
-  \code{\link{umx}}
+  \code{\link{umx_scale}}, \code{\link{umx}}
 }

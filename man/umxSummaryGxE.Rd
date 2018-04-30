@@ -2,7 +2,7 @@
 % Please edit documentation in R/fit_and_reporting.r
 \name{umxSummaryGxE}
 \alias{umxSummaryGxE}
-\alias{umxSummary.MxModel.GxE}
+\alias{umxSummary.MxModelGxE}
 \title{umxSummaryGxE}
 \usage{
 umxSummaryGxE(model = NULL, digits = 2, xlab = NA, location = "topleft",
@@ -76,11 +76,13 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACE}}, \code{\link{umxCP}},
   \code{\link{umxGxE_biv}}, \code{\link{umxGxE_window}},
   \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
+  \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE_biv}},
   \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}}, \code{\link{umx}},
+  \code{\link{umxSummarySexLim}},
+  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }

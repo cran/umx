@@ -1,9 +1,35 @@
-# umx 2.4.0 March 21 2018, R 3.4.3 post Boulder Workshop edition)
+# umx 2.6.1 May 2018, R 3.5.0
+* NEW: Beta versions of `umx_polychoric`, `umx_polypairwise`, and `umx_polytriowise`
+* NEW: `umxSimplex`twin model!
+  * `umxSummary` for simplex
+  * `plot support for simplex
+  * `iqdat`longitudinal IQ twin data for simplex modelling
+* NEW: `namez` alias for the ever-useful `umx_names` function.
+* NEW: `umxAlgebra` (just allows name first).
+* FIX: `install.OpenMx` URLs for NPSOl and travis builds of OpenMx
+* BREAK: Following reports of problems in RStudio, changed umx class names to remove the period character from MxModel derivative classes
+ * This will **break** hard-cded calls, for instance  to `umxSummary.MxModel.ACE` instead of `umxSummary`. 
+  * "Just" replace with `umxSummary.MxModelACE` # i.e. delete the last period in the name... Sorry :-(
+* IMPROVED: `parameters` now returns helpful near-match names as suggestions on not finding actual matches.
+* IMPROVED: `parameters` now handles vectors of regular selections
+* IMPROVED: `umx_print` now handles vectors.
+* IMPROVED: `umxConfint` "smart" feature to request only free algebra cells for models I understand (umxCP in the first instance)
+* IMPROVED: `namez` can handle a model summary (accesses names() of the summary)
+* IMPROVED: `umxGxE` added option to control plot colors
+* IMPROVED: `umxPlotCP` can handle >9 manifests [issue](https://github.com/tbates/umx/issues/47)
+* HELP: umxGxE example improved
+* HELP: More related-function links in help files.
+* HELP: Better error messages.
+* HELP: Help titles, parameter documentation.
+* INTERNAL: `xmu_simplex_corner` helper function for simplex modelling.
+* INTERNAL: `umx_make_sql` improved 
+
+# umx 2.4.0 March 21 2018, R 3.4.4 post Boulder Workshop CRAN edition)
 * NEW: `umxIP` nFac now allows specifying different numbers of a, c, and e factors!
-* NEW: `umxACEv` plot works (shows correlated factors)
+* NEW: `umxACEv` plot works (shows correlated factors).
 * NEW: `umxACEv` standardize mostly functional.
 * NEW: `umxEFA` can now take a formula to select variables.
-* IMPROVED: `umxIP` and CP examples improved (3-variables, GFF data)
+* IMPROVED: `umxIP` and CP examples improved (3-variables, GFF data).
 * IMPROVED: `umxIP` *reporting* of `as`, `cs`, `es` simplified into compact stack.
 * IMPROVED: `umxCP` *reporting* of `as`, `cs`, `es` simplified into compact stack.
 * IMPROVED: `umxPlotCP` labelling of variables improved (catching more _Tn).

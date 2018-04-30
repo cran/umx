@@ -200,7 +200,7 @@ dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
 mzData <- mzData[1:80, ] # Just top 80 pairs to run fast
 dzData <- dzData[1:80, ]
 str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
+m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
 
 # ============================================
@@ -221,7 +221,7 @@ mzData <- twinData[twinData$zygosity \%in\%  "MZFF",]
 dzData <- twinData[twinData$zygosity \%in\%  "DZFF",]
 mzData <- mzData[1:80,] # just top 80 so example runs in a couple of secs
 dzData <- dzData[1:80,]
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
+m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 plot(m1)
 
 # =======================================
@@ -242,7 +242,7 @@ selDVs = c("wt", "obese")
 mzData <- twinData[twinData$zygosity \%in\% "MZFF",]
 dzData <- twinData[twinData$zygosity \%in\% "DZFF",]
 \dontrun{
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, suffix = '')
+m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
 }
 
@@ -264,18 +264,19 @@ plot(m1)
 to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.nature.com/articles/hdy1978101.pdf}
 }
 \seealso{
-- \code{\link{plot.MxModel.ACE}}, \code{\link{plot.MxModel.ACE}}, \code{\link{umxSummaryACE}}, \code{\link{umxModify}}
+- \code{\link{plot.MxModelACE}}, \code{\link{plot.MxModelACE}}, \code{\link{umxSummaryACE}}, \code{\link{umxModify}}
 
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACEcov}}, \code{\link{umxACEv}},
   \code{\link{umxCP}}, \code{\link{umxGxE_biv}},
   \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
   \code{\link{umxIP}}, \code{\link{umxSexLim}},
-  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE_biv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}}, \code{\link{umx}},
+  \code{\link{umxSummarySexLim}},
+  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/umxGxE_biv.R
 \name{umxPlotGxE_biv}
 \alias{umxPlotGxE_biv}
-\alias{plot.MxModel.GxE_biv}
+\alias{plot.MxModelGxE_biv}
 \title{Plot the results of a GxE univariate test for moderation of ACE components.}
 \usage{
 umxPlotGxE_biv(x, xlab = NA, location = "topleft", separateGraphs = FALSE,
@@ -56,5 +56,5 @@ Other Plotting functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACEv}},
   \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}},
   \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umx}}
+  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
 }

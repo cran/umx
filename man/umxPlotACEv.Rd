@@ -2,7 +2,7 @@
 % Please edit documentation in R/umxACEv.R
 \name{umxPlotACEv}
 \alias{umxPlotACEv}
-\alias{plot.MxModel.ACEv}
+\alias{plot.MxModelACEv}
 \title{Produce a graphical display of an ACE variance-components twin model}
 \usage{
 umxPlotACEv(x = NA, file = "name", digits = 2, means = FALSE,
@@ -44,7 +44,7 @@ Other Plotting functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACE}},
   \code{\link{umxPlotCP}}, \code{\link{umxPlotGxE_biv}},
   \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umx}}
+  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
@@ -58,6 +58,7 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}},
   \code{\link{umxSummarySexLim}},
+  \code{\link{umxSummarySimplex}},
   \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }

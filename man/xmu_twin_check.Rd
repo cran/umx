@@ -5,7 +5,7 @@
 \title{Check basic aspects of input for twin models}
 \usage{
 xmu_twin_check(selDVs, dzData = dzData, mzData = mzData, optimizer = NULL,
-  suffix = suffix, nSib = 2)
+  sep = NULL, nSib = 2)
 }
 \arguments{
 \item{selDVs}{the variables expected to be in the data}
@@ -16,7 +16,7 @@ xmu_twin_check(selDVs, dzData = dzData, mzData = mzData, optimizer = NULL,
 
 \item{optimizer}{if you want to change it}
 
-\item{suffix}{creating variable names}
+\item{sep}{seperator between base-name and numeric suffix when creating variable names.}
 
 \item{nSib}{Likely 2 (the default)}
 }
@@ -38,12 +38,14 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACE}}, \code{\link{umxCP}},
   \code{\link{umxGxE_biv}}, \code{\link{umxGxE_window}},
   \code{\link{umxGxE}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
+  \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxE_biv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}}, \code{\link{umx}}
+  \code{\link{umxSummarySexLim}},
+  \code{\link{umxSummarySimplex}}, \code{\link{umx}}
 
 Other Check or test: \code{\link{umx_check_names}},
   \code{\link{umx_is_class}}, \code{\link{umx_is_numeric}},

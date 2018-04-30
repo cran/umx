@@ -2,21 +2,26 @@
 % Please edit documentation in R/fit_and_reporting.r
 \name{umxConfint}
 \alias{umxConfint}
-\title{Get confidence intervals from an MxModel}
+\title{Get confidence intervals from a umx model}
 \usage{
-umxConfint(object, parm = c("existing", "all", "vector of names"),
-  level = 0.95, run = FALSE, showErrorCodes = FALSE, ...)
+umxConfint(object, parm = c("existing", "smart", "all",
+  "or one or more labels"), wipeExistingRequests = TRUE, level = 0.95,
+  run = FALSE, showErrorCodes = FALSE, optimizer = c("current", "SLSQP"))
 }
 \arguments{
 \item{object}{An \code{\link{mxModel}}, possibly already containing \code{\link{mxCI}}s that have been \code{\link{mxRun}} with intervals = TRUE))}
 
-\item{parm}{A specification of which parameters are to be given confidence intervals. Can be "existing", "all", or a vector of names.}
+\item{parm}{Which parameters to get confidence intervals. Can be "existing", "smart", "all", or a vector of names.}
+
+\item{wipeExistingRequests}{Whether to remove existing CIs when adding new ones (ignored if parm = 'existing').}
 
 \item{level}{The confidence level required (default = .95)}
 
 \item{run}{Whether to run the model (defaults to FALSE)}
 
 \item{showErrorCodes}{(default = FALSE)}
+
+\item{optimizer}{defaults to "SLSQP". Might try "NelderMead"}
 
 \item{...}{Additional argument(s) for umxConfint.}
 }
@@ -25,17 +30,15 @@ umxConfint(object, parm = c("existing", "all", "vector of names"),
 }
 \description{
 Implements confidence interval function for OpenMx models.
-Note: Currently requested CIs are added to existing CIs, and all are run, 
-even if they already exist in the output. This should change in the future.
 }
 \details{
-Unlike \code{\link{confint}}, if parm is missing, all CIs requested will be added to the model, 
-but (because these can take time to run) by default only CIs already computed will be reported.
+Note: By default, requesting new CIs wipes the existing ones.
+To keep these, set wipeExistingRequests = FALSE.
 
-CIs will be run only if run is TRUE, allowing this function to be used to add
-CIs without automatically having to run them.
-If parm is empty, and run = FALSE, a message will alert you to add run = TRUE. 
-Even a few CIs can take too long to make running the default.
+Unlike \code{\link{confint}}, if parm is not set, only existing requests will be used. 
+
+Because these can take time to run, by default only CIs already computed will be reported. Set run = TRUE to run new CIs.
+If parm is empty, and run = FALSE, a message will alert you to add run = TRUE.
 }
 \examples{
 require(umx)
@@ -47,13 +50,34 @@ m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numOb
 	umxPath(var = manifests),
 	umxPath(var = latents, fixedAt = 1)
 )
-m2 = umxConfint(m1, "all") # default: CIs added, but user prompted to set run = TRUE
-m2 = umxConfint(m2, run = TRUE) # CIs run and reported
-# Add CIs for asymmetric paths in RAM model, report them, save m1 with this CI added
-m1 = umxConfint(m1, parm = "G_to_x1", run = TRUE) 
-# Add CIs for asymmetric paths in RAM model, report them, save m1 with mxCIs added
-m1 = umxConfint(m1, parm = "A", run = TRUE)
-umxConfint(m1, parm = "existing") # request existing CIs (none added yet...)
+
+m1 = umxConfint(m1, run = TRUE) # There are no existing CI requests...
+
+# Add a CI request for "G_to_x1", run, and report. Save with this CI computed
+m2 = umxConfint(m1, parm = "G_to_x1", run = TRUE) 
+
+# Just print out any existing CIs
+umxConfint(m2) 
+
+# CI requests added for free matrix parameters. User prompted to set run = TRUE
+m3 = umxConfint(m1, "all")
+
+# Run the requested CIs
+m3 = umxConfint(m3, run = TRUE) 
+
+# Run CIs for free one-headed (asymmetric) paths in RAM model. 
+#   note: Deletes other existing requests,
+tmp = umxConfint(m1, parm = "A", run = TRUE)
+
+# Wipe existing CIs, add G_to_x1
+tmp = umxConfint(m1, parm = "G_to_x1", run = TRUE, wipeExistingRequests = TRUE) 
+
+\dontrun{
+# For complex twin models, where algebras have parameters in some cells, smart might help
+# note: only implemented for umxCP so far
+m2 =  umxConfint(m1, "smart")
+}
+
 }
 \references{
 - \url{http://www.github.com/tbates/umx}
@@ -73,6 +97,7 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}},
   \code{\link{umxSummarySexLim}},
+  \code{\link{umxSummarySimplex}},
   \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }
