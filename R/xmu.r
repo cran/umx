@@ -38,60 +38,121 @@ xmu_safe_summary <- function(model1, model2, summary = TRUE) {
 # = Data and model checking helpers =
 # ===================================
 
-#' Check basic aspects of input for twin models
+#' Check basic aspects of input for twin models.
 #'
 #' @description
-#' Check that DVs are in the data, that the data have rows, set the optimizer if requested
+#' Check that DVs are in the data, that the data have rows, set the optimizer if requested.
 #'
-#' @param selDVs the variables expected to be in the data
-#' @param dzData the dat for DZ twins
-#' @param mzData the MZ twin data
-#' @param optimizer if you want to change it
-#' @param sep seperator between base-name and numeric suffix when creating variable names.
-#' @param nSib Likely 2 (the default)
+#' @param selDVs Variables used in the data.
+#' @param dzData The DZ twin data.
+#' @param mzData The MZ twin data.
+#' @param sep Seperator between base-name and numeric suffix when creating variable names, e.g. "_T"
+#' @param nSib How many people per family? (Default = 2).
+#' @param numObsMZ set if data are not raw.
+#' @param numObsDZ set if data are not raw.
+#' @param enforceSep Whether to require sep to be set, or just warn if it is not (Default = TRUE: enforce).
+#' @param optimizer Set by name (if you want to change it).
 #' @return -
 #' @export
 #' @family Twin Modeling Functions
 #' @family Check or test
-#' @seealso - \code{\link{umxLabel}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
-#' # TODO examples
-xmu_twin_check <- function(selDVs, dzData = dzData, mzData = mzData, optimizer = NULL, sep = NULL, nSib = 2) {
-	# 1. Set optimizer
-	if(!is.null(optimizer)){
-		umx_set_optimizer(optimizer)
-	}
-	
-	# 2. Check data has rows
+#' @examples
+#' library(umx)
+#' data(twinData)
+#' mzData = subset(twinData, zygosity == "MZFF")
+#' dzData = subset(twinData, zygosity == "MZFF")
+#' xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, 
+#' 	sep = "", enforceSep = TRUE)
+#' xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, 
+#' 	sep = "", enforceSep = FALSE)
+#' xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, 
+#' 	sep = "", enforceSep = TRUE, nSib = 2, optimizer = NULL)
+#' \dontrun{
+#' # TODO xmu_twin_check: move to a test file:
+#' # 1. stop on no rows
+#' # 1. stop on a sep  = NULL and enforceSep = TRUE
+#' xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, enforceSep = TRUE)
+#' # 3. stop on a factor with sep = NULL
+#' }
+xmu_twin_check <- function(selDVs, dzData = dzData, mzData = mzData, sep = NULL, enforceSep = TRUE, nSib = 2, numObsMZ = NULL, numObsDZ = NULL, optimizer = NULL) {
+	# 1. Check data has rows
 	if(nrow(dzData) == 0){ stop("Your DZ dataset has no rows!") }
 	if(nrow(mzData) == 0){ stop("Your MZ dataset has no rows!") }
 	
-	# 3. Enforce presence of suffix
+	# 2. handle sep
 	if(is.null(sep)){
-		stop("Please use sep = . Set `selDVs` to the base variable names, and `sep` to the separator, and I will create the full variable names from that")
+		if(enforceSep){
+			stop("Please use sep. e.g. sep = '_T'. Set `selDVs` to the base variable names, and and I will create the full variable names from that.")
+		} else {
+			selVars = selDVs
+			# Assume names are already expanded
+		}
 	} else if(length(sep) != 1){
 		stop("sep should be just one word, like '_T'. I will add 1 and 2 afterwards... \n",
 		"i.e., set selDVs to 'obese', sep to '_T' and I look for 'obese_T1' and 'obese_T2' in the data...\n",
 		"PS: variables have to end in 1 or 2, i.e  'example_T1' and 'example_T2'")
+	}else{
+		# 3. expand variable names
+		selVars = umx_paste_names(selDVs, sep = sep, suffixes = 1:nSib)
 	}
 
+	# 4. Check all names in the data
+	umx_check_names(selVars, mzData)
+	umx_check_names(selVars, dzData)
 
-	# 4. expand and check all names in the data
-	selDVs = umx_paste_names(selDVs, sep = sep, suffixes = 1:nSib)
-	umx_check_names(selDVs, mzData)
-	umx_check_names(selDVs, dzData)
-
-	# 5. Check data are numeric
-	if(!umx_is_class(mzData[, selDVs], classes = c("integer", "double", "numeric","factor"), all = TRUE)) {
-		bad = selDVs[!umx_is_class(mzData[, selDVs], classes = c("integer", "double", "numeric","factor"), all = FALSE)]
-		stop("variables must be integer, numeric or factor. The following are not: ", omxQuotes(bad))
-	}
 
 	# 6. Look for name conflicts
-	badNames = umx_grep(selDVs, grepString = "^[ACDEacde][0-9]*$")
+	badNames = umx_grep(selVars, grepString = "^[ACDEacde][0-9]*$")
 	if(!identical(character(0), badNames)){
 		stop("The data contain variables that look like parts of the a, c, e model, i.e., a1 is illegal.\n",
 		"BadNames included: ", omxQuotes(badNames) )
+	}
+	dataType = umx_is_cov(dzData, boolean = FALSE)
+	if(dataType == "raw"){
+		if(!all(is.null(c(numObsMZ, numObsDZ)))){
+			stop("You should not be setting numObsMZ or numObsDZ with ", omxQuotes(dataType), " data...")
+		}
+	# 5. Check data are legal
+		if(!umx_is_class(mzData[, selVars], classes = c("integer", "double", "numeric", "factor", "ordered"), all = TRUE)) {
+			bad = selVars[!umx_is_class(mzData[, selVars], classes = c("integer", "double", "numeric","factor", "ordered"), all = FALSE)]
+			stop("variables must be integer, numeric or (possibly ordered) factor. The following are not: ", omxQuotes(bad))
+		}
+		# Drop unused columns from mzData and dzData
+		mzData = mzData[, selVars]
+		dzData = dzData[, selVars]
+		isFactor = umx_is_ordered(mzData[, selVars])                      # T/F list of factor columns
+		isOrd    = umx_is_ordered(mzData[, selVars], ordinal.only = TRUE) # T/F list of ordinal (excluding binary)
+		isBin    = umx_is_ordered(mzData[, selVars], binary.only  = TRUE) # T/F list of binary columns
+		nFactors = sum(isFactor)
+		nOrdVars = sum(isOrd) # total number of ordinal columns
+		nBinVars = sum(isBin) # total number of binary columns
+
+		factorVarNames = names(mzData)[isFactor]
+		ordVarNames    = names(mzData)[isOrd]
+		binVarNames    = names(mzData)[isBin]
+		contVarNames   = names(mzData)[!isFactor]
+	} else {
+		# Summary data
+		isFactor = isOrd    = isBin    = c()
+		nFactors = nOrdVars = nBinVars = 0
+		factorVarNames = ordVarNames = binVarNames = contVarNames = c()
+	}
+	
+	if(nFactors > 0 & is.null(sep)){
+		stop("Please set 'sep'. e.g.: sep = '_T' \n",
+		"Why: We're moving to require this for all twin functions. BUT, your data include ordinal or binary variables.\n
+		So I need to know which variables are for twin 1 and which for twin2.\n",
+		"The way I do this is enforcing some naming rules. For example, if you have 2 variables:\n",
+		" obesity and depression called: 'obesity_T1', 'dep_T1', 'obesity_T2' and 'dep_T2', you should call umxACE with:\n",
+		"selDVs = c('obesity','dep'), sep = '_T' \n",
+		"sep is just one word, appearing in all variables (e.g. '_T').\n",
+		"This is assumed to be followed by '1' '2' etc...")
+	}
+	
+	# Finally, set optimizer if we get to here
+	if(!is.null(optimizer)){
+		umx_set_optimizer(optimizer)
 	}
 }
 
@@ -169,8 +230,8 @@ xmu_check_levels_identical <- function(df, selDVs, sep, action = c("stop", "igno
 #' data(demoOneFactor)
 #' m2 <- mxModel("One Factor",
 #' 	mxMatrix("Full", 5, 1, values = 0.2, free = TRUE, name = "A"), 
-#' 	mxMatrix("Symm", 1, 1, values = 1, free = FALSE, name = "L"), 
-#' 	mxMatrix("Diag", 5, 5, values = 1, free = TRUE, name = "U"), 
+#' 	mxMatrix("Symm", 1, 1, values = 1.0, free = FALSE, name = "L"), 
+#' 	mxMatrix("Diag", 5, 5, values = 1.0, free = TRUE, name = "U"), 
 #' 	mxAlgebra(A %*% L %*% t(A) + U, name = "R"), 
 #' 	mxExpectationNormal("R", dimnames = names(demoOneFactor)),
 #' 	mxFitFunctionML(),

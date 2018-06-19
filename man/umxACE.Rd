@@ -35,13 +35,13 @@ umxACE(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 
 \item{addCI}{Whether to add intervals to compute CIs (defaults to TRUE).}
 
-\item{numObsDZ}{= Number of DZ twins: Set this if you input covariance data.}
+\item{numObsDZ}{Number of DZ twins: Set this if you input covariance data.}
 
-\item{numObsMZ}{= Number of MZ twins: Set this if you input covariance data.}
+\item{numObsMZ}{Number of MZ twins: Set this if you input covariance data.}
 
-\item{boundDiag}{= Numeric lbound for diagonal of the a, c, and e matrices. Defaults to 0 since umx version 1.8}
+\item{boundDiag}{Numeric lbound for diagonal of the a, c, and e matrices. Defaults to 0 since umx version 1.8}
 
-\item{weightVar}{= If provided, a vector objective will be used to weight the data. (default = NULL).}
+\item{weightVar}{If provided, a vector objective will be used to weight the data. (default = NULL).}
 
 \item{equateMeans}{Whether to equate the means across twins (defaults to TRUE).}
 
@@ -51,7 +51,7 @@ umxACE(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed",
 
 \item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned).}
 
-\item{suffix}{Allowed as a synonym for "suffix".}
+\item{suffix}{Deprecated: use "sep".}
 
 \item{optimizer}{Optionally set the optimizer (default NULL does nothing).}
 
@@ -108,16 +108,16 @@ to .25 to model dominance effects.
 
 Matrices 'a'', 'c', and 'e' contain the path loadings of the Cholesky ACE factor model.
 
-So, labels relevant to modifying the model are of the form "a_r1c1", "c_r1c1" etc.
+So, labels relevant to modifying the model are of the form \code{"a_r1c1", "c_r1c1"} etc.
 
 Variables are in rows, and factors are in columns. So to drop the influence of factor 2 on variable 3, you would say
 
-   m2 = umxModify(m1, update = "c_r3c2")
+    \code{m2 = umxModify(m1, update = "c_r3c2")}
 
 Less commonly-modified matrices are the mean matrix `expMean`. This has 1 row, and the columns are laid out for each variable for twin 1, followed by each variable for twin 2.
 So, in a model where the means for twin 1 and twin 2 had been equated (set = to T1), you could make them independent again with this script:
 
-m1$top$expMean$labels[1,4:6] =  c("expMean_r1c4", "expMean_r1c5", "expMean_r1c6")
+\code{m1$top$expMean$labels[1, 4:6] =  c("expMean_r1c4", "expMean_r1c5", "expMean_r1c6")}
 
 \emph{note}: Only one of C or D may be estimated simultaneously. This restriction reflects the lack
 of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs (Eaves et al. 1978 p267).
@@ -130,10 +130,10 @@ of degrees of freedom to simultaneously model C and D with only MZ and DZ twin p
 require(umx)
 data(twinData) # ?twinData from Australian twins.
 # Pick the variables
-selDVs = c("ht1", "ht2")
+selDVs = c("ht")
 mzData <- twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData) # -2ll= 9659
+m1 = umxACE(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData) # -2ll= 9659, a1 = .92
 umxSummary(m1, std = FALSE) # unstandardized
 # tip: with report = "html", umxSummary can print the table to your browser!
 plot(m1)
@@ -141,9 +141,11 @@ plot(m1)
 # ========================================================
 # = Evidence for dominance ? (DZ correlation set to .25) =
 # ========================================================
-m2 = umxACE("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
+m2 = umxACE("ADE", selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData, dzCr = .25)
 umxCompare(m2, m1) # ADE is better
-umxSummary(m2, comparison = m1) # nb: though this is ADE, matrices are still called A, C & E
+umxSummary(m2, comparison = m1) 
+# nb: Although summary is smart enough to print d, the underlying 
+#     matrices are still called a, c & e.
 
 # ==============================
 # = Univariate model of weight =
@@ -163,15 +165,17 @@ m1 = umxACE(selDVs = "wt", dzData = dzData, mzData = mzData, sep = "", boundDiag
 # MODEL MODIFICATION
 # We can modify this model, say testing shared environment, and see a comparison:
 
-m2 = umxModify(m1, update = "c_r1c1", comparison = TRUE)
+m2 = umxModify(m1, update = "c_r1c1", name = "no_C", comparison = TRUE)
+# nb: You can see names of free parameters with parameters(m1)
+
 # =====================================
 # = Bivariate height and weight model =
 # =====================================
 data(twinData)
-mzData <- twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"),]
-dzData <- twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
-mzData <- mzData[1:80,] # quicker run to keep CRAN happy
-dzData <- dzData[1:80,]
+mzData = twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"),]
+dzData = twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
+mzData = mzData[1:80,] # quicker run to keep CRAN happy
+dzData = dzData[1:80,]
 selDVs = c("ht", "wt") # umx will add sep (in this case "") + "1" or '2'
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
@@ -187,19 +191,19 @@ umxSummary(m1)
 require(umx)
 data(twinData)
 # Cut BMI column to form ordinal obesity variables
-ordDVs = c("obese1", "obese2")
-selDVs = c("obese")
 obesityLevels = c('normal', 'overweight', 'obese')
 cutPoints <- quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
 twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-# Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
+# Make the ordinal variables into umxFactors (ensure ordered is TRUE, and require levels)
+ordDVs = c("obese1", "obese2")
 twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obesityLevels)
 mzData <- twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
 mzData <- mzData[1:80, ] # Just top 80 pairs to run fast
 dzData <- dzData[1:80, ]
 str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
+selDVs = c("obese")
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
 
@@ -207,22 +211,19 @@ umxSummary(m1)
 # = Bivariate continuous and ordinal example =
 # ============================================
 data(twinData)
-selDVs = c("wt", "obese")
 # Cut BMI column to form ordinal obesity variables
-ordDVs = c("obese1", "obese2")
-obesityLevels = c('normal', 'overweight', 'obese')
-cutPoints <- quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
-twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+obesityLevels   = c('normal', 'overweight', 'obese')
+cutPoints       = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
+twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 # Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
-twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obesityLevels)
-# umxACE can trim out unused variables on its own: just select the rows you want.
-mzData <- twinData[twinData$zygosity \%in\%  "MZFF",] 
-dzData <- twinData[twinData$zygosity \%in\%  "DZFF",]
+ordDVs = c("obese1", "obese2")
+twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
+mzData = twinData[twinData$zygosity \%in\%  "MZFF",] 
+dzData = twinData[twinData$zygosity \%in\%  "DZFF",]
 mzData <- mzData[1:80,] # just top 80 so example runs in a couple of secs
 dzData <- dzData[1:80,]
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
-plot(m1)
+m1 = umxACE(selDVs = c("wt", "obese"), dzData = dzData, mzData = mzData, sep = '')
 
 # =======================================
 # = Mixed continuous and binary example =
@@ -231,16 +232,16 @@ require(umx)
 data(twinData)
 # Cut to form category of 20\% obese subjects
 # and make into mxFactors (ensure ordered is TRUE, and require levels)
-cutPoints <- quantile(twinData[, "bmi1"], probs = .2, na.rm = TRUE)
-obesityLevels = c('normal', 'obese')
-twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+obesityLevels   = c('normal', 'obese')
+cutPoints       = quantile(twinData[, "bmi1"], probs = .2, na.rm = TRUE)
+twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 ordDVs = c("obese1", "obese2")
-twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obesityLevels)
+twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 
 selDVs = c("wt", "obese")
-mzData <- twinData[twinData$zygosity \%in\% "MZFF",]
-dzData <- twinData[twinData$zygosity \%in\% "DZFF",]
+mzData = twinData[twinData$zygosity \%in\% "MZFF",]
+dzData = twinData[twinData$zygosity \%in\% "DZFF",]
 \dontrun{
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
@@ -268,13 +269,14 @@ to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.n
 
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACEcov}}, \code{\link{umxACEv}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_biv}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxE}},
+  \code{\link{umxCPold}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
+  \code{\link{umxGxE}}, \code{\link{umxIPnew}},
   \code{\link{umxIP}}, \code{\link{umxSexLim}},
   \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxE_biv}},
+  \code{\link{umxSummaryGxEbiv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
   \code{\link{umxSummarySexLim}},
   \code{\link{umxSummarySimplex}}, \code{\link{umx}},

@@ -1,3 +1,202 @@
+#' Helper to make a graphviz rank string
+#'
+#' @description
+#' Helper to make a graphviz rank string is a function which 
+#'
+#' @param vars a list of strings
+#' @param pattern regular expression to filter vars
+#' @param rank "same", max, min
+#' @return string
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @seealso - \code{\link{umxLabel}}
+#' @examples
+#' umx_graphviz_rank(c("as1"), "^[ace]s[0-9]+$", "same")
+umx_graphviz_rank <- function(vars, pattern, rank) {
+	formatted = paste(namez(vars, pattern), collapse = "; ")
+	ranks = paste0("{rank=", rank, "; ", formatted, "};\n")
+	return(ranks)
+}
+
+#' Return whether a cell is in a set location of a matrix
+#'
+#' @description
+#' Helper to determine is a cell is in a set location of a matrix or not.
+#' Left is useful for, e.g. twin means matrices.
+#' @param r which row the cell is on.
+#' @param c which column the cell is in.
+#' @param where the location (any, diag, lower or upper or left).
+#' @param mat (optionally) provide matrix to check dimensions against r and c.
+#' @return - \code{\link{mxModel}}
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @seealso - \code{\link{umxLabel}}
+#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+#' @examples
+#' umx_cell_is_on(r = 3, c = 3, "lower")
+#' umx_cell_is_on(r = 3, c = 3, "upper")
+#' umx_cell_is_on(r = 3, c = 3, "diag")
+#' umx_cell_is_on(r = 2, c = 3, "diag")
+#' umx_cell_is_on(r = 3, c = 3, "any")
+#' a_cp = umxMatrix("a_cp", "Lower", 3, 3, free = TRUE, values = 1:6)
+#' umx_cell_is_on(r = 3, c = 3, "left", mat = a_cp)
+#' \dontrun{
+#' # test stopping
+#' umx_cell_is_on(r=4,c = 3, "any", mat = a_cp)
+#' }
+umx_cell_is_on <- function(r, c, where=c("diag", "lower", "upper", "any", "left"), mat= NULL) {
+	where = match.arg(where)
+	if(!is.null(mat)){
+		# check r and c in bounds.
+		if(r > dim(mat)[1]){
+			stop("r is greater than size of matrix: ", dim(mat)[1])
+		}
+		if(c > dim(mat)[2]){
+			stop("c is greater than size of matrix: ", dim(mat)[2])
+		}
+	}
+	if(where =="any"){
+		valid = TRUE
+	} else if(where =="left"){
+		if(is.null(mat)){
+			stop("matrix must be offered up to check for begin on the left")
+		}
+		if(c <= dim(mat)[2]/2){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	} else if(where =="diag"){
+		if(r == c){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	} else if(where =="lower"){
+		if(r > c){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	} else if(where =="upper"){
+		if(c > r){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	}else{
+		stop("Where must be one of all, diag, lower, or upper. You gave me:", omxQuotes(where))
+	}
+	return(valid)
+}
+
+#' Return dot code for paths in a matrix
+#'
+#' @description
+#' Return dot code for paths in a matrix is a function which 
+#' Walk rows and cols of matrix. At each free cell, 
+#' Create a string like:
+#' 	ai1 -> var1 [label=".35"]
+#' A latent (and correlations among latents)
+#' 	* these go from a_cp n=row TO common n= row
+#' 	* or for off diag, from a_cp n=col TO a_cp n= row
+#'
+#' @param x a \code{\link{umxMatrix}} to make paths from.
+#' @param from one of "rows", "columns" or a name
+#' @param cells which cells to proceess: "any" (default), "diag", "lower", "upper". "left" is the left half (e.g. in a twin means matrix)
+#' @param arrows "forward" "both" or "back"
+#' @param fromLabel = NULL
+#' @param toLabel = NULL
+#' @param selDVs if not null, row is used to index into this to set target name
+#' @param showFixed = FALSE
+#' @param digits rounding values (default = 2).
+#' @param type one of "latent" or "manifest" (default NULL, don't accumulate new names using "from" list)
+#' @param p input to build on. list(str = "", latents = c(), manifests = c())
+#' @return - list(str = "", latents = c(), manifests = c())
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @seealso - \code{\link{plot}}
+#' @examples
+#' # Make a lower 3*3 value= 1:6 (1,4,6 on the diag)
+#' a_cp = umxMatrix("a_cp", "Lower", 3, 3, free = TRUE, values = 1:6)
+#' out = umx_mat2dot(a_cp, cells = "lower", from = "rows", arrows = "both")
+#' cat(out$str)
+#' out = umx_mat2dot(a_cp, cells = "lower", from = "cols", arrows = "both")
+#' cat(out$str)
+#' # First call also inits the plot struct
+#' out = umx_mat2dot(a_cp, from = "rows", cells = "lower", arrows = "both", type = "latent")
+#' out = umx_mat2dot(a_cp, from = "rows", cells = "diag" , toLabel= "common", type = "latent", p = out)
+#' cat(out$str)
+#' 
+umx_mat2dot <- function(x, cells = c("any", "diag", "lower", "upper", "left"), from = "rows", fromLabel = NULL, toLabel = NULL, selDVs = NULL, showFixed = FALSE, arrows = c("forward", "both", "back"), type = NULL, digits = 2, p = list(str = "", latents = c(), manifests = c())) {
+	cells  = match.arg(cells)
+	arrows = match.arg(arrows)
+	nRows = nrow(x)
+	nCols = ncol(x)
+	# Allow from and to labels other than the matrix name (default)
+	if(is.null(fromLabel)){
+		fromLabel = x$name
+	}
+	if(is.null(toLabel)){
+		toLabel = x$name
+	}
+	 
+	for (r in 1:nRows) {
+		for (c in 1:nCols) {
+			if(umx_cell_is_on(r= r, c = c, where = cells, mat = x)){
+				# TODO get the CI (or should we rely on stashed CIs?)
+				# TODO add this code to umx_mat2dot (need to pass in the model)
+				# CIstr = umx_APA_model_CI(model, cellLabel = thisParam, prefix = "top.", suffix = "_std", digits = digits)
+				# if(is.na(CIstr)){
+				# 	val = umx_round(parameterKeyList[thisParam], digits)
+				# }else{
+				# 	val = CIstr
+				# }
+				value = round(x$values[r,c], digits)
+				if(from == "rows"){
+					if(fromLabel=="one"){
+						fr = fromLabel
+					} else {
+						fr = paste0(fromLabel, r)
+					}
+					if(!is.null(selDVs)){
+						tu = selDVs[c]
+					}else{
+						tu = paste0(toLabel, c)
+					}
+				} else { 
+					if(fromLabel=="one"){
+						fr = fromLabel
+					} else {
+						fr = paste0(fromLabel, c)
+					}
+					if(!is.null(selDVs)){
+						tu = selDVs[r]
+					}else{
+						tu = paste0(toLabel, r)
+					}
+				}
+				# Show fixed cells if non-0
+				if(x$free[r,c] || (showFixed && x$values[r,c] != 0)){
+					p$str = paste0(p$str, "\n", fr, " -> ", tu, " [dir = ", arrows, " label=\"", value, "\"];")
+					if(!is.null(type)){
+						if(type == "latent"){
+							p$latents   = c(p$latents, fr)
+						} else if(type == "manifest"){
+							p$manifests = c(p$manifests, fr)
+						}
+					}
+				}
+			} else {
+				# fixed cell
+			}
+		}
+	}
+	p$latents = unique(p$latents)
+	p$manifests = unique(p$manifests)	
+	p
+}
+
 # Poems one should know by heart:
 
 # William Shakespeare
@@ -325,6 +524,56 @@ umx_set_condensed_slots <- function(state = NA, silent = FALSE) {
 	}
 }
 
+
+
+#' umx_set_optimization_options
+#'
+#' Set options that affect optimization in OpenMx. For mvnRelEps,  values between .0001 to .01 are conventional.
+#' Smaller values slow optimization.
+#'
+#' @param opt default returns current values of the options listed. Currently
+#' "mvnRelEps" and "mvnMaxPointsA".
+#' @param value If not NULL, the value to set the opt to (can be a list of length(opt))
+#' @param silent If TRUE, no message will be printed.
+#' @param model A model for which to set the optimizer. Default (NULL) sets the optimizer globally.
+#' @return - 
+#' @export
+#' @family Get and set
+#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' umx_set_optimization_options() # print the existing state(s)
+#' umx_set_optimization_options("mvnRelEps") # show this one
+#' \dontrun{
+#' umx_set_optimization_options("mvnRelEps", .01) # update globally
+#' }
+umx_set_optimization_options <- function(opt = c("mvnRelEps", "mvnMaxPointsA"), value = NULL, model = NULL, silent = FALSE) {
+	if(is.null(value)){
+		# print current values for each item in opt
+		for (this in opt) {			
+			if(is.null(model)){
+				o = mxOption(NULL, this)
+			} else {
+				o = mxOption(model, this)
+			}
+			message(paste0("Current ", this , " is: ", omxQuotes(o)))
+		}
+		invisible(o)
+	} else {
+		# Set options
+		if(length(opt)!=length(value)){
+			stop("For safe coding, please match opt and value lengths")
+		} else {
+			i = 1
+			for (this in opt) {
+				if(is.null(model)){
+					o = mxOption(NULL, this, value[i])
+				} else {
+					o = mxOption(model, this, value[i])
+				}
+			}
+		}
+	}
+}
 
 #' umx_set_optimizer
 #'
@@ -1134,11 +1383,12 @@ umx_factor <- umxFactor
 #'
 #' @description
 #' umxVersion returns the version information for umx, and for OpenMx and R.
-#' essential for bug-reports.
+#' Essential for bug-reports! This function can also test for a minimum version.
 #'
 #' @param model Optional to show optimizer in this model
+#' @param min Optional minimum version string to test for, e.g. '2.7.0' (Default = NULL).
 #' @param verbose = TRUE
-#' @param return Which package (umx or OpenMx to return version on
+#' @param return Which package (umx or OpenMx) to 'return' version info for (Default = umx).
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Miscellaneous Utility Functions
@@ -1146,15 +1396,23 @@ umx_factor <- umxFactor
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' x = umxVersion(); x
-umxVersion <- function (model = NULL, verbose = TRUE, return = "umx") {
+umxVersion <- function (model = NULL, min = NULL, verbose = TRUE, return = "umx") {
 	umx_vers <- try(packageVersion("umx"))
     if (verbose) {
         msg = paste0("umx version: ", umx_vers)
         message(msg)
+		message('You can update OpenMx with:\ninstall.OpenMx(c("NPSOL", "travis", "CRAN", "open travis build page")')
     }
-	OpenMx_vers = mxVersion(model = model, verbose = verbose)
-	message('You can update OpenMx thusly:\ninstall.OpenMx(loc = c("NPSOL", "travis", "CRAN", "open travis build page")')
-	
+	OpenMx_vers = mxVersion(model = model, verbose = verbose)	
+	if(!is.null(min)){
+		if(umx_vers >= min){
+			message("umx version is recent enough")
+		} else {
+			stop("umx version is not recent enough to run this script! (min is ", min, "). You have ", umx_vers,
+			"\n You can run umx_open_CRAN_page() to see the most recent version of umx on CRAN")
+			
+		}
+	}
 	if(return == "umx"){
 		invisible(umx_vers)
 	} else {
@@ -3681,7 +3939,9 @@ umx_scale <- function(df, varsToScale = NULL, coerce = FALSE, attr = FALSE, verb
 		}
 		varsToScale = varsToScale[umx_is_numeric(df[,varsToScale], all = FALSE)]
 		if(verbose){
-			message("Vars I will scale are:", paste(varsToScale, ", "))
+			message("Vars I will scale are:", omxQuotes(varsToScale))
+			
+			message("Vars I will leave alone are:", omxQuotes(setdiff(names(df), varsToScale)))
 		}
 		if(length(varsToScale)==1){
 			df[ ,varsToScale] = scale(df[ ,varsToScale])[,1, drop=T]
@@ -3711,6 +3971,7 @@ umx_scale <- function(df, varsToScale = NULL, coerce = FALSE, attr = FALSE, verb
 #' @seealso - \code{\link{umx_is_numeric}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
+#' umx_is_class(mtcars) # report class list
 #' # Are the variables in mtcars type character?
 #' umx_is_class(mtcars, "character") # FALSE
 #' # They're all numeric data
@@ -3721,22 +3982,34 @@ umx_scale <- function(df, varsToScale = NULL, coerce = FALSE, attr = FALSE, verb
 #' umx_is_class(mtcars, c("character", "numeric"))
 #' # Is zygosity a factor (note we don't drop = F to keep as dataframe)
 #' umx_is_class(twinData[,"zygosity", drop=FALSE], classes = "factor")
-umx_is_class <- function(df, classes, all = TRUE){
+umx_is_class <- function(df, classes=NULL, all = TRUE){
 	if(!is.data.frame(df)){
-		return(class(df %in% classes))
-		# stop(paste0("First argument should be a dataframe as its first argument. ", quote(df), " isn't a dataframe"))
+		if(is.null(classes)){
+			return(class(df))		
+		}else{
+			return(class(df %in% classes))
+		}
 	}
 	colNames = names(df)
 	bIsOK = rep(FALSE, length(colNames))
 	i = 1
-	for (n in colNames) {
-		bIsOK[i] = (class(df[, n]) %in% classes)
-		i = i + 1
-	}
-	if(all){
-		return(all(bIsOK))
-	} else {
+	if(is.null(classes)){
+		for (n in colNames) {
+			bIsOK[i] = class(df[, n])[1]
+			i = i + 1
+		}
 		return(bIsOK)
+	}else{
+		bIsOK = rep(FALSE, length(colNames))
+		for (n in colNames) {
+			bIsOK[i] = (class(df[, n]) %in% classes)[1]
+			i = i + 1
+		}
+		if(all){
+			return(all(bIsOK))
+		} else {
+			return(bIsOK)
+		}
 	}
 }
 
@@ -4541,7 +4814,7 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 #' Emod = list(Beta_e1 = .025, Beta_e2 = .025)
 #'
 #' @param nMZpairs Number of MZ pairs to simulate
-#' @param nDZpairs Number of DZ pairs to simulate (if omitted defaults to nMZpairs)
+#' @param nDZpairs Number of DZ pairs to simulate (defaults to nMZpairs)
 #' @param AA value for A variance. NOTE: See options for use in GxE and Bivariate GxE
 #' @param CC value for C variance.
 #' @param EE value for E variance.
@@ -4550,27 +4823,30 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 #' @param Amod Used for Bivariate GxE data: list(Beta_a1 = .025, Beta_a2 = .025)
 #' @param Cmod Used for Bivariate GxE data: list(Beta_c1 = .025, Beta_c2 = .025)
 #' @param Emod Used for Bivariate GxE data: list(Beta_e1 = .025, Beta_e2 = .025)
-#' @param varNames name for var (defaults to 'var')
+#' @param varNames name for variables (defaults to 'var')
+#' @param mean mean for traits (default = 0) (not applied to moderated cases)
+#' @param sd sd of traits (default = 1) (not applied to moderated cases)
 #' @param seed Allows user to set.seed() if wanting reproducible dataset
 #' @param empirical Passed to mvrnorm
-#' @param nThresh  If supplied, use as thresholds and return mxFactor output? (default is not too)
+#' @param nThresh  If supplied, use as thresholds and return mxFactor output? (default is not to)
 #' @param sum2one  Whether to enforce AA + CC + EE summing the one (default = TRUE)
 #' @return - list of mzData and dzData dataframes containing T1 and T2 plus, if needed M1 and M2 (moderator values)
 #' @export
 #' @family Twin Data functions
-#' @seealso - \code{\link{umx_make_TwinData}}, \code{\link{umxGxE_biv}}, \code{\link{umxACE}}, \code{\link{umxGxE}}
+#' @seealso - \code{\link{umx_make_TwinData}}, \code{\link{umxGxEbiv}}, \code{\link{umxACE}}, \code{\link{umxGxE}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' # =====================================================================
 #' # = Basic Example, with all elements of std univariate data specified =
 #' # =====================================================================
-#' tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 100, AA = .36, CC = .04, EE = .60)
+#' tmp = umx_make_TwinData(nMZpairs = 10000, AA = .30, CC = .00, EE = .70)
 #' # Show list of 2 data sets
 #' str(tmp)
 #' # = How to consume the built datasets =
 #' mzData = tmp[[1]];
 #' dzData = tmp[[2]];
 #' cov(mzData); cov(dzData)
+#' umxAPA(mzData)
 #' str(mzData); str(dzData); 
 #' 
 #' # Prefer to work in path coefficient values? (little a?)
@@ -4611,7 +4887,7 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 #' tmp = umx_make_TwinData(100, MZr = .86, DZr= .60, varNames = "IQ")
 #' umxAPA(tmp[[1]]); umxAPA(tmp[[2]])
 #' 
-#' # Bivariate GxSES example (see umxGxE_biv)
+#' # Bivariate GxSES example (see umxGxEbiv)
 #' 
 #' AA   = list(a11 = .4, a12 = .1, a22 = .15)
 #' CC   = list(c11 = .2, c12 = .1, c22 = .10)
@@ -4642,7 +4918,7 @@ umx_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 #' # x = rbind(tmp[[1]], tmp[[2]])
 #' # plot(residuals(m1)~ x$M_T1, data=x)
 #' @md
-umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL, EE = NULL, nThresh = NULL, sum2one = TRUE,  varNames = "var", seed = NULL, empirical = FALSE, MZr= NULL, DZr= NULL, Amod = NULL, Cmod = NULL, Emod = NULL) {
+umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL, EE = NULL,  varNames = "var",  mean=0, sd=1, nThresh = NULL, sum2one = TRUE, seed = NULL, empirical = FALSE, MZr= NULL, DZr= NULL, Amod = NULL, Cmod = NULL, Emod = NULL) {
 	if(!is.null(seed)){
 		set.seed(seed = seed)
 	}
@@ -4659,8 +4935,11 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 			1, DZr,
 			DZr, 1)
 		);
-		mzData = mvrnorm(n = nMZpairs, mu = c(0, 0), Sigma = mzCov, empirical = empirical);
-		dzData = mvrnorm(n = nDZpairs, mu = c(0, 0), Sigma = dzCov, empirical = empirical);
+		sdMat = diag(rep(sd, 2))
+		mzCov = sdMat %*% mzCov %*% sdMat
+		dzCov = sdMat %*% dzCov %*% sdMat
+		mzData = mvrnorm(n = nMZpairs, mu = c(mean, mean), Sigma = mzCov, empirical = empirical);
+		dzData = mvrnorm(n = nDZpairs, mu = c(mean, mean), Sigma = dzCov, empirical = empirical);
 		mzData = data.frame(mzData)
 		dzData = data.frame(dzData)
 		if(length(varNames) > 1){
@@ -4704,8 +4983,12 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 			ACE, hAC,
 			hAC, ACE)
 		);
-		mzData = mvrnorm(n = nMZpairs, mu = c(0, 0), Sigma = mzCov, empirical = empirical);
-		dzData = mvrnorm(n = nDZpairs, mu = c(0, 0), Sigma = dzCov, empirical = empirical);
+		sdMat = diag(rep(sd, 2))
+		mzCov = sdMat %*% mzCov %*% sdMat
+		dzCov = sdMat %*% dzCov %*% sdMat
+		
+		mzData = mvrnorm(n = nMZpairs, mu = c(mean, mean), Sigma = mzCov, empirical = empirical);
+		dzData = mvrnorm(n = nDZpairs, mu = c(mean, mean), Sigma = dzCov, empirical = empirical);
 		mzData = data.frame(mzData)
 		dzData = data.frame(dzData)
 		if(length(varNames) > 1){
@@ -4737,10 +5020,9 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		Beta_c2 = Cmod$Beta_c2	# C
 		Beta_e2 = Emod$Beta_e2	# E
 
-		# We simulate data by generating scores on the latent variables A, C, E of
+		# Simulate data by generating scores on the latent variables A, C, E of
 		# the moderator and A2, C2, and E2 of the trait, conditional on the moderator. 
 		# These are uncorrelated as the latter is trait | moderator.
-		# This is consistent with the Cholesky decomposition as depicted in model A
 
 		# Define the expected correlation matrices for MZ and DZ
 		sMZtmp = zero = matrix(data = 0, nrow = 6, ncol = 6)
@@ -4817,7 +5099,7 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		colnames(mzData) = c('defM_T1', 'defM_T2', 'M_T1', 'var_T1', 'M_T2', 'var_T2')
 		colnames(dzData) = c('defM_T1', 'defM_T2', 'M_T1', 'var_T1', 'M_T2', 'var_T2')
 	} else {
-		# Moderator example
+		# Univariate Moderator
 		if(any(c(is.null(AA), is.null(CC), is.null(EE)))){
 			stop("For moderation, you must set all three of AA, CC, and EE", call. = FALSE)
 		}
@@ -5862,22 +6144,23 @@ umx_standardize.MxModelIP <- umx_standardize_IP
 #' model = umx_standardize_CP(model)
 #' }
 umx_standardize_CP <- function(model, ...){
-	if(!is.null(model$top$ai_std)){
+	if(!is.null(model$top$as_std)){
 		# Standardized general path components
-		model$top$matrices$cp_loadings$values = model$top$algebras$cp_loadings_std$result # standardized cp loadings
-		# Standardized specific path coefficienmodelts
-		model$top$as$values = model$top$as_std$result # standardized as
-		model$top$cs$values = model$top$cs_std$result # standardized cs
-		model$top$es$values = model$top$es_std$result # standardized es
+		# Standardized cp loadings
+		model@submodels$top$cp_loadings@values = model$top$algebras$cp_loadings_std$result 
+		# Standardized specific path coefficients
+		model@submodels$top$as@values = model$top$as_std$result # standardized as
+		model@submodels$top$cs@values = model$top$cs_std$result # standardized cs
+		model@submodels$top$es@values = model$top$es_std$result # standardized es
 		return(model)
 	} else {
 		selDVs = dimnames(model$top.expCovMZ)[[1]]
 		nVar   = length(selDVs)/2;
 		nFac   = dim(model$top$matrices$a_cp)[[1]]	
 		# Calculate standardized variance components
-		a_cp  = mxEval(top.a_cp , model); # nFac * nFac matrix of path coefficients flowing into the cp_loadings array
-		c_cp  = mxEval(top.c_cp , model);
-		e_cp  = mxEval(top.e_cp , model);
+		a_cp = mxEval(top.a_cp , model); # nFac * nFac path matrix flowing into cp_loadings array
+		c_cp = mxEval(top.c_cp , model);
+		e_cp = mxEval(top.e_cp , model);
 		as = mxEval(top.as, model); # Specific factor path coefficients
 		cs = mxEval(top.cs, model);
 		es = mxEval(top.es, model);

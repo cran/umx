@@ -2,47 +2,71 @@
 % Please edit documentation in R/xmu.r
 \name{xmu_twin_check}
 \alias{xmu_twin_check}
-\title{Check basic aspects of input for twin models}
+\title{Check basic aspects of input for twin models.}
 \usage{
-xmu_twin_check(selDVs, dzData = dzData, mzData = mzData, optimizer = NULL,
-  sep = NULL, nSib = 2)
+xmu_twin_check(selDVs, dzData = dzData, mzData = mzData, sep = NULL,
+  enforceSep = TRUE, nSib = 2, numObsMZ = NULL, numObsDZ = NULL,
+  optimizer = NULL)
 }
 \arguments{
-\item{selDVs}{the variables expected to be in the data}
+\item{selDVs}{Variables used in the data.}
 
-\item{dzData}{the dat for DZ twins}
+\item{dzData}{The DZ twin data.}
 
-\item{mzData}{the MZ twin data}
+\item{mzData}{The MZ twin data.}
 
-\item{optimizer}{if you want to change it}
+\item{sep}{Seperator between base-name and numeric suffix when creating variable names, e.g. "_T"}
 
-\item{sep}{seperator between base-name and numeric suffix when creating variable names.}
+\item{enforceSep}{Whether to require sep to be set, or just warn if it is not (Default = TRUE: enforce).}
 
-\item{nSib}{Likely 2 (the default)}
+\item{nSib}{How many people per family? (Default = 2).}
+
+\item{numObsMZ}{set if data are not raw.}
+
+\item{numObsDZ}{set if data are not raw.}
+
+\item{optimizer}{Set by name (if you want to change it).}
 }
 \value{
 -
 }
 \description{
-Check that DVs are in the data, that the data have rows, set the optimizer if requested
+Check that DVs are in the data, that the data have rows, set the optimizer if requested.
+}
+\examples{
+library(umx)
+data(twinData)
+mzData = subset(twinData, zygosity == "MZFF")
+dzData = subset(twinData, zygosity == "MZFF")
+xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, 
+	sep = "", enforceSep = TRUE)
+xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, 
+	sep = "", enforceSep = FALSE)
+xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, 
+	sep = "", enforceSep = TRUE, nSib = 2, optimizer = NULL)
+\dontrun{
+# TODO xmu_twin_check: move to a test file:
+# 1. stop on no rows
+# 1. stop on a sep  = NULL and enforceSep = TRUE
+xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, enforceSep = TRUE)
+# 3. stop on a factor with sep = NULL
+}
 }
 \references{
 - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
-# TODO examples
 }
 \seealso{
-- \code{\link{umxLabel}}
-
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACEcov}}, \code{\link{umxACEv}},
-  \code{\link{umxACE}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_biv}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxACE}}, \code{\link{umxCPold}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
+  \code{\link{umxIPnew}}, \code{\link{umxIP}},
   \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
   \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxE_biv}},
+  \code{\link{umxSummaryGxEbiv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
   \code{\link{umxSummarySexLim}},
   \code{\link{umxSummarySimplex}}, \code{\link{umx}}

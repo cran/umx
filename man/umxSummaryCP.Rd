@@ -37,22 +37,29 @@ umxSummaryCP(model, digits = 2, std = TRUE, CIs = FALSE, showRg = FALSE,
 Summarizes a Common-Pathway model, as returned by \code{\link{umxCP}}
 }
 \examples{
+\dontrun{
 require(umx)
-data(twinData) 
-twinData$wt1 = twinData$wt1/10 # help CSOLNP by putting wt on a similar scale to ht
-twinData$wt2 = twinData$wt2/10 # help CSOLNP by putting wt on a similar scale to ht
+umx_set_optimizer("SLSQP")
+data(twinData)
+twinData$wt1 = twinData$wt1/10
+twinData$wt2 = twinData$wt2/10
 selDVs = c("ht", "wt")
 mzData <- subset(twinData, zygosity == "MZFF")
 dzData <- subset(twinData, zygosity == "DZFF")
 umx_set_auto_plot(FALSE) # turn off autoplotting for CRAN
-m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
-umxSummaryCP(m1, file = NA) # suppress plot creation with file
-umxSummary(m1, file = NA) # generic summary is the same
+m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "", optimizer = "SLSQP")
+umxSummaryCP(m1, file = NA) # Suppress plot creation with file
+umxSummary(m1, file = NA)   # Generic summary is the same
 stdFit = umxSummaryCP(m1, digits = 2, std = TRUE, file = NA, returnStd = TRUE);
 umxSummary(m1, std = FALSE, showRg = TRUE, file = NA);
 umxSummary(m1, std = FALSE, file = NA)
-\dontrun{
+# =================
+# = Print example =
+# =================
 umxSummary(m1, file = "Figure 3", std = TRUE)
+# =================
+# = Confint example =
+# =================
 m1 = umxConfint(m1, "smart", run = FALSE);
 m1 = umxConfint(m1, "smart", run = TRUE);
 umxSummary(m1, CIs = TRUE, file = NA);
@@ -67,14 +74,15 @@ umxSummary(m1, CIs = TRUE, file = NA);
 
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxACEcov}}, \code{\link{umxACEv}},
-  \code{\link{umxACE}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_biv}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxE}}, \code{\link{umxIP}},
+  \code{\link{umxACE}}, \code{\link{umxCPold}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
+  \code{\link{umxIPnew}}, \code{\link{umxIP}},
   \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
   \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}},
-  \code{\link{umxSummaryGxE_biv}},
+  \code{\link{umxSummaryGxEbiv}},
   \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
   \code{\link{umxSummarySexLim}},
   \code{\link{umxSummarySimplex}}, \code{\link{umx}},

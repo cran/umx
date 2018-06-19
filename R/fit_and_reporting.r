@@ -360,7 +360,7 @@ loadings.MxModel <- function(x, ...) {
 #' @export
 #' @return - \code{\link{mxModel}}
 #' @family Reporting functions
-#' @seealso - \code{\link[stats]{confint}}
+#' @seealso - \code{\link[stats]{confint}}, \code{\link{umxCI}}
 #' @references - \url{http://www.github.com/tbates/umx}
 #' @examples
 #' require(umx)
@@ -892,7 +892,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("raw",
 					RMSEA_CI = paste0("RMSEA = ", round(RMSEA, 3))
 				}
 				x = paste0(
-					"\u03C7\u00B2(", degreesOfFreedom, ") = ", round(Chi, 2), # was A7
+					"\u03C7\u00B2(", ChiDoF, ") = ", round(Chi, 2), # was A7
 					", p "      , umx_APA_pval(p, .001, 3, addComparison = TRUE),
 					"; CFI = "  , round(CFI, 3),
 					"; TLI = "  , round(TLI, 3),
@@ -1388,22 +1388,30 @@ umxSummary.MxModelACEcov <- umxSummaryACEcov
 #' @seealso - \code{\link{umxCP}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @references - \url{http://www.github.com/tbates/umx}, \url{http://tbates.github.io}
 #' @examples
+#' \dontrun{
 #' require(umx)
-#' data(twinData) 
-#' twinData$wt1 = twinData$wt1/10 # help CSOLNP by putting wt on a similar scale to ht
-#' twinData$wt2 = twinData$wt2/10 # help CSOLNP by putting wt on a similar scale to ht
+#' umx_set_optimizer("SLSQP")
+#' data(twinData)
+# # Help optimizer by putting wt on a similar scale to ht
+#' twinData$wt1 = twinData$wt1/10
+#' twinData$wt2 = twinData$wt2/10
 #' selDVs = c("ht", "wt")
 #' mzData <- subset(twinData, zygosity == "MZFF")
 #' dzData <- subset(twinData, zygosity == "DZFF")
 #' umx_set_auto_plot(FALSE) # turn off autoplotting for CRAN
-#' m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
-#' umxSummaryCP(m1, file = NA) # suppress plot creation with file
-#' umxSummary(m1, file = NA) # generic summary is the same
+#' m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "", optimizer = "SLSQP")
+#' umxSummaryCP(m1, file = NA) # Suppress plot creation with file
+#' umxSummary(m1, file = NA)   # Generic summary is the same
 #' stdFit = umxSummaryCP(m1, digits = 2, std = TRUE, file = NA, returnStd = TRUE);
 #' umxSummary(m1, std = FALSE, showRg = TRUE, file = NA);
 #' umxSummary(m1, std = FALSE, file = NA)
-#' \dontrun{
+#' # =================
+#' # = Print example =
+#' # =================
 #' umxSummary(m1, file = "Figure 3", std = TRUE)
+#' # =================
+#' # = Confint example =
+#' # =================
 #' m1 = umxConfint(m1, "smart", run = FALSE);
 #' m1 = umxConfint(m1, "smart", run = TRUE);
 #' umxSummary(m1, CIs = TRUE, file = NA);
@@ -1798,7 +1806,7 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 			tablePub[i, "Compare with Model"] = NA
 		}
 	}
-	tablePub[,"p"] = umx_APA_pval(tablePub[, "p"], min = (1/ 10^digits), digits = digits, addComparison = NA)
+	tablePub[,"p"] = umx_APA_pval(tablePub[, "p"], min = (1/ 10^3), digits = digits, addComparison = NA)
 	# c("1: Comparison", "2: Base", "3: EP", "4: AIC", "5: &Delta; -2LL", "6: &Delta; df", "7: p")
 	if(report == "inline"){
 		n_rows = dim(tablePub)[1]
@@ -2447,16 +2455,25 @@ umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TR
 	latents = c();
 	cSpecifics = c();
 	for(thisParam in names(parameterKeyList) ) {
-		# Top level a c e
+		# if I was smart, I'd look at the matrices, not the labels.
+		# would need to examine:
+		# 1. a_cp_matrix = A latent (and correlations among latents)
+		# 	* these go from a_cp n=row TO common n= row
+		# 	* or for off diag, from a_cp n=col TO a_cp n= row
+		# out = umx_dot_from_matrix(a_cp_matrix, from = "rows", cells = "diag", type = "latent")
+		# out = umx_dot_from_matrix(a_cp_matrix, from = "rows", cells = "lower", arrows = "both", type = "latent", strIn = out)
+		# 2 same again for c_cp_matrix, e_cp_matrix
+		# 3. cp_loadings common factor loadings
+		# Top level a c e inputs to common factors
 		if( grepl("^[ace]_cp_r[0-9]", thisParam)) { 
 			# Match cp latents, e.g. thisParam = "c_cp_r1c3" (note, row = factor #)
-			from   = sub("^([ace]_cp)_r([0-9])"  , '\\1\\2'   , thisParam, perl= TRUE);
-			target = sub("^([ace]_cp)_r([0-9]).*", 'common\\2', thisParam, perl= TRUE);
-			latents = append(latents,from)
+			from    = sub("^([ace]_cp)_r([0-9])"  , '\\1\\2'   , thisParam, perl= TRUE); # "a_cp<r>"
+			target  = sub("^([ace]_cp)_r([0-9]).*", 'common\\2', thisParam, perl= TRUE); # "common<r>"
+			latents = append(latents, from)
 		} else if (grepl("^cp_loadings_r[0-9]+", thisParam)) {
 			# Match common loading string e.g. "cp_loadings_r1c1"
-			from    = sub("^cp_loadings_r([0-9]+)c([0-9]+)"    , "common\\2", thisParam, perl= TRUE);
-			thisVar = as.numeric(sub('cp_loadings_r([0-9]+)c([0-9]+)', '\\1', thisParam, perl= TRUE));
+			from    = sub("^cp_loadings_r([0-9]+)c([0-9]+)", "common\\2", thisParam, perl= TRUE); # "common<c>"
+			thisVar = as.numeric(sub('cp_loadings_r([0-9]+)c([0-9]+)', '\\1', thisParam, perl= TRUE)); # var[r]
 			target  = selDVs[as.numeric(thisVar)]
 			latents = append(latents,from)
 		} else if (grepl("^[ace]s_r[0-9]", thisParam)) {
@@ -2472,12 +2489,15 @@ umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TR
 			from    = "one"
 			targetindex = as.numeric(sub(grepStr, '\\3', thisParam, perl= TRUE))
 			target  = selDVs[as.numeric(targetindex)]
+		} else if (grepl("_dev[0-9]", thisParam)) { # is a threshold
+			# Doesn't need plotting? # TODO umxPlotCP could tabulate thresholds?
+			from = "do not plot"
 		} else {
-			message("While making the plot, I found a path labeled ", thisParam, "I don't know where that goes.\n",
+			message("While making the plot, I found a path labeled ", thisParam, "\nI don't know where that goes.\n",
 			"If you are using umxModify to make newLabels, re-use one of the existing labels to help plot()")
 		}
-		if(from == "one" & !means ){
-			# not adding means...
+		if(from == "do not plot" || (from == "one" & !means) ){
+			# either this is a threshold, or we're not adding means...
 		} else {
 			# Get parameter value and make the plot string
 			# Convert address to [] address and look for a CI: not perfect, as CI might be label based?
