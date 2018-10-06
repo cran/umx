@@ -4,10 +4,10 @@
 \alias{umx_make_TwinData}
 \title{Simulate twin data with control over A, C, and E parameters, as well as moderation of A.}
 \usage{
-umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL,
-  EE = NULL, varNames = "var", mean = 0, sd = 1, nThresh = NULL,
-  sum2one = TRUE, seed = NULL, empirical = FALSE, MZr = NULL,
-  DZr = NULL, Amod = NULL, Cmod = NULL, Emod = NULL)
+umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL,
+  CC = NULL, EE = NULL, varNames = "var", mean = 0, sd = 1,
+  nThresh = NULL, sum2one = TRUE, seed = NULL, empirical = FALSE,
+  MZr = NULL, DZr = MZr, Amod = NULL, Cmod = NULL, Emod = NULL)
 }
 \arguments{
 \item{nMZpairs}{Number of MZ pairs to simulate}
@@ -34,7 +34,7 @@ umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL,
 
 \item{empirical}{Passed to mvrnorm}
 
-\item{MZr}{If MZr and DZr are set (default = NULL), the function simply returns dataframes of the request size and correlation}
+\item{MZr}{If MZr and DZr are set (default = NULL), the function returns dataframes of the request n and correlation.}
 
 \item{DZr}{NULL}
 
@@ -58,7 +58,7 @@ If you provide 2 varNames, they will be used for twin 1 and twin 2. If you provi
 
 You supply the number of pairs of each zygosity that wish to simulate (nMZpairs, nDZpairs), along with the values of AA, CC,and EE.
 
-\emph{Note}, if you want a power calculator, see \href{http://www.people.vcu.edu/~bverhulst/power/power.html}{here}.
+\emph{Note}, if you want a power calculator, see \href{https://www.people.vcu.edu/~bverhulst/power/power.html}{here}.
 
 \strong{Shortcuts}
 
@@ -178,3 +178,4 @@ Other Twin Data functions: \code{\link{umx_long2wide}},
   \code{\link{umx_scale_wide_twin_data}},
   \code{\link{umx_wide2long}}, \code{\link{umx}}
 }
+\concept{Twin Data functions}

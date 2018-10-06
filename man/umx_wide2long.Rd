@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.r
 \name{umx_wide2long}
 \alias{umx_wide2long}
-\title{Change data 2-twin family data from wide to long format.}
+\title{Change data family data from wide (2 twins per row) to long format.}
 \usage{
 umx_wide2long(data, sep = "_T", verbose = FALSE)
 }
@@ -32,3 +32,4 @@ Other Twin Data functions: \code{\link{umx_long2wide}},
   \code{\link{umx_residualize}},
   \code{\link{umx_scale_wide_twin_data}}, \code{\link{umx}}
 }
+\concept{Twin Data functions}

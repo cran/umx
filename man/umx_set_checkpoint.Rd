@@ -45,7 +45,7 @@ m1 = mxRun(m1)
 umx_checkpoint(0)
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{https://openmx.ssri.psu.edu}
 }
 \seealso{
 Other Get and set: \code{\link{umx_default_option}},
@@ -61,3 +61,4 @@ Other Get and set: \code{\link{umx_default_option}},
   \code{\link{umx_set_plot_format}},
   \code{\link{umx_set_table_format}}, \code{\link{umx}}
 }
+\concept{Get and set}

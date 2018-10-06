@@ -6,10 +6,10 @@
 \alias{umxPlot}
 \title{Create and display a graphical path diagram for a model.}
 \usage{
-\method{plot}{MxModel}(x = NA, std = FALSE, digits = 2, file = "name",
-  pathLabels = c("none", "labels", "both"), fixed = TRUE, means = TRUE,
-  resid = c("circle", "line", "none"), showMeans = "deprecated",
-  showFixed = "deprecated", ...)
+\method{plot}{MxModel}(x = NA, std = FALSE, digits = 2,
+  file = "name", pathLabels = c("none", "labels", "both"),
+  fixed = TRUE, means = TRUE, resid = c("circle", "line", "none"),
+  showMeans = "deprecated", showFixed = "deprecated", ...)
 }
 \arguments{
 \item{x}{An \code{\link{mxModel}} from which to make a path diagram}
@@ -65,7 +65,7 @@ m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numOb
 plot(m1)
 }
 \references{
-- \url{http://www.github.com/tbates/umx}, \url{https://en.wikipedia.org/wiki/DOT_(graph_description_language)}
+- \url{https://www.github.com/tbates/umx}, \url{https://en.wikipedia.org/wiki/DOT_(graph_description_language)}
 }
 \seealso{
 - \code{\link{umx_set_plot_format}}, \code{\link{plot.MxModel}}, \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}}, \code{\link{umxPlotGxE}},
@@ -82,3 +82,5 @@ Other Plotting functions: \code{\link{umxPlotACEcov}},
   \code{\link{umxPlotIP}}, \code{\link{umxPlotSimplex}},
   \code{\link{umx}}
 }
+\concept{Core Modelling Functions}
+\concept{Plotting functions}

@@ -7,7 +7,7 @@
 xmu_simplex_corner(x, start = 0.9)
 }
 \arguments{
-\item{x}{an \code{\link{umxMatrix}} of which to free the bottom triangle.}
+\item{x}{size of matrix, or an \code{\link{umxMatrix}} of which to free the bottom triangle.}
 
 \item{start}{a default start value for the freed items.}
 }
@@ -39,6 +39,8 @@ Other xmu internal not for end user: \code{\link{umxModel}},
   \code{\link{xmu_check_levels_identical}},
   \code{\link{xmu_dot_make_paths}},
   \code{\link{xmu_dot_make_residuals}},
+  \code{\link{xmu_make_mxData}},
   \code{\link{xmu_make_top}},
   \code{\link{xmu_start_value_list}}
 }
+\concept{xmu internal not for end user}

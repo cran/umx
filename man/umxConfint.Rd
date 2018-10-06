@@ -6,7 +6,8 @@
 \usage{
 umxConfint(object, parm = c("existing", "smart", "all",
   "or one or more labels"), wipeExistingRequests = TRUE, level = 0.95,
-  run = FALSE, showErrorCodes = FALSE, optimizer = c("current", "SLSQP"))
+  run = FALSE, showErrorCodes = FALSE, optimizer = c("current",
+  "SLSQP"))
 }
 \arguments{
 \item{object}{An \code{\link{mxModel}}, possibly already containing \code{\link{mxCI}}s that have been \code{\link{mxRun}} with intervals = TRUE))}
@@ -29,7 +30,7 @@ umxConfint(object, parm = c("existing", "smart", "all",
 - \code{\link{mxModel}}
 }
 \description{
-Implements confidence interval function for OpenMx models.
+Implements confidence interval function for umx models.
 }
 \details{
 Note: By default, requesting new CIs wipes the existing ones.
@@ -80,7 +81,7 @@ m2 =  umxConfint(m1, "smart")
 
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 - \code{\link[stats]{confint}}, \code{\link{umxCI}}
@@ -101,3 +102,4 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }
+\concept{Reporting functions}

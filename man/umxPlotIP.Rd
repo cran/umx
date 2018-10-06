@@ -6,7 +6,8 @@
 \title{Draw a graphical figure for a Independent Pathway model}
 \usage{
 umxPlotIP(x = NA, file = "name", digits = 2, means = FALSE,
-  std = TRUE, format = c("current", "graphviz", "DiagrammeR"), ...)
+  std = TRUE, format = c("current", "graphviz", "DiagrammeR"),
+  SEstyle = FALSE, ...)
 }
 \arguments{
 \item{x}{The \code{\link{umxIP}} model to plot}
@@ -20,6 +21,8 @@ umxPlotIP(x = NA, file = "name", digits = 2, means = FALSE,
 \item{std}{whether to standardize the model (defaults to TRUE)}
 
 \item{format}{= c("current", "graphviz", "DiagrammeR")}
+
+\item{SEstyle}{report "b (se)" instead of b CI95[l,u] (default = FALSE)}
 
 \item{...}{Optional additional parameters}
 }
@@ -36,7 +39,7 @@ umxPlotIP(model, file = NA)
 }
 }
 \references{
-- \url{http://tbates.github.io}
+- \url{https://tbates.github.io}
 }
 \seealso{
 - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
@@ -50,3 +53,4 @@ Other Plotting functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotGxE}}, \code{\link{umxPlotSimplex}},
   \code{\link{umx}}
 }
+\concept{Plotting functions}

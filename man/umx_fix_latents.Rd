@@ -36,7 +36,7 @@ m1 = umx_fix_latents(m1)
 umx_show(m1, matrices = "S") # variance of g is fixed at 1
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{https://openmx.ssri.psu.edu}
 }
 \seealso{
 Other Advanced Model Building Functions: \code{\link{umxJiggle}},
@@ -48,3 +48,4 @@ Other Advanced Model Building Functions: \code{\link{umxJiggle}},
   \code{\link{umx_get_bracket_addresses}},
   \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
 }
+\concept{Advanced Model Building Functions}

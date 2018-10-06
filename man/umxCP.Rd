@@ -8,8 +8,8 @@ umxCP(name = "CP", selDVs, dzData, mzData, sep = NULL, nFac = 1,
   freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE,
   correlatedA = FALSE, equateMeans = TRUE, dzAr = 0.5, dzCr = 1,
   boundDiag = 0, addStd = TRUE, addCI = TRUE, numObsDZ = NULL,
-  numObsMZ = NULL, autoRun = getOption("umx_auto_run"), optimizer = NULL,
-  suffix = "deprecated")
+  numObsMZ = NULL, autoRun = getOption("umx_auto_run"),
+  optimizer = NULL, suffix = "deprecated")
 }
 \arguments{
 \item{name}{The name of the model (defaults to "CP").}
@@ -197,7 +197,7 @@ m1 = umxCP("new", selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData,
 }
 \references{
 \itemize{
-\item \url{http://www.github.com/tbates/umx}
+\item \url{https://www.github.com/tbates/umx}
 }
 }
 \seealso{
@@ -220,3 +220,4 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxSummarySimplex}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }
+\concept{Twin Modeling Functions}

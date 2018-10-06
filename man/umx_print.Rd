@@ -5,9 +5,9 @@
 \title{Print tables in a range of formats (markdown default, see \code{\link{umx_set_table_format}} for other formats)
 or as a web browser table.}
 \usage{
-umx_print(x, digits = getOption("digits"), quote = FALSE, na.print = "",
-  zero.print = "0", justify = "none", file = c(NA, "tmp.html"),
-  suppress = NULL, ...)
+umx_print(x, digits = getOption("digits"), quote = FALSE,
+  na.print = "", zero.print = "0", justify = "none", file = c(NA,
+  "tmp.html"), suppress = NULL, ...)
 }
 \arguments{
 \item{x}{A data.frame to print (matrices will be coerced to data.frame)}
@@ -44,7 +44,7 @@ umx_print(mtcars[1:10,], file = "tmp.html")
 }
 }
 \seealso{
-\code{\link{umx_set_table_format}}
+\code{\link{umx_msg}}, \code{\link{umx_set_table_format}}
 
 Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
   \code{\link{qm}}, \code{\link{umxBrownie}},
@@ -63,10 +63,13 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{tmx_is.identified}}, \code{\link{umxAPA}},
   \code{\link{umxEval}}, \code{\link{umxFactorScores}},
   \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umx_APA_model_CI}},
+  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
+  \code{\link{umx_APA_model_CI}},
   \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
   \code{\link{umx_names}}, \code{\link{umx_parameters}},
   \code{\link{umx_show_fit_or_comparison}},
   \code{\link{umx_show}}, \code{\link{umx_time}},
   \code{\link{umx}}
 }
+\concept{Miscellaneous Utility Functions}
+\concept{Reporting Functions}

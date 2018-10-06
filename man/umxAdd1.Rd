@@ -4,7 +4,8 @@
 \alias{umxAdd1}
 \title{umxAdd1}
 \usage{
-umxAdd1(model, pathList1 = NULL, pathList2 = NULL, arrows = 2, maxP = 1)
+umxAdd1(model, pathList1 = NULL, pathList2 = NULL, arrows = 2,
+  maxP = 1)
 }
 \arguments{
 \item{model}{an \code{\link{mxModel}} to alter}
@@ -29,7 +30,7 @@ model = umxAdd1(model)
 }
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 Other Modify or Compare Models: \code{\link{umxDrop1}},
@@ -39,3 +40,4 @@ Other Modify or Compare Models: \code{\link{umxDrop1}},
   \code{\link{umxUnexplainedCausalNexus}},
   \code{\link{umx}}
 }
+\concept{Modify or Compare Models}

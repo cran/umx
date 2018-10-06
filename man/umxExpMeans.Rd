@@ -39,7 +39,7 @@ umxExpMeans(model = m1)
 umxExpMeans(m1, digits = 3)
 }
 \references{
-- \url{http://openmx.ssri.psu.edu/thread/2598}
+- \url{https://openmx.ssri.psu.edu/thread/2598}
 }
 \seealso{
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
@@ -58,3 +58,4 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }
+\concept{Reporting functions}

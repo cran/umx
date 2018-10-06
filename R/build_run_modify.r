@@ -4,7 +4,7 @@
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
 # 
-#        http://www.apache.org/licenses/LICENSE-2.0
+#        https://www.apache.org/licenses/LICENSE-2.0
 # 
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,6 +54,7 @@
 #' @importFrom ggplot2 qplot scale_x_continuous theme element_text scale_x_continuous
 #' @importFrom ggplot2 expand_limits aes geom_point geom_segment
 
+# TODO document where some of the more obscure of these are used.
 #' @importFrom DiagrammeR DiagrammeR
 #' @importFrom MASS mvrnorm
 #' @importFrom nlme intervals
@@ -62,6 +63,7 @@
 #' @importFrom parallel detectCores
 #' @importFrom sfsmisc nearcor
 #' @importFrom xtable xtable
+#' @importFrom MuMIn Weights
 
 # #' @importFrom Hmisc escapeRegex
 # #' @importFrom cocor cocor.dep.groups.nonoverlap
@@ -280,13 +282,14 @@ umxModel <- function(...) {
 #' @param refModels pass in reference models if available. Use FALSE to suppress computing these if not provided.
 #' @param thresholds Whether to use deviation-based threshold modeling for ordinal data (if any is detected).
 #' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned)
+#' @param type One of 'Auto','FIML','cov', 'cor', 'WLS','DWLS', or 'ULS'. Auto reacts to the incoming mxData type (raw/cov, WLS). FIML requires that the data are continuous. Remaining options are weighted, diagonally weighted, or unweighted least squares, respectively)
 #' @param optimizer optionally set the optimizer (default NULL does nothing)
 #' @param verbose Whether to tell the user what latents and manifests were created etc. (Default = FALSE)
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @seealso \code{\link{umxPath}}, \code{\link{umxSummary}}, \code{\link{plot}}, \code{\link{parameters}}, \code{\link{umxSuperModel}}
 #' @family Core Modelling Functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @md
 #' @examples
 #' 
@@ -323,6 +326,13 @@ umxModel <- function(...) {
 #' # 5. Display path diagram
 #' plot(m1)
 #' plot(m1, std = TRUE, resid = "line")
+#' 
+#' # 5. Run a WLS model
+#' mw = umxRAM("raw", data = mtcars[, selVars], type = "WLS", autoRun= FALSE,
+#' 	umxPath(c("wt", "disp"), to = "mpg"),
+#' 	umxPath("wt", with = "disp"),
+#' 	umxPath(var = selVars)
+#' )
 #' 
 #' # ===============================
 #' # = Using umxRAM in Sketch mode =
@@ -365,19 +375,21 @@ umxModel <- function(...) {
 #'# mpg  "mpg_with_mpg"  "mpg_with_wt" "disp_with_mpg"
 #'# wt   "mpg_with_wt"   "wt_with_wt"  "b1"
 #'# disp "disp_with_mpg" "b1"          "disp_with_disp"
-umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, setValues = TRUE, suffix = "", independent = NA, remove_unused_manifests = TRUE, showEstimates = c("none", "raw", "std", "both", "list of column names"), refModels = NULL, thresholds = c("deviationBased", "ignore", "left_censored"), autoRun = getOption("umx_auto_run"), optimizer = NULL, verbose = FALSE) {
+umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, setValues = TRUE, suffix = "", independent = NA, remove_unused_manifests = TRUE, showEstimates = c("none", "raw", "std", "both", "list of column names"), refModels = NULL, thresholds = c("deviationBased", "ignore", "left_censored"), autoRun = getOption("umx_auto_run"), 
+	type = c('Auto', 'FIML', 'cov', 'cor', 'WLS', 'DWLS', 'ULS'), optimizer = NULL, verbose = FALSE) {
 	
+	dot.items = list(...) # grab all the dot items: mxPaths, etc...
+	dot.items = unlist(dot.items) # In case any dot items are lists of mxPaths, etc...
+	showEstimates = umx_default_option(showEstimates, c("none", "raw", "std", "both", "list of column names"), check = FALSE)
+	thresholds = match.arg(thresholds)
+	type = match.arg(type)
+
 	# =================
 	# = Set optimizer =
 	# =================
 	if(!is.null(optimizer)){
 		umx_set_optimizer(optimizer)
 	}
-	
-	dot.items = list(...) # grab all the dot items: mxPaths, etc...
-	dot.items = unlist(dot.items) # In case any dot items are lists of mxPaths, etc...
-	showEstimates = umx_default_option(showEstimates, c("none", "raw", "std", "both", "list of column names"), check = FALSE)
-	thresholds = match.arg(thresholds)
 
 	if(typeof(model) == "character"){
 		if(is.na(name)){
@@ -420,11 +432,10 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 		# do we care?
 	}
 
-
 	foundNames = c()
 	for (thisItem in dot.items) {
 		if(!is.list(thisItem)){
-			# sometimes we get a list, so expand everything to a list
+			# Sometimes we get a list, so expand everything to a list.
 			thisItem = list(thisItem)
 		}
 		for (i in length(thisItem)) {
@@ -452,52 +463,26 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 	# = Handle data =
 	# ===============
 	
-	if(is.null(data)){
-		message("You must set data: either data = dataframe or data = mxData(yourData, type = 'raw|cov)', ...) or at last a list of variable names to use umxRAM in sketch mode)")
-		stop("Did you perhaps just add the data along with the paths instead of via data = ?")
-	} else if(class(data)[1] == "data.frame") {
-		data = mxData(observed = data, type = "raw")
-	}
-	if (class(data) == "matrix"){
-		message("You gave me a matrix. SEM needs to know the N for cov data. Rather than me assemble it,
-			the easiest and least error-prone method is for you to pass in\n
-			data = mxData(yourCov, type='cov', nobs=100) (or whatever your N is)")
-	}
-	if(class(data)[1] %in%  c("MxNonNullData", "MxDataStatic") ) {
-		if(data$type == "raw"){
-			# check "one" is not a column
-			if("one" %in% names(data$observed) ){
-				warning("You have a data column called 'one' which is illegal (it's the code used for setting means). I dropped it!")
-				data$observed = data$observed[ , !(names(data$observed) %in% c("one")), drop = FALSE]
-			}
-			manifestVars = names(data$observed)
-			isRaw = TRUE
-		} else {
-			manifestVars = colnames(data$observed)
-			isRaw = FALSE
-		}
-		if(is.null(manifestVars)){
-			stop("There's something wrong with the mxData - I couldn't get the variable names from it. Did you set type correctly?")
-		}
-	} else if (class(data) == "character"){
-		# user is just running a trial model, with no data, but provided names
-		manifestVars = data
-	} else {
-		stop("I'm assuming this is a  - I expected a dataframe, mxData, or a vector of names, but you gave me a ", class(data)[1])		
-	}
-	foundNames = unique(na.omit(foundNames))
-	# Anything not in data -> latent
+	# Get names from data (forms pool of potential usedManifests)
+	manifestVars = unique(na.omit(umx_names(data)))
+
+	# Omit NAs from found names as empty to = can generate these spuriously
+	foundNames   = unique(na.omit(foundNames))
+
+	# Anything used as a path, but not found in the data (and not a key word like "one") must be a latent
 	latentVars = setdiff(foundNames, c(manifestVars, "one"))
 	nLatent = length(latentVars)
-	# Report on which latents were created
+	# Report which latents were created
 	if(nLatent == 0 && verbose){
 		# message("No latent variables were created.\n")
-		latentVars = NA
+		# latentVars = NA
 	} else if (nLatent == 1){
 		message("A latent variable '", latentVars[1], "' was created. ")
 	} else {
 		message(nLatent, " latent variables were created:", paste(latentVars, collapse = ", "), ". ")
 	}
+
+
 	# ===========================================================
 	# = TODO handle user adding an mxThreshold object to umxRAM =
 	# ===========================================================
@@ -507,42 +492,41 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 	# = Handle Manifests =
 	# ====================
 	if (class(data) == "character"){
-		# user is just running a trial model, with no data, but provided names
+		# User is just running in sketch mode, with no data, but provided names.
 		unusedManifests = c()
 	}else{
 		unusedManifests = setdiff(manifestVars, foundNames)
-	}	
-	msg_str = ""
-	if(length(unusedManifests) > 0){
-		if(length(unusedManifests) > 10){
-			varList = paste0("First 10 were: ", paste(unusedManifests[1:10], collapse = ", "))
-			msg_str = paste0(length(unusedManifests), " unused variables (", varList)
-		} else if(length(unusedManifests) > 1){
-			varList = paste(unusedManifests, collapse = ", ")
-			msg_str = paste0(length(unusedManifests), " unused variables (", varList)
-		} else {
-			varList = unusedManifests
-			msg_str = paste0(length(unusedManifests), " unused variable (", varList)
-		}
-		manifestVars = setdiff(manifestVars, unusedManifests)
-		if(remove_unused_manifests){
-			# trim down the data to include only the used manifests
-			if(data$type == "raw"){
-				data$observed = data$observed[, manifestVars, drop = FALSE]
-			} else {
-				data$observed = umx_reorder(data$observed, manifestVars)
-			}
-			msg_str = paste0(msg_str, ") removed. (see remove_unused_manifests)")
-		} else {
-			msg_str = paste0(msg_str, ") left in data.")
-		}		
 	}
+	# used = all data columns present in found and not reserved, e.g. "one"
+	usedManifests = setdiff(intersect(manifestVars, foundNames), "one")
+
+
+	if(remove_unused_manifests & length(unusedManifests) > 0){
+		data = xmu_make_mxData(data = data, type = type, manifests = usedManifests)
+	} else {
+		data = xmu_make_mxData(data= data, type = type)
+		usedManifests = manifestVars
+	}
+
 	if(verbose){
-		message("ManifestVars set to: ", paste(manifestVars, collapse = ", "), ". ", msg_str)
+		msg_str = ""
+		if(length(unusedManifests) > 0){
+			if(length(unusedManifests) > 10){
+				varList = paste0("First 10 were: ", paste(unusedManifests[1:10], collapse = ", "))
+				msg_str = paste0(length(unusedManifests), " unused variables (", varList)
+			} else if(length(unusedManifests) > 1){
+				varList = paste(unusedManifests, collapse = ", ")
+				msg_str = paste0(length(unusedManifests), " unused variables (", varList)
+			} else {
+				varList = unusedManifests
+				msg_str = paste0(length(unusedManifests), " unused variable (", varList)
+			}
+		}
+		message("ManifestVars set to: ", paste(usedManifests, collapse = ", "), ". ", msg_str)
 	}
 
 	m1 = do.call("mxModel", list(name = name, type = "RAM", 
-		manifestVars = manifestVars,
+		manifestVars = usedManifests,
 		latentVars  = latentVars,
 		independent = independent, dot.items)
 	)
@@ -556,11 +540,12 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 		m1 = mxModel(m1, data)
 	}
 
-	if(isRaw){
+	# Add means if data are raw and means not requested by user
+	if(type %in% c('Auto', 'FIML') && (data$type == "raw")){
 		if(is.null(m1$matrices$M) ){
 			message("You have raw data, but no means model. I added\n",
 			"mxPath('one', to = manifestVars)")
-			m1 = mxModel(m1, mxPath("one", manifestVars))
+			m1 = mxModel(m1, mxPath("one", usedManifests))
 		} else {
 			# leave the user's means as the model
 			# print("using your means model")
@@ -614,18 +599,21 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' library(umx)
-#' # Simulate two sets of data in which X and Y correlate ~ .4
+#' # Create two sets of data in which X & Y correlate ~ .4 in both datasets.
 #' tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 150, 
 #' 		AA = 0, CC = .4, EE = .6, varNames = c("x", "y"))
+#' 
 #' # Group 1
 #' ds1 = tmp[[1]];
 #' m1Data = mxData(cov(ds1), type = "cov", numObs = nrow(ds1), means=umx_means(ds1))
+#' 
 #' # Group 2
 #' ds2 = tmp[[2]];
 #' m2Data = mxData(cov(ds2), type = "cov", numObs = nrow(ds2), means=umx_means(ds2))
 #' cor(ds1); cor(ds2)
 #' 
 #' manifests = names(ds1)
+#' 
 #' # Model 1
 #' m1 <- umxRAM("m1", data = m1Data,
 #' 	umxPath("x", to = "y", labels = "beta"),
@@ -639,10 +627,23 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, comparison = TRUE, s
 #' 	umxPath(means = manifests, labels=c("Mean_x", "Mean_y"))
 #' )
 #' # Place m1 and m2 into a supermodel, and autoRun it
-#' # NOTE: umxSummary is not yet smart/certain enough to compute saturated models etc
+#' # NOTE: umxSummary is only semi-smart/certain enough to compute saturated models etc
 #' # and report multiple groups correctly.
 #' m3 = umxSuperModel('top', m1, m2)
+#' 
+#' umxSummary(m3, show = "std")
+#' 
+#' # |name         | Std.Estimate| Std.SE|CI                |
+#' # |:------------|------------:|------:|:-----------------|
+#' # |beta         |         0.51|   0.05|0.51 [0.41, 0.61] |
+#' # |Var_x        |         1.00|   0.00|1 [1, 1]          |
+#' # |Resid_y_grp1 |         0.74|   0.05|0.74 [0.64, 0.84] |
+#' # |beta         |         0.50|   0.05|0.5 [0.41, 0.6]   |
+#' # |Var_x        |         1.00|   0.00|1 [1, 1]          |
+#' # |Resid_y_grp2 |         0.75|   0.05|0.75 [0.65, 0.84] |
+#' 
 #' summary(m3)
+#' 
 umxSuperModel <- function(name = 'top', ..., autoRun = TRUE) {
 	dot.items = list(...) # grab all the dot items: models...	
 	nModels = length(dot.items)
@@ -719,7 +720,7 @@ umxSuperModel <- function(name = 'top', ..., autoRun = TRUE) {
 #' @return - \code{\link{mxModel}}
 #' @family Core Modeling Functions
 #' @family Modify or Compare Models
-#' @references - \url{http://github.com/tbates/umx}
+#' @references - \url{https://github.com/tbates/umx}
 #' @export
 #' @examples
 #' require(umx)
@@ -1290,12 +1291,15 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' factors. The following figure shows how the ACE model appears as a path diagram: See the details section below
 #' for additional information on using umxACE.
 #' 
+#'
 #' \figure{ACE.png}
 #' 
 #' @details
 #' \strong{Data Input}
 #' The function flexibly accepts raw data, and also summary covariance data 
 #' (in which case the user must also supple numbers of observations for the two input data sets).
+#' 
+#' TODO: Document type Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS")
 #' 
 #' \strong{Ordinal Data}
 #' In an important capability, the model transparently handles ordinal (binary or multi-level
@@ -1338,6 +1342,7 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' @param dzData The DZ dataframe.
 #' @param mzData The MZ dataframe.
 #' @param sep The separator in twin variable names, often "_T", e.g. "dep_T1". Simplifies selDVs.
+#' @param type Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS")
 #' @param dzAr The DZ genetic correlation (defaults to .5, vary to examine assortative mating).
 #' @param dzCr The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).
 #' @param addStd Whether to add the algebras to compute a std model (defaults to TRUE).
@@ -1351,8 +1356,8 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' @param thresholds How to implement ordinal thresholds c("deviationBased", "WLS").
 #' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned).
 #' @param optimizer Optionally set the optimizer (default NULL does nothing).
-#' @param suffix Deprecated: use "sep".
 #' @param intervals Whether to run mxCI confidence intervals (default = FALSE)
+#' @param suffix Deprecated: use "sep".
 #' @return - \code{\link{mxModel}} of subclass mxModel.ACE
 #' @export
 #' @family Twin Modeling Functions
@@ -1496,12 +1501,14 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' m1 = umxACE(selDVs = selDVs, dzData = dz, mzData = mz, numObsDZ=569, numObsMZ=351)
 #' umxSummary(m1)
 #' plot(m1)
-umxACE <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed", "random"), dzData, mzData, sep = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, boundDiag = 0, 
-	weightVar = NULL, equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased", "WLS"), autoRun = getOption("umx_auto_run"), suffix = "deprecated", optimizer = NULL, intervals = FALSE) {
+umxACE <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed", "random"), dzData, mzData, sep = NULL, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, boundDiag = 0, 
+	weightVar = NULL, equateMeans = TRUE, bVector = FALSE, thresholds = c("deviationBased", "WLS"), autoRun = getOption("umx_auto_run"), optimizer = NULL, intervals = FALSE, suffix = "deprecated") {
 
 		nSib = 2 # Number of siblings in a twin pair.
 		covMethod  = match.arg(covMethod)
 		thresholds = match.arg(thresholds)
+		type = match.arg(type)
+
 		# Allow suffix as a synonym for sep
 		if (suffix != "deprecated"){
 			warning("Just a message, but please use 'sep = ' instead of 'suffix = '. suffix will stop working in 2019")
@@ -1512,10 +1519,11 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed", 
 		if(dzCr == .25 & (name == "ACE")){
 			name = "ADE"
 		}
+
 		# If given covariates, call umxACEcov
 		if(!is.null(selCovs)){
 			if(covMethod == "fixed"){
-				stop("Fixed covariates are on the roadmap for umx in 2018. 'til then, use umx_residualize on the data first.")
+				stop("Fixed covariates are on the roadmap for umx in 2018. Until then, use umx_residualize on the data first.")
 				# umxACEdefcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun)
 			} else if(covMethod == "random"){
 				umxACEcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun)
@@ -1613,9 +1621,8 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, covMethod = c("fixed", 
 				#   2. A + C + E for binary variables is constrained to 1 
 				# 4. For Ordinal variables, first 2 thresholds fixed
 				# TODO
-				#  1. Simple test if results are similar for an ACE model of 1 variable
 				#  2. WLS as an option.
-				#  3. Option to fix all (or all but the first 2??) thresholds for left-censored data.
+				#  3. TOBIT
 				# [] select mxFitFunctionML() of bVector as param
 				if(nFactors == 0) {			
 					# =======================================================
@@ -2290,7 +2297,7 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NU
 #' @export
 #' @family Twin Modeling Functions
 #' @seealso - \code{\link{umxSummaryCP}}, \code{\link{umxPlotCP}}. See \code{\link{umxACE}} for more examples of twin modeling. \code{link{plot}} and \code{link{umxSummary}} work for IP, CP, GxE, SAT, and ACE models. For a deep dive, see \code{\link{xmu_make_top}}
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @md
 #' @examples
 #' \dontrun{
@@ -2356,12 +2363,16 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NU
 #' }
 #'
 umxCP <- function(name = "CP", selDVs, dzData, mzData, sep = NULL, nFac = 1, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE, correlatedA = FALSE, equateMeans= TRUE, dzAr= .5, dzCr= 1, boundDiag = 0, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run"), optimizer = NULL, suffix = "deprecated") {
+	# Allow suffix as a synonym for sep
+	# TODO Add covariates to umxCP
 	if(suffix != "deprecated"){
 		message("Just a message: but please use 'sep' instead of suffix - suffix is deprecated, and will stop working in 2019")
 		sep = suffix
 	}
-	nSib = 2
-	xmu_twin_check(selDVs=selDVs, dzData = dzData, mzData = mzData, enforceSep = TRUE, sep = sep, nSib = nSib, optimizer = optimizer)
+	nSib = 2 # Number of siblings in a twin pair.
+
+
+	xmu_twin_check(selDVs= selDVs, dzData = dzData, mzData = mzData, enforceSep = TRUE, sep = sep, nSib = nSib, optimizer = optimizer)
 	# Expand var names
 	selVars = umx_paste_names(selDVs, sep = sep, suffixes = 1:nSib)
 	nVar    = length(selVars)/nSib; # Number of dependent variables per **INDIVIDUAL** (so x2 per family)
@@ -2537,7 +2548,7 @@ umxCP <- function(name = "CP", selDVs, dzData, mzData, sep = NULL, nFac = 1, fre
 #' @export
 #' @family Twin Modeling Functions
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
 #' \dontrun{
 #' require(umx)
@@ -2802,7 +2813,7 @@ umxRAM2Ordinal <- function(model, verbose = T, thresholds = c("deviationBased", 
 #' @export
 #' @seealso - Core functions:
 #' @family Advanced Model Building Functions
-#' @references - \url{http://www.github.com/tbates/umx}, \url{https://tbates.github.io}
+#' @references - \url{https://www.github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -2944,7 +2955,7 @@ umxValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 #' @return - \code{\link{mxModel}}
 #' @export
 #' @family Advanced Model Building Functions
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @export
 #' @examples
 #' # ==============================================================
@@ -3032,7 +3043,7 @@ umxLabel <- function(obj, suffix = "", baseName = NA, setfree = FALSE, drop = 0,
 #' @return - \code{\link{mxMatrix}}
 #' @export
 #' @family Core Modelling Functions
-#' @seealso - \code{\link{mxMatrix}}, \code{\link{umxLabel}}, \code{\link{umxRAM}}
+#' @seealso - \code{\link{xmu_simplex_corner}}, \code{\link{mxMatrix}}, \code{\link{umxLabel}}, \code{\link{umxRAM}}
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' umxMatrix("test", "Full", 1, 1)
@@ -3106,7 +3117,7 @@ umxAlgebra <- function(name = NA, expression, dimnames = NA, ..., fixed = FALSE,
 #' @param comparison Whether to run umxCompare() after umxRun
 #' @return - \code{\link{mxModel}}
 #' @family Core Modelling Functions
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @export
 #' @examples
 #' require(umx)
@@ -3286,7 +3297,7 @@ umxSetParameters <- function(model, labels, free = NULL, values = NULL, newlabel
 #' @export
 #' @seealso \code{\link{umxModify}}, \code{\link{umxCompare}}
 #' @family Modify or Compare Models
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -3375,7 +3386,7 @@ umxEquate <- function(model, master, slave, free = c(TRUE, FALSE, NA), verbose =
 #' @return - the fixed \code{\link{mxModel}}
 #' @export
 #' @family Modify or Compare Models
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -3423,7 +3434,7 @@ umxFixAll <- function(model, name = "_fixed", run = FALSE, verbose= FALSE){
 #' @return a table of model comparisons
 #' @export
 #' @family Modify or Compare Models
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
 #' \dontrun{
 #' umxDrop1(fit3) # try dropping each free parameters (default)  
@@ -3479,7 +3490,7 @@ umxDrop1 <- function(model, regex = NULL, maxP = 1) {
 #' @return a table of fit changes
 #' @export
 #' @family Modify or Compare Models
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
 #' \dontrun{
 #' model = umxAdd1(model)
@@ -3597,7 +3608,7 @@ umxAdd1 <- function(model, pathList1 = NULL, pathList2 = NULL, arrows = 2, maxP 
 #' @return - path list
 #' @export
 #' @family Advanced Model Building Functions
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
 #' library(umx)
 #' data(demoOneFactor)
@@ -3790,7 +3801,7 @@ umxLatent <- function(latent = NULL, formedBy = NULL, forms = NULL, data = NULL,
 #' @return - list of thresholds matrix, deviations, lowerOnes
 #' @export
 #' @family Advanced Model Building Functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @md
 #' @examples
 #' # ============================
@@ -4313,7 +4324,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' @export
 #' @family Core Modelling Functions
 #' @seealso - \code{\link{mxPath}}
-#' @references - \url{http://tbates.github.io}
+#' @references - \url{https://tbates.github.io}
 #' @examples
 #' # A worked example
 #' data(demoOneFactor)
@@ -4711,7 +4722,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 #' Introductory working examples are below. You can run all demos with demo(umx)
 #' When I have a vignette, it will be: vignette("umx", package = "umx")
 #' 
-#' There is a helpful blog at \url{http://tbates.github.io}
+#' There is a helpful blog at \url{https://tbates.github.io}
 #' 
 #' If you want the bleeding-edge version:
 #' 
@@ -4737,7 +4748,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 #' @family Advanced Model Building Functions
 #' @family zAdvanced Helpers
 #' @family xmu internal not for end user
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' 
 #' @examples
 #' require("umx")

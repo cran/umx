@@ -1,3 +1,5 @@
+# TODO Add SEstyle code from plotCP
+# TODO Add new label trimming code if necessary
 #' Draw and display a graphical figure of Common Pathway model
 #'
 #' Options include digits (rounding), showing means or not, and which output format is desired.
@@ -15,7 +17,7 @@
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @seealso - \code{\link{umxCP}}
 #' @family Plotting functions
-#' @references - \url{http://tbates.github.io}
+#' @references - \url{https://tbates.github.io}
 #' @examples
 #' \dontrun{
 #' require(umx)

@@ -4,9 +4,9 @@
 \alias{umxLatent}
 \title{umxLatent: Helper to ease making formative and reflective latent variables}
 \usage{
-umxLatent(latent = NULL, formedBy = NULL, forms = NULL, data = NULL,
-  type = NULL, fixManifestVariances = FALSE, name = NULL,
-  labelSuffix = "", verbose = TRUE)
+umxLatent(latent = NULL, formedBy = NULL, forms = NULL,
+  data = NULL, type = NULL, fixManifestVariances = FALSE,
+  name = NULL, labelSuffix = "", verbose = TRUE)
 }
 \arguments{
 \item{latent}{the name of the latent variable (string)}
@@ -70,7 +70,7 @@ plot(m2, std = TRUE)
 }
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 Other Advanced Model Building Functions: \code{\link{umxJiggle}},
@@ -82,3 +82,4 @@ Other Advanced Model Building Functions: \code{\link{umxJiggle}},
   \code{\link{umx_get_bracket_addresses}},
   \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
 }
+\concept{Advanced Model Building Functions}

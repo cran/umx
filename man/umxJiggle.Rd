@@ -27,7 +27,7 @@ mat1 = umxJiggle(mat1)
 }
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 Other Advanced Model Building Functions: \code{\link{umxLabel}},
@@ -39,3 +39,4 @@ Other Advanced Model Building Functions: \code{\link{umxLabel}},
   \code{\link{umx_get_bracket_addresses}},
   \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
 }
+\concept{Advanced Model Building Functions}

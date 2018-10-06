@@ -68,7 +68,7 @@ tvars(c("IQ", "C"), cov = c("age"), sep = "_T", prefix= "mean_")
 }
 \references{
 \itemize{
-\item \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+\item \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
@@ -80,3 +80,4 @@ Other String Functions: \code{\link{umx_explode_twin_names}},
   \code{\link{umx_rot}}, \code{\link{umx_trim}},
   \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
 }
+\concept{String Functions}

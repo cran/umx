@@ -6,10 +6,11 @@
 \usage{
 umxRAM(model = NA, ..., data = NULL, name = NA, comparison = TRUE,
   setValues = TRUE, suffix = "", independent = NA,
-  remove_unused_manifests = TRUE, showEstimates = c("none", "raw", "std",
-  "both", "list of column names"), refModels = NULL,
+  remove_unused_manifests = TRUE, showEstimates = c("none", "raw",
+  "std", "both", "list of column names"), refModels = NULL,
   thresholds = c("deviationBased", "ignore", "left_censored"),
-  autoRun = getOption("umx_auto_run"), optimizer = NULL, verbose = FALSE)
+  autoRun = getOption("umx_auto_run"), type = c("Auto", "FIML", "cov",
+  "cor", "WLS", "DWLS", "ULS"), optimizer = NULL, verbose = FALSE)
 }
 \arguments{
 \item{model}{A model to update (or set to string to use as name for new model)}
@@ -37,6 +38,8 @@ umxRAM(model = NA, ..., data = NULL, name = NA, comparison = TRUE,
 \item{thresholds}{Whether to use deviation-based threshold modeling for ordinal data (if any is detected).}
 
 \item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned)}
+
+\item{type}{One of 'Auto','FIML','cov', 'cor', 'WLS','DWLS', or 'ULS'. Auto reacts to the incoming mxData type (raw/cov, WLS). FIML requires that the data are continuous. Remaining options are weighted, diagonally weighted, or unweighted least squares, respectively)}
 
 \item{optimizer}{optionally set the optimizer (default NULL does nothing)}
 
@@ -124,6 +127,13 @@ umxSummary(m1, show = "std")
 plot(m1)
 plot(m1, std = TRUE, resid = "line")
 
+# 5. Run a WLS model
+mw = umxRAM("raw", data = mtcars[, selVars], type = "WLS", autoRun= FALSE,
+	umxPath(c("wt", "disp"), to = "mpg"),
+	umxPath("wt", with = "disp"),
+	umxPath(var = selVars)
+)
+
 # ===============================
 # = Using umxRAM in Sketch mode =
 # ===============================
@@ -168,7 +178,7 @@ m1$S$labels
 }
 \references{
 \itemize{
-\item \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+\item \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
@@ -179,3 +189,4 @@ Other Core Modelling Functions: \code{\link{plot.MxModel}},
   \code{\link{umxPath}}, \code{\link{umxRun}},
   \code{\link{umxSuperModel}}, \code{\link{umx}}
 }
+\concept{Core Modelling Functions}

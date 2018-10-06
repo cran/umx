@@ -4,8 +4,9 @@
 \alias{umxGetParameters}
 \title{Get parameters from a model, with support for pattern matching!}
 \usage{
-umxGetParameters(inputTarget, regex = NA, free = NA, fetch = c("values",
-  "free", "lbound", "ubound", "all"), verbose = FALSE)
+umxGetParameters(inputTarget, regex = NA, free = NA,
+  fetch = c("values", "free", "lbound", "ubound", "all"),
+  verbose = FALSE)
 }
 \arguments{
 \item{inputTarget}{An object to get parameters from: could be a RAM \code{\link{mxModel}}}
@@ -47,7 +48,7 @@ umxGetParameters(m1, regex = "x[1-3]_with_x[2-5]", free = TRUE)
 
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 \code{\link{omxGetParameters}}, \code{\link{umx_parameters}}
@@ -56,6 +57,7 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{tmx_is.identified}}, \code{\link{umxAPA}},
   \code{\link{umxEval}}, \code{\link{umxFactorScores}},
   \code{\link{umxReduce}}, \code{\link{umxSummary}},
+  \code{\link{umxWeightedAIC}},
   \code{\link{umx_APA_model_CI}},
   \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
   \code{\link{umx_names}}, \code{\link{umx_parameters}},
@@ -64,3 +66,4 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{umx_show}}, \code{\link{umx_time}},
   \code{\link{umx}}
 }
+\concept{Reporting Functions}

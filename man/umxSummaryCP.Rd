@@ -5,8 +5,8 @@
 \alias{umxSummary.MxModelCP}
 \title{Present the results of a Common-pathway twin model in table and graphical form}
 \usage{
-umxSummaryCP(model, digits = 2, std = TRUE, CIs = FALSE, showRg = FALSE,
-  comparison = NULL, report = c("markdown", "html"),
+umxSummaryCP(model, digits = 2, std = TRUE, CIs = FALSE,
+  showRg = FALSE, comparison = NULL, report = c("markdown", "html"),
   file = getOption("umx_auto_plot"), returnStd = FALSE, ...)
 }
 \arguments{
@@ -67,7 +67,7 @@ umxSummary(m1, CIs = TRUE, file = NA);
 
 }
 \references{
-- \url{http://www.github.com/tbates/umx}, \url{http://tbates.github.io}
+- \url{https://www.github.com/tbates/umx}, \url{https://tbates.github.io}
 }
 \seealso{
 - \code{\link{umxCP}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
@@ -88,3 +88,4 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxSummarySimplex}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }
+\concept{Twin Modeling Functions}

@@ -34,7 +34,7 @@ m1 = umx_fix_first_loadings(m1)
 umx_show(m1) # path from g to var1 fixed @ 1.
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{https://openmx.ssri.psu.edu}
 }
 \seealso{
 Other Advanced Model Building Functions: \code{\link{umxJiggle}},
@@ -46,3 +46,4 @@ Other Advanced Model Building Functions: \code{\link{umxJiggle}},
   \code{\link{umx_get_bracket_addresses}},
   \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
 }
+\concept{Advanced Model Building Functions}

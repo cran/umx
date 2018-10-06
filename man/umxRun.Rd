@@ -4,8 +4,9 @@
 \alias{umxRun}
 \title{umxRun: Run an mxModel}
 \usage{
-umxRun(model, n = 1, calc_SE = TRUE, calc_sat = TRUE, setValues = FALSE,
-  setLabels = FALSE, intervals = FALSE, comparison = NULL)
+umxRun(model, n = 1, calc_SE = TRUE, calc_sat = TRUE,
+  setValues = FALSE, setLabels = FALSE, intervals = FALSE,
+  comparison = NULL)
 }
 \arguments{
 \item{model}{The \code{\link{mxModel}} you wish to run.}
@@ -55,7 +56,7 @@ umxConfint(m1, run = TRUE) # get likelihood-based CIs on all free parameters
 m1 = umxRun(m1, n = 10) # re-run up to 10 times if not green on first run
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 Other Core Modelling Functions: \code{\link{plot.MxModel}},
@@ -63,3 +64,4 @@ Other Core Modelling Functions: \code{\link{plot.MxModel}},
   \code{\link{umxPath}}, \code{\link{umxRAM}},
   \code{\link{umxSuperModel}}, \code{\link{umx}}
 }
+\concept{Core Modelling Functions}

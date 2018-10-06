@@ -36,7 +36,7 @@ df = umx_scale(twinData,  attr= TRUE)
 plot(wt1 ~ wt2, data = df)
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 umx_scale_wide_twin_data
@@ -54,3 +54,4 @@ Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
   \code{\link{umx_pb_note}}, \code{\link{umx_print}},
   \code{\link{umx}}
 }
+\concept{Miscellaneous Utility Functions}

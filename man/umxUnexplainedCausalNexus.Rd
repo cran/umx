@@ -24,7 +24,7 @@ umxUnexplainedCausalNexus(from="yrsEd", delta = .5, to = "income35", model)
 }
 }
 \references{
-- http://www.github.com/tbates/umx/
+- https://www.github.com/tbates/umx/
 }
 \seealso{
 - \code{\link{mxCheckIdentification}}, \code{\link{mxCompare}}
@@ -35,3 +35,4 @@ Other Modify or Compare Models: \code{\link{umxAdd1}},
   \code{\link{umxModify}}, \code{\link{umxSetParameters}},
   \code{\link{umx}}
 }
+\concept{Modify or Compare Models}

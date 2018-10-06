@@ -40,7 +40,7 @@ option_list = c(TRUE, FALSE, NA)
 umx_default_option(option_list, option_list) # works with non character
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 - \code{\link{match.arg}}
@@ -58,3 +58,4 @@ Other Get and set: \code{\link{umx_get_checkpoint}},
   \code{\link{umx_set_plot_format}},
   \code{\link{umx_set_table_format}}, \code{\link{umx}}
 }
+\concept{Get and set}

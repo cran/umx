@@ -49,7 +49,7 @@ umx_make_sql_from_excel("~/Desktop/test.xlsx") # provide a path
 }
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 Other File Functions: \code{\link{dl_from_dropbox}},
@@ -57,3 +57,4 @@ Other File Functions: \code{\link{dl_from_dropbox}},
   \code{\link{umx_rename_file}},
   \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
 }
+\concept{File Functions}

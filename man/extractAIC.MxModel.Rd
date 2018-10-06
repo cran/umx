@@ -37,7 +37,7 @@ extractAIC(m1)
 AIC(m1)
 }
 \references{
-- \url{http://openmx.ssri.psu.edu/thread/931#comment-4858}
+- \url{https://openmx.ssri.psu.edu/thread/931#comment-4858}
 }
 \seealso{
 - \code{\link{AIC}}, \code{\link{umxCompare}}, \code{\link{logLik}}
@@ -57,3 +57,4 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }
+\concept{Reporting functions}

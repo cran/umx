@@ -48,7 +48,7 @@ umxSummaryIP(m1, digits = 2, file = "Figure3", showRg = FALSE, CIs = TRUE);
 }
 }
 \references{
-- \url{http://github.com/tbates/umx}, \url{http://tbates.github.io}
+- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 }
 \seealso{
 - \code{\link{umxIP}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
@@ -69,3 +69,4 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxSummarySimplex}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }
+\concept{Twin Modeling Functions}

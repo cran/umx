@@ -23,7 +23,7 @@ See \code{\link[umx]{loadings.MxModel}} to access the loadings of OpenMx EFA mod
 Base \code{\link[stats]{loadings}} handles \code{\link{factanal}} objects.
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
@@ -42,3 +42,4 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }
+\concept{Reporting functions}

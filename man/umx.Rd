@@ -18,7 +18,7 @@ Have a look, for example at \code{\link{umxRAM}}
 Introductory working examples are below. You can run all demos with demo(umx)
 When I have a vignette, it will be: vignette("umx", package = "umx")
 
-There is a helpful blog at \url{http://tbates.github.io}
+There is a helpful blog at \url{https://tbates.github.io}
 
 If you want the bleeding-edge version:
 
@@ -74,7 +74,7 @@ plot(m1, std = TRUE)
 plot(m1, std = TRUE, file = NA)
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 Other Teaching and testing Functions: \code{\link{tmx_genotypic_effect}},
@@ -89,7 +89,8 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{tmx_is.identified}}, \code{\link{umxAPA}},
   \code{\link{umxEval}}, \code{\link{umxFactorScores}},
   \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umx_APA_model_CI}},
+  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
+  \code{\link{umx_APA_model_CI}},
   \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
   \code{\link{umx_names}}, \code{\link{umx_parameters}},
   \code{\link{umx_print}},
@@ -129,7 +130,7 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{xmu_twin_check}}
 
 Other Twin Reporting Functions: \code{\link{umxReduceACE}},
-  \code{\link{umxReduceGxE}}
+  \code{\link{umxReduceGxE}}, \code{\link{umxReduce}}
 
 Other Twin Data functions: \code{\link{umx_long2wide}},
   \code{\link{umx_make_TwinData}},
@@ -238,7 +239,28 @@ Other xmu internal not for end user: \code{\link{umxModel}},
   \code{\link{xmu_check_levels_identical}},
   \code{\link{xmu_dot_make_paths}},
   \code{\link{xmu_dot_make_residuals}},
+  \code{\link{xmu_make_mxData}},
   \code{\link{xmu_make_top}},
   \code{\link{xmu_simplex_corner}},
   \code{\link{xmu_start_value_list}}
 }
+\concept{Advanced Model Building Functions}
+\concept{Check or test}
+\concept{Core Modelling Functions}
+\concept{Data Functions}
+\concept{File Functions}
+\concept{Get and set}
+\concept{Miscellaneous Stats Helpers}
+\concept{Miscellaneous Utility Functions}
+\concept{Modify or Compare Models}
+\concept{Plotting functions}
+\concept{Reporting Functions}
+\concept{String Functions}
+\concept{Super-easy helpers}
+\concept{Teaching and testing Functions}
+\concept{Twin Data functions}
+\concept{Twin Modeling Functions}
+\concept{Twin Reporting Functions}
+\concept{datasets}
+\concept{xmu internal not for end user}
+\concept{zAdvanced Helpers}

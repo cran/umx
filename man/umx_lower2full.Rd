@@ -4,7 +4,8 @@
 \alias{umx_lower2full}
 \title{Convert lower-only matrix data to full (or enforce symmetry on a full matrix)}
 \usage{
-umx_lower2full(lower.data, diag = NULL, byrow = TRUE, dimnames = NULL)
+umx_lower2full(lower.data, diag = NULL, byrow = TRUE,
+  dimnames = NULL)
 }
 \arguments{
 \item{lower.data}{An \code{\link{mxMatrix}}}
@@ -24,8 +25,9 @@ from a journal article), OR a matrix (for instance from a "lower" \code{\link{mx
 and returns a full matrix, copying the lower triangle into the upper.
 }
 \details{
-Can also take a full matrix, which can be useful for enforcing symmetry on a
-nearly-symmetrical matrix.
+*note*: Can also take lower data presented in the form of a data.frame. Note also, if 
+presented with a full matrix, the function will return a matrix with  symmetry enforced. Can be
+handy when you have a "nearly-symmetrical" matrix (with differences in the 10th decimal place).
 }
 \examples{
 
@@ -94,7 +96,7 @@ umx_lower2full(tmp, diag = FALSE)
 umx_lower2full(tmp, byrow = FALSE, diag = TRUE)
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 Other Data Functions: \code{\link{umxCovData}},
@@ -111,3 +113,4 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_reorder}}, \code{\link{umx_stack}},
   \code{\link{umx_swap_a_block}}, \code{\link{umx}}
 }
+\concept{Data Functions}

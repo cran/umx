@@ -5,7 +5,7 @@
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
 # 
-#        http://www.apache.org/licenses/LICENSE-2.0
+#        https://www.apache.org/licenses/LICENSE-2.0
 # 
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,90 @@
 # ==============================================================================
 # = Not used directly by users subject to arbitrary change and deprecation !!  =
 # ==============================================================================
+
+
+#' Upgrade a dataframe to an mxData type.
+#'
+#' @description
+#' Non-user function to upgrade a dataframe to an mxData type. It can also trim variables.
+#'
+#' The most common use will be to give it a dataframe, and get back a nice mxData object of WLS, cov, cor, or raw type.
+#'
+#' @param data A \code{\link{data.frame}} or \code{\link{mxData}}
+#' @param type What data type is wanted out c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS')
+#' @param manifests If set, only these variables will be retained.
+#' @return - \code{\link{mxData}}
+#' @export
+#' @family xmu internal not for end user
+#' @examples
+#' tmp = xmu_make_mxData(data= mtcars, type = "Auto")
+#' tmp = xmu_make_mxData(data= mtcars, type = "Auto", manifests = c("mpg", "cyl", "disp"))
+#' tmp = xmu_make_mxData(data= mtcars, type = "WLS" , manifests = c("mpg", "cyl", "disp"))
+#' tmp = xmu_make_mxData(data= mtcars, type = "cov")
+#' tmp = xmu_make_mxData(data= mtcars, type = "cor")
+#' # pass string through
+#' xmu_make_mxData(data= c("a", "b", "c"), type = "Auto")
+#' 
+xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS'), manifests = NULL) {
+	type = match.arg(type)
+	if(is.null(data)){
+		message("You must set data: either data = dataframe or data = mxData(yourData, type = 'raw|cov)', ...) or at least a list of variable names if using umxRAM in sketch mode)")
+		stop("Did you perhaps just include the data among other functions instead of via data = ?")
+	}else if(class(data)=="character"){
+		# pass through strings
+		return(data)
+	}
+	if(is.null(manifests)){
+		manifests = umx_names(data)
+		if("one" %in% manifests){
+			warning("You have a data column called 'one' which is illegal (it's the code used for setting means). I'll drop it!")
+			manifests = manifests[!manifests %in% c("one")]
+			dropColumns = TRUE
+		}else{
+			dropColumns = FALSE
+		}
+	}else{
+		dropColumns = TRUE
+	}
+
+	if (class(data)[1] == "data.frame") {
+		if(dropColumns){
+			# Trim down the data to include only the requested columns
+			data = data[, manifests, drop = FALSE]
+		}
+		# Upgrade data.frame to mxData of desired type
+		if(type %in% c("Auto", "FIML")){
+			data = mxData(observed = data, type = "raw")
+		}else	if(type == "cov"){
+			data = mxData(observed = cov(data), type = type, numObs = nrow(data))
+		}else	if(type == "cor"){
+			data = mxData(observed = cor(data), type = type, numObs = nrow(data))
+		} else if(type %in% c('WLS', 'DWLS', 'ULS')){
+			data = mxDataWLS(data, type = type)
+		}else{
+			stop("I don't know how to create data of type ", omxQuotes(type))
+		}
+	}else if (umx_is_MxData(data)){
+		# Already an mxData
+		if(dropColumns){
+			if(data$type %in% c("cov", "cor")){
+				# Trim down the data to include only the requested columns
+				data$observed = umx_reorder(data$observed, manifests)
+			} else if (data$type == "raw"){
+				data$observed = data$observed[, manifests]
+			} else {
+				stop("You offered up an existing mxData and requested dropping unused variables: I can only do this for cov, cor, and raw data")
+			}
+		}
+	}else if (class(data) == "matrix"){
+		message("You gave me a matrix. umx needs to know the N for cov data. Rather than me assemble it,
+			the easiest and least error-prone method is for you to pass in raw data, or else\n
+			data = mxData(yourCov, type= 'cov', numObs= 100) # (or whatever your N is)")
+	}else{
+		stop("I was expecting a data frame or mxData  you gave me a ", omxQuotes(class(data)))	
+	}
+	return(data)
+}
 
 # =====================
 # = Reporting helpers =
@@ -351,7 +435,7 @@ xmuLabel_RAM_Model <- function(model, suffix = "", labelFixedCells = TRUE, overR
 # 0 ,.9, 0, 0,
 # 0 , 0,.9, 0
 #'
-#' @param x an \code{\link{umxMatrix}} of which to free the bottom triangle.
+#' @param x size of matrix, or an \code{\link{umxMatrix}} of which to free the bottom triangle.
 #' @param start a default start value for the freed items.
 #' @return - \code{\link{umxMatrix}}
 #' @export
@@ -363,6 +447,9 @@ xmuLabel_RAM_Model <- function(model, suffix = "", labelFixedCells = TRUE, overR
 #' # See how we have a diag free, but offset 1-down?
 #' umx_print( xmu_simplex_corner(x, start = .9)$values, zero=".")
 xmu_simplex_corner <- function(x, start = .9) {
+	if(!umx_is_MxMatrix(x)){
+		x = umxMatrix('test', 'Full', nrow = x, ncol = x)
+	}
 	nVar = dim(x)[1]
 	nVar_minus1 = nVar-1
 	for (thisRow in 2:nVar) {
@@ -499,7 +586,7 @@ xmuLabel_Matrix <- function(mx_matrix = NA, baseName = NA, setfree = FALSE, drop
 #' @param verbose how much feedback to give (defaults to FALSE)
 #' @return - a list containing an \code{\link{mxMatrix}} called "thresh", 
 #' an \code{\link{mxRAMObjective}} object, and an \code{\link{mxData}} object
-#' @references - \url{http://tbates.github.io}
+#' @references - \url{https://tbates.github.io}
 #' @examples
 #' # x = mtcars
 #' # x$cyl = mxFactor(x$cyl, levels = c(4,6,8))
@@ -681,9 +768,9 @@ xmuMI <- function(model, vector = TRUE) {
 	# modification indices
 	# v0.9: written Michael Culbertson
 	# v0.91: up on github; added progress bar, Bates
-	# http://openmx.ssri.psu.edu/thread/831
-	# http://openmx.ssri.psu.edu/thread/1019
-	# http://openmx.ssri.psu.edu/sites/default/files/mi-new.r
+	# https://openmx.ssri.psu.edu/thread/831
+	# https://openmx.ssri.psu.edu/thread/1019
+	# https://openmx.ssri.psu.edu/sites/default/files/mi-new.r
 	steps <- 5
 	bar <- txtProgressBar (min=0, max=steps, style=3)
     utils::setTxtProgressBar(bar, 1)

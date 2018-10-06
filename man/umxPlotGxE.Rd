@@ -5,8 +5,9 @@
 \alias{plot.MxModelGxE}
 \title{Plot the results of a GxE univariate test for moderation of ACE components.}
 \usage{
-umxPlotGxE(x, xlab = NA, location = "topleft", separateGraphs = FALSE,
-  acergb = c("red", "green", "blue", "black"), ...)
+umxPlotGxE(x, xlab = NA, location = "topleft",
+  separateGraphs = FALSE, acergb = c("red", "green", "blue", "black"),
+  ...)
 }
 \arguments{
 \item{x}{A fitted \code{\link{umxGxE}} model to plot}
@@ -44,7 +45,7 @@ plot(m1)
 umxPlotGxE(x = m1, xlab = "SES", separateGraphs = TRUE, location = "topleft")
 }
 \references{
-- \url{http://tbates.github.io}
+- \url{https://tbates.github.io}
 }
 \seealso{
 - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
@@ -58,3 +59,4 @@ Other Plotting functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotIP}}, \code{\link{umxPlotSimplex}},
   \code{\link{umx}}
 }
+\concept{Plotting functions}

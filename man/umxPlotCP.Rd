@@ -6,7 +6,8 @@
 \title{Draw and display a graphical figure of Common Pathway model}
 \usage{
 umxPlotCP(x = NA, file = "name", digits = 2, means = FALSE,
-  std = TRUE, format = c("current", "graphviz", "DiagrammeR"), ...)
+  std = TRUE, format = c("current", "graphviz", "DiagrammeR"),
+  SEstyle = FALSE, ...)
 }
 \arguments{
 \item{x}{The Common Pathway \code{\link{mxModel}} to display graphically}
@@ -20,6 +21,8 @@ umxPlotCP(x = NA, file = "name", digits = 2, means = FALSE,
 \item{std}{Whether to standardize the model (defaults to TRUE)}
 
 \item{format}{= c("current", "graphviz", "DiagrammeR")}
+
+\item{SEstyle}{report "b (se)" instead of b CI95[l, u] (Default = FALSE)}
 
 \item{...}{Optional additional parameters}
 }
@@ -35,7 +38,7 @@ plot(yourCP_Model) # no need to remember a special name: plot works fine!
 }
 }
 \references{
-- \url{http://tbates.github.io}
+- \url{https://tbates.github.io}
 }
 \seealso{
 - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
@@ -49,3 +52,4 @@ Other Plotting functions: \code{\link{plot.MxModel}},
   \code{\link{umxPlotIP}}, \code{\link{umxPlotSimplex}},
   \code{\link{umx}}
 }
+\concept{Plotting functions}

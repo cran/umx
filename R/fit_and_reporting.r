@@ -6,7 +6,7 @@
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
 # 
-#        http://www.apache.org/licenses/LICENSE-2.0
+#        https://www.apache.org/licenses/LICENSE-2.0
 # 
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,7 +29,7 @@
 #' @return - helpful messages and perhaps a modified model
 #' @export
 #' @family Teaching and Testing functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -60,33 +60,82 @@ umxDiagnose <- function(model, tryHard = FALSE, diagonalizeExpCov = FALSE){
   # umx_any_ordinal()
   # more tricky - we should really report the variances and the standardized thresholds.
   # The guidance would be to try starting with unit variances and thresholds that are within +/- 2SD of the mean.
-  # [bivariate outliers %p](http://openmx.ssri.psu.edu/thread/3899)
+  # [bivariate outliers %p](https://openmx.ssri.psu.edu/thread/3899)
 }
 
 # =============================
 # = Fit and Reporting Helpers =
 # =============================
 
+#' AIC weight-based conditional probabilities.
+#'
+#' @description
+#' Returns the best model by AIC, and computes the probabilities 
+#' according to AIC weight-based conditional probabilities (Wagenmakers & Farrell, 2004). 
+#'
+#' @param models a list of models to compare.
+#' @param digits (default 2)
+#' @return - Best model
+#' @export
+#' @family Reporting Functions
+#' @seealso - \code{\link{AIC}}
+#' @references - Wagenmakers EJ, Farrell S. (2004), 192-196. AIC model selection using Akaike weights. *Psychon Bull Rev*. **11**, 192-196. \url{https://www.ncbi.nlm.nih.gov/pubmed/15117008}
+#' @examples
+#' l1 = lm(mpg~ wt + disp, data=mtcars)
+#' l2 = lm(mpg~ wt, data=mtcars)
+#' umxWeightedAIC(models = list(l1, l2))
+umxWeightedAIC <- function(models, digits= 2) {
+	if(class(models[[1]])== "numeric"){
+		stop("Please input the list of models to compare as a list, i.e. models = list(model1, model2)")
+	}
+	AIClist = c()
+	for (i in models) {
+		AIClist = c(AIClist, AIC(i))
+	}
+	whichBest = which.min(AIClist)
+	bestModel = models[[whichBest]]
+	aic.weights = round(MuMIn::Weights(AIClist), 2)
+	if(isS4(models[[1]]) & is(models[[1]], "MxModel")){
+		# TODO: this should work with  umx_is_MxModel(models[[1]])
+		message("The ", omxQuotes(bestModel$name), " model is the best fitting model according to AIC.")
+		# Probabilities according to AIC Weights (Wagenmakers et al https://www.ncbi.nlm.nih.gov/pubmed/15117008 )
+		message("AIC weight-based conditional probabilities {Wagenmakers, 2004, 192-196} of being the best model for ", 
+			omxQuotes(namez(models)), " respectively are: ",
+			omxQuotes(aic.weights), " Using MuMIn::Weights(AIC()).")		
+	}else{
+		if("call" %in% names(bestModel)){
+			# ID = paste0("Model ", omxQuotes(bestModel$call))
+			ID = paste0("Model ", whichBest)
+		} else {
+			ID = paste0("Model ", whichBest)
+		}
+		message(ID, " is the best fitting model according to AIC.")
+		message("AIC weight-based conditional probabilities {Wagenmakers, 2004, 192-196} of being the best model are (for each model you gave me): ",
+			omxQuotes(aic.weights), " Using MuMIn::Weights(AIC()).")		
+		
+	}
+	invisible(bestModel)
+}
+
 #' Reduce models, and report the results.
 #'
 #' @description
-#' Given an OpenMx model (currently ACE and GxE are supported - ask for more!)
-#' umxReduce will conduct a formalised reduction process
+#' Given a `umx` model (currently `umxACE` and `umxGxE` are supported - ask for more!)
+#' `umxReduce` will conduct a formalised reduction process.
 #'
-#' \strong{GxE model reduction}
+#' **GxE model reduction**
 #' For \code{\link{umxGxE}} models, each form of moderation is tested
 #' on its own, and jointly.
 #' Also, C is removed, and moderation tested in this model.
 #' 
-#' \strong{ACE model reduction}
-#' For \code{\link{umxACE}} models, each form of moderation is tested on its own, and jointly.
-#' Also, C is removed, and moderation tested in this model.
+#' **ACE model reduction**
+#' For \code{\link{umxACE}} models, A and then C are removed and tested.
 #' 
 #' It reports the results in a table. Set the format of the table with
 #' \code{\link{umx_set_table_format}}()., or set `report` to "html" to open a
 #' table for pasting into a word processor.
 #' 
-#' umxReduce is a work in progress, with more automations coming as demand emerges.
+#' `umxReduce` is a work in progress, with more automations coming as demand emerges.
 #' I am thinking for RAM models to drop NS paths, and report that test.
 #'
 #' @param model The \code{\link{mxModel}} which will be reduced.
@@ -95,8 +144,10 @@ umxDiagnose <- function(model, tryHard = FALSE, diagonalizeExpCov = FALSE){
 #' @param ... Other parameters to control model summary
 #' @family Reporting Functions
 #' @family Twin Reporting Functions
-#' \url{http://www.github.com/tbates/umx}
+#' @seealso \code{\link{umxReduceGxE}}, \code{\link{umxReduceACE}}
+#' @references - Wagenmakers, E.J., & Farrell, S. (2004). AIC model selection using Akaike weights. *Psychonomic Bulletin and Review*, **11**, 192-196. [doi:](https://doi.org/10.3758/BF03206482)
 #' @export
+#' @md
 umxReduce <- function(model, report = c("markdown", "inline", "html", "report"), baseFileName = "tmp", ...){
 	UseMethod("umxReduce", model)
 }
@@ -108,36 +159,38 @@ umxReduce.default <- function(model, ...){
 
 #' Reduce a GxE model.
 #'
-#' This function can perform model reduction for \code{\link{umxGxE}}, 
+#' @description
+#' This function can perform model reduction for [umxGxE][umxGxE], 
 #' testing dropping means-moderation, a`,c` & e`, as well as c & c`, a & a` etc.
 #'
 #' It reports the results in a table. Set the format of the table with
-#' \code{\link{umx_set_table_format}}()., or set `report` to "html" to open a
+#' [umx_set_table_format]. Or set `report` to "html" to open a
 #' table for pasting into a word processor.
-#' @param model an \code{\link{mxModel}} to reduce
-#' @param report How to report the results. "html" = open in browser
-#' @param baseFileName (optional) custom filename for html output (defaults to "tmp")
-#' @param ... Other parameters to control model summary
-#' @return - 
+#' 
+#' @param model An \code{\link{mxModel}} to reduce.
+#' @param report How to report the results. "html" = open in browser.
+#' @param baseFileName (optional) custom filename for html output (defaults to "tmp").
+#' @param ... Other parameters to control model summary.
+#' @return best model
 #' @export
 #' @family Twin Reporting Functions
-#' @references - \url{http://tbates.github.io}
+#' @seealso \code{\link{umxReduceACE}}, \code{\link{umxReduce}}
+#' @references - Wagenmakers, E.J., & Farrell, S. (2004). AIC model selection using Akaike weights.
+#' *Psychonomic Bulletin and Review*, **11**, 192-196. [doi:](https://doi.org/10.3758/BF03206482).
+#' @md
 #' @examples
 #' \dontrun{
 #' model = umxReduce(model)
 #' }
-umxReduceGxE <- function(model, report = c("markdown", "inline", "html", "report"), baseFileName = "tmp", ...) {
+umxReduceGxE <- function(model, report = c("markdown", "inline", "html", "report"), baseFileName = "tmp_gxe", ...) {
 	umx_is_MxModel(model)
 	report = match.arg(report)
 	if(class(model) == "MxModelGxE"){		
 		# Reduce GxE Model
-		# Good to drop the means if possible? I think not. Better to model their most likely value, not lock it too zerp
+		# Good to drop the means if possible? I think not. Better to model their most likely value, not lock it to zerp
 		no_lin_mean = umxModify(model, update = "lin11" , name = "No_lin_mean" )
 		no_sq_mean  = umxModify(model, update = "quad11" , name = "No_quad_mean")
 		nomeans     = umxModify(model, regex = "lin|quad", name = "No_means_moderation")
-
-		noA          = umxModify(model, update = "a_r1c1" , name = "DropA")
-		noC          = umxModify(model, update = "c_r1c1" , name = "DropC")
 
 		noAmod       = umxModify(model, update = "am_r1c1", name = "No_mod_on_A")
 		noCmod       = umxModify(model, update = "cm_r1c1", name = "No_mod_on_C")
@@ -145,19 +198,17 @@ umxReduceGxE <- function(model, report = c("markdown", "inline", "html", "report
 
 		noACEmod     = umxModify(model, regex  = "[ace]m" , name = "No_moderation")
 
-		no_a_am     = umxModify(noA , update = "am_r1c1", name = "No_A_no_mod_on_A")
-		no_c_no_cm  = umxModify(noC , update = "cm_r1c1", name = "No_C_no_mod_on_C")
+		no_a_no_am  = umxModify(noAmod , update = "a_r1c1", name = "No_A_no_mod_on_A")
+		no_c_no_cm  = umxModify(noCmod , update = "c_r1c1", name = "No_C_no_mod_on_C")
 		no_c_no_cem = umxModify(no_c_no_cm, update = "em_r1c1", name = "No_c_no_ce_mod")
 
-		no_c_no_moderation    = umxModify(no_c_no_cem, update = "am_r1c1", name = "No_c_no_moderation")
+		no_c_no_mod = umxModify(no_c_no_cem, update = "am_r1c1", name = "No_c_no_moderation")
 
 		comparisons = c(
 			no_lin_mean, no_sq_mean, nomeans, 
-			noA, noC,
-			noAmod, noCmod, noEmod,
-			noACEmod,
-			no_a_am, no_c_no_cm, no_c_no_cem,
-			no_c_no_moderation
+			noAmod, noCmod, noEmod, noACEmod,
+			no_a_no_am, no_c_no_cm, no_c_no_cem,
+			no_c_no_mod
 		)
 
 		# ====================
@@ -166,6 +217,23 @@ umxReduceGxE <- function(model, report = c("markdown", "inline", "html", "report
 		
 		umxCompare(model, comparisons, all = TRUE, report = report, file = paste0(baseFileName, "1.html"))
 		# umxCompare(no_c_no_cem, no_c_no_moderation, all = TRUE, report = report, file = paste0(baseFileName, "2.html"))
+		modelList = c(model, comparisons)
+		
+		# get list of AICs
+		AIClist = c()
+		for (i in modelList) {
+			AIClist = c(AIClist, AIC(i))
+		}
+		whichBest = which.min(AIClist)
+		bestModel = modelList[[whichBest]]
+		message("The ", omxQuotes(bestModel$name), " model is the best fitting model according to AIC.")
+		# Probabilities according to AIC MuMIn::Weights (Wagenmakers et al https://www.ncbi.nlm.nih.gov/pubmed/15117008 )
+		aic.weights = round(Weights(AIClist), 2)
+		message("AIC weight-based conditional probabilities {Wagenmakers, 2004, 192-196} of being the best model for ", 
+			omxQuotes(namez(modelList)), " respectively are: ",
+			omxQuotes(aic.weights), " Using MuMIn::Weights(AIC())."
+		)
+		invisible(bestModel)
 	} else {
 		stop("This function is for GxE. Feel free to let me know what you want...")
 	}
@@ -191,7 +259,9 @@ umxReduce.MxModelGxE <- umxReduceGxE
 #' @return Best fitting model
 #' @export
 #' @family Twin Reporting Functions
-#' @references - \url{http://tbates.github.io}
+#' @seealso \code{\link{umxReduceGxE}}, \code{\link{umxReduce}}
+#' @references - Wagenmakers, E.J., & Farrell, S. (2004). AIC model selection using Akaike weights. *Psychonomic Bulletin and Review*, **11**, 192-196. [doi:](https://doi.org/10.3758/BF03206482)
+#' @md
 #' @examples
 #' data(twinData)
 #' mzData <- subset(twinData, zygosity == "MZFF")
@@ -207,7 +277,7 @@ umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report
 	if(model$top$dzCr$values == 1){
 		message("You gave me an ACE model")		
 		ACE = model
-		ADE = umxModify(model, 'dzCr_r1c1', value = .25, name = "ADE_model")
+		ADE = umxModify(model, 'dzCr_r1c1', value = .25, name = "ADE")
 		if(-2*logLik(ACE) > -2*logLik(ADE)){
 			CE = umxModify(ADE, regex = "a_r[0-9]+c[0-9]+" , name = "DE")
 			AE = umxModify(ADE, regex = "c_r[0-9]+c[0-9]+" , name = "AE")
@@ -217,9 +287,14 @@ umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report
 			AE = umxModify(ACE, regex = "c_r[0-9]+c[0-9]+" , name = "AE")
 		}
 	}else if(model$top$dzCr$values == .25){
-		message("You gave me an ADE model")
+		if(model$name=="ACE"){
+			message("You gave me an ADE model, but it was called 'ACE'. I have renamed it ADE for the purposes of clarity in model reduction.")
+			model = mxRename(model, newname = "ADE", oldname = "ACE")
+		} else {
+			message("You gave me an ADE model.")
+		}
 		ADE = model
-		ACE = umxModify(ADE, 'dzCr_r1c1', value = 1, name = "ACE_model")
+		ACE = umxModify(ADE, 'dzCr_r1c1', value = 1, name = "ACE")
 		AE  = umxModify(ADE, regex = "c_r[0-9]+c[0-9]+" , name = "AE")
 		if(-2*logLik(ADE) > -2*logLik(ACE)){
 			CE = umxModify(ACE, regex = "a_r[0-9]+c[0-9]+" , name = "CE")
@@ -229,7 +304,7 @@ umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report
 		}
 	}else{
 		stop(model$top$dzCr$values, " is an odd number for dzCr, isn't it? I was expecting 1 (C) or .25 (D)",
-		"\nPerhaps you're smart, and are doing an assortative mating test? e-mail tim to get this added here.")
+		"\nPerhaps you're John Loehlin, and are doing an assortative mating test? e-mail me to get this added here.")
 		# TODO umxReduceACE handle odd values of dzCr as assortative mating etc.?
 		bestModel = model
 	}
@@ -237,7 +312,13 @@ umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report
 	umxCompare(ACE, c(ADE, CE, AE), all = TRUE, report = report)
 	whichBest = which.min(AIC(ACE, ADE, CE, AE)[,"AIC"])[1]
 	bestModel = list(ACE, ADE, CE, AE)[[whichBest]]
-	message("The ", omxQuotes(bestModel$name), " model is the best fitting model.")
+	message("The ", omxQuotes(bestModel$name), " model is the best fitting model according to AIC.")
+	# Probabilities according to AIC MuMIn::Weights (Wagenmakers et al https://www.ncbi.nlm.nih.gov/pubmed/15117008 )
+	aic.weights = round(Weights(AIC(ACE, ADE, CE, AE)[,"AIC"]), 2)
+	message("AIC weight-based {Wagenmakers, 2004, 192-196} conditional probabilities of being the best model for ", 
+		omxQuotes(namez(c(ACE, ADE, CE, AE))), " respectively are: ", 
+		omxQuotes(aic.weights), " Using MuMIn::Weights(AIC()).")
+
 	if(intervals){
 		bestModel = mxRun(bestModel, intervals = intervals)
 	}
@@ -259,7 +340,7 @@ umxReduce.MxModelACE <- umxReduceACE
 #' @return - matrix of residuals
 #' @export
 #' @family Reporting functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -308,7 +389,7 @@ residuals.MxModel <- function(object, digits = 2, suppress = NULL, ...){
 #' @return - matrix of loadings
 #' @export
 #' @family Reporting functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 loadings <- function(x, ...) UseMethod("loadings")
 #' @export
 loadings.default <- function(x, ...) stats::loadings(x, ...) 
@@ -339,7 +420,7 @@ loadings.MxModel <- function(x, ...) {
 
 #' Get confidence intervals from a umx model
 #'
-#' Implements confidence interval function for OpenMx models.
+#' Implements confidence interval function for umx models.
 #' 
 #' Note: By default, requesting new CIs wipes the existing ones.
 #' To keep these, set wipeExistingRequests = FALSE.
@@ -360,8 +441,8 @@ loadings.MxModel <- function(x, ...) {
 #' @export
 #' @return - \code{\link{mxModel}}
 #' @family Reporting functions
-#' @seealso - \code{\link[stats]{confint}}, \code{\link{umxCI}}
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @seealso - \code{\link[stats]{confint}}, \code{\link{umxCI}} 
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -564,8 +645,8 @@ umxConfint <- function(object, parm = c("existing", "smart", "all", "or one or m
 #' @details If runCIs is FALSE, the function simply adds CIs to be computed and returns the model.
 #' @return - \code{\link{mxModel}}
 #' @family Reporting functions
-#' @seealso - \code{\link{mxCI}}, \code{\link{umxLabel}}, \code{\link{umxRAM}}
-#' @references - http://www.github.com/tbates/umx/
+#' @seealso - \code{\link[stats]{confint}}, \code{\link{umxConfint}}, \code{\link{umxCI}}, \code{\link{umxModify}}
+#' @references - https://www.github.com/tbates/umx/
 #' @export
 #' @examples
 #' require(umx)
@@ -670,7 +751,7 @@ umxCI <- function(model = NULL, which = c("ALL", NA, "list of your making"), rem
 #' @param ... Other parameters to control model summary
 #' @family Reporting Functions
 #' @family Core Modelling Functions
-#' \url{http://www.github.com/tbates/umx}
+#' \url{https://www.github.com/tbates/umx}
 #' @export
 umxSummary <- function(model, ...){
 	UseMethod("umxSummary", model)
@@ -725,9 +806,9 @@ umxSummary.default <- function(model, ...){
 #'
 #'  - Yu, C.Y. (2002). Evaluating cutoff criteria of model fit indices for latent variable models
 #'  with binary and continuous outcomes. University of California, Los Angeles, Los Angeles.
-#'  Retrieved from \url{http://www.statmodel.com/download/Yudissertation.pdf}
+#'  Retrieved from \url{https://www.statmodel.com/download/Yudissertation.pdf}
 #' 
-#' \url{http://tbates.github.io}
+#' \url{https://tbates.github.io}
 #' 
 #' @export
 #' @import OpenMx
@@ -957,7 +1038,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("raw",
 #' @family Twin Modeling Functions
 #' @family Reporting functions
 #' @seealso - \code{\link{umxACE}}, \code{\link{plot.MxModelACE}}, \code{\link{umxModify}}
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' require(umx)
 #' data(twinData)
@@ -1185,7 +1266,7 @@ umxSummary.MxModelACE <- umxSummaryACE
 #' @export
 #' @family Twin Modeling Functions
 #' @seealso - \code{\link{umxACEcov}} 
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' require(umx)
 #' data(twinData)
@@ -1386,7 +1467,7 @@ umxSummary.MxModelACEcov <- umxSummaryACEcov
 #' @export
 #' @family Twin Modeling Functions
 #' @seealso - \code{\link{umxCP}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
-#' @references - \url{http://www.github.com/tbates/umx}, \url{http://tbates.github.io}
+#' @references - \url{https://www.github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' \dontrun{
 #' require(umx)
@@ -1545,7 +1626,7 @@ umxSummary.MxModelCP <- umxSummaryCP
 #' @family Twin Modeling Functions
 #' @export
 #' @seealso - \code{\link{umxIP}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
-#' @references - \url{http://github.com/tbates/umx}, \url{http://tbates.github.io}
+#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' require(umx)
 #' data(GFF) # family function and wellbeing data
@@ -1664,7 +1745,7 @@ umxSummary.MxModelIP <- umxSummaryIP
 #' @family Twin Modeling Functions
 #' @export
 #' @seealso - \code{\link{umxGxE}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, and ACE models.
-#' @references - \url{https://github.com/tbates/umx}, \url{http://tbates.github.io}
+#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' # The total sample has been subdivided into a young cohort, 
 #' # aged 18-30 years, and an older cohort aged 31 and above.
@@ -1737,9 +1818,10 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' create a web table and open your default browser.
 #' (handy for getting tables into Word, and other text systems!)
 #' @param file file to write html too if report = "html" (defaults to "tmp.html")
+#' @param compareWeightedAIC Show the Wagenmakers AIC weighted comparison (default = FALSE)
 #' @family Reporting functions
 #' @seealso - \code{\link{mxCompare}}, \code{\link{umxSummary}}, \code{\link{umxRAM}},
-#' @references - \url{http://www.github.com/tbates/umx/}
+#' @references - \url{https://www.github.com/tbates/umx/}
 #' @export
 #' @examples
 #' require(umx)
@@ -1759,9 +1841,10 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' }
 #' m3 = umxModify(m2, update = "G_to_x3", name = "drop_path_2_x2_and_3")
 #' umxCompare(m1, c(m2, m3))
+#' umxCompare(m1, c(m2, m3), compareWeightedAIC = TRUE)
 #' umxCompare(c(m1, m2), c(m2, m3), all = TRUE)
-umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, report = c("markdown", "inline", "html", "report"), file = "tmp.html") {
-	report = match.arg(report)		
+umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, report = c("markdown", "inline", "html", "report"), compareWeightedAIC = FALSE, file = "tmp.html") {
+	report = match.arg(report)
 	if(	report == "report"){
 		message("inline-style report is being renamed to 'inline' instead of 'report'. Please change this for the future")
 		report = "inline"
@@ -1841,18 +1924,23 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 	} else {
 		umx_print(tablePub)
 	}
+	if(compareWeightedAIC){
+		modelList = c(base, comparison)
+		# get list of AICs
+		AIClist = c()
+		for (i in modelList) {
+			AIClist = c(AIClist, AIC(i))
+		}
+		whichBest = which.min(AIClist)
+		bestModel = modelList[[whichBest]]
+		message("The ", omxQuotes(bestModel$name), " model is the best fitting model according to AIC.")
+		# Probabilities according to AIC MuMIn::Weights (Wagenmakers et al https://www.ncbi.nlm.nih.gov/pubmed/15117008 )
+		aic.weights = round(Weights(AIClist), 2)
+		message("AIC weight-based  {Wagenmakers, 2004, 192-196} conditional probabilities of being the best model for ", 
+			omxQuotes(namez(modelList)), " respectively are: ", 
+			omxQuotes(aic.weights), " Using MuMIn::Weights(AIC()).")	
+	}
 	invisible(tablePub)
-	
-	# " em \u2013 dash"
-    # Delta (U+0394)
-    # &chi;
- 	# "Chi \u03A7"
-	# "chi \u03C7"
-	# if(export){
-	# 	fName= "Model.Fitting.xls"
-	# 	write.table(tableOut,fName, row.names = FALSE,sep = "\t", fileEncoding="UTF-8") # macroman UTF-8 UTF-16LE
-	# 	system(paste("open", fName));
-	# }
 }
 
 #' umxCI_boot
@@ -1888,8 +1976,8 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 #' 	m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
 #' 	umxCI_boot(m1, type = "par.expected")
 #'}
-#' @references - \url{http://openmx.ssri.psu.edu/thread/2598}
-#' Original written by \url{http://openmx.ssri.psu.edu/users/bwiernik}
+#' @references - \url{https://openmx.ssri.psu.edu/thread/2598}
+#' Original written by \url{https://openmx.ssri.psu.edu/users/bwiernik}
 #' @seealso - \code{\link{umxExpMeans}}, \code{\link{umxExpCov}}
 #' @family Reporting functions
 umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.observed", "empirical"), std = TRUE, rep = 1000, conf = 95, dat = FALSE, digits = 3) {
@@ -1997,7 +2085,7 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' @seealso - \code{\link{umx_set_plot_format}}, \code{\link{plot.MxModel}}, \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}}, \code{\link{umxPlotGxE}},
 #' @family Core Modelling Functions
 #' @family Plotting functions
-#' @references - \url{http://www.github.com/tbates/umx}, \url{https://en.wikipedia.org/wiki/DOT_(graph_description_language)}
+#' @references - \url{https://www.github.com/tbates/umx}, \url{https://en.wikipedia.org/wiki/DOT_(graph_description_language)}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -2147,7 +2235,7 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 #' @family Plotting functions
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @seealso - \code{\link{umxACE}}
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
 #' require(umx)
 #' data(twinData)
@@ -2241,7 +2329,7 @@ plot.MxModelACE <- umxPlotACE
 #' @family Plotting functions
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @seealso - \code{\link{umxACE}}
-#' @references - \url{http://tbates.github.io}
+#' @references - \url{https://tbates.github.io}
 #' @examples
 #' require(umx)
 #' # BMI ?twinData from Australian twins. 
@@ -2345,7 +2433,7 @@ plot.MxModelACEcov <- umxPlotACEcov
 #' @export
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @seealso - \code{\link{umxGxE}}
-#' @references - \url{http://tbates.github.io}
+#' @references - \url{https://tbates.github.io}
 #' @examples
 #' require(umx)
 #' data(twinData) 
@@ -2423,18 +2511,19 @@ plot.MxModelGxE <- umxPlotGxE
 #' @param means Whether to show means paths (defaults to FALSE)
 #' @param std Whether to standardize the model (defaults to TRUE)
 #' @param format = c("current", "graphviz", "DiagrammeR") 
+#' @param SEstyle report "b (se)" instead of b CI95[l, u] (Default = FALSE)
 #' @param ... Optional additional parameters
 #' @return - Optionally return the dot code
 #' @export
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @seealso - \code{\link{umxCP}}
 #' @family Plotting functions
-#' @references - \url{http://tbates.github.io}
+#' @references - \url{https://tbates.github.io}
 #' @examples
 #' \dontrun{
 #' plot(yourCP_Model) # no need to remember a special name: plot works fine!
 #' }
-umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE,  format = c("current", "graphviz", "DiagrammeR"), ...) {
+umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE,  format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, ...) {
 	if(!class(x) == "MxModelCP"){
 		stop("The first parameter of umxPlotCP must be a CP model, you gave me a ", class(x))
 	}
@@ -2503,7 +2592,7 @@ umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TR
 			# Convert address to [] address and look for a CI: not perfect, as CI might be label based?
 			# If the model already has CIs stashed umx_stash_CIs() then pointless and harmful.
 			# Also fails to understand not using _std?
-			CIstr = umx_APA_model_CI(model, cellLabel = thisParam, prefix = "top.", suffix = "_std", digits = digits)
+			CIstr = umx_APA_model_CI(model, cellLabel = thisParam, prefix = "top.", suffix = "_std", SEstyle = SEstyle, digits = digits)
 			if(is.na(CIstr)){
 				val = umx_round(parameterKeyList[thisParam], digits)
 			}else{
@@ -2545,19 +2634,20 @@ plot.MxModelCP <- umxPlotCP
 #' @param means Whether to show means paths (defaults to FALSE)
 #' @param std whether to standardize the model (defaults to TRUE)
 #' @param format = c("current", "graphviz", "DiagrammeR")
+#' @param SEstyle report "b (se)" instead of b CI95[l,u] (default = FALSE)
 #' @param ... Optional additional parameters
 #' @return - optionally return the dot code
 #' @export
 #' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @seealso - \code{\link{umxIP}}
 #' @family Plotting functions
-#' @references - \url{http://tbates.github.io}
+#' @references - \url{https://tbates.github.io}
 #' @examples
 #' \dontrun{
 #' plot(model)
 #' umxPlotIP(model, file = NA)
 #' }
-umxPlotIP  <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, format = c("current", "graphviz", "DiagrammeR"), ...) {
+umxPlotIP  <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, ...) {
 	format = match.arg(format)
 	if(!class(x) == "MxModelIP"){
 		stop("The first parameter of umxPlotIP must be an IP model, you gave me a ", class(x))
@@ -2605,7 +2695,7 @@ umxPlotIP  <- function(x = NA, file = "name", digits = 2, means = FALSE, std = T
 		if(!means & from == "one"){
 			# not adding means...
 		} else {
-			CIstr = umx_APA_model_CI(model, cellLabel = thisParam, prefix = "top.", suffix = "_std", digits = digits, verbose = F)
+			CIstr = umx_APA_model_CI(model, cellLabel = thisParam, prefix = "top.", suffix = "_std", digits = digits, SEstyle = SEstyle, verbose = FALSE)
 			if(is.na(CIstr)){
 				val = round(parameterKeyList[thisParam], digits)
 			}else{
@@ -2656,7 +2746,7 @@ plot.MxModelIP <- umxPlotIP
 #' @param decreasing How to sort (default = TRUE, decreasing)
 #' @seealso - \code{\link{mxMI}}
 #' @family Modify or Compare Models
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @export
 #' @examples
 #' require(umx)
@@ -2719,7 +2809,7 @@ umxMI <- function(model = NA, matrices = NA, full = TRUE, numInd = NA, typeToSho
 #' @param model The model containing variables from and to.
 #' @seealso - \code{\link{mxCheckIdentification}}, \code{\link{mxCompare}}
 #' @family Modify or Compare Models
-#' @references - http://www.github.com/tbates/umx/
+#' @references - https://www.github.com/tbates/umx/
 #' @export
 #' @examples
 #' \dontrun{
@@ -2739,8 +2829,8 @@ umxUnexplainedCausalNexus <- function(from, delta, to, model= NULL) {
 }
 
 umxConditionalsFromModel <- function(model, newData = NULL, returnCovs = FALSE, meanOffsets = FALSE) {
-	# original author: [Timothy Brick](http://www.github.com/tbates/umx/users/tbrick)
-	# [history](http://www.github.com/tbates/umx/thread/2076)
+	# original author: [Timothy Brick](https://www.github.com/tbates/umx/users/tbrick)
+	# [history](https://www.github.com/tbates/umx/thread/2076)
 	# Called by: umxUnexplainedCausalNexus
 	# TODO:  Special case for latent variables
 	expectation <- model$objective
@@ -2804,8 +2894,8 @@ umxConditionalsFromModel <- function(model, newData = NULL, returnCovs = FALSE, 
 umxComputeConditionals <- function(sigma, mu, current, onlyMean = FALSE) {
 	# Usage: umxComputeConditionals(model, newData)
 	# Result is a replica of the newData data frame with missing values and (if a RAM model) latent variables populated.
-	# original author: [Timothy Brick](http://www.github.com/tbates/umx/users/tbrick)
-	# [history](http://www.github.com/tbates/umx/thread/2076)
+	# original author: [Timothy Brick](https://www.github.com/tbates/umx/users/tbrick)
+	# [history](https://www.github.com/tbates/umx/thread/2076)
 	# called by umxConditionalsFromModel()
 	if(dim(mu)[1] > dim(mu)[2] ) {
 		mu <- t(mu)
@@ -3083,7 +3173,7 @@ parameters <- umx_parameters
 #' @export
 #' @seealso \code{\link{omxGetParameters}}, \code{\link{umx_parameters}}
 #' @family Reporting Functions
-#' @references - \url{http://www.github.com/tbates/umx}
+#' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -3145,7 +3235,7 @@ umxGetParameters <- function(inputTarget, regex = NA, free = NA, fetch = c("valu
 			theLabels = grep(regex, theLabels, perl = FALSE, value = TRUE) # return more detail
 		}
 		if(length(theLabels) == 0){
-			msg = "Found no matching labels!\n"
+			msg = paste0("Found no labels matching", omxQuotes(regex), "!\n")
 			if(anchored == TRUE){
 				msg = paste0(msg, "note: anchored regex to beginning of string and allowed only numeric follow:\"", regex, "\"")
 			}
@@ -3176,7 +3266,7 @@ umxGetParameters <- function(inputTarget, regex = NA, free = NA, fetch = c("valu
 #' @return - AIC value
 #' @seealso - \code{\link{AIC}}, \code{\link{umxCompare}}, \code{\link{logLik}}
 #' @family Reporting functions
-#' @references - \url{http://openmx.ssri.psu.edu/thread/931#comment-4858}
+#' @references - \url{https://openmx.ssri.psu.edu/thread/931#comment-4858}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -3208,8 +3298,8 @@ extractAIC.MxModel <- function(fit, scale, k, ...) {
 #' @return - expected covariance matrix
 #' @export
 #' @family Reporting functions
-#' @references - \url{http://openmx.ssri.psu.edu/thread/2598}
-#' Original written by \url{http://openmx.ssri.psu.edu/users/bwiernik}
+#' @references - \url{https://openmx.ssri.psu.edu/thread/2598}
+#' Original written by \url{https://openmx.ssri.psu.edu/users/bwiernik}
 #' @seealso - \code{\link{umxRun}}, \code{\link{umxCI_boot}}
 #' @examples
 #' require(umx)
@@ -3285,7 +3375,7 @@ vcov.MxModel <- umxExpCov
 #' @return - expected means
 #' @export
 #' @family Reporting functions
-#' @references - \url{http://openmx.ssri.psu.edu/thread/2598}
+#' @references - \url{https://openmx.ssri.psu.edu/thread/2598}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -3331,130 +3421,6 @@ umxExpMeans <- function(model, manifests = TRUE, latents = NULL, digits = NULL){
 }
 
 
-#' Get additional fit-indices for a model with umxFitIndices
-#'
-#' A list of fit indices. Originated in this thread: http://openmx.ssri.psu.edu/thread/765
-#' note: This is not a full-fat fit reporter. It is not robust across multi-group designs,
-#' definition variables. It is primarily designed to add less-often reported fit indices for 
-#' RAM models where reviewer 2 wants something other than CFA/TLI/RMSEA :-).
-#' 
-#' Fit information reported includes: N, deviance, N.parms, Chi, df, p.Chi, Chi.df, AICchi, AICdev, BCCchi, BCCdev, BICchi, BICdev, 
-#' CAICchi, CAICdev, RMSEA, SRMR, RMR, SMAR, MAR, SMAR.nodiag, MAR.nodiag, GFI, AGFI, PGFI, 
-#' NFI, RFI, IFI, NNFI.TLI, CFI, PRATIO, PNFI, PCFI, NCP, ECVIchi, ECVIdev, MECVIchi, MECVIdev, MFI, GH 
-#'
-#' Want more? File a report at github
-#' 
-#' @param model The \code{\link{mxModel}} for which you want fit indices.
-#' @param refModels Independence and saturated models. default mxRefModels(model, run = TRUE)
-#' @return Table of fit statistics
-#' @export
-#' @family Reporting functions
-#' @references - 
-#' @examples
-#' require(umx)
-#' data(demoOneFactor)
-#' latents  = c("G")
-#' manifests = names(demoOneFactor)
-#' m1 <- umxRAM("One Factor",
-#' 	data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-#' 	umxPath(latents, to = manifests),
-#' 	umxPath(var = manifests),
-#' 	umxPath(var = latents, fixedAt = 1)
-#' )
-#' umxFitIndices(m1)
-#' # And with raw data
-#' m1 <- umxRAM("m1", data = demoOneFactor,
-#' 	umxPath(latents, to = manifests),
-#' 	umxPath(v.m. = manifests),
-#' 	umxPath(v1m0 = latents)
-#' )
-#' umxFitIndices(m1)
-# Round to 3 places, and report as a markdown table
-#' umxAPA(umxFitIndices(m1), digits = 3)
-umxFitIndices <- function(model, refModels = mxRefModels(model, run = TRUE)) {
-	if(!umx_is_RAM(model)){
-		message("Not fully tested against non-RAM models...")
-	}
-	# refModels = mxRefModels(model, run = TRUE)
-	modelSummary = summary(model, refModels = refModels)
-	indepSummary = summary(refModels$Independence) #, refModels = refModels$Independence
-	N            = modelSummary$numObs
-	N.parms      = modelSummary$estimatedParameters
-	N.manifest   = length(model@manifestVars) # assumes RAM
-	deviance     = modelSummary$Minus2LogLikelihood
-	Chi          = modelSummary$Chi
-	df           = modelSummary$degreesOfFreedom
-	p.Chi        = 1 - pchisq(Chi, df)
-	Chi.df       = Chi/df
-	indep.chi    = indepSummary$Chi
-	indep.df     = indepSummary$degreesOfFreedom
-	q            = (N.manifest * (N.manifest + 1)) / 2
-	N.latent     = length(model@latentVars)
-	observed.cov = model$data$observed
-	if(model$data$type == "raw"){
-		observed.cov = cov(observed.cov)
-	}
-	observed.cor = cov2cor(observed.cov)
-
-	estimate.cov =	mxGetExpected(model, "covariance")
-	estimate.cor =  cov2cor(estimate.cov)
-	Id.manifest  =  diag(N.manifest)
-	residual.cov =  observed.cov - estimate.cov
-	residual.cor =  observed.cor - estimate.cor
-	F0       =  max((Chi-df)/(N-1),0)
-	NFI      =  (indep.chi - Chi)/indep.chi
-	NNFI.TLI =  (indep.chi - indep.df/df * Chi)/(indep.chi - indep.df)
-	PNFI     =  (df/indep.df) * NFI
-	RFI      =  1 - (Chi/df) / (indep.chi/indep.df)
-	IFI      =  (indep.chi - Chi)/(indep.chi - df)
-	CFI      =  min(1.0-(Chi - df)/(indep.chi - indep.df),1)
-	PRATIO   =  df/indep.df
-	PCFI     =  PRATIO*CFI
-	NCP      =  max((Chi - df), 0)
-	RMSEA    =  sqrt(F0/df) # need confidence intervals
-	MFI      =  exp(-0.5 * (Chi - df)/N)
-	GH       =  N.manifest / (N.manifest + 2 * ((Chi - df)/(N - 1)))
-	GFI      =  1 - (
-		 sum(diag(((solve(estimate.cor) %*% observed.cor)-Id.manifest) %*% ((solve(estimate.cor) %*% observed.cor) - Id.manifest))) /
-	    sum(diag((solve(estimate.cor) %*% observed.cor) %*% (solve(estimate.cor) %*% observed.cor)))
-	)
-	AGFI        =  1 - (q/df) * (1 - GFI)
-	PGFI        =  GFI * df/q
-	AICchi      =  Chi + 2 * N.parms
-	AICdev      =  deviance + 2 * N.parms
-	BCCchi      =  Chi + 2 * N.parms/(N - N.manifest - 2)
-	BCCdev      =  deviance + 2 * N.parms/(N - N.manifest - 2)
-	BICchi      =  Chi + N.parms * log(N)
-	BICdev      =  deviance + N.parms * log(N)
-	CAICchi     =  Chi + N.parms * (log(N) + 1)
-	CAICdev     =  deviance + N.parms * (log(N) + 1)
-	ECVIchi     =  1/N * AICchi
-	ECVIdev     =  1/N * AICdev
-	MECVIchi    =  1/BCCchi
-	MECVIdev    =  1/BCCdev
-	RMR         =  sqrt(mean((residual.cov^2)[lower.tri(residual.cov,diag=TRUE)]))
-	SRMR        =  sqrt(mean((residual.cor^2)[lower.tri(residual.cor,diag=TRUE)]))
-	MAR         =  mean(abs(residual.cov[lower.tri(residual.cor,diag=TRUE)]))
-	SMAR        =  mean(abs(residual.cor[lower.tri(residual.cor,diag=TRUE)]))
-	MAR.nodiag  =  mean(abs(residual.cov[lower.tri(residual.cov,diag=FALSE)]))
-	SMAR.nodiag =  mean(abs(residual.cor[lower.tri(residual.cor,diag=FALSE)]))
-	indices     =  rbind(N, deviance, N.parms, Chi, df, p.Chi, Chi.df,
-		AICchi, AICdev,
-		BCCchi, BCCdev,
-		BICchi, BICdev,
-		CAICchi, CAICdev,
-		RMSEA, SRMR, RMR,
-		SMAR, MAR,
-		SMAR.nodiag, MAR.nodiag,
-		GFI, AGFI, PGFI,
-		NFI, RFI, IFI,
-		NNFI.TLI, CFI,
-		PRATIO, PNFI, PCFI, NCP,
-		ECVIchi, ECVIdev, MECVIchi, MECVIdev, MFI, GH
-	)
-	return(indices)
-}
-
 # define generic RMSEA...
 #' Generic RMSEA function
 #'
@@ -3467,7 +3433,7 @@ umxFitIndices <- function(model, refModels = mxRefModels(model, run = TRUE)) {
 #' @return - RMSEA object containing value (and perhaps a CI)
 #' @export
 #' @family Reporting functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://openmx.ssri.psu.edu}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{https://openmx.ssri.psu.edu}
 RMSEA <- function(x, ci.lower, ci.upper, digits) UseMethod("RMSEA", x)
 
 #' RMSEA function for MxModels
@@ -3591,11 +3557,11 @@ umx_fun_mean_sd = function(x, na.rm = TRUE, digits = 2){
 #' 8 (n = 14) \tab 15.1 (2.56)\cr
 #' }
 #'
-#' @param formula The aggregation formula. e.g., DV ~ condition
-#' @param data frame to aggregate
-#' @param what function to use. Defaults to reporting "mean (sd)"
-#' @param digits for rounding of results
-#' @param kable Report as a formatted table? (Default is TRUE)
+#' @param formula The aggregation formula. e.g., DV ~ condition.
+#' @param data frame to aggregate.
+#' @param what function to use. Default reports "mean (sd)".
+#' @param digits to round results to.
+#' @param report Format for the table: Default is markdown.
 #' @return - table
 #' @export
 #' @family Reporting Functions
@@ -3614,8 +3580,8 @@ umx_fun_mean_sd = function(x, na.rm = TRUE, digits = 2){
 #' umx_aggregate(mpg ~ cyl, data = mtcars, what = "n")
 #' umx_aggregate(mpg ~ cyl, data = mtcars, what = function(x){sum(!is.na(x))})
 #' 
-#' # turn off table markdown table
-#' umx_aggregate(mpg ~ cyl, data = mtcars, kable = FALSE)
+#' # turn off markdown
+#' umx_aggregate(mpg ~ cyl, data = mtcars, report = "txt")
 #' 
 #' # ============================================
 #' # = More than one item on the left hand side =
@@ -3627,15 +3593,18 @@ umx_fun_mean_sd = function(x, na.rm = TRUE, digits = 2){
 #' \dontrun{
 #' umx_aggregate(cbind(moodAvg, mood) ~ condition, data = study1)
 #' }
-umx_aggregate <- function(formula = DV ~ condition, data = NA, what = c("mean_sd", "n"), digits = 2, kable = TRUE) {
+umx_aggregate <- function(formula = DV ~ condition, data = NA, what = c("mean_sd", "n"), digits = 2, report = c("markdown", "html", "txt")) {
+	report = match.arg(report)
+	what = umx_match.arg(what, c("mean_sd", "n"), check = FALSE)
 	# TODO Add more aggregating functions?
+	# 	output odds or odds ratios for binary?
 	# TODO: add summaryBy ability to handle more than var on the left hand side
 	# doBy::summaryBy(Sex_T1 + Sex_T2 ~ zyg, data = twinData, FUN = function(x) { round(c(
 	# 	n    = length(x),
 	# 	mean = mean(x, na.rm = T),
 	# 	sd   = sd(x, na.rm = T)), 2)
 	# })
-	# TODO: add "suffix" to umx_aggregate to make wide data long for summary as in genEpi_TwinDescriptives
+	# TODO: add "sep" to umx_aggregate to make wide data long for summary as in genEpi_TwinDescriptives
 	# genEpi_TwinDescriptives(mzData = twinData, dzData = NULL, selDVs = selDVs, groupBy = c("Sex_T1", "Sex_T2"), graph = F)
 	# genEpi_twinDescribe(twinData, varsToSummarize="Age", groupBy="Sex", suffix="_T")
 
@@ -3650,7 +3619,6 @@ umx_aggregate <- function(formula = DV ~ condition, data = NA, what = c("mean_sd
 	}
 	x_n = function(x){sum(!is.na(x))}
 
-	what = umx_match.arg(what, c("mean_sd", "n"), check = FALSE)
 	if(class(what)=="function"){
 		FUN = what
 	} else if(class(what) != "character"){
@@ -3664,9 +3632,12 @@ umx_aggregate <- function(formula = DV ~ condition, data = NA, what = c("mean_sd
 	n_s = aggregate(formula, FUN = x_n, data = data)
 	tmp = data.frame(tmp)
 	tmp[, 1] = paste0(as.character(tmp[, 1]), " (n = ", n_s[, 2], ")")
-	if(kable){
+	if(report == "html"){
+		umx_print(tmp, digits = digits, file = "tmp.html")
+	} else if(report == "markdown"){
 		return(knitr::kable(tmp))
-	} else {
+	}else{
+		# umx_print(tmp, digits = digits)
 		return(tmp)
 	}
 }
@@ -3768,9 +3739,11 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA) {
 #' @param digits How many digits to round output.
 #' @param use If obj is a data.frame, how to handle NAs (default = "complete")
 #' @param min For a p-value, the smallest value to report numerically (default .001)
-#' @param addComparison for a p-value, whether to add "</=" default (NA) adds "<" if necessary
-#' @param report what to return (default = markdown table). Use "html" to open a web table.
-#' @param lower whether to not show the lower triangle of correlations for a data.frame (Default TRUE)
+#' @param addComparison For a p-value, whether to add "</=" default (NA) adds "<" if necessary
+#' @param report What to return (default = 'markdown'). Use 'html' to open a web table.
+#' @param lower Whether to not show the lower triangle of correlations for a data.frame (Default TRUE)
+#' @param SEs Whether or not to show correlations with their SE (Default TRUE)
+#' @param means Whether or not to show means in a correlation table (Default TRUE)
 #' @param test If obj is a glm, which test to use to generate p-values options = "Chisq", "LRT", "Rao", "F", "Cp"
 #' @return - string
 #' @export
@@ -3830,22 +3803,36 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA) {
 #' x = cor.test(~ wt1 + wt2, data = mzData)
 #' umxAPA(x)
 #'
-umxAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", min = .001, addComparison = NA, report = c("markdown", "html"), lower = TRUE, test = c("Chisq", "LRT", "Rao", "F", "Cp")) {
+umxAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", min = .001, addComparison = NA, report = c("markdown", "html"), lower = TRUE, test = c("Chisq", "LRT", "Rao", "F", "Cp"), SEs = TRUE, means = TRUE) {
 	report = match.arg(report)
+	test = match.arg(test)
 	if("htest" == class(obj)[[1]]){
 		o = paste0("r = ", round(obj$estimate, digits), " [", round(obj$conf.int[1], digits), ", ", round(obj$conf.int[2], digits), "]")
 		o = paste0(o, ", t(", obj$parameter, ") = ", round(obj$statistic, digits),  ", p = ", umxAPA(obj$p.value))
 		return(o)
 	}else if("data.frame" == class(obj)[[1]]){
 		# Generate a summary of correlation and means
-		cor_table = umxHetCor(obj, ML = FALSE, use = use, treatAllAsFactor = FALSE, verbose = FALSE)
-		cor_table = umx_apply(round, cor_table, digits = digits) # round correlations
+		cor_table = umxHetCor(obj, ML = FALSE, use = use, treatAllAsFactor = FALSE, verbose = FALSE, std.err = SEs, return = "hetcor object")
+		# cor_table = x; digits = 2
+		# cor_table = umx_apply(FUN= round, of = cor_table, digits = digits) # round correlations
+		correlations = round(cor_table$correlations, digits)
+		if(SEs){
+			std.errors = round(cor_table$std.errors, digits)
+			correlations[] = paste0(as.character(correlations), " (", as.character(std.errors), ")")
+		}
+		cor_table = correlations
+
 		if(lower){
 			cor_table[upper.tri(cor_table)] = ""
 		}
-		mean_sd = umx_apply(umx_fun_mean_sd, obj)
-		output = data.frame(rbind(cor_table, mean_sd), stringsAsFactors = FALSE)
-		rownames(output)[length(rownames(output))] = "Mean (SD)"
+
+		if(means){
+			mean_sd = umx_apply(umx_fun_mean_sd, of = obj)
+			output  = data.frame(rbind(cor_table, mean_sd), stringsAsFactors = FALSE)
+			rownames(output)[length(rownames(output))] = "Mean (SD)"
+		} else {
+			output  = data.frame(cor_table, stringsAsFactors = FALSE)
+		}
 		if(report == "html"){
 			umx_print(output, digits = digits, file = "tmp.html")
 		} else {
@@ -3966,18 +3953,20 @@ summaryAPA <- umxAPA
 #' @param cellLabel the label of the cell to interrogate for a CI, e.g. "ai_r1c1"
 #' @param prefix The submodel to look in (i.e. "top.")
 #' @param suffix The suffix for algebras ("_std")
+#' @param SEstyle report "b (se)" instead of b CI95[l,u] (default = FALSE)
 #' @param digits = 2
 #' @param verbose = FALSE
-#' @return - the CI string, e.g. ".73[-.20,.98]"
+#' @return - the CI string, e.g. ".73[-.20, .98]" or .73(.10)
 #' @export
 #' @family Reporting Functions
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #' \dontrun{
 #' umx_APA_model_CI(fit_IP, cellLabel = "ai_r1c1", prefix = "top.", suffix = "_std")
 #' }
-umx_APA_model_CI <- function(model, cellLabel, prefix = "top.", suffix = "_std", digits = 2, verbose= FALSE){
+umx_APA_model_CI <- function(model, cellLabel, prefix = "top.", suffix = "_std", digits = 2, SEstyle = FALSE, verbose= FALSE){
 	# TODO umx_APA_model_CI add choice of separator for CI
+	#      stash this as a preference
 	# TODO alias umx_APA_model_CI to umx_get_CI
 	if(!umx_has_CIs(model)){
 		if(verbose){
@@ -4002,11 +3991,26 @@ umx_APA_model_CI <- function(model, cellLabel, prefix = "top.", suffix = "_std",
 			} else {
 				check = dimNoSuffix
 			}
-			APAstr = paste0(
+			if(SEstyle){
+				est = CIlist[check, "estimate"]
+				if(is.na(CIlist[check, "lbound"])){
+					# no lbound found: use ubound to form SE (SE not defined if ubound also NA :-(
+					DIFF = (CIlist[check, "ubound"] - est)
+				} else if (is.na(CIlist[check, "ubound"])){
+					# lbound, but no ubound: use lbound to form SE
+					DIFF = (est - CIlist[check, "lbound"])
+				}else{
+					# Both bounds present: average to get an SE
+					DIFF = mean(c( (CIlist[check, "ubound"] - est), (est - CIlist[check, "lbound"]) ))
+				}
+			   APAstr = paste0(round(est, digits), " (", round(DIFF/(1.96 * 2), digits), ")")
+			} else {
+			   APAstr = paste0(
 				umx_APA_pval(CIlist[check, "estimate"], min = -1, digits = digits), "[",
 				umx_APA_pval(CIlist[check, "lbound"], min = -1, digits = digits)  , ",",
 				umx_APA_pval(CIlist[check, "ubound"], min = -1, digits = digits)  , "]"
-			)
+			   )
+			}
 		    return(APAstr) 
 		}, warning = function(cond) {
 			if(verbose){

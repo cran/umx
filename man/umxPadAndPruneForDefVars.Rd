@@ -4,8 +4,8 @@
 \alias{umxPadAndPruneForDefVars}
 \title{umxPadAndPruneForDefVars}
 \usage{
-umxPadAndPruneForDefVars(df, varNames, defNames, suffixes, highDefValue = 99,
-  rm = c("drop_missing_def", "pad_with_mean"))
+umxPadAndPruneForDefVars(df, varNames, defNames, suffixes,
+  highDefValue = 99, rm = c("drop_missing_def", "pad_with_mean"))
 }
 \arguments{
 \item{df}{the dataframe to process}
@@ -34,7 +34,7 @@ df = umxPadAndPruneForDefVars(twinData, varNames = "ht", defNames = "wt", c("1",
 }
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
 Other Data Functions: \code{\link{umxCovData}},
@@ -50,3 +50,4 @@ Other Data Functions: \code{\link{umxCovData}},
   \code{\link{umx_reorder}}, \code{\link{umx_stack}},
   \code{\link{umx_swap_a_block}}, \code{\link{umx}}
 }
+\concept{Data Functions}

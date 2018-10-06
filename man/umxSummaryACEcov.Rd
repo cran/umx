@@ -7,8 +7,8 @@
 \usage{
 umxSummaryACEcov(model, digits = 2, file = getOption("umx_auto_plot"),
   returnStd = FALSE, extended = FALSE, showRg = FALSE, std = TRUE,
-  comparison = NULL, CIs = TRUE, zero.print = ".", report = c("1", "2",
-  "html"), ...)
+  comparison = NULL, CIs = TRUE, zero.print = ".", report = c("1",
+  "2", "html"), ...)
 }
 \arguments{
 \item{model}{a \code{\link{umxACEcov}} model to summarize}
@@ -57,7 +57,7 @@ stdFit = umxSummaryACE(m1, returnStd = TRUE);
 }
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
 - \code{\link{umxACEcov}}
@@ -77,3 +77,4 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxSummarySimplex}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }
+\concept{Twin Modeling Functions}

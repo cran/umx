@@ -22,7 +22,7 @@ umx_explode("", "dog") # "d" "o" "g"
 umx_explode(" ", "cats and dogs") # [1] "cats" "and"  "dogs"
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://php.net/manual/en/function.explode.php}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{http://php.net/manual/en/function.explode.php}
 }
 \seealso{
 Other String Functions: \code{\link{umx_explode_twin_names}},
@@ -32,3 +32,4 @@ Other String Functions: \code{\link{umx_explode_twin_names}},
   \code{\link{umx_trim}},
   \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
 }
+\concept{String Functions}

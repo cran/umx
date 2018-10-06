@@ -5,10 +5,10 @@
 \alias{umxSummary.MxModelGxE}
 \title{umxSummaryGxE}
 \usage{
-umxSummaryGxE(model = NULL, digits = 2, xlab = NA, location = "topleft",
-  separateGraphs = FALSE, file = getOption("umx_auto_plot"),
-  returnStd = NULL, std = NULL, reduce = FALSE, CIs = NULL,
-  report = c("markdown", "html"), ...)
+umxSummaryGxE(model = NULL, digits = 2, xlab = NA,
+  location = "topleft", separateGraphs = FALSE,
+  file = getOption("umx_auto_plot"), returnStd = NULL, std = NULL,
+  reduce = FALSE, CIs = NULL, report = c("markdown", "html"), ...)
 }
 \arguments{
 \item{model}{A fitted \code{\link{umxGxE}} model to summarize}
@@ -66,7 +66,7 @@ umxSummaryGxE(m1, separateGraphs = FALSE)
 }
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{http://tbates.github.io}
+- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 }
 \seealso{
 - \code{\link{umxGxE}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, and ACE models.
@@ -87,3 +87,4 @@ Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
   \code{\link{umxSummarySimplex}}, \code{\link{umx}},
   \code{\link{xmu_twin_check}}
 }
+\concept{Twin Modeling Functions}

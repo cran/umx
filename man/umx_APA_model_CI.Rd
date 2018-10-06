@@ -5,7 +5,7 @@
 \title{umx_APA_model_CI}
 \usage{
 umx_APA_model_CI(model, cellLabel, prefix = "top.", suffix = "_std",
-  digits = 2, verbose = FALSE)
+  digits = 2, SEstyle = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{model}{an \code{\link{mxModel}} to get CIs from}
@@ -18,10 +18,12 @@ umx_APA_model_CI(model, cellLabel, prefix = "top.", suffix = "_std",
 
 \item{digits}{= 2}
 
+\item{SEstyle}{report "b (se)" instead of b CI95[l,u] (default = FALSE)}
+
 \item{verbose}{= FALSE}
 }
 \value{
-- the CI string, e.g. ".73[-.20,.98]"
+- the CI string, e.g. ".73[-.20, .98]" or .73(.10)
 }
 \description{
 Look up CIs for free parameters in a model, and return as APA-formatted text string
@@ -32,17 +34,19 @@ umx_APA_model_CI(fit_IP, cellLabel = "ai_r1c1", prefix = "top.", suffix = "_std"
 }
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
 Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{tmx_is.identified}}, \code{\link{umxAPA}},
   \code{\link{umxEval}}, \code{\link{umxFactorScores}},
   \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umx_APA_pval}},
-  \code{\link{umx_aggregate}}, \code{\link{umx_names}},
-  \code{\link{umx_parameters}}, \code{\link{umx_print}},
+  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
+  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
+  \code{\link{umx_names}}, \code{\link{umx_parameters}},
+  \code{\link{umx_print}},
   \code{\link{umx_show_fit_or_comparison}},
   \code{\link{umx_show}}, \code{\link{umx_time}},
   \code{\link{umx}}
 }
+\concept{Reporting Functions}

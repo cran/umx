@@ -23,7 +23,7 @@ model = umx_standardize_CP(model)
 }
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
 Other zAdvanced Helpers: \code{\link{umx_merge_CIs}},
@@ -34,3 +34,4 @@ Other zAdvanced Helpers: \code{\link{umx_merge_CIs}},
   \code{\link{umx_standardize_Simplex}},
   \code{\link{umx_stash_CIs}}, \code{\link{umx}}
 }
+\concept{zAdvanced Helpers}

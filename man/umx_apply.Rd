@@ -4,22 +4,23 @@
 \alias{umx_apply}
 \title{umx_apply}
 \usage{
-umx_apply(FUN, of, by = "columns", ...)
+umx_apply(FUN, of, by = c("columns", "rows"), ...)
 }
 \arguments{
-\item{FUN}{The function to apply}
+\item{FUN}{The function to apply.}
 
-\item{of}{The dataframe to work with}
+\item{of}{The dataframe to work with.}
 
-\item{by}{What to apply the function to: columns or rows (default = "columns")}
+\item{by}{Apply the function to columns or to rows (default = "columns")}
 
-\item{...}{optional arguments to FUN, i.e., na.rm = T}
+\item{...}{optional arguments to FUN, e.g., na.rm = TRUE.}
 }
 \value{
 - object
 }
 \description{
-Tries to make apply more readable. Other functions to think of include
+Tries to make apply more readable. so "mean of x by columns", instead of "of x, by 2, mean"
+Other functions to think of include:
 \code{\link{cumsum}}, \code{\link{rowSums}}, \code{\link{colMeans}}, etc.
 }
 \examples{
@@ -28,7 +29,7 @@ umx_apply(mean, of = mtcars, by = "columns")
 umx_apply(mean, by = "rows", of = mtcars[1:3,], na.rm = TRUE)
 }
 \references{
-- \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
 - \code{\link{umx_aggregate}}
@@ -40,3 +41,4 @@ Other Miscellaneous Stats Helpers: \code{\link{reliability}},
   \code{\link{umx_round}}, \code{\link{umx_var}},
   \code{\link{umx}}
 }
+\concept{Miscellaneous Stats Helpers}

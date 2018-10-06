@@ -5,27 +5,26 @@
 \title{Reduce a GxE model.}
 \usage{
 umxReduceGxE(model, report = c("markdown", "inline", "html", "report"),
-  baseFileName = "tmp", ...)
+  baseFileName = "tmp_gxe", ...)
 }
 \arguments{
-\item{model}{an \code{\link{mxModel}} to reduce}
+\item{model}{An \code{\link{mxModel}} to reduce.}
 
-\item{report}{How to report the results. "html" = open in browser}
+\item{report}{How to report the results. "html" = open in browser.}
 
-\item{baseFileName}{(optional) custom filename for html output (defaults to "tmp")}
+\item{baseFileName}{(optional) custom filename for html output (defaults to "tmp").}
 
-\item{...}{Other parameters to control model summary}
+\item{...}{Other parameters to control model summary.}
 }
 \value{
--
+best model
 }
 \description{
-This function can perform model reduction for \code{\link{umxGxE}}, 
-testing dropping means-moderation, a`,c` & e`, as well as c & c`, a & a` etc.
-}
-\details{
+This function can perform model reduction for \link{umxGxE},
+testing dropping means-moderation, a\code{,c} & e\code{, as well as c & c}, a & a` etc.
+
 It reports the results in a table. Set the format of the table with
-\code{\link{umx_set_table_format}}()., or set `report` to "html" to open a
+\link{umx_set_table_format}. Or set \code{report} to "html" to open a
 table for pasting into a word processor.
 }
 \examples{
@@ -34,9 +33,15 @@ model = umxReduce(model)
 }
 }
 \references{
-- \url{http://tbates.github.io}
+\itemize{
+\item Wagenmakers, E.J., & Farrell, S. (2004). AIC model selection using Akaike weights.
+\emph{Psychonomic Bulletin and Review}, \strong{11}, 192-196. \href{https://doi.org/10.3758/BF03206482}{doi:}.
+}
 }
 \seealso{
+\code{\link{umxReduceACE}}, \code{\link{umxReduce}}
+
 Other Twin Reporting Functions: \code{\link{umxReduceACE}},
-  \code{\link{umx}}
+  \code{\link{umxReduce}}, \code{\link{umx}}
 }
+\concept{Twin Reporting Functions}

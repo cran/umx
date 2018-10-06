@@ -4,9 +4,9 @@
 \alias{umxLabel}
 \title{umxLabel: Add labels to a RAM model, matrix, or path}
 \usage{
-umxLabel(obj, suffix = "", baseName = NA, setfree = FALSE, drop = 0,
-  labelFixedCells = TRUE, jiggle = NA, boundDiag = NA, verbose = FALSE,
-  overRideExisting = FALSE, name = NULL)
+umxLabel(obj, suffix = "", baseName = NA, setfree = FALSE,
+  drop = 0, labelFixedCells = TRUE, jiggle = NA, boundDiag = NA,
+  verbose = FALSE, overRideExisting = FALSE, name = NULL)
 }
 \arguments{
 \item{obj}{An \code{\link{mxModel}} (RAM or matrix based), \code{\link{mxPath}}, or \code{\link{mxMatrix}}}
@@ -74,7 +74,7 @@ umxLabel(a, verbose = TRUE, overRideExisting = FALSE)
 umxLabel(a, verbose = TRUE, overRideExisting = TRUE)
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 Other Advanced Model Building Functions: \code{\link{umxJiggle}},
@@ -86,3 +86,4 @@ Other Advanced Model Building Functions: \code{\link{umxJiggle}},
   \code{\link{umx_get_bracket_addresses}},
   \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
 }
+\concept{Advanced Model Building Functions}

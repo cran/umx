@@ -5,7 +5,7 @@
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
 # 
-#        http://www.apache.org/licenses/LICENSE-2.0
+#        https://www.apache.org/licenses/LICENSE-2.0
 # 
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
@@ -69,7 +69,7 @@
 #' @family Super-easy helpers
 #' @export
 #' @seealso - \code{\link{factanal}}, \code{\link{mxFactorScores}}
-#' @references - \url{http://github.com/tbates/umx}
+#' @references - \url{https://github.com/tbates/umx}
 #' @examples
 #' \dontrun{
 #' myVars <- c("mpg", "disp", "hp", "wt", "qsec")
@@ -147,14 +147,17 @@ umxEFA <- function(x = NULL, factors = NULL, data = NULL, n.obs = NULL,
 		name = "EFA"
 	}
 
-	# What about for scores? Do we want std loadings in that case?...
+	# TODO: umxEFA scale data - What about for scores? Do we want std loadings in that case?...
 	data = umx_scale(data)
 	if(is.null(factors)){
 		stop("You need to request at least 1 latent factor, e.g.: factors = 4")
 	} else if( length(factors) == 1 && class(factors) == "numeric"){
 		factors = paste0("F", c(1:factors))
+	}else{
+		# factors is a list of factor names (we hope)
 	}
 	# TODO umxEFA: Adapt to input datatype, i.e., add cov handler
+	# umx_print(factors)
 	manifests <- names(data)
 	m1 <- umxRAM(model = name, data = data, autoRun = FALSE,
 		umxPath(factors, to = manifests, connect = "unique.bivariate"),
@@ -325,7 +328,7 @@ umxTwoStage <- function(formula, instruments, data, subset, weights, contrasts= 
 	latentErr <- paste0("e", allForm) # latentErr   <- c("eX", "eY")
 	umx_check_names(manifests, data = data, die = TRUE)
 
-	IVModel <- umxRAM("IV Model", data = mxData(data, type = "raw"),
+	IVModel <- umxRAM("IV Model", data = data,
 		# Causal and confounding paths
 		umxPath(inst , to = Xvars), # beta of SNP effect          :  X ~ b1 x inst
 		umxPath(Xvars, to = DV),    # Causal effect of Xvars on DV: DV ~ b2 x X

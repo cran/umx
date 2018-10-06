@@ -37,7 +37,7 @@ if(!umx_is_RAM(m1)){
 }
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 Other Test: \code{\link{umx_check_OS}},
@@ -55,3 +55,4 @@ Other Test: \code{\link{umx_check_OS}},
   \code{\link{umx_is_exogenous}},
   \code{\link{umx_is_ordered}}
 }
+\concept{Test}

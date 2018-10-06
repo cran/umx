@@ -82,10 +82,10 @@ m1 = umxCI(m1, "a_r1c1", run = "yes")
 }
 }
 \references{
-- http://www.github.com/tbates/umx/
+- https://www.github.com/tbates/umx/
 }
 \seealso{
-- \code{\link{mxCI}}, \code{\link{umxLabel}}, \code{\link{umxRAM}}
+- \code{\link[stats]{confint}}, \code{\link{umxConfint}}, \code{\link{umxCI}}, \code{\link{umxModify}}
 
 Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
@@ -103,3 +103,4 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }
+\concept{Reporting functions}

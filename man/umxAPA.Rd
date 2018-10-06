@@ -7,7 +7,8 @@
 \usage{
 umxAPA(obj, se = NULL, std = FALSE, digits = 2, use = "complete",
   min = 0.001, addComparison = NA, report = c("markdown", "html"),
-  lower = TRUE, test = c("Chisq", "LRT", "Rao", "F", "Cp"))
+  lower = TRUE, test = c("Chisq", "LRT", "Rao", "F", "Cp"),
+  SEs = TRUE, means = TRUE)
 }
 \arguments{
 \item{obj}{A model (e.g. \link{lm}, lme, glm, t-test), beta-value, or data.frame}
@@ -24,13 +25,17 @@ Finally, set se to the CI c(lower, upper), to back out the SE.}
 
 \item{min}{For a p-value, the smallest value to report numerically (default .001)}
 
-\item{addComparison}{for a p-value, whether to add "</=" default (NA) adds "<" if necessary}
+\item{addComparison}{For a p-value, whether to add "</=" default (NA) adds "<" if necessary}
 
-\item{report}{what to return (default = markdown table). Use "html" to open a web table.}
+\item{report}{What to return (default = 'markdown'). Use 'html' to open a web table.}
 
-\item{lower}{whether to not show the lower triangle of correlations for a data.frame (Default TRUE)}
+\item{lower}{Whether to not show the lower triangle of correlations for a data.frame (Default TRUE)}
 
 \item{test}{If obj is a glm, which test to use to generate p-values options = "Chisq", "LRT", "Rao", "F", "Cp"}
+
+\item{SEs}{Whether or not to show correlations with their SE (Default TRUE)}
+
+\item{means}{Whether or not to show means in a correlation table (Default TRUE)}
 }
 \value{
 - string
@@ -124,7 +129,8 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{tmx_is.identified}}, \code{\link{umxEval}},
   \code{\link{umxFactorScores}},
   \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umx_APA_model_CI}},
+  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
+  \code{\link{umx_APA_model_CI}},
   \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
   \code{\link{umx_names}}, \code{\link{umx_parameters}},
   \code{\link{umx_print}},
@@ -132,3 +138,4 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{umx_show}}, \code{\link{umx_time}},
   \code{\link{umx}}
 }
+\concept{Reporting Functions}

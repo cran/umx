@@ -34,7 +34,7 @@ note: The Hmisc package has a more robust function called rcorr
 umx_cor(myFADataRaw[1:8,])
 }
 \references{
-- \url{http://www.github.com/tbates/umx}
+- \url{https://www.github.com/tbates/umx}
 }
 \seealso{
 umxHetCor
@@ -46,3 +46,4 @@ Other Miscellaneous Stats Helpers: \code{\link{reliability}},
   \code{\link{umx_round}}, \code{\link{umx_var}},
   \code{\link{umx}}
 }
+\concept{Miscellaneous Stats Helpers}

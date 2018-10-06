@@ -47,15 +47,21 @@
 #' dzfData = subset(us_skinfold_data, zyg == 4)
 #' dzoData = subset(us_skinfold_data, zyg == 5)
 #'
-#' m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", autoRun=FALSE,
+#'# ============================
+#'# = run multivariate example =
+#'# ============================
+#' m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", autoRun = FALSE,
 #'		  mzmData = mzmData, dzmData = dzmData, 
 #'        mzfData = mzfData, dzfData = dzfData, 
-#'        dzoData = dzoData)
+#'        dzoData = dzoData
+#')
+#' 
+#' \dontrun{
 #' # m1 = mxRun(m1)
 #' # umxSummary(m1)
 #' # summary(m1)
 #' # summary(m1)$Mi
-#' 
+#' }
 umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfData, dzoData, sep = NA, A_or_C = c("A", "C"), autoRun = getOption("umx_auto_run"), optimizer = NULL){
 	# ================================
 	# = 1. Non-scalar Sex Limitation =
@@ -111,7 +117,8 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 
 	# Make Rao and Rco matrices 
 	if(A_or_C == "A"){
-			# Quantitative & Qualitative Sex Differences for A (Ra is Full, Rc is symm) (labels trimmed to ra at end)
+			# Quantitative & Qualitative Sex Differences for A (Ra is Full, Rc is symm)
+			# (labels trimmed to ra at end)
 			# # TODO Check Stand (symmetric with 1's on diagonal) OK (was Symm fixed diag@1)			
 			Rao = umxMatrix("Rao", "Full" , nrow = nVar, ncol = nVar, free = TRUE, values =  1, lbound = -1, ubound = 1)
 			Rco = umxMatrix("Rco", "Stand", nrow = nVar, ncol = nVar, free = TRUE, values = .4, lbound = -1, ubound = 1)
@@ -218,13 +225,16 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 	) # end model
 
 	# Non-scalar (full) sex-lim label tweaks
-	
 	if(A_or_C == "A"){
-		# (Rcf|Rcm|Rco) => "rc"
-		model = umxModify(model, regex = "^Rc[fmo](_.*)$", newlabels = "Rc\\1", autoRun=FALSE)
+		# convert (Rcf|Rcm|Rco) => "rc"		
+		if("^Rc[fmo](_.*)$" %in% umxGetParameters(model)){
+			model = umxModify(model, regex = "^Rc[fmo](_.*)$", newlabels = "Rc\\1", autoRun=FALSE)
+		}
 	}else if (A_or_C == "C"){
 		# (Raf|Ram|Rao) => "ra"
-		model = umxModify(model, regex = "^Ra[fmo](_.*)$", newlabels = "Ra\\1", autoRun=FALSE)
+		if("^Ra[fmo](_.*)$" %in% umxGetParameters(model)){
+			model = umxModify(model, regex = "^Ra[fmo](_.*)$", newlabels = "Ra\\1", autoRun=FALSE)
+		}
 	}
 
 	# Tests: equate means would be expMeanGm, expMeanGf, expMeanGo
@@ -280,7 +290,7 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 #' @family Twin Modeling Functions
 #' @family Reporting functions
 #' @seealso - \code{\link{umxACE}} 
-#' @references - \url{http://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
 #  # =============================================
 #  # = Run Qualitative Sex Differences ACE model =
@@ -319,7 +329,7 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 #' stdFit = umxSummarySexLim(m1, returnStd = TRUE);
 #' }
 umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
-	message("umxSummarySexLim is a new feature. If any desired stats are not presented, let me know what's missing")
+	message("umxSummarySexLim is a beta feature. Somethings are broken. If any desired stats are not presented, let me know what's missing")
 	report = match.arg(report)
 	# Depends on R2HTML::HTML
 	if(typeof(model) == "list"){ # call self recursively
@@ -338,28 +348,27 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 
 	if(std){
 		message("Standardized solution")
-		# cbind(Am/Vm, Cm/Vm, Em/Vm), dimnames = list(selDVs, colZm)),
+		# nb: VarsZm = cbind(Am/Vm, Cm/Vm, Em/Vm), dimnames = list(selDVs, colZm)),
+		# = nVar * nVar*3 = 1r * 3c for nVar = 1
 		tmpm = model$top$VarsZm$result
 		tmpf = model$top$VarsZf$result
-		Am = diag(tmpm[1:5, 1:nVar])
-		Cm = diag(tmpm[1:5, (nVar + 1):(nVar * 2)])
-		Em = diag(tmpm[1:5, (nVar * 2 + 1):(nVar * 3)])
-		Af = diag(tmpf[1:5, 1:nVar])
-		Cf = diag(tmpf[1:5, (nVar + 1):(nVar * 2)])
-		Ef = diag(tmpf[1:5, (nVar * 2 + 1):(nVar * 3)])
-		Estimates = data.frame(rbind(Am, Cm, Em, Af, Cf, Ef))
-		names(Estimates) = selDVs
-		umx_print(Estimates, digits = 2)
+		Am = diag(as.matrix(tmpm[1:nVar, 1:nVar]))
+		Cm = diag(as.matrix(tmpm[1:nVar, (nVar + 1):(nVar * 2)]))
+		Em = diag(as.matrix(tmpm[1:nVar, (nVar * 2 + 1):(nVar * 3)]))
+		Af = diag(as.matrix(tmpf[1:nVar, 1:nVar]))
+		Cf = diag(as.matrix(tmpf[1:nVar, (nVar + 1):(nVar * 2)]))
+		Ef = diag(as.matrix(tmpf[1:nVar, (nVar * 2 + 1):(nVar * 3)]))
+		Estimates = data.frame(cbind(Am, Cm, Em, Af, Cf, Ef))
 
 		tmpm = model$top$CorsZm$result
-		RAm = tmpm[1:5, 1:nVar]
-		RCm = tmpm[1:5, (nVar + 1):(nVar * 2)]
-		REm = tmpm[1:5, (nVar * 2 + 1):(nVar * 3)]
+		RAm = tmpm[1:nVar, 1:nVar]
+		RCm = tmpm[1:nVar, (nVar + 1):(nVar * 2)]
+		REm = tmpm[1:nVar, (nVar * 2 + 1):(nVar * 3)]
 
 		tmpf = model$top$CorsZf$result
-		RAf = tmpf[1:5, 1:nVar]
-		RCf = tmpf[1:5, (nVar + 1):(nVar * 2)]
-		REf = tmpf[1:5, (nVar * 2 + 1):(nVar * 3)]
+		RAf = tmpf[1:nVar, 1:nVar]
+		RCf = tmpf[1:nVar, (nVar + 1):(nVar * 2)]
+		REf = tmpf[1:nVar, (nVar * 2 + 1):(nVar * 3)]
 
 		message("Genetic Factor Correlations")
 		RAboth = RAm
@@ -381,17 +390,15 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 		# TODO add raw solution for sexlim
 	}
 
-
 	if(model$top$dzCr$values == .25){
-		colNames = c("a", "d", "e")
+		names(Estimates) = paste0(rep(c("a", "d", "e")), rep(c("m","f"), each = 3))
 	} else {
-		colNames = c("a", "c", "e")
+		# am cm em af cf ef
+		names(Estimates) = paste0(rep(c("a", "c", "e")), rep(c("m","f"), each = 3))
 	}
-	names(Estimates) = paste0(rep(colNames, each = nVar), rep(1:nVar));
 	Estimates = umx_print(Estimates, digits = digits, zero.print = zero.print)
 	if(report == "html"){
-		# depends on R2HTML::HTML
-		R2HTML::HTML(Estimates, file = "tmp.html", Border = 0, append = F, sortableDF = T); 
+		R2HTML::HTML(Estimates, file = "tmp.html", Border = 0, append = FALSE, sortableDF = TRUE); 
 		umx_open("tmp.html")
 	}
 	
@@ -493,7 +500,8 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 			# TODO turn plot of CI_Fit back on
 			# umxPlotACE(CI_Fit, file = file, std = FALSE)
 		} else {
-			umxPlotACE(model, file = file, std = std)
+			message("plot not implemented yet for sex lim")
+			# umxPlotACE(model, file = file, std = std)
 		}
 	}
 	if(returnStd) {

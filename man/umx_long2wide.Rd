@@ -21,11 +21,18 @@ umx_long2wide(data, famID = NA, twinID = NA, zygosity = NA,
 \item{passalong}{= Variables you wish to pass-through (keep, even though not twin vars)}
 }
 \value{
-- dataframe in wide format
+\itemize{
+\item dataframe in wide format
+}
 }
 \description{
-umx_long2wide merges on famID, for an unlimited number of twinIDs.
-Note: this assumes if zygosity or any passalong variables are NA in the first
+\code{umx_long2wide} merges on \code{famID}. Family members are ordered by \code{twinID}.
+
+twinID is equivalent to birthorder. Up to 10 twinIDs are allowed (family order).
+
+\emph{Note}: Not all data sets have an order column, but it is essential to rank subjects correctly.
+
+\emph{Note}: The functions assumes that if zygosity or any passalong variables are NA in the first
 family member, they are NA everywhere. i.e., it does not hunt for values that
 are present elsewhere to try and self-heal missing data.
 }
@@ -38,28 +45,37 @@ tmp$twinID1 = 1
 tmp$twinID2 = 2
 long = umx_wide2long(data = tmp, sep = "")
 #
+
 # OK. Now to demo long2wide...
+
 # Keeping all columns
 wide = umx_long2wide(data= long, famID= "fam", twinID= "twinID", zygosity= "zygosity")
-names(wide) # might want to rename vars like "part_T1" to "part" and delete T2 copy 
+names(wide) # some vars, like part, should have been passed along instead of made into "part_T1"
+
 # Just keep bmi and wt
-k = c("bmi", "wt")
 wide = umx_long2wide(data= long, famID= "fam", twinID= "twinID", 
-    zygosity= "zygosity", vars2keep = k)
+    zygosity= "zygosity", vars2keep = c("bmi", "wt"))
 names(wide)
+
 # "fam" "twinID" "zygosity" "bmi_T1" "wt_T1" "bmi_T2" "wt_T2"
+
 # Keep bmi and wt, and pass through 'cohort'
 wide = umx_long2wide(data= long, famID= "fam", twinID= "twinID", zygosity= "zygosity", 
-	vars2keep = k, passalong = "cohort")
+  vars2keep = c("bmi", "wt"), passalong = "cohort")
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{merge}}
+\itemize{
+\item \code{\link{merge}}
+}
 
 Other Twin Data functions: \code{\link{umx_make_TwinData}},
   \code{\link{umx_residualize}},
   \code{\link{umx_scale_wide_twin_data}},
   \code{\link{umx_wide2long}}, \code{\link{umx}}
 }
+\concept{Twin Data functions}

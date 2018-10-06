@@ -5,7 +5,8 @@
 \alias{vcov.MxModel}
 \title{Get the expected vcov matrix}
 \usage{
-umxExpCov(object, latents = FALSE, manifests = TRUE, digits = NULL, ...)
+umxExpCov(object, latents = FALSE, manifests = TRUE, digits = NULL,
+  ...)
 }
 \arguments{
 \item{object}{an \code{\link{mxModel}} to get the covariance matrix from}
@@ -41,8 +42,8 @@ vcov(m1)
 umxExpCov(m1, digits = 3)
 }
 \references{
-- \url{http://openmx.ssri.psu.edu/thread/2598}
-Original written by \url{http://openmx.ssri.psu.edu/users/bwiernik}
+- \url{https://openmx.ssri.psu.edu/thread/2598}
+Original written by \url{https://openmx.ssri.psu.edu/users/bwiernik}
 }
 \seealso{
 - \code{\link{umxRun}}, \code{\link{umxCI_boot}}
@@ -63,3 +64,4 @@ Other Reporting functions: \code{\link{RMSEA.MxModel}},
   \code{\link{umx_drop_ok}},
   \code{\link{umx_standardize_RAM}}
 }
+\concept{Reporting functions}

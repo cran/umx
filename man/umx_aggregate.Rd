@@ -4,19 +4,20 @@
 \alias{umx_aggregate}
 \title{Convenient formula-based cross-tabs & built-in summary functions}
 \usage{
-umx_aggregate(formula = DV ~ condition, data = NA, what = c("mean_sd",
-  "n"), digits = 2, kable = TRUE)
+umx_aggregate(formula = DV ~ condition, data = NA,
+  what = c("mean_sd", "n"), digits = 2, report = c("markdown",
+  "html", "txt"))
 }
 \arguments{
-\item{formula}{The aggregation formula. e.g., DV ~ condition}
+\item{formula}{The aggregation formula. e.g., DV ~ condition.}
 
-\item{data}{frame to aggregate}
+\item{data}{frame to aggregate.}
 
-\item{what}{function to use. Defaults to reporting "mean (sd)"}
+\item{what}{function to use. Default reports "mean (sd)".}
 
-\item{digits}{for rounding of results}
+\item{digits}{to round results to.}
 
-\item{kable}{Report as a formatted table? (Default is TRUE)}
+\item{report}{Format for the table: Default is markdown.}
 }
 \value{
 - table
@@ -51,8 +52,8 @@ umx_aggregate(mpg ~ cyl, data = mtcars)
 umx_aggregate(mpg ~ cyl, data = mtcars, what = "n")
 umx_aggregate(mpg ~ cyl, data = mtcars, what = function(x){sum(!is.na(x))})
 
-# turn off table markdown table
-umx_aggregate(mpg ~ cyl, data = mtcars, kable = FALSE)
+# turn off markdown
+umx_aggregate(mpg ~ cyl, data = mtcars, report = "txt")
 
 # ============================================
 # = More than one item on the left hand side =
@@ -75,10 +76,12 @@ Other Reporting Functions: \code{\link{loadings.MxModel}},
   \code{\link{tmx_is.identified}}, \code{\link{umxAPA}},
   \code{\link{umxEval}}, \code{\link{umxFactorScores}},
   \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umx_APA_model_CI}},
+  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
+  \code{\link{umx_APA_model_CI}},
   \code{\link{umx_APA_pval}}, \code{\link{umx_names}},
   \code{\link{umx_parameters}}, \code{\link{umx_print}},
   \code{\link{umx_show_fit_or_comparison}},
   \code{\link{umx_show}}, \code{\link{umx_time}},
   \code{\link{umx}}
 }
+\concept{Reporting Functions}
