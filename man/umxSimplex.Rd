@@ -2,12 +2,13 @@
 % Please edit documentation in R/umx_build_umxSimplex.R
 \name{umxSimplex}
 \alias{umxSimplex}
-\title{Build and run a simplex twin model}
+\title{Build and run a simplex twin model (not ready for use!)}
 \usage{
 umxSimplex(name = "simplex", selDVs, dzData, mzData, sep = NULL,
   equateMeans = TRUE, dzAr = 0.5, dzCr = 1, addStd = TRUE,
   addCI = TRUE, autoRun = getOption("umx_auto_run"),
-  optimizer = NULL)
+  tryHard = c("no", "mxTryHard", "mxTryHardOrdinal",
+  "mxTryHardWideSearch"), optimizer = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "simplex")}
@@ -18,7 +19,7 @@ umxSimplex(name = "simplex", selDVs, dzData, mzData, sep = NULL,
 
 \item{mzData}{The MZ dataframe}
 
-\item{sep}{The string preceeding the final numeric twin identifiier (often "_T")
+\item{sep}{The string preceding the final numeric twin identifier (often "_T")
 Combined with selDVs to form the full var names, i.e., just "dep" --> c("dep_T1", "dep_T2")}
 
 \item{equateMeans}{Whether to equate the means across twins (defaults to TRUE).}
@@ -31,7 +32,9 @@ Combined with selDVs to form the full var names, i.e., just "dep" --> c("dep_T1"
 
 \item{addCI}{Whether to add the interval requests for CIs (default = TRUE).}
 
-\item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned).}
+\item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+
+\item{tryHard}{optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")}
 
 \item{optimizer}{Optionally set the optimizer (default NULL does nothing).}
 }
@@ -41,14 +44,11 @@ Combined with selDVs to form the full var names, i.e., just "dep" --> c("dep_T1"
 }
 }
 \description{
-Make a 2-group simplex twin model
 The simplex model provides a powerful tool for theory-based decomposition of genetic
-and environmental differences.
+and environmental differences. \code{umxSimplex} makes a 2-group simplex twin model.
 }
 \details{
-\strong{Simplex path diagram}:
-
-\figure{simplex.png}
+\strong{This code is beta} quality: \strong{not} for publication use. It will be completed by Boulder 2020.
 
 The simplex model decomposes phenotypic variance
 into Additive genetic, unique environmental (E) and, optionally, either
@@ -61,7 +61,12 @@ In the simplex model, these influences are modeled as a combination of:
 \item Influences specific to a single time (\code{as}, \code{cs}, \code{es}).
 }
 
-These combine to explain the causes of variance in the phenotype (see Figure above).
+These combine to explain the causes of variance in the phenotype (see Figure).
+
+\strong{Simplex path diagram}:
+
+\if{html}{\figure{simplex.png}{options: width="50\%" alt="Figure: simplex.png"}}
+\if{latex}{\figure{simplex.pdf}{options: width=7cm}}
 
 \strong{Data Input}
 Currently, the umxSimplex function accepts only raw data.
@@ -101,17 +106,24 @@ Thus, in a model where the means for twin 1 and twin 2 had been equated
 \code{m1$top$expMean$labels[1,4:6] = c("expMean_r1c4", "expMean_r1c5", "expMean_r1c6")}
 }
 \examples{
+\dontrun{
 data(iqdat)
-mzData <- subset(iqdat, zygosity == "MZ")
-dzData <- subset(iqdat, zygosity == "DZ")
-nTimePoints = 4 # Number of time points
-baseVarNames = paste0("IQ_age", 1:nTimePoints)
-# IQ_age1 -> IQ_age1_T1, IQ_age1_T2,  etc.
-m1 = umxSimplex(selDVs = baseVarNames, sep = "_T", dzData = dzData, mzData = mzData)
+mzData = subset(iqdat, zygosity == "MZ")
+dzData = subset(iqdat, zygosity == "DZ")
+baseVars = c("IQ_age1", "IQ_age2", "IQ_age3", "IQ_age4")
+m1= umxSimplex(selDVs= baseVars, dzData= dzData, mzData= mzData, sep= "_T", tryHard= "mxTryHard")
+
 umxSummary(m1)
 parameters(m1, patt = "^s")
 m2 = umxModify(m1, regex = "as_r1c1", name = "no_as", comp = TRUE)
 umxCompare(m1, m2)
+
+# =============================
+# = Test a 3 time-point model =
+# =============================
+m1 = umxSimplex(selDVs = paste0("IQ_age", 1:3), 
+			dzData = dzData, mzData = mzData, sep = "_T", tryHard = "mxTryHard")
+}
 }
 \references{
 \itemize{
@@ -124,12 +136,13 @@ umxCompare(m1, m2)
 }
 
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEv}},
-  \code{\link{umxACE}}, \code{\link{umxCPold}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
-  \code{\link{umxIPnew}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACEcov}}, \code{\link{umxACEnew}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCPold}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
+  \code{\link{umxGxE}}, \code{\link{umxIPnew}},
+  \code{\link{umxIP}}, \code{\link{umxSexLim}},
+  \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxEbiv}},

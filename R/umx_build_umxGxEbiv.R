@@ -16,7 +16,7 @@
 #' ![](GxEbiv.png)
 #' @param name The name of the model (defaults to "GxEbiv")
 #' @param selDVs The dependent variable (e.g. IQ)
-#' @param selDefs The definition variable (e.g. socio economic status)
+#' @param selDefs The definition variable (e.g. socioeconomic status)
 #' @param sep Expand variable base names, i.e., "_T" makes var -> var_T1 and var_T2
 #' @param dzData The DZ dataframe containing the Twin 1 and Twin 2 DV and moderator (4 columns)
 #' @param mzData The MZ dataframe containing the Twin 1 and Twin 2 DV and moderator (4 columns)
@@ -24,6 +24,7 @@
 #' @param lboundM If !NA, then lbound the moderators at this value (default = NA)
 #' @param dropMissingDef Whether to automatically drop missing def var rows for the user (gives a warning) default = FALSE
 #' @param autoRun Whether to run the model, and return that (default), or just to create it and return without running.
+#' @param tryHard optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
 #' @param optimizer Optionally set the optimizer (default NULL does nothing)
 #' @return - GxEbiv \code{\link{mxModel}}
 #' @export
@@ -60,7 +61,7 @@
 #' # TODO: teach umxReduce to test all relevant hypotheses for umxGxEbiv
 #' umxReduce(m1)
 #' }
-umxGxEbiv <- function(name = "GxEbiv", selDVs, selDefs, dzData, mzData, sep = NULL, lboundACE = NA, lboundM = NA, dropMissingDef = FALSE, autoRun = getOption("umx_auto_run"), optimizer = NULL) {
+umxGxEbiv <- function(name = "GxEbiv", selDVs, selDefs, dzData, mzData, sep = NULL, lboundACE = NA, lboundM = NA, dropMissingDef = FALSE, autoRun = getOption("umx_auto_run"), tryHard = c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL) {
 	nSib = 2;
 	# =================
 	# = Set optimizer =
@@ -280,26 +281,13 @@ umxGxEbiv <- function(name = "GxEbiv", selDVs, selDefs, dzData, mzData, sep = NU
 		model = omxSetParameters(model, labels = c('am_r1c1', 'cm_r1c1', 'em_r1c1'), lbound = lboundM)
 	}
 	model = as(model, "MxModelGxEbiv")
-	if(autoRun){
-		tryCatch({
-			model = mxRun(model)
-			umxSummary(model)
-			# TODO allow refModels and estimate control? 
-			# umxSummary(model, refModels = refModels, showEstimates = showEstimates)
-		}, warning = function(w) {
-			message("Warning incurred trying to run or summarize the model")
-			message(w)
-		}, error = function(e) {
-			message("Error incurred trying to run or summarize model")
-			message(e)
-		})
-	}
+	model = xmu_safe_run_summary(model, autoRun = autoRun, tryHard = tryHard)
 	invisible(model)
 }
 
 #' Summarize a bivariate GxE twin model
 #'
-#' umxSummaryGxEbiv summarize a Moderation model, as returned by \code{\link{umxGxEbiv}}.
+#' umxSummaryGxEbiv summarizes a bivariate moderation model, as returned by \code{\link{umxGxEbiv}}.
 #'
 #' @aliases umxSummary.MxModelGxEbiv
 #' @param model A fitted \code{\link{umxGxEbiv}} model to summarize

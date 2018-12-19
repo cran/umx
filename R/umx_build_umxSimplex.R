@@ -1,15 +1,11 @@
-# https://ibg.colorado.edu/dokuwiki/doku.php?id=workshop:2018:cdrom
-
-#' Build and run a simplex twin model
+#' Build and run a simplex twin model (not ready for use!)
 #' 
-#' Make a 2-group simplex twin model
 #' The simplex model provides a powerful tool for theory-based decomposition of genetic
-#' and environmental differences.
+#' and environmental differences. `umxSimplex` makes a 2-group simplex twin model. 
+#' 
+#' **This code is beta** quality: **not** for publication use. It will be completed by Boulder 2020.
 #' 
 #' @details
-#' **Simplex path diagram**:
-#' 
-#' \figure{simplex.png}
 #' 
 #' The simplex model decomposes phenotypic variance
 #' into Additive genetic, unique environmental (E) and, optionally, either
@@ -20,8 +16,13 @@
 #' * Influences transmitted from previous time (`at`, `ct`, and `et` matrices).
 #' * Influences specific to a single time (`as`, `cs`, `es`).
 #' 
-#' These combine to explain the causes of variance in the phenotype (see Figure above).
+#' These combine to explain the causes of variance in the phenotype (see Figure).
 #' 
+#' **Simplex path diagram**:
+#' 
+#' \if{html}{\figure{simplex.png}{options: width="50\%" alt="Figure: simplex.png"}}
+#' \if{latex}{\figure{simplex.pdf}{options: width=7cm}}
+#'
 #' **Data Input**
 #' Currently, the umxSimplex function accepts only raw data.
 #' 
@@ -63,14 +64,15 @@
 #' @param selDVs The BASENAMES of the variables i.e., c(`obese`), not c(`obese_T1`, `obese_T2`)
 #' @param dzData The DZ dataframe
 #' @param mzData The MZ dataframe
-#' @param sep The string preceeding the final numeric twin identifiier (often "_T")
+#' @param sep The string preceding the final numeric twin identifier (often "_T")
 #' Combined with selDVs to form the full var names, i.e., just "dep" --> c("dep_T1", "dep_T2")
 #' @param equateMeans Whether to equate the means across twins (defaults to TRUE).
 #' @param dzAr The DZ genetic correlation (default = .5. Vary to examine assortative mating).
 #' @param dzCr The DZ "C" correlation (defaults = 1. To make an ADE model, set = .25).
 #' @param addStd Whether to add the algebras to compute a std model (default = TRUE).
 #' @param addCI Whether to add the interval requests for CIs (default = TRUE).
-#' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned).
+#' @param autoRun Whether to run the model, and return that (default), or just to create it and return without running.
+#' @param tryHard optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
 #' @param optimizer Optionally set the optimizer (default NULL does nothing).
 #' @return - \code{\link{mxModel}}
 #' @export
@@ -78,72 +80,77 @@
 #' @seealso - \code{\link{umxACE}()} for more examples of twin modeling, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
 #' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
+#' \dontrun{
 #' data(iqdat)
-#' mzData <- subset(iqdat, zygosity == "MZ")
-#' dzData <- subset(iqdat, zygosity == "DZ")
-#' nTimePoints = 4 # Number of time points
-#' baseVarNames = paste0("IQ_age", 1:nTimePoints)
-#' # IQ_age1 -> IQ_age1_T1, IQ_age1_T2,  etc.
-#' m1 = umxSimplex(selDVs = baseVarNames, sep = "_T", dzData = dzData, mzData = mzData)
+#' mzData = subset(iqdat, zygosity == "MZ")
+#' dzData = subset(iqdat, zygosity == "DZ")
+#' baseVars = c("IQ_age1", "IQ_age2", "IQ_age3", "IQ_age4")
+#' m1= umxSimplex(selDVs= baseVars, dzData= dzData, mzData= mzData, sep= "_T", tryHard= "mxTryHard")
+#' 
 #' umxSummary(m1)
 #' parameters(m1, patt = "^s")
 #' m2 = umxModify(m1, regex = "as_r1c1", name = "no_as", comp = TRUE)
 #' umxCompare(m1, m2)
+#' 
+#' # =============================
+#' # = Test a 3 time-point model =
+#' # =============================
+#' m1 = umxSimplex(selDVs = paste0("IQ_age", 1:3), 
+#' 			dzData = dzData, mzData = mzData, sep = "_T", tryHard = "mxTryHard")
+#' }
 #' @md
-umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equateMeans = TRUE, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, autoRun = getOption("umx_auto_run"), optimizer = NULL) {
-	nSib   = 2
-	xmu_twin_check(selDVs=selDVs, dzData = dzData, mzData = mzData, optimizer = optimizer, sep = sep, nSib = nSib)
+umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equateMeans = TRUE, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, autoRun = getOption("umx_auto_run"), tryHard = c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL) {
+	message("This is beta code - will be ready for Boulder 2020")
+	nSib = 2
+	xmu_twin_check(selDVs = selDVs, dzData = dzData, mzData = mzData, enforceSep = TRUE, sep = sep, nSib = nSib, optimizer = optimizer)
+	nVar = length(selDVs) # enforce sep means these are known to be base names
 	# Expand var names
-	selDVs = umx_paste_names(selDVs, sep = sep, suffixes = 1:2)
-	nVar   = length(selDVs)/nSib
+	selVars = umx_paste_names(selDVs, sep = sep, suffixes = 1:2)
 
 	dataType = umx_is_cov(dzData)
 	if(dataType != "raw") {
 		stop("Simplex only works with raw data at present. You offered up ", omxQuotes(dataType), " data...")
 	}else{
 		# Drop any unused columns from mzData and dzData
-		umx_check_names(selDVs, mzData)
-		umx_check_names(selDVs, dzData)
-		mzData = mzData[, selDVs]
-		dzData = dzData[, selDVs]
+		umx_check_names(selVars, mzData)
+		umx_check_names(selVars, dzData)
+		mzData = mzData[, selVars]
+		dzData = dzData[, selVars]
 	}
 
-
 	# ==================================
-	# = create start values and labels =
+	# = Create start values and labels =
 	# ==================================
-	DZMeans = umx_apply(mean, of = dzData[,selDVs], by = "columns", na.rm = TRUE)
-	MZMeans = umx_apply(mean, of = mzData[,selDVs], by = "columns", na.rm = TRUE)
-	grandMeans <- colMeans(rbind(MZMeans, DZMeans), na.rm = TRUE) # Starting values for the means
-	if(equateMeans){
-		meanLabels = paste0("mean", selDVs[1:nVar])
-		meanLabels = c(meanLabels, meanLabels)
-		meanStarts = colMeans(rbind(grandMeans[1:nVar], grandMeans[(nVar+1):(nVar*2)]), na.rm = TRUE)
-		meanStarts = c(meanStarts, meanStarts)
-	} else {
-		meanLabels = paste0("mean", selDVs)
-		meanStarts = grandMeans
-	}
-
+	# mzData <- subset(iqdat, zygosity == "MZ")[,-1]
+	# dzData <- subset(iqdat, zygosity == "DZ")[,-1]
+	# nVar = 4
+	tmp = xmu_starts(mzData= mzData, dzData= dzData, selVars= selVars, nSib= nSib, varForm= "Cholesky", divideBy = 3, equateMeans = equateMeans)
+	varStarts  = tmp$varStarts
+	meanStarts = tmp$meanStarts
+	meanLabels = tmp$meanLabels
+	
 	model = mxModel(name,
-		mxModel("top",
-		# TODO 
 		# 1. replace hard-coded start values in "[ace][tsi]"
-		# 2. should 'ei' all be fixed at zero?
-		# better starts for t, s, an i matrices... currently hard coded for IQ!
-			# Transmitted Components for "SA", "SC" and "SE"
-			umxMatrix('at', 'Diag', nrow = nVar, ncol = nVar, free = TRUE , values = c(100,  5,  5,  5)),
-			umxMatrix('ct', 'Diag', nrow = nVar, ncol = nVar, free = TRUE , values = c( 70, 10, 10, 10)),
-			umxMatrix('et', 'Diag', nrow = nVar, ncol = nVar, free = FALSE, values = 0),
-			# Te (residuals) all values equated by label, except E
-			umxMatrix('as', 'Diag', nrow = nVar, ncol = nVar, free = TRUE, labels = "as_r1c1", values = 2),
-			umxMatrix('cs', 'Diag', nrow = nVar, ncol = nVar, free = TRUE, labels = "cs_r1c1", values = 5),
-			umxMatrix('es', 'Diag', nrow = nVar, ncol = nVar, free = TRUE, values = 50),
+		# 	t -> 0 (except first 1) DONE
+		# 	s -> 0 for A and C, es = var*1/3
+		#   i -> 0 var*1/3 in each of A,C. ei@0
+		mxModel("top",
+			# Start transmitted components at zero (except first 1)(strong positive definite solution @mikeneale)
+			umxMatrix('at', 'Diag', nrow = nVar, ncol = nVar, free = TRUE , values = c(varStarts[1], rep(0, nVar-1))),
+			umxMatrix('ct', 'Diag', nrow = nVar, ncol = nVar, free = TRUE , values = c(varStarts[1], rep(0, nVar-1))),
+			umxMatrix('et', 'Diag', nrow = nVar, ncol = nVar, free = FALSE, values = 0.0),
+
 			# Innovations (diag, but start 1-row down)
-			xmu_simplex_corner(umxMatrix('ai', 'Full', nrow = nVar, ncol = nVar), start = .9),
-			xmu_simplex_corner(umxMatrix('ci', 'Full', nrow = nVar, ncol = nVar), start = .8),
+			xmu_simplex_corner(umxMatrix('ai', 'Full', nrow = nVar, ncol = nVar), start = varStarts[-1]),
+			xmu_simplex_corner(umxMatrix('ci', 'Full', nrow = nVar, ncol = nVar), start = varStarts[-1]),
 			umxMatrix('ei', 'Full', nrow = nVar, ncol = nVar, free = FALSE, values = 0.0),
-			# TODO ei fixed@zero?
+			# TODO check ei fixed@zero?
+
+			# Residuals: all values equated by label, except E
+			umxMatrix('as', 'Diag', nrow = nVar, ncol = nVar, free = TRUE, labels = "as_r1c1", values = 0),
+			umxMatrix('cs', 'Diag', nrow = nVar, ncol = nVar, free = TRUE, labels = "cs_r1c1", values = 0),
+			umxMatrix('es', 'Diag', nrow = nVar, ncol = nVar, free = TRUE, values = varStarts),
+
 			umxMatrix('I', 'Iden', nrow = nVar, ncol = nVar),
 			mxAlgebra(name= 'Iai', solve(I - ai)),
 			mxAlgebra(name= 'Ici', solve(I - ci)),
@@ -161,12 +168,12 @@ umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equ
 		),
 		mxModel("MZ",
 			mxData(mzData, type = "raw"),
-			mxExpectationNormal("top.expCovMZ", means = "top.means", dimnames = selDVs),  
+			mxExpectationNormal("top.expCovMZ", means = "top.means", dimnames = selVars),  
 			mxFitFunctionML()
 		),
 		mxModel("DZ",
 			mxData(dzData, type = "raw"),
-			mxExpectationNormal("top.expCovDZ", means = "top.means", dimnames =selDVs),
+			mxExpectationNormal("top.expCovDZ", means = "top.means", dimnames =selVars),
 			mxFitFunctionML()
 		),
 		mxFitFunctionMultigroup(c("MZ", "DZ"))
@@ -175,11 +182,7 @@ umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equ
 	# Just trundle through and make sure values with the same label have the same start value... means for instance.
 	model = omxAssignFirstParameters(model) 
 	model = as(model, "MxModelSimplex")
-
-	if(autoRun){
-		model = mxRun(model)
-		umxSummary(model)
-	}
+	model = xmu_safe_run_summary(model, autoRun = autoRun, tryHard = tryHard)
 	return(model)
 } # end umxSimplex
 
@@ -189,15 +192,7 @@ umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equ
 #' optionally show the Rg (genetic and environmental correlations), and show confidence intervals. the report parameter allows
 #' drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
 #'
-#' See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
-#' 
-#' View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModelACE}}.
-#' 
-#' View documentation on the IP model subclass here: \code{\link{umxSummary.MxModelIP}}.
-#' 
-#' View documentation on the CP model subclass here: \code{\link{umxSummary.MxModelCP}}.
-#' 
-#' View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModelGxE}}.
+#' See documentation for other umx models here: \code{\link{umxSummary}}.
 #' 
 #' @aliases umxSummary.MxModelSimplex
 #' @param model an \code{\link{mxModel}} to summarize
@@ -220,20 +215,15 @@ umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equ
 #' @seealso - \code{\link{umxSimplex}}
 #' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
-#' data(iqdat)
-#' nTimePoints = 4 # Number of time points
-#' baseVarNames = paste0("IQ_age", 1:nTimePoints)
-#' # IQ_age + 1:4 + "_T" 1:2
-#' 
+#' \dontrun{
+#' # 4 time model
 #' # Select Data
+#' data(iqdat)
 #' mzData <- subset(iqdat, zygosity == "MZ")
 #' dzData <- subset(iqdat, zygosity == "DZ")
-#' m1 = umxSimplex(selDVs = baseVarNames, sep = "_T", dzData = dzData, mzData = mzData)
-#' umxSummary(m1)
-#' \dontrun{
+#' vars = c("IQ_age1", "IQ_age2", "IQ_age3", "IQ_age4")
+#' m1= umxSimplex(selDVs= vars, sep= "_T", dzData= dzData, mzData= mzData, tryHard= "mxTryHard")
 #' umxSummary(m1, file = NA);
-#' umxSummary(m1, file = "name", std = TRUE)
-#' stdFit = umxSummary(m1, returnStd = TRUE)
 #' }
 umxSummarySimplex <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
 	# Depends on R2HTML::HTML
@@ -435,7 +425,8 @@ umxSummary.MxModelSimplex <- umxSummarySimplex
 #' @param digits How many decimals to include in path loadings (defaults to 2)
 #' @param means Whether to show means paths (defaults to FALSE)
 #' @param std Whether to standardize the model (defaults to TRUE)
-#' @param format = c("current", "graphviz", "DiagrammeR") 
+#' @param format = c("current", "graphviz", "DiagrammeR")
+#' @param strip_zero Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)
 #' @param ... Optional additional parameters
 #' @return - Optionally return the dot code
 #' @export
@@ -444,17 +435,15 @@ umxSummary.MxModelSimplex <- umxSummarySimplex
 #' @family Plotting functions
 #' @examples
 #' \dontrun{
-#' # TODO Add code (from umxSimplex) to build simplex model help
+#' # TODO Add example from umxSimplex help
 #' data(iqdat)
-#' mzData <- subset(iqdat, zygosity == "MZ")
-#' dzData <- subset(iqdat, zygosity == "DZ")
-#' nTimePoints = 4 # Number of time points
-#' baseVarNames = paste0("IQ_age", 1:nTimePoints)
-#' selDVs = tvars(baseVarNames, sep = "_T", suffixes= 1:2)
+#' mzData = subset(iqdat, zygosity == "MZ")
+#' dzData = subset(iqdat, zygosity == "DZ")
+#' selDVs = c("IQ_age1", "IQ_age2", "IQ_age3", "IQ_age4")
 #' m1 = umxSimplex(selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData)
-#' plot(m1)
+#' # plot(m1)
 #' }
-umxPlotSimplex <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE,  format = c("current", "graphviz", "DiagrammeR"), ...) {
+umxPlotSimplex <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE,  format = c("current", "graphviz", "DiagrammeR"), strip_zero = TRUE, ...) {
 	if(!class(x) == "MxModelSimplex"){
 		stop("The first parameter of umxPlotCP must be a CP model, you gave me a ", class(x))
 	}
@@ -529,7 +518,7 @@ umxPlotSimplex <- function(x = NA, file = "name", digits = 2, means = FALSE, std
 	if(format != "current"){
 		umx_set_plot_format(format)
 	}
-	xmu_dot_maker(model, file, digraph)
+	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 }
 
 #' @export
@@ -546,11 +535,15 @@ plot.MxModelSimplex <- umxPlotSimplex
 #' @family zAdvanced Helpers
 #' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 #' @examples
+#' \dontrun{
 #' data(iqdat)
 #' mzData = subset(iqdat, zygosity == "MZ")
 #' dzData = subset(iqdat, zygosity == "DZ")
-#' m1  = umxSimplex(selDVs = paste0("IQ_age", 1:4), sep = "_T", dzData = dzData, mzData = mzData)
+#' m1  = umxSimplex(selDVs = paste0("IQ_age", 1:4), sep = "_T", 
+#' 			dzData = dzData, mzData = mzData, tryHard = "mxTryHard")
 #' std = umx_standardize_Simplex(m1)
+#' }
+#' 
 umx_standardize_Simplex <- function(model, ...) {
 	if(typeof(model) == "list"){ # Call self recursively
 		for(thisFit in model) {

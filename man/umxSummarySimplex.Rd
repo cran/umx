@@ -45,31 +45,18 @@ optionally show the Rg (genetic and environmental correlations), and show confid
 drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
 }
 \details{
-See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
-
-View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModelACE}}.
-
-View documentation on the IP model subclass here: \code{\link{umxSummary.MxModelIP}}.
-
-View documentation on the CP model subclass here: \code{\link{umxSummary.MxModelCP}}.
-
-View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModelGxE}}.
+See documentation for other umx models here: \code{\link{umxSummary}}.
 }
 \examples{
-data(iqdat)
-nTimePoints = 4 # Number of time points
-baseVarNames = paste0("IQ_age", 1:nTimePoints)
-# IQ_age + 1:4 + "_T" 1:2
-
+\dontrun{
+# 4 time model
 # Select Data
+data(iqdat)
 mzData <- subset(iqdat, zygosity == "MZ")
 dzData <- subset(iqdat, zygosity == "DZ")
-m1 = umxSimplex(selDVs = baseVarNames, sep = "_T", dzData = dzData, mzData = mzData)
-umxSummary(m1)
-\dontrun{
+vars = c("IQ_age1", "IQ_age2", "IQ_age3", "IQ_age4")
+m1= umxSimplex(selDVs= vars, sep= "_T", dzData= dzData, mzData= mzData, tryHard= "mxTryHard")
 umxSummary(m1, file = NA);
-umxSummary(m1, file = "name", std = TRUE)
-stdFit = umxSummary(m1, returnStd = TRUE)
 }
 }
 \references{
@@ -79,13 +66,13 @@ stdFit = umxSummary(m1, returnStd = TRUE)
 - \code{\link{umxSimplex}}
 
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEv}},
-  \code{\link{umxACE}}, \code{\link{umxCPold}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
-  \code{\link{umxIPnew}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
-  \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACEcov}}, \code{\link{umxACEnew}},
+  \code{\link{umxACEv}}, \code{\link{umxACE}},
+  \code{\link{umxCPold}}, \code{\link{umxCP}},
+  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
+  \code{\link{umxGxE}}, \code{\link{umxIPnew}},
+  \code{\link{umxIP}}, \code{\link{umxSexLim}},
+  \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxEbiv}},

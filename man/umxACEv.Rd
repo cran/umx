@@ -4,12 +4,14 @@
 \alias{umxACEv}
 \title{Build and run 2-group uni- or multi-variate ACE models based on VARIANCE (not paths).}
 \usage{
-umxACEv(name = "ACEv", selDVs, selCovs = NULL, covMethod = c("fixed",
-  "random"), dzData, mzData, sep = NULL, dzAr = 0.5, dzCr = 1,
-  addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL,
-  boundDiag = NULL, weightVar = NULL, equateMeans = TRUE,
-  bVector = FALSE, thresholds = c("deviationBased", "WLS"),
-  autoRun = getOption("umx_auto_run"), optimizer = NULL)
+umxACEv(name = "ACEv", selDVs, selCovs = NULL, sep = NULL,
+  type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), dzData,
+  mzData, dzAr = 0.5, dzCr = 1, addStd = TRUE, addCI = TRUE,
+  numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL,
+  weightVar = NULL, equateMeans = TRUE, bVector = FALSE,
+  thresholds = c("deviationBased"), covMethod = c("fixed", "random"),
+  autoRun = getOption("umx_auto_run"), tryHard = c("no", "mxTryHard",
+  "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE").}
@@ -18,13 +20,13 @@ umxACEv(name = "ACEv", selDVs, selCovs = NULL, covMethod = c("fixed",
 
 \item{selCovs}{(optional) covariates to include from the data (do not include sep in names)}
 
-\item{covMethod}{How to treat covariates: "fixed" (default) or "random".}
+\item{sep}{The separator in twin var names, often "_T" in vars like "dep_T1". Simplifies selDVs.}
+
+\item{type}{Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS").}
 
 \item{dzData}{The DZ dataframe.}
 
 \item{mzData}{The MZ dataframe.}
-
-\item{sep}{The separator in twin var names, often "_T" in vars like "dep_T1". Simplifies selDVs.}
 
 \item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating).}
 
@@ -46,9 +48,13 @@ umxACEv(name = "ACEv", selDVs, selCovs = NULL, covMethod = c("fixed",
 
 \item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE).}
 
-\item{thresholds}{How to implement ordinal thresholds c("deviationBased", "WLS").}
+\item{thresholds}{How to implement ordinal thresholds c("deviationBased").}
 
-\item{autoRun}{Whether to mxRun the model (default TRUE: the estimated model will be returned).}
+\item{covMethod}{How to treat covariates: "fixed" (default) or "random".}
+
+\item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+
+\item{tryHard}{optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")}
 
 \item{optimizer}{Optionally set the optimizer (default NULL does nothing).}
 }
@@ -67,11 +73,12 @@ unique environmental (E) and, optionally, either common environment (shared-envi
 non-additive genetic effects (D). Scroll down to details for how to use the function, a figure
 and multiple examples.
 
-The following figure shows the A components of a trivate ACEv model:
+The following figure shows the A components of a trivariate ACEv model:
 
-\figure{ACEv.png}
+\if{html}{\figure{ACEv.png}{options: width="50\%" alt="Figure: ACEv.png"}}
+\if{latex}{\figure{ACEv.pdf}{options: width=7cm}}
 
-*NOTE*: This function does not use the Cholesky decomposition. Instead it directly models variance.
+\emph{NOTE}: This function does not use the Cholesky decomposition. Instead it directly models variance.
 This ensures unbiased type-I error rates. It means that occasionally
 estimates of variance may be negative. This should be used as an occasion to inspect you model
 choices and data. `umxACEv` can be used as a base model to validate the ACE Cholesky model, 
@@ -114,7 +121,8 @@ data(twinData) # ?twinData from Australian twins.
 #  This is exactly why we have ACEv! It suggests we need a different model
 #  In this case: ADE.
 # Other things to note:
-# 1. umxACEv can figure out variable names: provide "sep" and "wt" -> "wt1" "wt2"
+# 1. umxACEv can figure out variable names: provide "sep", and selVars. 
+#    Function generates: "wt" -> "wt1" "wt2"
 # 2. umxACEv picks the variables it needs from the data.
 
 selDVs = "wt"
@@ -132,7 +140,7 @@ m2 = umxACEv("ADE", selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData,
 
 # We can modify this model, dropping dominance component (still called C), 
 # and see a comparison:
-m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE)
+m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE, name="AE")
 # =========================================================
 # = Well done! Now you can make modify twin models in umx =
 # =========================================================
@@ -141,16 +149,18 @@ m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE)
 # = How heritable is height? =
 # ============================
 # 
-# Note: Height has a large variance. umx can typically picks good starts,
+# Note: Height has a small variance. umx can typically picks good starts,
 #    but scaling is advisable.
 # 
 require(umx)
 data(twinData) # ?twinData from Australian twins.
 # Pick the variables
-selDVs = c("ht1", "ht2")
+selDVs = "ht"
+twinData$ht1 = twinData$ht1*10
+twinData$ht2 = twinData$ht2*10
 mzData <- twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
-m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData)
+m1 = umxACEv(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
 umxSummary(m1, std = FALSE) # unstandardized
 # tip: with report = "html", umxSummary can print the table to your browser!
 plot(m1)
@@ -158,24 +168,24 @@ plot(m1)
 # ========================================================
 # = Evidence for dominance ? (DZ correlation set to .25) =
 # ========================================================
-m2 = umxACEv("ADE", selDVs = selDVs, dzData = dzData, mzData = mzData, dzCr = .25)
+m2 = umxACEv("ADE", selDVs = selDVs, sep="", dzData = dzData, mzData = mzData, dzCr = .25)
 umxCompare(m2, m1) # Is ADE better?
 umxSummary(m2, comparison = m1) # nb: though this is ADE, matrices are still called A,C,E
 
 # We can modify this model, dropping shared environment, and see a comparison:
-m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE)
+m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE, name = "AE")
 
 # =====================================
 # = Bivariate height and weight model =
 # =====================================
 
 data(twinData)
-twinData$ht1 = twinData$ht1 *1000 # convert m to mm
-twinData$ht2 = twinData$ht2 *1000
-mzData = twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"),]
+twinData$ht1 = twinData$ht1 * 1000 # Convert m to mm
+twinData$ht2 = twinData$ht2 * 1000
+mzData = twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"), ]
 dzData = twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
-mzData = mzData[1:80,] # quicker run to keep CRAN happy
-dzData = dzData[1:80,]
+mzData = mzData[1:80, ] # Quicker run to keep CRAN happy
+dzData = dzData[1:80, ]
 m1 = umxACEv(selDVs = c("ht", "wt"), sep = '', dzData = dzData, mzData = mzData)
 
 # ===================
@@ -187,15 +197,13 @@ data(twinData)
 ordDVs = c("obese1", "obese2")
 selDVs = c("obese")
 obesityLevels = c('normal', 'overweight', 'obese')
-cutPoints <- quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
-twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+cutPoints = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
+twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 # Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
-twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obesityLevels)
-mzData <- twinData[twinData$zyg == 1, umx_paste_names(selDVs, "", 1:2)]
-dzData <- twinData[twinData$zyg == 3, umx_paste_names(selDVs, "", 1:2)]
-mzData <- mzData[1:80,] # just top 80 pairs to run fast
-dzData <- dzData[1:80,]
+twinData[, ordDVs] = mxFactor(twinData[, ordDVs], levels = obesityLevels)
+mzData = twinData[twinData$zygosity \%in\% "MZFF", ][1:80,] # 80 pairs for speed
+dzData = twinData[twinData$zygosity \%in\% "DZFF", ][1:80,]
 str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
 m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
@@ -208,15 +216,16 @@ selDVs = c("wt", "obese")
 # Cut bmi column to form ordinal obesity variables
 ordDVs = c("obese1", "obese2")
 obesityLevels = c('normal', 'overweight', 'obese')
-cutPoints <- quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
-twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+cutPoints = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
+twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+
 # Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
-twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obesityLevels)
-mzData <- twinData[twinData$zyg == 1,] # umxACEv can trim out unused variables on its own
-dzData <- twinData[twinData$zyg == 3,]
-mzData <- mzData[1:80,] # just top 80 so example runs in a couple of secs
-dzData <- dzData[1:80,]
+twinData[, ordDVs] = mxFactor(twinData[, ordDVs], levels = obesityLevels)
+
+# umxACEv can trim out unused variables on its own
+mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
+dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
 m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 plot(m1)
 
@@ -227,16 +236,16 @@ require(umx)
 data(twinData)
 # Cut to form category of 20\% obese subjects
 # and make into mxFactors (ensure ordered is TRUE, and require levels)
-cutPoints <- quantile(twinData[, "bmi1"], probs = .2, na.rm = TRUE)
+cutPoints = quantile(twinData[, "bmi1"], probs = .2, na.rm = TRUE)
 obesityLevels = c('normal', 'obese')
-twinData$obese1 <- cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
-twinData$obese2 <- cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 ordDVs = c("obese1", "obese2")
-twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obesityLevels)
+twinData[, ordDVs] = mxFactor(twinData[, ordDVs], levels = obesityLevels)
 
 selDVs = c("wt", "obese")
-mzData <- twinData[twinData$zygosity \%in\% "MZFF", ]
-dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
+mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
+dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
 \dontrun{
 m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
@@ -248,12 +257,11 @@ umxSummary(m1)
 
 require(umx)
 data(twinData)
-selDVs = c("wt1", "wt2")
-mz = cov(twinData[twinData$zyg == 1, selDVs], use = "complete")
-dz = cov(twinData[twinData$zyg == 3, selDVs], use = "complete")
-m1 = umxACEv(selDVs = selDVs, dzData = dz, mzData = mz, numObsDZ=569, numObsMZ=351)
-umxSummary(m1)
-plot(m1)
+selDVs = c("wt")
+mz = cov(twinData[twinData$zygosity \%in\% "MZFF", tvars(selDVs, "")], use = "complete")
+dz = cov(twinData[twinData$zygosity \%in\% "DZFF", tvars(selDVs, "")], use = "complete")
+m1 = umxACEv(selDVs = selDVs, sep= "", dzData = dz, mzData= mz, numObsDZ= 569, numObsMZ= 351)
+umxSummary(m1, std = FALSE)
 
 }
 \references{
@@ -262,12 +270,13 @@ to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.n
 }
 \seealso{
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPnew}},
-  \code{\link{umxIP}}, \code{\link{umxSexLim}},
-  \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
+  \code{\link{umxACEcov}}, \code{\link{umxACEnew}},
+  \code{\link{umxACE}}, \code{\link{umxCPold}},
+  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
+  \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
+  \code{\link{umxIPnew}}, \code{\link{umxIP}},
+  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
+  \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},
   \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
   \code{\link{umxSummaryGxEbiv}},

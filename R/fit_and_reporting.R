@@ -39,7 +39,7 @@
 #' m1 <- umxRAM("OneFactor", data = myData,
 #' 	umxPath(latents, to = manifests),
 #' 	umxPath(var = manifests),
-#' 	umxPath(var = latents, fixedAt = 1.0)
+#' 	umxPath(var = latents, fixedAt = 1)
 #' )
 #' m1 = mxRun(m1)
 #' umxSummary(m1, show = "std")
@@ -79,7 +79,7 @@ umxDiagnose <- function(model, tryHard = FALSE, diagonalizeExpCov = FALSE){
 #' @export
 #' @family Reporting Functions
 #' @seealso - \code{\link{AIC}}
-#' @references - Wagenmakers EJ, Farrell S. (2004), 192-196. AIC model selection using Akaike weights. *Psychon Bull Rev*. **11**, 192-196. \url{https://www.ncbi.nlm.nih.gov/pubmed/15117008}
+#' @references - Wagenmakers E.J., Farrell S. (2004), 192-196. AIC model selection using Akaike weights. *Psychonomic Bulletin and Review*. **11**, 192-196. \url{https://www.ncbi.nlm.nih.gov/pubmed/15117008}
 #' @examples
 #' l1 = lm(mpg~ wt + disp, data=mtcars)
 #' l2 = lm(mpg~ wt, data=mtcars)
@@ -135,7 +135,7 @@ umxWeightedAIC <- function(models, digits= 2) {
 #' \code{\link{umx_set_table_format}}()., or set `report` to "html" to open a
 #' table for pasting into a word processor.
 #' 
-#' `umxReduce` is a work in progress, with more automations coming as demand emerges.
+#' `umxReduce` is a work in progress, with more automatic reductions coming as demand emerges.
 #' I am thinking for RAM models to drop NS paths, and report that test.
 #'
 #' @param model The \code{\link{mxModel}} which will be reduced.
@@ -425,7 +425,7 @@ loadings.MxModel <- function(x, ...) {
 #' Note: By default, requesting new CIs wipes the existing ones.
 #' To keep these, set wipeExistingRequests = FALSE.
 #'
-#' @details Unlike \code{\link{confint}}, if parm is not set, only existing requests will be used. 
+#' @details *Note*: \code{\link{confint}} is an OpenMx function which will return SE-based CIs.
 #' 
 #' Because these can take time to run, by default only CIs already computed will be reported. Set run = TRUE to run new CIs.
 #' If parm is empty, and run = FALSE, a message will alert you to add run = TRUE. 
@@ -443,6 +443,7 @@ loadings.MxModel <- function(x, ...) {
 #' @family Reporting functions
 #' @seealso - \code{\link[stats]{confint}}, \code{\link{umxCI}} 
 #' @references - \url{https://www.github.com/tbates/umx}
+#' @md
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -604,7 +605,7 @@ umxConfint <- function(object, parm = c("existing", "smart", "all", "or one or m
 		'7' = 'The function derivatives returned by funcon or funobj appear to be incorrect.',
 		'8' = 'not used',
 		'9' = 'An input parameter was invalid')
-		if(any(model_CI_OK !=0) && showErrorCodes){
+		if(!is.null(model_CI_OK) && any(model_CI_OK !=0) && showErrorCodes){
 			codeList = c(model_CI_OK[,"lbound Code"], model_CI_OK[,"ubound Code"])
 			relevantCodes = unique(codeList); relevantCodes = relevantCodes[relevantCodes !=0]
 			for(i in relevantCodes) {
@@ -739,18 +740,20 @@ umxCI <- function(model = NULL, which = c("ALL", NA, "list of your making"), rem
 #'
 #' See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
 #' 
-#' View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModelACE}}.
+#' View documentation on the ACE model subclass here: \code{\link{umxSummaryACE}}.
 #' 
-#' View documentation on the IP model subclass here: \code{\link{umxSummary.MxModelIP}}.
+#' View documentation on the ACEv model subclass here: \code{\link{umxSummaryACEv}}.
 #' 
-#' View documentation on the CP model subclass here: \code{\link{umxSummary.MxModelCP}}.
+#' View documentation on the IP model subclass here: \code{\link{umxSummaryIP}}.
 #' 
-#' View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModelGxE}}.
+#' View documentation on the CP model subclass here: \code{\link{umxSummaryCP}}.
+#' 
+#' View documentation on the GxE model subclass here: \code{\link{umxSummaryGxE}}.
 #'
 #' @param model The \code{\link{mxModel}} whose fit will be reported
 #' @param ... Other parameters to control model summary
 #' @family Reporting Functions
-#' @family Core Modelling Functions
+#' @family Core Modeling Functions
 #' \url{https://www.github.com/tbates/umx}
 #' @export
 umxSummary <- function(model, ...){
@@ -1009,16 +1012,8 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("raw",
 #' optionally show the Rg (genetic and environmental correlations), and show confidence intervals. the report parameter allows
 #' drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
 #'
-#' See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
+#' See documentation for other umx models here: \code{\link{umxSummary}}.
 #' 
-#' View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModelACE}}.
-#' 
-#' View documentation on the IP model subclass here: \code{\link{umxSummary.MxModelIP}}.
-#' 
-#' View documentation on the CP model subclass here: \code{\link{umxSummary.MxModelCP}}.
-#' 
-#' View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModelGxE}}.
-
 #' @aliases umxSummary.MxModelACE
 #' @param model an \code{\link{mxModel}} to summarize
 #' @param digits round to how many digits (default = 2)
@@ -2078,12 +2073,13 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' @param fixed Whether to show fixed paths (defaults to TRUE)
 #' @param means Whether to show means or not (default = TRUE)
 #' @param resid How to show residuals and variances default is "circle". Options are "line" & "none"
+#' @param strip_zero Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)
 #' @param showMeans Deprecated: just use 'means = TRUE'
 #' @param showFixed Deprecated: just use 'fixed = TRUE'
 #' @param ... Optional parameters
 #' @export
-#' @seealso - \code{\link{umx_set_plot_format}}, \code{\link{plot.MxModel}}, \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}}, \code{\link{umxPlotGxE}},
-#' @family Core Modelling Functions
+#' @seealso - \code{\link{umx_set_plot_format}}, \code{\link{plot.MxModel}}, \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}}, \code{\link{umxPlotGxE}}
+#' @family Core Modeling Functions
 #' @family Plotting functions
 #' @references - \url{https://www.github.com/tbates/umx}, \url{https://en.wikipedia.org/wiki/DOT_(graph_description_language)}
 #' @examples
@@ -2094,10 +2090,11 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
 #' 	umxPath(latents, to = manifests),
 #' 	umxPath(var = manifests),
-#' 	umxPath(var = latents, fixedAt = 1.0)
+#' 	umxPath(var = latents, fixedAt = 1)
 #' )
 #' plot(m1)
-plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), fixed = TRUE, means = TRUE, resid = c("circle", "line", "none"), showMeans = "deprecated", showFixed = "deprecated", ...) {
+#' plot(m1, std = TRUE, resid = "line", digits = 3, strip_zero = FALSE)
+plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), fixed = TRUE, means = TRUE, resid = c("circle", "line", "none"), strip_zero = TRUE, showMeans = "deprecated", showFixed = "deprecated", ...) {
 	# ==========
 	# = Setup  =
 	# ==========
@@ -2216,7 +2213,7 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 	# ===================================
 	digraph = paste("digraph G {\n", preOut, out, rankVariables, "\n}", sep = "\n");
 	print("?plot.MxModel options: std, digits, file, fixed, means, resid= 'circle|line|none' & more")
-	xmu_dot_maker(model, file, digraph)
+	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 } # end plot.MxModel
 
 #' umxPlotACE
@@ -2229,6 +2226,7 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 #' @param digits How many decimals to include in path loadings (default is 2)
 #' @param means Whether to show means paths (default is FALSE)
 #' @param std Whether to standardize the model (default is TRUE)
+#' @param strip_zero Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)
 #' @param ... Additional (optional) parameters
 #' @return - optionally return the dot code
 #' @export
@@ -2244,7 +2242,7 @@ plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLab
 #' dzData <- subset(twinData, zygosity == "DZFF")
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
 #' plot(m1, std = FALSE) # don't standardize
-umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, ...) {
+umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, ...) {
 	if(!class(x) == "MxModelACE"){
 		stop("The first parameter of umxPlotACE must be an ACE model, you gave me a ", class(x))
 	}
@@ -2306,8 +2304,8 @@ umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, std = T
 	# grep('a', latents, value=T)
 	rankA   = paste("\t{rank = min; ", paste(grep('a'   , latents, value=T), collapse="; "), "};\n") # {rank=min; a1; a2}
 	rankCE  = paste("\t{rank = max; ", paste(grep('[ce]', latents, value=T), collapse="; "), "};\n") # {rank=min; c1; e1}
-	digraph = paste0("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, rankVariables, rankA, rankCE, "\n}");
-	xmu_dot_maker(model, file, digraph)
+	digraph = paste0("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, rankVariables, rankA, rankCE, "\n}"); 
+	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 } # end umxPlotACE
 
 #' @export
@@ -2323,6 +2321,7 @@ plot.MxModelACE <- umxPlotACE
 #' @param digits How many decimals to include in path loadings (default is 2)
 #' @param means Whether to show means paths (default is FALSE)
 #' @param std Whether to standardize the model (default is TRUE)
+#' @param strip_zero Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE) 
 #' @param ... Additional (optional) parameters
 #' @return - optionally return the dot code
 #' @export
@@ -2346,7 +2345,7 @@ plot.MxModelACE <- umxPlotACE
 #' 	 sep = "", autoRun = TRUE)
 #' plot(m1)
 #' plot(m1, std = FALSE) # don't standardize
-umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, ...) {
+umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, ...) {
 	if(!class(x) == "MxModelACEcov"){
 		stop("The first parameter of umxPlotACEcov must be an ACEcov model, you gave me a ", class(x))
 	}
@@ -2408,7 +2407,7 @@ umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std 
 	rankA   = paste("\t{rank = min; ", paste(grep('a'   , latents, value = T), collapse = "; "), "};\n") # {rank=min; a1; a2}
 	rankCE  = paste("\t{rank = max; ", paste(grep('[ce]', latents, value = T), collapse = "; "), "};\n") # {rank=min; c1; e1}
 	digraph = paste("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, rankVariables, rankA, rankCE, "\n}", sep="");
-	xmu_dot_maker(model, file, digraph)
+	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 } # end umxPlotACEcov
 
 #' @export
@@ -2512,6 +2511,7 @@ plot.MxModelGxE <- umxPlotGxE
 #' @param std Whether to standardize the model (defaults to TRUE)
 #' @param format = c("current", "graphviz", "DiagrammeR") 
 #' @param SEstyle report "b (se)" instead of b CI95[l, u] (Default = FALSE)
+#' @param strip_zero Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)
 #' @param ... Optional additional parameters
 #' @return - Optionally return the dot code
 #' @export
@@ -2523,7 +2523,7 @@ plot.MxModelGxE <- umxPlotGxE
 #' \dontrun{
 #' plot(yourCP_Model) # no need to remember a special name: plot works fine!
 #' }
-umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE,  format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, ...) {
+umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE,  format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, strip_zero = TRUE, ...) {
 	if(!class(x) == "MxModelCP"){
 		stop("The first parameter of umxPlotCP must be a CP model, you gave me a ", class(x))
 	}
@@ -2544,15 +2544,9 @@ umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TR
 	latents = c();
 	cSpecifics = c();
 	for(thisParam in names(parameterKeyList) ) {
-		# if I was smart, I'd look at the matrices, not the labels.
-		# would need to examine:
-		# 1. a_cp_matrix = A latent (and correlations among latents)
-		# 	* these go from a_cp n=row TO common n= row
-		# 	* or for off diag, from a_cp n=col TO a_cp n= row
-		# out = umx_dot_from_matrix(a_cp_matrix, from = "rows", cells = "diag", type = "latent")
-		# out = umx_dot_from_matrix(a_cp_matrix, from = "rows", cells = "lower", arrows = "both", type = "latent", strIn = out)
-		# 2 same again for c_cp_matrix, e_cp_matrix
-		# 3. cp_loadings common factor loadings
+		# TODO: plot functions are in the process of being made more intelligent. see: umxPlotCPnew()
+		# This version looks at labels. The new versions will loos directly at the relevant matrices
+		# this breaks the dependency on label structure, allowing arbitrary and more flexible labelling
 		# Top level a c e inputs to common factors
 		if( grepl("^[ace]_cp_r[0-9]", thisParam)) { 
 			# Match cp latents, e.g. thisParam = "c_cp_r1c3" (note, row = factor #)
@@ -2573,7 +2567,7 @@ umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TR
 			target  = selDVs[as.numeric(targetindex)]			
 			latents = append(latents, from)
 			cSpecifics = append(cSpecifics, from);
-		} else if (grepl("^expMean", thisParam)) { # means probably expMean_r1c1
+		} else if (grepl("^(exp)?[Mm]ean", thisParam)) { # means probably expMean_r1c1
 			grepStr = '(^.*)_r([0-9]+)c([0-9]+)'
 			from    = "one"
 			targetindex = as.numeric(sub(grepStr, '\\3', thisParam, perl= TRUE))
@@ -2616,8 +2610,8 @@ umxPlotCP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TR
 	digraph = paste0("digraph G {\nsplines=\"FALSE\";\n", preOut, ranks, out, "\n}");
 	if(format != "current"){
 		umx_set_plot_format(format)
-	}
-	xmu_dot_maker(model, file, digraph)
+	} 
+	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 }
 
 #' @export
@@ -2635,6 +2629,7 @@ plot.MxModelCP <- umxPlotCP
 #' @param std whether to standardize the model (defaults to TRUE)
 #' @param format = c("current", "graphviz", "DiagrammeR")
 #' @param SEstyle report "b (se)" instead of b CI95[l,u] (default = FALSE)
+#' @param strip_zero Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)
 #' @param ... Optional additional parameters
 #' @return - optionally return the dot code
 #' @export
@@ -2647,7 +2642,7 @@ plot.MxModelCP <- umxPlotCP
 #' plot(model)
 #' umxPlotIP(model, file = NA)
 #' }
-umxPlotIP  <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, ...) {
+umxPlotIP  <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, strip_zero = TRUE, ...) {
 	format = match.arg(format)
 	if(!class(x) == "MxModelIP"){
 		stop("The first parameter of umxPlotIP must be an IP model, you gave me a ", class(x))
@@ -2722,8 +2717,9 @@ umxPlotIP  <- function(x = NA, file = "name", digits = 2, means = FALSE, std = T
 	if(format != "current"){
 		umx_set_plot_format(format)
 	}
-	xmu_dot_maker(model, file, digraph)
+	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 }
+
 #' @export
 plot.MxModelIP <- umxPlotIP
 
@@ -3081,9 +3077,9 @@ umxComputeConditionals <- function(sigma, mu, current, onlyMean = FALSE) {
 #' # Parameters with values below .1 and containing "_to_" in their label
 #' umx_parameters(m1, "below", .1, "_to_")
 umx_parameters <- function(x, thresh = c("all", "above", "below", "NS", "sig"), b = NULL, pattern = ".*", std = FALSE, digits = 2) {
-	# TODO rationalize (deprecate?) umx_parameters and umxGetParameters
-	# TODO  add filtering by significance (based on SEs)
-	# TODO offer a method to handle sub-models
+	# TODO rationalize (deprecate?) umx_parameters and umxGetParameters -> just parameters()
+	# TODO Add filtering by significance (based on SEs)
+	# TODO Offer a method to handle sub-models
 	# 	model$aSubmodel$matrices$aMatrix$labels
 	# 	model$MZ$matrices
 	
@@ -3107,7 +3103,7 @@ or specify all arguments:\n
 		if(umx_has_been_run(x)){
 			x = summary(x)
 		} else {
-			message("Model has not been run.")
+			# message("Just a note: Model has not been run. That might not matter for you")
 		}
 	}
 	if(class(x) != "summary.mxmodel"){
@@ -3546,7 +3542,7 @@ umx_fun_mean_sd = function(x, na.rm = TRUE, digits = 2){
 #' xtabs based on a formula.
 #' 
 #' umx_aggregate makes using it a bit easier. In particular, it has some common functions 
-#' for summarising data built-in, like "mean (sd)" (the default).
+#' for summarizing data built-in, like "mean (sd)" (the default).
 #' 
 #' \code{umx_aggregate(mpg ~ cyl, data = mtcars, what = "mean_sd")}
 #' 
@@ -3664,8 +3660,7 @@ umx_aggregate <- function(formula = DV ~ condition, data = NA, what = c("mean_sd
 #' umx_APA_pval(c(1.23E-3, .5))
 #' umx_APA_pval(c(1.23E-3, .5), addComparison = TRUE)
 umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA) {
-	# TODO delete in favor of umxAPA?
-	# leave addComparison as NA to add only when needed
+	# FIXME delete in favor of umxAPA?
 	if(length(p) > 1){
 		o = rep(NA, length(p))
 		for(i in seq_along(p)) {
@@ -3803,7 +3798,7 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA) {
 #' x = cor.test(~ wt1 + wt2, data = mzData)
 #' umxAPA(x)
 #'
-umxAPA <- function(obj, se = NULL, std = FALSE, digits = 2, use = "complete", min = .001, addComparison = NA, report = c("markdown", "html"), lower = TRUE, test = c("Chisq", "LRT", "Rao", "F", "Cp"), SEs = TRUE, means = TRUE) {
+umxAPA <- function(obj = .Last.value, se = NULL, std = FALSE, digits = 2, use = "complete", min = .001, addComparison = NA, report = c("markdown", "html"), lower = TRUE, test = c("Chisq", "LRT", "Rao", "F", "Cp"), SEs = TRUE, means = TRUE) {
 	report = match.arg(report)
 	test = match.arg(test)
 	if("htest" == class(obj)[[1]]){

@@ -6,7 +6,7 @@
 #' Restrictions: Assumes means and variances can be equated across birth order within zygosity groups
 #'
 #' @param name    The name of the model (Default = "sexlim")
-#' @param selDVs  BASE NAMES of the variables in the analysis. You MUST provide suffixes.
+#' @param selDVs  BASE NAMES of the variables in the analysis. You MUST provide sep.
 #' @param A_or_C  Whether to model sex-limitation on A or on C. (Defaults to "A")
 #' @param mzmData Dataframe containing the MZ male data
 #' @param dzmData Dataframe containing the DZ male data
@@ -14,7 +14,10 @@
 #' @param dzfData Dataframe containing the DZ female data
 #' @param dzoData Dataframe containing the DZ opposite-sex data (be sure and get in right order)
 #' @param sep Suffix used for twin variable naming. Allows using just the base names in selVars
-#' @param autoRun Whether to run the model and return it, or just return it.
+#' @param dzAr The DZ genetic correlation (defaults to .5, vary to examine assortative mating).
+#' @param dzCr The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).
+#' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned)
+#' @param tryHard optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
 #' @param optimizer optionally set the optimizer. Default (NULL) does nothing.
 #' @return - \code{\link{mxModel}} of subclass mxModel.CFSexLim
 #' @export
@@ -62,7 +65,7 @@
 #' # summary(m1)
 #' # summary(m1)$Mi
 #' }
-umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfData, dzoData, sep = NA, A_or_C = c("A", "C"), autoRun = getOption("umx_auto_run"), optimizer = NULL){
+umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfData, dzoData, sep = NA, A_or_C = c("A", "C"), dzAr = .5, dzCr = 1, autoRun = getOption("umx_auto_run"), tryHard = c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL){
 	# ================================
 	# = 1. Non-scalar Sex Limitation =
 	# ================================
@@ -81,17 +84,15 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 	if(!is.null(optimizer)){
 		umx_set_optimizer(optimizer)
 	}
-	# TODO implement ADE version...
-	dzCr = 1
+	# Auto-name ADE version
 	if(dzCr == .25 && name == "sexlim"){
 		name = "sexlimADE"
 	}
-	suffix = sep
-	if(is.na(suffix)){
+	if(is.na(sep)){
 		stop("Please provide sep (e.g. '_T')")
 	}
 	nVar = length(selDVs)
-	selVars = umx_paste_names(selDVs, suffix, 1:2)
+	selVars = umx_paste_names(selDVs, sep= sep, suffixes = 1:2)
 	# Check names, and drop unused columns from data
 	umx_check_names(selVars, data = mzmData, die = TRUE); mzmData = mzmData[, selVars]
 	umx_check_names(selVars, data = dzmData, die = TRUE); dzmData = dzmData[, selVars]
@@ -131,7 +132,9 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 
 	model = mxModel(name,
 		mxModel("top",
-			umxMatrix("dzCr", "Full", 1, 1, free = FALSE, values = dzCr),		
+			umxMatrix("dzAr", "Full", 1, 1, free = FALSE, values = dzAr),
+			umxMatrix("dzCr", "Full", 1, 1, free = FALSE, values = dzCr),
+				
 			# Path Coefficient matrices a, c, and e for males and females 
 			umxMatrix("am", "Diag", nrow = nVar, free = TRUE, values = varStarts, lbound = .0001),
 			umxMatrix("cm", "Diag", nrow = nVar, free = TRUE, values = varStarts, lbound = .0001),
@@ -182,10 +185,10 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 
 			# Algebras for Parameter Estimates and Derived Variance Components 
 			mxAlgebra(name = "VarsZm", cbind(Am/Vm, Cm/Vm, Em/Vm), dimnames = list(selDVs, colZm)),
-			mxAlgebra(name = "CorsZm", cbind(Ram, Rcm, Rem)      , dimnames = list(selDVs, colZm)),
+			mxAlgebra(name = "CorsZm", cbind(Ram  , Rcm  , Rem  ), dimnames = list(selDVs, colZm)),
 
 			mxAlgebra(name = "VarsZf", cbind(Af/Vf, Cf/Vf, Ef/Vf), dimnames = list(selDVs, colZf)),
-			mxAlgebra(name = "CorsZf", cbind(Raf, Rcf, Ref)      , dimnames = list(selDVs, colZf)),
+			mxAlgebra(name = "CorsZf", cbind(Raf  , Rcf  , Ref)  , dimnames = list(selDVs, colZf)),
 
 			# Matrix & Algebra for expected Mean Matrices in MZ & DZ twins (done!!)
 			umxMatrix("expMeanGm", "Full", nrow = 1, ncol = nVar*2, free = TRUE, values = obsMean, labels = paste0(selDVs, "Mm")),
@@ -193,11 +196,11 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 			umxMatrix("expMeanGo", "Full", nrow = 1, ncol = nVar*2, free = TRUE, values = obsMean, labels = paste0(selDVs, rep(c("Mm", "Mf"), each = nVar))),
 
 			# Matrix & Algebra for expected Variance/Covariance Matrices in MZ & DZ twins 
-			mxAlgebra(name = "expCovMZm", rbind(cbind(Vm,         Am + Cm)  , cbind(        Am + Cm, Vm))),
-			mxAlgebra(name = "expCovDZm", rbind(cbind(Vm, 0.5 %x% Am + Cm)  , cbind(0.5 %x% Am + Cm, Vm))),
-			mxAlgebra(name = "expCovMZf", rbind(cbind(Vf,         Af + Cf)  , cbind(        Af + Cf, Vf))),
-			mxAlgebra(name = "expCovDZf", rbind(cbind(Vf, 0.5 %x% Af + Cf)  , cbind(0.5 %x% Af + Cf, Vf))),
-			mxAlgebra(name = "expCovDZo", rbind(cbind(Vm, 0.5 %x% Amf + Cmf), cbind(0.5 %x% t(Amf) + t(Cmf), Vf)))
+			mxAlgebra(name = "expCovMZm", rbind(cbind(Vm,          Am  + Cm)          , cbind(         Am +          Cm, Vm))),
+			mxAlgebra(name = "expCovDZm", rbind(cbind(Vm, dzAr %x% Am  + dzCr %x% Cm) , cbind(dzAr %x% Am + dzCr %x% Cm, Vm))),
+			mxAlgebra(name = "expCovMZf", rbind(cbind(Vf,          Af  + Cf)          , cbind(         Af +          Cf, Vf))),
+			mxAlgebra(name = "expCovDZf", rbind(cbind(Vf, dzAr %x% Af  + dzCr %x% Cf) , cbind(dzAr %x% Af + dzCr %x% Cf, Vf))),
+			mxAlgebra(name = "expCovDZo", rbind(cbind(Vm, dzAr %x% Amf + dzCr %x% Cmf), cbind(dzAr %x% t(Amf) +  t(Cmf), Vf)))
 		), # end of top
 
 		# 5 group models 
@@ -239,19 +242,7 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 
 	# Tests: equate means would be expMeanGm, expMeanGf, expMeanGo
 	model = as(model, "MxModelSexLim") # set class so umxSummary, plot, etc. work.
-	if(autoRun){
-		model = mxRun(model)
-		tryCatch({
-			umxSummary(model)
-			# umxSummary(model, refModels = refModels, showEstimates = showEstimates)
-		}, warning = function(w) {
-			message("Warning incurred trying to run umxSummary: try summary()")
-			message(w)
-		}, error = function(e) {
-			message("Error incurred trying to run umxSummary: try summary()")
-			message(e)
-		})
-	}
+	model = xmu_safe_run_summary(model, autoRun = autoRun, tryHard = tryHard)
 	invisible(model)
 }
 
@@ -261,16 +252,8 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 #' optionally show the Rg (genetic and environmental correlations), and show confidence intervals. the report parameter allows
 #' drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
 #'
-#' See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
-#' 
-#' View documentation on the ACE model subclass here: \code{\link{umxSummary.MxModelACE}}.
-#' 
-#' View documentation on the IP model subclass here: \code{\link{umxSummary.MxModelIP}}.
-#' 
-#' View documentation on the CP model subclass here: \code{\link{umxSummary.MxModelCP}}.
-#' 
-#' View documentation on the GxE model subclass here: \code{\link{umxSummary.MxModelGxE}}.
-
+#' See documentation for other umx models summary here: \code{\link{umxSummary}}.
+#'
 #' @aliases umxSummary.MxModelSexLim
 #' @param model a \code{\link{umxSexLim}} model to summarize
 #' @param digits round to how many digits (default = 2)
@@ -417,8 +400,7 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 
 	hasCIs = umx_has_CIs(model)
 		if(hasCIs & CIs) {
-			# TODO umxACE CI code: Need to refactor into some function calls...
-			# TODO and then add to umxSummaryIP and CP
+			# TODO umxACE CI code: Need to refactor into some function calls... and then add to umxSummaryIP and CP
 			message("Creating CI-based report!")
 			# CIs exist, get lower and upper CIs as a dataframe
 			CIlist = data.frame(model$output$confidenceIntervals)
