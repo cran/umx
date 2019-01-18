@@ -1,8 +1,20 @@
-# Upcoming in next version... umx 3.0.0 January 2018, R 3.X.X
+# Upcoming in next version... umx 3.0.0 January 2018, R 3.5.2
 * NEW: `umxRAM` supports WLS, UWLS, DWLS models!
 * NEW: `umxACE` supports WLS, UWLS, DWLS models!
 * NEW: `umxACEv` supports WLS, UWLS, DWLS models
 * NEW: `umxCP` supports WLS, UWLS, DWLS models
+
+# umx 2.9.9 December 2018, R 3.5.2
+* Compatibility with OpenMx changes.
+* NEW: `umxSummarizeTwinData` to create summary tables for papers using twin Data
+* IMPROVED: `umxRAM`: support definition variables to some extent in umxRAM
+* IMPROVED: `umxMatrix` advice user when they specify `umxMatrix("me", 1,1)`
+* IMPROVED: `umxModify` nicer free-parameter report as default output with no changes requested (calls parameters)
+* IMPROVED: `umxRAM` preserve definition variables in data
+* IMPROVED: `umxRAM` preserve definition variables in data
+* IMPROVED: `plot` strip_zero more reliable
+* INCOMPATIBLE: `plot` dropped deprecated showMeans and showFixed from plot after 3 years (use means= and fixed = )
+* INCOMPATIBLE: removed deprecated suffix parameter from `umx_scale_wide_twin_data`
 
 # umx 2.9.0 December 2018, R 3.5.1: More love
 * BACKWARD INCOMPATIBLE: Support for suffix as a synonym for sep was finally removed after a 3 years of deprecation warnings

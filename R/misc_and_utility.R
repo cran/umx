@@ -3359,8 +3359,9 @@ umx_means <- function(df, ordVar = 0, na.rm = TRUE) {
 #' umx_is_MxData(mtcars)
 #' umx_is_MxData(mxData(mtcars, type= "raw"))
 #' umx_is_MxData(mxData(cov(mtcars), type= "cov", numObs = 73))
+#' umx_is_MxData(mxDataWLS(na.omit(twinData[, c("wt1", "wt2")]), type= "WLS"))
 umx_is_MxData <- function(x) {
-    if(class(x)[1] %in%  c("MxNonNullData", "MxDataStatic") ) {
+    if(class(x)[1] %in%  c("MxNonNullData", "MxDataStatic", "MxDataLegacyWLS") ) {
 		TRUE
 	} else {
 		FALSE
@@ -4272,7 +4273,6 @@ umx_residualize <- function(var, covs = NULL, suffixes = NULL, data){
 #' @param varsToScale The base names of the variables ("weight" etc.)
 #' @param sep The suffix that distinguishes each case, e.g. "_T")
 #' @param data a wide dataframe
-#' @param suffix  (deprecated: use sep instead)
 #' @return - new dataframe with variables scaled in place
 #' @export
 #' @seealso umx_scale
@@ -4280,13 +4280,9 @@ umx_residualize <- function(var, covs = NULL, suffixes = NULL, data){
 #' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
 #' data(twinData) 
-#' df = umx_scale_wide_twin_data(data = twinData, varsToScale = c("ht", "wt"), sep = "" )
+#' df = umx_scale_wide_twin_data(data = twinData, varsToScale = c("ht", "wt"), sep = "")
 #' plot(wt1 ~ wt2, data = df)
-umx_scale_wide_twin_data <- function(varsToScale, sep, data, suffix = "deprecated") {
-	if(suffix != "deprecated"){
-		message("Hi! Next time, use sep instead of suffix, when calling umx_scale_wide_twin_data")
-		sep = suffix
-	}
+umx_scale_wide_twin_data <- function(varsToScale, sep, data) {
 	if(length(sep) != 1){
 		stop("I need one sep, you gave me ", length(sep), "\nYou, might, for instance, need to change c('_T1', '_T2') to just '_T'")
 	}
@@ -4535,7 +4531,7 @@ umx_explode <- function(delimiter = character(), string) {
 #' # =======================================
 #'
 #' # Just show phenotypes for Twin 1
-#' umx_names(GFF, "T_1$") # twin 1
+#' umx_names(GFF, "_T1$") # twin 1
 #' # "zyg" "sex1" "age_T1" "gff_T1" "fc_T1" "qol_T1" "hap_T1"...
 #' 
 #' umx_names(GFF, "2$") # names ending in 2
@@ -4551,7 +4547,7 @@ umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE
 	}
 	if(class(df) %in%  c("summary.mxmodel", "data.frame")){
 		nameVector = names(df)
-	}else if(class(df)[1] %in% c("MxNonNullData", "MxDataStatic") ) {
+	}else if(umx_is_MxData(df)) {
 			if(df$type == "raw"){
 				nameVector = names(df$observed)
 				isRaw = TRUE

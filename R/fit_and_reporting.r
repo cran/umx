@@ -873,14 +873,14 @@ umxSummary.MxModel <- function(model, refModels = NULL, showEstimates = c("raw",
 			modelSummary = summary(model, refModels = refModels)
 		}
 	} else if (refModels == FALSE){
-		modelSummary = summary(model) # don't use or generate refModels		
+		modelSummary = summary(model) # Don't use or generate refModels		
 	}else{
-		modelSummary = summary(model, refModels = refModels) # use user-supplied refModels		
+		modelSummary = summary(model, refModels = refModels) # Use user-supplied refModels		
 	}
 
 	# DisplayColumns
 	if(showEstimates != "none"){
-		parameterTable = mxStandardizeRAMpaths(model, SE = SE) # compute standard errors
+		parameterTable = mxStandardizeRAMpaths(model, SE = SE) # Compute standard errors
 		nSubModels = length(model$submodels)
 		if(nSubModels > 0){
 			tmp = parameterTable
@@ -1624,7 +1624,7 @@ umxSummary.MxModelCP <- umxSummaryCP
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' require(umx)
-#' data(GFF) # family function and wellbeing data
+#' data(GFF) # family function and well-being data
 #' mzData <- subset(GFF, zyg_2grp == "MZ")
 #' dzData <- subset(GFF, zyg_2grp == "DZ")
 #' selDVs = c("hap", "sat", "AD") # These will be expanded into "hap_T1" "hap_T2" etc.
@@ -2067,15 +2067,13 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' @rdname plot.MxModel
 #' @param x An \code{\link{mxModel}} from which to make a path diagram
 #' @param std Whether to standardize the model (default = FALSE).
+#' @param fixed Whether to show fixed paths (defaults to TRUE)
+#' @param means Whether to show means or not (default = TRUE)
 #' @param digits The number of decimal places to add to the path coefficients
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param pathLabels Whether to show labels on the paths. both will show both the parameter and the label. ("both", "none" or "labels")
-#' @param fixed Whether to show fixed paths (defaults to TRUE)
-#' @param means Whether to show means or not (default = TRUE)
 #' @param resid How to show residuals and variances default is "circle". Options are "line" & "none"
 #' @param strip_zero Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)
-#' @param showMeans Deprecated: just use 'means = TRUE'
-#' @param showFixed Deprecated: just use 'fixed = TRUE'
 #' @param ... Optional parameters
 #' @export
 #' @seealso - \code{\link{umx_set_plot_format}}, \code{\link{plot.MxModel}}, \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}}, \code{\link{umxPlotGxE}}
@@ -2094,19 +2092,10 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' )
 #' plot(m1)
 #' plot(m1, std = TRUE, resid = "line", digits = 3, strip_zero = FALSE)
-plot.MxModel <- function(x = NA, std = FALSE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), fixed = TRUE, means = TRUE, resid = c("circle", "line", "none"), strip_zero = TRUE, showMeans = "deprecated", showFixed = "deprecated", ...) {
+plot.MxModel <- function(x = NA, std = FALSE, fixed = TRUE, means = TRUE, digits = 2, file = "name", pathLabels = c("none", "labels", "both"), resid = c("circle", "line", "none"), strip_zero = TRUE, ...) {
 	# ==========
 	# = Setup  =
 	# ==========
-	if(showMeans != "deprecated"){
-		message("Change ", omxQuotes("showMeans"), " to ", omxQuotes("means"), "(", omxQuotes("showMeans"), " will stop working in future)")
-		means = showMeans
-	}	
-	
-	if(showFixed != "deprecated"){
-		message("Change ", omxQuotes("showFixed"), " to ", omxQuotes("fixed"), "(", omxQuotes("showFixed"), " will stop working in future)")
-		fixed = showFixed
-	}	
 	resid = match.arg(resid)
 	model = x # just to be clear that x is a model
 
@@ -3939,6 +3928,97 @@ umxAPA <- function(obj = .Last.value, se = NULL, std = FALSE, digits = 2, use = 
 
 #' @export
 summaryAPA <- umxAPA
+
+#' Summarize twin data
+#'
+#' @description
+#' Produce a summary of wide-format twin data, showing the number of individuals, the mean and SD for each trait, and the correlation for each twin-type.
+#'
+#' Set MZ and DZ to summarize the two-group case.
+#' 
+#' @param data The twin data.
+#' @param selVars Collection of variables to report on, e.g. c("wt", "ht").
+#' @param sep  The separator string that will turn a variable name into a twin variable name, e.g. "_T" for wt_T1 and wt_T2.
+#' @param zyg  The zygosity variable in the dataset, e.g. "zygosity".
+#' @param MZ Set level in zyg corresponding to MZ for two group case (defaults to using 5-group case).
+#' @param DZ Set level in zyg corresponding to DZ for two group case (defaults to using 5-group case).
+#' @param MZFF The level in zyg corresponding to MZ FF pairs: e.g., "MZFF".
+#' @param DZFF The level in zyg corresponding to DZ FF pairs: e.g., "DZFF".
+#' @param MZMM The level in zyg corresponding to MZ MM pairs: e.g., "MZMM".
+#' @param DZMM The level in zyg corresponding to DZ MM pairs: e.g., "DZMM".
+#' @param DZOS The level in zyg corresponding to DZ OS pairs: e.g., "DZOS".
+#' @param digits Rounding precision of the report (default 2).
+#' @return - formatted table, e.g. in markdown.
+#' @export
+#' @family Twin Reporting Functions
+#' @seealso - \code{\link{umxAPA}}
+#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+#' @examples
+#' data(twinData)
+#' umxSummarizeTwinData(twinData, sep = "", selVars = c("wt", "ht"))
+#' MZs = c("MZMM", "MZFF"); DZs = c("DZFF","DZMM", "DZOS")
+#' umxSummarizeTwinData(twinData, sep = "", selVars = c("wt", "ht"), MZ = MZs, DZ = DZs)
+umxSummarizeTwinData <- function(data = NULL, selVars = "wt", sep = "_T", zyg = "zygosity", MZ = NULL, DZ = NULL, MZFF= "MZFF", DZFF= "DZFF", MZMM= "MZMM", DZMM= "DZMM", DZOS= "DZOS", digits = 2) {
+	# TODO cope with two group case.
+	# data = twinData; selVars = c("wt", "ht"); zyg = "zygosity"; sep = ""; digits = 2
+	selDVs = tvars(selVars, sep)
+	umx_check_names(selDVs, data = data, die = TRUE)
+	long = umx_wide2long(data= data[,selDVs], sep =sep)
+	blob = rep(NA, length(selVars))	
+	if(is.null(MZ)){
+		df = data.frame(Var = blob, Mean = blob, SD = blob, rMZFF = blob, rMZMM = blob, rDZFF = blob, rDZMM = blob, rDZOS = blob, stringsAsFactors = FALSE)
+		n = 1
+		for (varName in selVars){
+			# varName = "ht"
+			df[n, "Var"]  = varName
+			df[n, "Mean"] = round(mean(long[,varName], na.rm = TRUE), digits)
+			df[n, "SD"]   = round(sd(long[,varName], na.rm = TRUE), digits)
+			rMZFF = cor.test(data = data[data[,zyg] %in% MZFF,], as.formula(paste0("~ ", varName, sep, 1, "+", varName, sep, 2)))
+			rMZMM = cor.test(data = data[data[,zyg] %in% MZMM,], as.formula(paste0("~ ", varName, sep, 1, "+", varName, sep, 2)))
+			rDZFF = cor.test(data = data[data[,zyg] %in% DZFF,], as.formula(paste0("~ ", varName, sep, 1, "+", varName, sep, 2)))
+			rDZMM = cor.test(data = data[data[,zyg] %in% DZMM,], as.formula(paste0("~ ", varName, sep, 1, "+", varName, sep, 2)))
+			rDZOS = cor.test(data = data[data[,zyg] %in% DZOS,], as.formula(paste0("~ ", varName, sep, 1, "+", varName, sep, 2)))
+
+			df[n, "rMZFF"] = paste0(round(rMZFF$estimate, digits), " (", round((rMZFF$conf.int[2] - rMZFF$conf.int[1])/(1.96 * 2), digits), ")")
+			df[n, "rMZMM"] = paste0(round(rMZMM$estimate, digits), " (", round((rMZMM$conf.int[2] - rMZMM$conf.int[1])/(1.96 * 2), digits), ")")
+			df[n, "rDZFF"] = paste0(round(rDZFF$estimate, digits), " (", round((rDZFF$conf.int[2] - rDZFF$conf.int[1])/(1.96 * 2), digits), ")")
+			df[n, "rDZMM"] = paste0(round(rDZMM$estimate, digits), " (", round((rDZMM$conf.int[2] - rDZMM$conf.int[1])/(1.96 * 2), digits), ")")
+			df[n, "rDZOS"] = paste0(round(rDZOS$estimate, digits), " (", round((rDZOS$conf.int[2] - rDZOS$conf.int[1])/(1.96 * 2), digits), ")")
+			n = n+1
+		}
+		nPerZyg = table(data[, zyg])
+		names(df) = namez(df, "(rMZFF)", paste0("\\1 (", nPerZyg["MZFF"],")"))
+		names(df) = namez(df, "(rDZFF)", paste0("\\1 (", nPerZyg["DZFF"],")"))
+		names(df) = namez(df, "(rMZMM)", paste0("\\1 (", nPerZyg["MZMM"],")"))
+		names(df) = namez(df, "(rDZMM)", paste0("\\1 (", nPerZyg["DZMM"],")"))
+		names(df) = namez(df, "(rDZOS)", paste0("\\1 (", nPerZyg["DZOS"],")"))
+	}else{
+		df = data.frame(Var = blob, Mean = blob, SD = blob, rMZ = blob, rDZ = blob, stringsAsFactors = FALSE)		
+		n = 1
+		for (varName in selVars){
+			# varName = "ht"
+			df[n, "Var"]  = varName
+			df[n, "Mean"] = round(mean(long[,varName], na.rm = TRUE), digits)
+			df[n, "SD"]   = round(sd(long[,varName], na.rm = TRUE), digits)
+			rMZ = cor.test(data = data[data[,zyg] %in% MZ,], as.formula(paste0("~ ", varName, sep, 1, "+", varName, sep, 2)))
+			rDZ = cor.test(data = data[data[,zyg] %in% DZ,], as.formula(paste0("~ ", varName, sep, 1, "+", varName, sep, 2)))
+			df[n, "rMZ"] = paste0(round(rMZ$estimate, digits), " (", round((rMZ$conf.int[2] - rMZ$conf.int[1])/(1.96 * 2), digits), ")")
+			df[n, "rDZ"] = paste0(round(rDZ$estimate, digits), " (", round((rDZ$conf.int[2] - rDZ$conf.int[1])/(1.96 * 2), digits), ")")
+			n = n+1
+		}
+		nPerZyg = data.frame(table(data[, zyg]))
+		names(df) = namez(df, "(rMZ)", paste0("\\1 (", sum(nPerZyg[nPerZyg$Var1 %in% MZ,"Freq"]),")"))
+		names(df) = namez(df, "(rDZ)", paste0("\\1 (", sum(nPerZyg[nPerZyg$Var1 %in% DZ,"Freq"]),")"))
+	}
+	umx_print(df)
+	# return(df)
+	# Calculate Mean Age and SD for men and women
+	# umx_aggregate(value ~ Sex, data = longformat, what = "mean_sd")
+	
+	# Calculate correlations, means and sd Generativity
+	# umxAPA(mzData[, allItemNames], use ="pairwise.complete.obs")
+	# umxAPA(dzData[, allItemNames], use ="pairwise.complete.obs")
+}
 
 #' umx_APA_model_CI
 #'
