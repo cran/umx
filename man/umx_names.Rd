@@ -7,8 +7,8 @@
 \usage{
 umx_names(df, pattern = ".*", replacement = NULL, ignore.case = TRUE,
   perl = FALSE, value = TRUE, fixed = FALSE, useBytes = FALSE,
-  invert = FALSE, global = FALSE, collapse = c("as.is", "as.vector",
-  "as.formula"))
+  invert = FALSE, global = FALSE, collapse = c("as.is", "vector",
+  "formula"))
 }
 \arguments{
 \item{df}{dataframe (or other objects, or a list of models) from which to get names.}
@@ -70,7 +70,7 @@ umx_names(mtcars, "mpg", replacement = "hello") # "mpg" replaced with "hello"
 # ========================================================================
 # = Using the custom collapse option to quote each item, and wrap in c() =
 # ========================================================================
-namez(mtcars, "m", collapse = "as.vector") # Paste-able R-code for a vector
+namez(mtcars, "m", collapse = "vector") # Paste-able R-code for a vector
 
 # Other options passed to R's grep command
 umx_names(mtcars, "mpg" , invert = TRUE)  # Non-matches (instead of matches)
@@ -91,6 +91,9 @@ umx_names(GFF, "[^12bs]$") # doesn't end in `1`, `2`, `b`, or `s`
 umx_names(mxData(twinData[, c("wt1", "wt2")], type= "raw"))
 umx_names(mxData(cov(twinData[, c("wt1", "wt2")], use="comp"), type= "cov", numObs= 1000))
 umx_names(mxDataWLS(na.omit(twinData[, c("wt1", "wt2")]), type= "WLS"))
+
+namez(umxMatrix("bob", "Full", 3,3)$labels)
+
 }
 \references{
 \itemize{
@@ -104,16 +107,16 @@ And \code{\link{umx_check_names}} to check for existence of names in a dataframe
 }
 
 Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{umxAPA}},
-  \code{\link{umxEval}}, \code{\link{umxFactorScores}},
+  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
+  \code{\link{umxAPA}}, \code{\link{umxEval}},
+  \code{\link{umxFactorScores}},
   \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
   \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_APA_model_CI}},
   \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
   \code{\link{umx_parameters}}, \code{\link{umx_print}},
   \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_show}}, \code{\link{umx_time}},
-  \code{\link{umx}}
+  \code{\link{umx_time}}, \code{\link{umx}},
+  \code{\link{xmu_get_CI}}
 
 Other String Functions: \code{\link{umx_explode_twin_names}},
   \code{\link{umx_explode}}, \code{\link{umx_grep}},

@@ -4,8 +4,8 @@
 \alias{xmu_assemble_twin_supermodel}
 \title{Assemble top, MZ and DZ into a supermodel}
 \usage{
-xmu_assemble_twin_supermodel(name, MZ, DZ, top, bVector, mzWeightMatrix,
-  dzWeightMatrix)
+xmu_assemble_twin_supermodel(name, MZ, DZ, top, mzWeightMatrix = NULL,
+  dzWeightMatrix = NULL)
 }
 \arguments{
 \item{name}{the name of the supermodel}
@@ -15,8 +15,6 @@ xmu_assemble_twin_supermodel(name, MZ, DZ, top, bVector, mzWeightMatrix,
 \item{DZ}{the DZ model}
 
 \item{top}{the top model}
-
-\item{bVector}{whether this is a weighted analysis}
 
 \item{mzWeightMatrix}{if bVector, then use this as the MZ weights matrix}
 
@@ -40,10 +38,16 @@ Other xmu internal not for end user: \code{\link{umxModel}},
   \code{\link{xmuMaxLevels}}, \code{\link{xmuMinLevels}},
   \code{\link{xmuPropagateLabels}},
   \code{\link{xmu_check_levels_identical}},
+  \code{\link{xmu_clean_label}},
   \code{\link{xmu_dot_make_paths}},
   \code{\link{xmu_dot_make_residuals}},
+  \code{\link{xmu_dot_maker}},
+  \code{\link{xmu_dot_move_ranks}},
+  \code{\link{xmu_dot_rank_str}},
+  \code{\link{xmu_lavaan_process_group}},
   \code{\link{xmu_make_mxData}},
-  \code{\link{xmu_make_top_twin_models}},
+  \code{\link{xmu_make_top_twin}},
+  \code{\link{xmu_model_needs_means}},
   \code{\link{xmu_safe_run_summary}},
   \code{\link{xmu_set_sep_from_suffix}},
   \code{\link{xmu_simplex_corner}},

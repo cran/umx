@@ -39,6 +39,7 @@ ggplot2::qplot(x = mpg, y= values, group="ind", data = df)
 }
 \seealso{
 Other Data Functions: \code{\link{umxCovData}},
+  \code{\link{umxDescribeDataWLS}},
   \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}}, \code{\link{umx_cov2raw}},

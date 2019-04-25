@@ -4,77 +4,94 @@
 \alias{tmx_genotypic_effect}
 \title{Graphical display of genotypic effects.}
 \usage{
-tmx_genotypic_effect(p = 0.75, q = (1 - p), a = 0.5, d = 0.25,
+tmx_genotypic_effect(p = 0.75, q = (1 - p), a = 0.5, d = 0,
   m = 0, show = TRUE)
 }
 \arguments{
-\item{p}{The frequency of the A allele (Default .5)}
+\item{p}{The frequency of the B allele (Default .5)}
 
-\item{q}{The frequency of the a allele (Default 1-p)}
+\item{q}{The frequency of the b allele (Default 1-p)}
 
-\item{a}{Half the difference between the AA and aa homozygotes (Default .5)}
+\item{a}{Half the difference between the two homozygote phenotypes (Default .5)}
 
-\item{d}{The deviation of the heterozygote from m (Default 1)}
+\item{d}{The deviation of the heterozygote from m (Default 0)}
 
 \item{m}{The value of the midpoint between the homozygotes (Default 0)}
 
 \item{show}{Whether to draw the plot or just return it (Default = TRUE)}
 }
 \value{
--
+\itemize{
+\item optional plot
+}
 }
 \description{
-tmx_genotypic_effect allows you to explore the concept of genotypic effect at a locus.
-The d and h increments of the gene difference A – a. Aa may lie on either side of m and the sign of h will
-vary accordingly; in the case illustrated h would be negative. (Adapted from Mather and Jinks, 1977, p. 32).
-See book issue 23
-This function lets you explore the simplest two–allele system (B and b), with three possible genotypes, BB, Bb, and bb.
-Parameter "b" is half the measured difference between the homozygotes BB and bb. The point between the two homozygotes 
-is "m" -- the mean effect of homozygous genotypes. "d" defines the measured deviation effect of the heterozygote Aa, 
-relative to this expected midpoint. "a" and "d" are genotypic effects.
+\code{tmx_genotypic_effect} allows you to explore the concept of genotypic effect at a locus. With it,
+you can interactively explore the effects of allele frequency, additive variance, and
+\href{https://en.wikipedia.org/wiki/Dominance_(genetics)}{dominance}.
 
-old system:
+This function lets you explore the simplest two–allele system (\code{B} and \code{b}), with three possible
+genotypes, \code{BB}, \code{Bb}, and \code{bb}.
 
-$d$ =  half the homozygotes difference (midpoint = $m$)
+The point between the two homozygotes is \code{m} -- the mean effect of the homozygous genotypes.
 
-$h$ = measured deviation of the heterozygote from $m$
+Parameter \code{a} is half the measured phenotypic difference between the homozygotes \code{BB} and \code{bb}.
+It corresponds to the additive effect of each additional \code{B} allele, relative to the \code{bb} phenotype.
 
-new system:
+Parameter \code{d} is the deviation of the heterozygote \code{Bb} phenotype from the homozygote mid-point \code{m}.
+It corresponds to the non-additive (dominance) effect of the \code{B} allele. The heterozygote phenotype
+may lie on either side of \code{m} and the sign of \code{d} will vary accordingly.
 
-u, v -> p, q
+\strong{Old system} from book ed 2:
 
-d, h -> a, d
+Adapted from Mather and Jinks, 1977, p. 32). See book issue old-style nomenclature
+https://github.com/tbates/BGBook/issues/23
 
-Neale, M. C. (2005). Quantitative Genetics. In Encyclopedia of Life Sciences. New York: John Wiley & Sons, Ltd.
-https://github.com/tbates/BGBook/issues/23#issuecomment-333834075
+\code{u} = Frequency of the dominant allele (now = \code{p}).
+\code{v} = Frequency of the recessive allele (now = \code{q}).
+
+\code{m} = midpoint between the two homozygotes
+\code{d} = half the difference between the two homozygote (now \code{a})
+
+\code{h} = deviation of the heterozygote from \code{m} (now = \code{d})
+
+New system:
+
+\code{u} and \code{v} -> \code{p} and  \code{q}
+
+\code{d} and \code{h} -> \code{a} and \code{d}
+
+See BGBook issue 23
 }
 \examples{
 library(umx);
+
+# =========================
+# = Pure additivity: d= 0 =
+# =========================
+tmx_genotypic_effect(p = .5, a = 1, d = 0, m = 0, show = TRUE);
+
+# =============================
+# = Complete dominance: a=d=1 =
+# =============================
+tmx_genotypic_effect(p = .5, q =.5, a = 1, d = 1, m = 0, show = TRUE);
+
+# ===========================
+# = Over dominance: a< d =1 =
+# ===========================
 tmx_genotypic_effect(p = .5, q =.5, a =.5, d = 1, m = 0)
 
-# ================
-# = No dominance =
-# ================
-tmx_genotypic_effect(p = .5, a = 1, d = 0, m = 0, show = TRUE);
-
-# ======================
-# = Complete dominance =
-# ======================
-tmx_genotypic_effect(p = .5, a = 1, d = 0, m = 0, show = TRUE);
-
-p = tmx_genotypic_effect(p = .5, q = .5, a = 1, d = .0, m = 0, show = TRUE);
 p = tmx_genotypic_effect(p = .5, q = .5, a = 1, d = .5, m = 0, show = TRUE); 
-p
-# p + geom_point() + geom_text(hjust = 0, nudge_x = 0.05)
+# p + ggplot2::geom_point() + ggplot2::geom_text(hjust = 0, nudge_x = 0.05)
 # ggsave(paste0(base, "c03_genotypic_effect_by_gene_dose.pdf"), width = 4.6, height = 4.6)
 }
 \references{
-- \url{https://vipbg.vcu.edu/vipbg/Articles/2005_book_chapters_ascertainment_corrections.pdf},
- \url{https://github.com/tbates/umx}
+\itemize{
+\item Neale, M. C. (2005). Quantitative Genetics. In Encyclopedia of Life Sciences. New York: John Wiley & Sons, Ltd.
+\href{https://vipbg.vcu.edu/vipbg/Articles/2005_book_chapters_ascertainment_corrections.pdf}{pdf}
+}
 }
 \seealso{
--
-
 Other Teaching and testing Functions: \code{\link{tmx_is.identified}},
   \code{\link{umx}}
 }

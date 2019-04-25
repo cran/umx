@@ -1,15 +1,105 @@
-#' Score a scale by summing normal and reversed items
+#   Copyright 2007-2019 Timothy C. Bates
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+# 
+#        https://www.apache.org/licenses/LICENSE-2.0
+# 
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+# devtools::document("~/bin/umx"); devtools::install("~/bin/umx");
+# utility naming convention: "umx_" prefix, lowercase, and "_" (not camel case) e.g. umx_swap_a_block()
+
+#' Determine whether a dataset will have weights and summary statistics for the means if used with mxFitFunctionWLS
+#'
+#' Given either a data.frame or an mxData of type raw, this function determines whether \code{mxFitFunctionWLS}
+#' will generate expectations for means.
+#' 
+#' All-continuous data processed using the "cumulants" method lack means, while
+#' all continuous data processed with allContinuousMethod = "marginals" will have means.
+#' 
+#' When data are not all continuous, allContinuousMethod is ignored, and means are modeled.
+#'
+#' @param data the (currently raw) data being used in a \code{\link{mxFitFunctionWLS}} model.
+#' @param allContinuousMethod the method used to process data when all columns are continuous.
+#' @param verbose logical. Whether to report diagnostics.
+#' @return - list describing the data.
+#' @family Data Functions
+#' @seealso - \code{\link{mxFitFunctionWLS}}, \code{\link{omxAugmentDataWithWLSSummary}}
+#' @export
+#' @examples
+#'
+#' # ====================================
+#' # = All continuous, data.frame input =
+#' # ====================================
+#'
+#' tmp = umxDescribeDataWLS(mtcars, allContinuousMethod= "cumulants", verbose = TRUE)
+#' tmp$hasMeans # FALSE - no means with cumulants
+#' tmp = umxDescribeDataWLS(mtcars, allContinuousMethod= "marginals") 
+#' tmp$hasMeans # TRUE we get means with marginals
+#'
+#' # ==========================
+#' # = mxData object as input =
+#' # ==========================
+#' tmp = mxData(mtcars, type="raw")
+#' umxDescribeDataWLS(tmp, allContinuousMethod= "cumulants", verbose = TRUE)$hasMeans # FALSE
+#' umxDescribeDataWLS(tmp, allContinuousMethod= "marginals")$hasMeans  # TRUE
+#'
+#' # =======================================
+#' # = One var is a factor: Means modeled =
+#' # =======================================
+#' tmp = mtcars
+#' tmp$cyl = factor(tmp$cyl)
+#' umxDescribeDataWLS(tmp, allContinuousMethod= "cumulants")$hasMeans # TRUE - always has means
+#' umxDescribeDataWLS(tmp, allContinuousMethod= "marginals")$hasMeans # TRUE
+#' 
+umxDescribeDataWLS <- function(data, allContinuousMethod = c("cumulants", "marginals"), verbose=FALSE){
+	allContinuousMethod = match.arg(allContinuousMethod)
+	if(class(data) == "data.frame"){
+		# all good
+	} else if(class(data) == "MxDataStatic" && data$type == "raw"){
+		data = data$observed
+	}else{
+		message("mxDescribeDataWLS currently only knows how to process dataframes and mxData of type = 'raw'.\n",
+		"You offered up an object of class: ", omxQuotes(class(data)))
+	}
+
+	if(all(sapply(data, FUN= is.numeric))){
+		if(verbose){ print("all continuous") }
+
+		if(allContinuousMethod == "cumulants"){
+			return(list(hasMeans = FALSE))
+		} else {
+			return(list(hasMeans = TRUE))
+		}
+	}else{
+		# Data with any non-continuous vars have means under WLS
+		return(list(hasMeans = TRUE))
+	}
+}
+
+#' Score a psychometric scale by summing normal and reversed items
 #'
 #' @description
-#' Score a scale by summing normal and reversed items. `base` is the string common to all item names.
-#' pos and rev are the normal and reverse-scored item numbers. `itemMax` is the high score (to compute how to reverse items).
+#' use this function to generate scores as the sum of the responses to the normal and reversed items in a scale.
+#' 
+#' Items must be named on the pattern <base><n>. `base` is the string common to all item names (variable names).
+#' `pos` and `rev` are vectors of the item numbers for the normal and reverse-scored item numbers.
+#' To reverse items, the function uses `itemMax` is the high score (to compute how to reverse items).
+#' `min` defaults to 1.
+#' 
 #' @param base String common to all item names.
-#' @param pos  The positive-scored item numbers.
-#' @param rev  The reverse-scored item numbers.
+#' @param pos The positive-scored item numbers.
+#' @param rev The reverse-scored item numbers.
 #' @param min Min possible score (default = 1). Not implemented for values other than 1 so far...
 #' @param max Max possible score for an item (to compute how to reverse items).
 #' @param data The data frame
-#' @param score = Sum or Mean (default = "sum")
+#' @param score = Totals or Mean (default = "totals")
 #' @param name = name of the scale to be returned. Defaults to "<base>_score"
 #' @return - scores
 #' @export
@@ -17,22 +107,27 @@
 #' @md
 #' @examples
 #' library(psych)
-#' tmp = umx_score_scale("A", pos = 1:3, rev = 4:5, max = 6, data= bfi, name = "A")
-#' tmp = umx_score_scale("E", pos = c(3,4,5), rev = c(1,2), max = 6, data= bfi, name = "E")
+#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A")
+#' tmp = umx_score_scale("E", pos = c(3,4,5), rev = c(1,2), max = 6, data= tmp, name = "E")
 #' 
-#' # Using @BillRevelle's psych package: More diagnostics.
-#' scores= psych::scoreItems(list(E= c("-E1","-E2","E3","E4","E5")), bfi, min = 1, max = 6)
+#' # Using @BillRevelle's psych package: More diagnostics, including alpha
+#' scores= psych::scoreItems(items = bfi, min = 1, max = 6, keys = list(
+#'		E = c("-E1","-E2", "E3",  "E4", "E5"),
+#'		A = c( "-A1", "A2", "A3", "A4", "A5"))
+#' )
 #' summary(scores)
 #' print(scores)
 #' 
-#' # Compare output (note, scoreItems replaces NAs with the sample median by default...)
-#' all(as.numeric(scores$scores)*5 ==tmp[,"E"], na.rm = TRUE)
-#' 
-umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL,  score = c("sum","mean"), name = NULL) {
+#' # Compare output
+#' # (note, by default psych::scoreItems replaces NAs with the sample median...)
+#' RevelleE = as.numeric(scores$scores[,"E"]) * 5
+#' all(RevelleE == tmp[,"E"], na.rm = TRUE)
+#'
+umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL,  score = c("totals", "mean"), name = NULL) {
 	score = match.arg(score)
 	
-	if(score!="sum"){
-		stop("You idiot! Tim hasn't implemented means as a score yet... sorry :-(")
+	if(score!="totals"){
+		stop("Tim hasn't implemented means as a score yet... sorry :-(")
 	}
 	if(is.null(name)){
 		stop("You must set 'name' (the name for the new column")
@@ -40,7 +135,7 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 	if(is.null(max)){
 		stop("You must set 'max' (the highest possible score for an item) in umx_score_scale")
 	}
-	if(min!=1){
+	if(min != 1){
 		stop("umx_score_scale doesn't handle min !=1")
 	}
 
@@ -63,25 +158,6 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 	return(data)
 }
 
-#' Helper to make a graphviz rank string
-#'
-#' @description
-#' Helper to make a graphviz rank string is a function which 
-#'
-#' @param vars a list of strings
-#' @param pattern regular expression to filter vars
-#' @param rank "same", max, min
-#' @return string
-#' @export
-#' @family Miscellaneous Utility Functions
-#' @seealso - \code{\link{umxLabel}}
-#' @examples
-#' umx_graphviz_rank(c("as1"), "^[ace]s[0-9]+$", "same")
-umx_graphviz_rank <- function(vars, pattern, rank) {
-	formatted = paste(namez(vars, pattern), collapse = "; ")
-	ranks = paste0("{rank=", rank, "; ", formatted, "};\n")
-	return(ranks)
-}
 
 #' Return whether a cell is in a set location of a matrix
 #'
@@ -90,7 +166,7 @@ umx_graphviz_rank <- function(vars, pattern, rank) {
 #' Left is useful for, e.g. twin means matrices.
 #' @param r which row the cell is on.
 #' @param c which column the cell is in.
-#' @param where the location (any, diag, lower or upper or left).
+#' @param where the location (any, diag, lower or upper (or _inc) or left).
 #' @param mat (optionally) provide matrix to check dimensions against r and c.
 #' @return - \code{\link{mxModel}}
 #' @export
@@ -99,7 +175,9 @@ umx_graphviz_rank <- function(vars, pattern, rank) {
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' umx_cell_is_on(r = 3, c = 3, "lower")
+#' umx_cell_is_on(r = 3, c = 3, "lower_inc")
 #' umx_cell_is_on(r = 3, c = 3, "upper")
+#' umx_cell_is_on(r = 3, c = 3, "upper_inc")
 #' umx_cell_is_on(r = 3, c = 3, "diag")
 #' umx_cell_is_on(r = 2, c = 3, "diag")
 #' umx_cell_is_on(r = 3, c = 3, "any")
@@ -109,7 +187,7 @@ umx_graphviz_rank <- function(vars, pattern, rank) {
 #' # test stopping
 #' umx_cell_is_on(r=4,c = 3, "any", mat = a_cp)
 #' }
-umx_cell_is_on <- function(r, c, where=c("diag", "lower", "upper", "any", "left"), mat= NULL) {
+umx_cell_is_on <- function(r, c, where=c("diag", "lower", "lower_inc", "upper", "upper_inc", "any", "left"), mat= NULL) {
 	where = match.arg(where)
 	if(!is.null(mat)){
 		# check r and c in bounds.
@@ -143,8 +221,20 @@ umx_cell_is_on <- function(r, c, where=c("diag", "lower", "upper", "any", "left"
 		} else {
 			valid = FALSE
 		}
+	} else if(where =="lower_inc"){
+		if(r >= c){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
 	} else if(where =="upper"){
 		if(c > r){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	} else if(where =="upper_inc"){
+		if(c >= r){
 			valid = TRUE
 		} else {
 			valid = FALSE
@@ -155,187 +245,6 @@ umx_cell_is_on <- function(r, c, where=c("diag", "lower", "upper", "any", "left"
 	return(valid)
 }
 
-#' Return dot code for paths in a matrix
-#'
-#' @description
-#' Return dot code for paths in a matrix is a function which 
-#' Walk rows and cols of matrix. At each free cell, 
-#' Create a string like:
-#' 	ai1 -> var1 [label=".35"]
-#' A latent (and correlations among latents)
-#' 	* these go from a_cp n=row TO common n= row
-#' 	* or for off diag, from a_cp n=col TO a_cp n= row
-#'
-#' @param x a \code{\link{umxMatrix}} to make paths from.
-#' @param from one of "rows", "columns" or a name
-#' @param cells which cells to process: "any" (default), "diag", "lower", "upper". "left" is the left half (e.g. in a twin means matrix)
-#' @param arrows "forward" "both" or "back"
-#' @param fromLabel = NULL
-#' @param toLabel = NULL
-#' @param selDVs if not null, row is used to index into this to set target name
-#' @param showFixed = FALSE
-#' @param digits rounding values (default = 2).
-#' @param type one of "latent" or "manifest" (default NULL, don't accumulate new names using "from" list)
-#' @param p input to build on. list(str = "", latents = c(), manifests = c())
-#' @return - list(str = "", latents = c(), manifests = c())
-#' @export
-#' @family Miscellaneous Utility Functions
-#' @seealso - \code{\link{plot}}
-#' @examples
-#' # Make a lower 3*3 value= 1:6 (1,4,6 on the diag)
-#' a_cp = umxMatrix("a_cp", "Lower", 3, 3, free = TRUE, values = 1:6)
-#' out = umx_mat2dot(a_cp, cells = "lower", from = "rows", arrows = "both")
-#' cat(out$str)
-#' out = umx_mat2dot(a_cp, cells = "lower", from = "cols", arrows = "both")
-#' cat(out$str)
-#' # First call also inits the plot struct
-#' out = umx_mat2dot(a_cp, from = "rows", cells = "lower", arrows = "both", type = "latent")
-#' out = umx_mat2dot(a_cp, from = "rows", cells = "diag" , toLabel= "common", type = "latent", p = out)
-#' cat(out$str)
-#' 
-umx_mat2dot <- function(x, cells = c("any", "diag", "lower", "upper", "left"), from = "rows", fromLabel = NULL, toLabel = NULL, selDVs = NULL, showFixed = FALSE, arrows = c("forward", "both", "back"), type = NULL, digits = 2, p = list(str = "", latents = c(), manifests = c())) {
-	cells  = match.arg(cells)
-	arrows = match.arg(arrows)
-	nRows = nrow(x)
-	nCols = ncol(x)
-	# Allow from and to labels other than the matrix name (default)
-	if(is.null(fromLabel)){
-		fromLabel = x$name
-	}
-	if(is.null(toLabel)){
-		toLabel = x$name
-	}
-	 
-	for (r in 1:nRows) {
-		for (c in 1:nCols) {
-			if(umx_cell_is_on(r= r, c = c, where = cells, mat = x)){
-				# TODO get the CI (or should we rely on stashed CIs?)
-				# TODO add this code to umx_mat2dot (need to pass in the model)
-				# CIstr = umx_APA_model_CI(model, cellLabel = thisParam, prefix = "top.", suffix = "_std", digits = digits)
-				# if(is.na(CIstr)){
-				# 	val = umx_round(parameterKeyList[thisParam], digits)
-				# }else{
-				# 	val = CIstr
-				# }
-				value = round(x$values[r,c], digits)
-				if(from == "rows"){
-					if(fromLabel=="one"){
-						fr = fromLabel
-					} else {
-						fr = paste0(fromLabel, r)
-					}
-					if(!is.null(selDVs)){
-						tu = selDVs[c]
-					}else{
-						tu = paste0(toLabel, c)
-					}
-				} else { 
-					if(fromLabel=="one"){
-						fr = fromLabel
-					} else {
-						fr = paste0(fromLabel, c)
-					}
-					if(!is.null(selDVs)){
-						tu = selDVs[r]
-					}else{
-						tu = paste0(toLabel, r)
-					}
-				}
-				# Show fixed cells if non-0
-				if(x$free[r,c] || (showFixed && x$values[r,c] != 0)){
-					p$str = paste0(p$str, "\n", fr, " -> ", tu, " [dir = ", arrows, " label=\"", value, "\"];")
-					if(!is.null(type)){
-						if(type == "latent"){
-							p$latents   = c(p$latents, fr)
-						} else if(type == "manifest"){
-							p$manifests = c(p$manifests, fr)
-						}
-					}
-				}
-			} else {
-				# fixed cell
-			}
-		}
-	}
-	p$latents = unique(p$latents)
-	p$manifests = unique(p$manifests)	
-	p
-}
-
-# Poems one should know by heart:
-
-# William Shakespeare
-# [Tomorrow and tomorrow soliloquy](https://www.poetryfoundation.org/poems/56964/speech-tomorrow-and-tomorrow-and-tomorrow)
-# [To be or not to be](https://www.poetryfoundation.org/poems/56965/speech-to-be-or-not-to-be-that-is-the-question)
-# [The Merchant of Venice](https://www.goodreads.com/work/quotes/2682703-the-merchant-of-venice)
-#  * "How far that little candle throws his beams! So shines a good deed in a weary world."
-#  * The quality of mercy is not strained.
-#  * "One half of me is yours, the other half is yours,
-#    Mine own, I would say; but if mine, then yours,
-#    And so all yours."
-#  * If to do were as easy as to know what were good to do, chapels 
-#    had been churches, and poor men's cottages princes’ palaces.
-# * “This above all: to thine own self be true,
-
-# # PERCY BYSSHE SHELLEY
-# [Ozymandias](https://www.poetryfoundation.org/poems/46565/ozymandias)
-
-# Brevia
-#  * [Invictus](https://en.wikipedia.org/wiki/Invictus)
-#  * [Abou ben Adhem](https://www.poetryfoundation.org/poems/44433/abou-ben-adhem)
-#  * [Odi et amo](https://en.wikipedia.org/wiki/Catullus_85)
-
-# # [Yeats](https://en.wikipedia.org/wiki/W._B._Yeats)
-#  * [The Second Coming](https://en.wikipedia.org/wiki/The_Second_Coming_(poem))
-
-
-#   Copyright 2007-2018 Timothy C. Bates
-#
-#   Licensed under the Apache License, Version 2.0 (the "License");
-#   you may not use this file except in compliance with the License.
-#   You may obtain a copy of the License at
-# 
-#        https://www.apache.org/licenses/LICENSE-2.0
-# 
-#   Unless required by applicable law or agreed to in writing, software
-#   distributed under the License is distributed on an "AS IS" BASIS,
-#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#   See the License for the specific language governing permissions and
-#   limitations under the License.
-
-# devtools::document("~/bin/umx"); devtools::install("~/bin/umx");
-# utility naming convention: "umx_" prefix, lowercase, and "_" not camel case for word boundaries
-# so umx_swap_a_block()
-
-# ===================
-# = OpenMx wrappers =
-# ===================
-
-#' A recipe Easter-egg for umx
-#'
-#' @description
-#' How to cook steak.
-#' @details Equipment matters. You should buy a heavy cast-iron skillet, and a digital internal thermometer.
-#' Preferably cook over a gas flame.
-#' 
-#' *note*: Cheaper cuts like blade steak can come out fine.
-#' 
-#' A great reference is The Food Lab by Kenji Alt Lopez. https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087.
-#'
-#' @export
-#' @family Miscellaneous Utility Functions
-#' @seealso - \code{\link{omxBrownie}}
-#' @references - [The Food Lab](https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087)
-#' @examples
-#' umxBrownie()
-#' @md
-umxBrownie <- function() {
-	message("Rub steak in a table spoon of salt, put it back in the fridge for an hour (longer is fine).\n",
-	"Place steak on a hot cast-iron skillet, with a little peanut oil.\n",
-	"Turn steaks as often as you wish. Control heat to below smoke point.\n",
-	"Remove and eat when internal temp reaches 130 \u0080 F.\n"
-	)
-}
 
 # ==============================
 # = Get and set OpenMx options =
@@ -523,6 +432,45 @@ umx_set_auto_plot <- function(autoPlot = NULL, silent = FALSE) {
 	}
 	invisible(autoPlot)
 }
+
+#' umx_set_data_variance_check
+#'
+#' Set default for data checking in models like umxACE umxGxE etc.
+#'
+#' @param minVar Set the threshold at which to warn user about variables with too-small variance. Else returns the current value of umx_minVar
+#' @param maxVarRatio Set the option for threshold at which to warn user variances differ too much. Else returns the current value of umx_maxVarRatio
+#' @param silent If TRUE, no message will be printed.
+#' @return - list of umx_minVar and umx_maxVarRatio settings
+#' @export
+#' @seealso xmu_check_variance which uses these to check sanity in the variances of a data frame.
+#' @family Get and set
+#' @examples
+#' library(umx)
+#' umx_set_data_variance_check() # print current state
+#' old = umx_set_data_variance_check(silent = TRUE) # store existing value
+#' umx_set_data_variance_check(minVar = .01)
+#' umx_set_data_variance_check(maxVarRatio = 500)
+#' umx_set_data_variance_check(minVar = old$minVar, maxVarRatio = old$maxVarRatio) # reinstate
+umx_set_data_variance_check <- function(minVar = NULL, maxVarRatio = NULL, silent = FALSE) {
+	if(is.null(minVar)){
+		minVar = getOption("umx_minVar")
+		if(!silent){
+			message("Current threshold for small variance warning in umx functions is ", omxQuotes(getOption("umx_minVar")))
+		}
+	}else{
+		options("umx_minVar" = minVar)		
+	}
+	if(is.null(maxVarRatio)){
+		maxVarRatio = getOption("umx_maxVarRatio")
+		if(!silent){
+			message("Current threshold for excess ratio among variances warning in umx functions is ", omxQuotes(getOption("umx_maxVarRatio")))
+		}
+	}else{
+		options("umx_maxVarRatio" = maxVarRatio)		
+	}
+	invisible(list(minVar = minVar, maxVarRatio = maxVarRatio))
+}
+
 
 #' umx_set_auto_run
 #'
@@ -1090,52 +1038,10 @@ umx_is_endogenous <- function(model, manifests_only = TRUE) {
 	return(endog)
 }
 
-#' umx_add_variances
-#'
-#' Convenience function to save the user specifying mxPaths adding variance to each variable
-#'
-#' @param model an \code{\link{mxModel}} to add variances to
-#' @param add.to = List of variables to create variance for
-#' @param free = List of variables to create variance for (default = NULL)
-#' @param values = List of values (default = NULL)
-#' @return - \code{\link{mxModel}}
-#' @export
-#' @family Advanced Model Building Functions
-#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{https://openmx.ssri.psu.edu}
-#' @examples
-#' require(umx)
-#' data(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM",
-#'  manifestVars = names(demoOneFactor),
-#'  latentVars = "g",
-#' 	mxPath(from = "g", to = names(demoOneFactor), values= .1),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
-#' )
-#' umx_show(m1, matrices = "S") # variables lack variance :-(
-#' m1 = umx_add_variances(m1, add.to = names(demoOneFactor))
-#' m1 = umx_add_variances(m1, add.to = "g", FALSE, 1)
-#' umx_show(m1, matrices = "S") 
-#' # Note: latent g has been treated like the manifests...
-#' # umxFixLatents() will take care of this for you...
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' umxSummary(m1)
-umx_add_variances <- function(model, add.to, values = NULL, free = NULL) {
-	umx_check_model(model, type = "RAM")
-	theList = c(model@latentVars, model@manifestVars)
-	if(!all(add.to %in% theList)){
-		stop("not all names found in model")
-	}
-	for (i in add.to) {
-		model$S@free[i, i] = TRUE
-		model$S@values[i, i] = .1
-	}
-	return(model)
-}
-
 #' umx_fix_latents
 #'
 #' Fix the variance of all, or selected, exogenous latents at selected values. This function adds a variance to the factor if it does not exist.
-#'
+#' # TODO: umx_fix_latents is deprecated - likely of no use.
 #' @param model an \code{\link{mxModel}} to set
 #' @param latents (If NULL then all latentVars)
 #' @param exogenous.only only touch exogenous latents (default = TRUE)
@@ -1147,16 +1053,17 @@ umx_add_variances <- function(model, add.to, values = NULL, free = NULL) {
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM",
-#'  manifestVars = names(demoOneFactor),
-#'  latentVars = "g",
-#' 	mxPath(from = "g", to = names(demoOneFactor)),
-#' 	mxPath(from = names(demoOneFactor), arrows = 2),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' latents  = c("g")
+#' manifests = names(demoOneFactor)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
-#' umx_show(m1, matrices = "S") # variance of g is not set
+#'
+#' tmx_show(m1, what = "free", matrices = "S") # variance of g is not set
 #' m1 = umx_fix_latents(m1)
-#' umx_show(m1, matrices = "S") # variance of g is fixed at 1
+#' tmx_show(m1, what = "free", matrices = "S") # variance of g is fixed at 1
 umx_fix_latents <- function(model, latents = NULL, exogenous.only = TRUE, at = 1) {
 	if(is.null(latents)){
 		latenVarList = model@latentVars
@@ -1175,28 +1082,32 @@ umx_fix_latents <- function(model, latents = NULL, exogenous.only = TRUE, at = 1
 
 #' umx_fix_first_loadings
 #'
-#' Fix the loading of the first path from each latent at selected value. 
-#' Note: latents with fixed variance are skipped.
+#' Fix the loading of the first path from each latent at selected value. Seldom used; might be useful to show students
+#' how to scale models with fixed latent or fixed first path...
+#' *Note*: latents with fixed variance are toggled by default (change made in 2019).
 #' @param model An \code{\link{mxModel}} to set.
 #' @param latents Which latents to fix from (NULL = all).
 #' @param at The value to fix the first path at (Default = 1).
+#' @param freeFixedLatent Whether to free a latent if it is fixed (default = TRUE)
 #' @return - \code{\link{mxModel}}
+#' @md
 #' @export
 #' @family Advanced Model Building Functions
 #' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{https://openmx.ssri.psu.edu}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM",
-#'  manifestVars = names(demoOneFactor),
-#'  latentVars = "g",
-#' 	mxPath(from = "g", to = names(demoOneFactor)),
-#' 	mxPath(from = names(demoOneFactor), arrows = 2),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' manifests = names(demoOneFactor)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath("g", to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = "g", fixedAt = 1.0)
 #' )
-#' m1 = umx_fix_first_loadings(m1)
-#' umx_show(m1) # path from g to var1 fixed @ 1.
-umx_fix_first_loadings <- function(model, latents = NULL, at = 1) {
+#'
+#' m1 = umx_fix_first_loadings(m1, latents = "g")
+#' tmx_show(m1, "free", matrices="A") # path from g to var1 fixed @ 1.
+#' # note, in practice, you would now need to free the variance of g
+umx_fix_first_loadings <- function(model, latents = NULL, at = 1, freeFixedLatent = TRUE) {
 	umx_check_model(model, type = "RAM")
 	if(is.null(latents)){
 		latentVarList = model@latentVars
@@ -1209,19 +1120,21 @@ umx_fix_first_loadings <- function(model, latents = NULL, at = 1) {
 
 	for (thisLatent in latentVarList) {
 		# thisLatent = "ind60"
-		if(!model$A$free[thisLatent, thisLatent]){
-			# "this latent is fixed... don't scale first loading"
-		} else {
+		latentIsFree = model$A$free[thisLatent, thisLatent]
+		
+		if(!latentIsFree | freeFixedLatent){
 			firstFreeRow = which(model$A$free[, thisLatent])[1]
 			# check that there is not already a factor fixed prior to this one
 			if(firstFreeRow == 1){
 				# must be ok
+				model$A$free[thisLatent, thisLatent] = TRUE
 				model$A@free[firstFreeRow, thisLatent]   = FALSE
 				model$A@values[firstFreeRow, thisLatent] = at
 			} else {
 				if(any(model$matrices$A$values[1:(firstFreeRow-1), thisLatent] == at)){
 					message("I skipped factor '", thisLatent, "'. It looks like it already has a loading fixed at ", at)
 				} else {
+					model$A$free[thisLatent, thisLatent] = TRUE
 					model$A@free[firstFreeRow, thisLatent]   = FALSE
 					model$A@values[firstFreeRow, thisLatent] = at				
 				}
@@ -1394,8 +1307,8 @@ umxFactor <- function(x = character(), levels= NULL, labels = levels, exclude = 
 				allLevels = unique(as.vector(as.matrix(a)))
 				allLevels = sort(allLevels)
 				allLevels = allLevels[!is.na(allLevels)] # drop NA if present
-				# z = umxFactor(x = x[,theseNames], levels = allLevels, ordered = T, verbose = T, collapse=FALSE)
-				# z = umxFactor(x = x[,theseNames], levels = allLevels, labels = allLevels, ordered = T, verbose = T)
+				# z = umxFactor(x = x[,theseNames], levels = allLevels, ordered = TRUE, verbose = TRUE, collapse=FALSE)
+				# z = umxFactor(x = x[,theseNames], levels = allLevels, labels = allLevels, ordered = TRUE, verbose = TRUE)
 				x[, theseNames] = umxFactor(x = x[, theseNames, drop = FALSE], levels = allLevels, labels = allLevels, exclude = exclude, collapse = collapse, ordered = ordered, verbose = verbose)
 			}
 		} else {
@@ -1443,6 +1356,32 @@ umx_factor <- umxFactor
 # = Utility =
 # ===========
 
+#' A recipe Easter-egg for umx
+#'
+#' @description
+#' How to cook steak.
+#' @details Equipment matters. You should buy a heavy cast-iron skillet, and a digital internal thermometer.
+#' Preferably cook over a gas flame.
+#' 
+#' *note*: Cheaper cuts like blade steak can come out fine.
+#' 
+#' A great reference is The Food Lab by Kenji Alt Lopez. https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087.
+#'
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @seealso - \code{\link{omxBrownie}}
+#' @references - [The Food Lab](https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087)
+#' @examples
+#' umxBrownie()
+#' @md
+umxBrownie <- function() {
+	message("Rub steak in a table spoon of salt, put it back in the fridge for an hour (longer is fine).\n",
+	"Place steak on a hot cast-iron skillet, with a little peanut oil.\n",
+	"Turn steaks as often as you wish. Control heat to below smoke point.\n",
+	"Remove and eat when internal temp reaches 130 \u0080 F.\n"
+	)
+}
+
 #' Get or print the version of umx, along with detail from OpenMx and general system info.
 #'
 #' @description
@@ -1471,9 +1410,13 @@ umxVersion <- function (model = NULL, min = NULL, verbose = TRUE, return = "umx"
 			message("umx version is recent enough")
 		} else {
 			stop("umx version is not recent enough to run this script! (min is ", min, "). You have ", umx_vers,
-			"\n You can run umx_open_CRAN_page() to see the most recent version of umx on CRAN")
+			"\n You can run umx_open_CRAN_page('umx') to see the most recent version of umx on CRAN")
 			
 		}
+	}
+	if(!is.null(model) && !umx_is_MxModel(model)){
+		message("Polite message - you should call umxVersion() with no parameters, or the first parameter should be a model")
+		model = NULL
 	}
 	OpenMx_vers = mxVersion(model = model, verbose = verbose)	
     if (verbose) {
@@ -1688,10 +1631,12 @@ umx_find_object <- function(pattern = ".*", requiredClass = "MxModel") {
 #' x = mtcars
 #' x = umx_rename(x, replace = c(cyl = "cylinder"))
 #' # alternate style
+#' x = umx_rename(x, old = c("disp"), replace = c("displacement"), test= TRUE)
 #' x = umx_rename(x, old = c("disp"), replace = c("displacement"))
 #' umx_check_names("displacement", data = x, die = TRUE)
 #' # This will warn that "disp" does not exist (anymore)
-#' x = umx_rename(x, old = c("disp"), replace = c("displacement"))
+#' x = umx_rename(x, old = c("disp", "am"), replace = c("displacement", "auto"))
+#' x = umx_rename(x, grep = "lacement", replace = "", test=TRUE) # test using grep to revert to disp
 #' x = umx_rename(x, grep = "lacement", replace = "") # using grep to revert to disp
 #' umx_names(x, "^d") # all names begining with a d
 umx_rename <- function(x, replace = NULL, old = NULL, grep = NULL, test = FALSE) {
@@ -1712,7 +1657,7 @@ umx_rename <- function(x, replace = NULL, old = NULL, grep = NULL, test = FALSE)
 		if(test){
 			message("The following changes would be made (set test =FALSE to actually make them)")
 			message(length(nameVector), " names found. ",
-			length(nameVector[!(nameVector == new_names)]), " changed. Old Was:")
+			length(nameVector[!(nameVector == new_names)]), " would be changed. Old:")
 			print(nameVector[!(nameVector == new_names)])
 			message("New:")
 			print(new_names[!(nameVector == new_names)])
@@ -1725,14 +1670,16 @@ umx_rename <- function(x, replace = NULL, old = NULL, grep = NULL, test = FALSE)
 		}
 		invisible(x)		
 	} else {
+		# not grep
 		if(!is.null(old)){
-		# message("replacing old with replace")
-		if(length(old) != length(replace)){
-			stop("You are trying to replace ", length(old), " old names with ", length(replace), "new names: Lengths must match")
-		}
-		names_to_replace <- old
-		new_names_to_try <- replace
+			# message("replacing old with replace")
+			if(length(old) != length(replace)){
+				stop("You are trying to replace ", length(old), " old names with ", length(replace), "new names: Lengths must match")
+			}
+			names_to_replace <- old
+			new_names_to_try <- replace
 		} else {
+			# replace is a key-value list of names and replacements
 			names_to_replace <- names(replace)
 			new_names_to_try <- unname(replace)
 		}
@@ -1755,13 +1702,13 @@ umx_rename <- function(x, replace = NULL, old = NULL, grep = NULL, test = FALSE)
 		)
 		  stop(err)
 		}
-		new_names <- new_names_to_try[match(old_names, names_to_replace)]  
+		new_names <- new_names_to_try[match(old_names, names_to_replace)]
 		if(test){
 			message("The following changes would be made (set test =FALSE to actually make them")
 			message("Names to be replaced")
 			print(names_to_replace)
 			message("replacement names:")
-			print(new_names)
+			print(new_names[!is.na(new_names)])
 			invisible(x)
 		} else {
 			names(x) = new_names
@@ -2120,6 +2067,10 @@ umx_check_OS <- function(target=c("OSX", "SunOS", "Linux", "Windows"), action = 
 #' Convert an excel spreadsheet in a text file on sql statements.
 #'
 #' Unlikely to be of use to anyone but the package author :-)
+#' 
+#' On OS X, the default (theFile= "Finder" will use the file selected in the front-most Finder window.
+#' If it is blank, a choose file dialog will be thrown.
+#' 
 #' Read an xlsx file and convert into SQL insert statements (placed on the clipboard)
 #' On MacOS, the function can access the current front-most Finder window.
 #' 
@@ -2140,7 +2091,7 @@ umx_check_OS <- function(target=c("OSX", "SunOS", "Linux", "Windows"), action = 
 #' 
 #' intro (not) scored, and sequenced as item 0
 #'
-#' @param theFile The xlsx file to read. If set to "Finder" (and you are on OS X) it will use the current front-most Finder window. If it is blank, a choose file dialog will be thrown.
+#' @param theFile The xlsx file to read. Default = "Finder")
 #' @family File Functions
 #' @return - 
 #' @export
@@ -2407,6 +2358,7 @@ specify_decimal <- function(x, k){
 #' @references - \url{https://cran.r-project.org/package=Rcmdr}
 #' @examples
 #' # treat vehicle aspects as items of a test
+#' data(mtcars)
 #' reliability(cov(mtcars))
 reliability <-function (S){
      reliab <- function(S, R) {
@@ -2461,6 +2413,7 @@ print.reliability <- function (x, digits = 4, ...){
 # ==================
 # = Code functions =
 # ==================
+
 #' Install OpenMx, with choice of builds
 #'
 #' @description
@@ -2522,13 +2475,14 @@ install.OpenMx <- function(loc = c("NPSOL", "travis", "CRAN", "open travis build
 			install.packages("https://vipbg.vcu.edu/vipbg/OpenMx2/software/bin/macosx/travis/OpenMx_latest.tgz")
 			# was ("https://openmx.psyc.virginia.edu/OpenMx2/bin/macosx/travis/OpenMx_latest.tgz")
 			# , lib = lib, repos=repos
+			# quit(save = "default")
 		} else {
 			stop(paste0("Sorry, travis builds are only available for MacOS :-("))
 		}
 	} else if(loc == "CRAN"){
 		install.packages("OpenMx", lib= lib, repos = repos)
 	} else if(loc == "open travis build page"){
-		browseURL("https://vipbg.vcu.edu/vipbg/OpenMx2/software/bin/macosx/travis")
+		browseURL("https://vipbg.vcu.edu/vipbg/OpenMx2/software/bin/macosx/travis/?C=M;O=D")
 	}
 }
 
@@ -2544,6 +2498,7 @@ umx_update_OpenMx <- install.OpenMx
 #' @param pkg the local path to your package. Defaults to my path to umx.
 #' @param check Whether to run check on the package before release (default = TRUE).
 #' @param run = If what is "examples", whether to also run examples marked don't run. (default FALSE)
+#' @param start If what is "examples", which function to start from (default (NULL) = beginning).
 #' @param spelling Whether to check spelling before release (default = "en_US": set NULL to not check).
 #' @return - 
 #' @export
@@ -2551,31 +2506,37 @@ umx_update_OpenMx <- install.OpenMx
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
 #' \dontrun{
+#' umx_make(what = "q"))        # Quick install
 #' umx_make(what = "install"))  # Just installs the package
 #' umx_make(what = "examples")) # Run the examples
+#' umx_make(what = "spell"))    # Spell check the documents
 #' umx_make(what = "check"))    # Run R CMD check
 #' umx_make(what = "win"))      # Check on win-builder
 #' umx_make(what = "release"))  # Release to CRAN
 #' }
-umx_make <- function(what = c("install", "examples", "check", "win", "rhub", "release", "spell"), pkg = "~/bin/umx", check = TRUE, run=FALSE, spelling = "en_US") {
+umx_make <- function(what = c("quick_install", "install_full", "spell", "run_examples", "check", "win", "rhub", "release"), pkg = "~/bin/umx", check = TRUE, run=FALSE, start = NULL, spelling = "en_US") {
 	what = match.arg(what)
-	if(what == "install"){
+	if(what == "install_full"){
 		devtools::document(pkg = pkg); devtools::install(pkg = pkg);
-	} else if(what == "examples"){
-		devtools::run_examples(pkg = pkg, run = run)
+	} else if(what == "quick_install"){
+		devtools::document(pkg = pkg); devtools::install(pkg = pkg, quick = TRUE, dependencies= FALSE, upgrade= FALSE, build_vignettes = FALSE);				
+	} else if(what == "run_examples"){
+		devtools::run_examples(pkg = pkg, run = run, start = start)
 	} else if(what == "check"){
 		# http://r-pkgs.had.co.nz/check.html
 		devtools::check(pkg = pkg)		
 	} else if (what =="win"){
 		# old =
-		devtools::build_win(pkg = pkg)
-
+		# devtools::build_win(pkg = pkg)
 		# new =
-		# devtools::check_win_devel(pkg = pkg)
+		devtools::check_win_devel(pkg = pkg)
 	} else if (what =="rhub"){
 		devtools::check_rhub(pkg = pkg)
 	} else if (what == "release"){
+		oldDir = getwd()
+		setwd(dir= pkg)
 		devtools::release(pkg = pkg, check = check) # spelling = NULL		 
+		setwd(dir= oldDir)
 	} else if (what == "spell"){
 		spelling::spell_check_package(pkg = pkg, vignettes = TRUE, use_wordlist = TRUE)
 	}
@@ -2776,15 +2737,17 @@ umxCovData <- function(df, columns = NA, use = c("complete.obs", "everything", "
 
 #' Convert a covariance matrix into a correlation matrix
 #'
-#' umxCov2cor like \code{\link{cov2cor}} that forces upper and lower triangles to be identical (rather than nearly identical)
+#' A version of \code{\link{cov2cor}} that forces upper and lower triangles to be *identical* (rather than nearly identical)
 #'
 #' @param x something that cov2cor can work on (matrix, df, etc.)
 #' @return - a correlation matrix
 #' @export
 #' @family Miscellaneous Stats Helpers
+#' @seealso \code{\link{cov2cor}}
 #' @references - \url{https://www.github.com/tbates/umx}
 #' @examples
-#' umxCov2cor(cov(mtcars))
+#' umxCov2cor(cov(mtcars[,1:5]))
+#' @md
 umxCov2cor <- function(x) {
 	x = cov2cor(x)
 	x[lower.tri(x)] <- t(x)[lower.tri(t(x))]
@@ -2796,47 +2759,296 @@ umxCov2cor <- function(x) {
 # = Reporting & Graphing helpers =
 # ================================
 
-#' umx_show
+#' Helper to make the list of vars and their shapes for a graphviz string
 #'
-#' Show matrix contents. The user can select  values, free, and/or labels, and which matrices to display
+#' @description
+#' Helper to make a graphviz rank string is a function which.
 #'
-#' @param model an \code{\link{mxModel}} to show data from
-#' @param what legal options are "values" (default), "free", or "labels")
-#' @param show filter on what to show c("all", "free", "fixed")
-#' @param matrices to show  (default is c("S", "A")). "Thresholds" in beta
-#' @param digits precision to report, defaults to rounding to 2 decimal places
-#' @return - \code{\link{mxModel}}
+#' @param latents list of latent variables
+#' @param manifests list of manifest variables
+#' @param preOut "" by default.
+#' @return string
+#' @export
+#' @family Graphviz
+#' @seealso - \code{\link{umx_dot_rank}}
+#' @examples
+#' umx_dot_define_shapes(c("as1"), c("E", "N"))
+umx_dot_define_shapes <- function(latents, manifests, preOut= "") {
+	latents   = unique(latents)
+	manifests = unique(manifests)
+	preOut    = paste0(preOut, "\n# Latents\n")
+	for(var in latents) {
+		if(var == "one"){
+			preOut = paste0(preOut, "\t", var, " [shape = triangle];\n")
+		} else {
+			preOut = paste0(preOut, "\t", var, " [shape = circle];\n")
+		}
+	}
+	preOut = paste0(preOut, "\n# Manifests\n")
+	for(thisManifest in manifests) {
+	   preOut = paste0(preOut, "\t", thisManifest, " [shape = square];\n")
+	}
+	return(preOut)
+}
+
+#' Helper to make a graphviz rank string
+#'
+#' Given a list of names, this filters the list, and returns a graphviz string to force them into the given rank.
+#' e.g. "{rank=same; as1};"
+#'
+#' @param vars a list of strings
+#' @param pattern regular expression to filter vars
+#' @param rank "same", "max", "min"
+#' @return string
+#' @export
+#' @family Graphviz
+#' @seealso - \code{\link{umx_dot_define_shapes}}
+#' @examples
+#' umx_dot_rank(c("as1"), "^[ace]s[0-9]+$", "same")
+umx_dot_rank <- function(vars, pattern, rank) {
+	formatted = paste(namez(vars, pattern), collapse = "; ")
+	ranks = paste0("{rank=", rank, "; ", formatted, "};\n")
+	return(ranks)
+}
+
+#' Return dot code for paths in a matrix
+#'
+#' @description
+#' Return dot code for paths in a matrix is a function which walks the rows and cols of a matrix.
+#' At each free cell, it creates a dot-string specifying the relevant path, e.g.:
+#'
+#' \code{ai1 -> var1 [label=".35"]}
+#'
+#' Its main use is to correctly generate paths (and their sources and sink objects) 
+#' without depending on the label of the parameter.
+#' 
+#' It is highly customizable:
+#' 
+#' 1. You can specify which cells to inspect, e.g. "lower".
+#' 2. You can choose how to interpret path direction, from = "cols".
+#' 3. You can choose the label for the from to ends of the path (by default, the matrix name is used).
+#' 4. Offer up a list of from and toLabel which will be indexed into for source and sink
+#' 5. You can set the number of arrows on a path (e.g. both).
+#' 6. If `type` is set, then sources and sinks added manifests and/or latents output (p)
+#' 
+#' Finally, you can pass in previous output and new paths will be concatenated to these.
+#' 
+#' @param x a \code{\link{umxMatrix}} to make paths from.
+#' @param from one of "rows", "columns"
+#' @param cells which cells to process: "any" (default), "diag", "lower", "upper". "left" is the left half (e.g. in a twin means matrix)
+#' @param arrows "forward" "both" or "back"
+#' @param fromLabel = NULL. NULL = use matrix name (default). If one, if suffixed with index, length() > 1, index into list. "one" is special.
+#' @param toLabel = NULL. NULL = use matrix name (default). If one, if suffixed with index, length() > 1, index into list.
+#' @param showFixed = FALSE.
+#' @param digits to round values to (default = 2).
+#' @param fromType one of "latent" or "manifest" NULL (default) = don't accumulate new names.
+#' @param toType one of "latent" or "manifest" NULL (default) = don't accumulate new names.
+#' @param model If you want to get CIs, you can pass in the model (default = NULL).
+#' @param SEstyle If TRUE, CIs shown as "b(SE)" ("b \[l,h\]" if FALSE (default)). Ignored if model NULL.
+#' @param p input to build on. list(str = "", latents = c(), manifests = c())
+#' @return - list(str = "", latents = c(), manifests = c())
+#' @export
+#' @family Graphviz
+#' @seealso - \code{\link{plot}}
+#' @md
+#' @examples
+#'
+#' # Make a lower 3 * 3 value= 1:6 (1, 4, 6 on the diag)
+#' a_cp = umxMatrix("a_cp", "Lower", 3, 3, free = TRUE, values = 1:6)
+#'
+#' # Get dot strings for lower triangle (default from and to based on row and column number)
+#' out = umx_dot_mat2dot(a_cp, cells = "lower", from = "cols", arrows = "both")
+#' cat(out$str) # a_cp1 -> a_cp2 [dir = both label="2"];
+#'
+#' # one arrow (the default = "forward")
+#' out = umx_dot_mat2dot(a_cp, cells = "lower", from = "cols")
+#' cat(out$str) # a_cp1 -> a_cp2 [dir = forward label="2"];
+#'
+#' # label to (rows) using var names
+#'
+#' out = umx_dot_mat2dot(a_cp, toLabel= paste0("v", 1:3), cells = "lower", from = "cols")
+#' umx_msg(out$str) # a_cp1 -> v2 [dir = forward label="2"] ...
+#' 
+#' # First call also inits the plot struct
+#' out = umx_dot_mat2dot(a_cp, from = "rows", cells = "lower", arrows = "both", fromType = "latent")
+#' out = umx_dot_mat2dot(a_cp, from = "rows", cells = "diag", 
+#' 		toLabel= "common", toType = "manifest", p = out)
+#' umx_msg(out$str); umx_msg(out$manifests); umx_msg(out$latents)
+#' 
+#' # ================================
+#' # = Add found sinks to manifests =
+#' # ================================
+#' out = umx_dot_mat2dot(a_cp, from= "rows", cells= "diag", 
+#' 		toLabel= c('a','b','c'), toType= "manifest");
+#' umx_msg(out$manifests)
+#'
+#' # ================================
+#' # = Add found sources to latents =
+#' # ================================
+#' out = umx_dot_mat2dot(a_cp, from= "rows", cells= "diag", 
+#' 		toLabel= c('a','b','c'), fromType= "latent");
+#' umx_msg(out$latents)
+#' 
+#' # ==============================================
+#' # = Get a string which includes CI information =
+#' # ==============================================
+#' data(demoOneFactor)
+#' latents = c("g"); manifests = names(demoOneFactor)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
+#' )
+#' m1 = umxCI(m1, run= "yes")
+#' out = umx_dot_mat2dot(m1$A, from = "cols", cells = "any", 
+#'       toLabel= paste0("x", 1:5), fromType = "latent", model= m1);
+#' umx_msg(out$str); umx_msg(out$latents)
+#' 
+#' # ========================
+#' # = Label a means matrix =
+#' # ========================
+#' 
+#' tmp = umxMatrix("expMean", "Full", 1, 4, free = TRUE, values = 1:4)
+#' out = umx_dot_mat2dot(tmp, cells = "left", from = "rows",
+#' 	fromLabel= "one", toLabel= c("v1", "v2")
+#' )
+#' cat(out$str)
+#'
+umx_dot_mat2dot <- function(x, cells = c("diag", "lower", "lower_inc", "upper", "upper_inc", "any", "left"), from = c("rows", "cols"), fromLabel = NULL, toLabel = NULL, showFixed = FALSE, arrows = c("forward", "both", "back"), fromType = NULL, toType = NULL, digits = 2, model = NULL, SEstyle = FALSE, p = list(str = "", latents = c(), manifests = c())) {
+	from   = match.arg(from)
+	cells  = match.arg(cells)
+	arrows = match.arg(arrows)
+	nRows  = nrow(x)
+	nCols  = ncol(x)
+	# Allow from and to labels other than the matrix name (default)
+	if(is.null(fromLabel)){ fromLabel = x$name }
+	if(is.null(toLabel))  { toLabel   = x$name }
+ 
+	# Get parameter value and make the plot string
+	# Convert address to [] address and look for a CI: not perfect, as CI might be label based?
+	# Also fails to understand not using _std?
+
+	for (r in 1:nRows) {
+		for (c in 1:nCols) {
+			if(umx_cell_is_on(r= r, c = c, where = cells, mat = x)){
+				# cell is in the target zone
+				if(!is.null(model)){
+					# Model available - look for CIs
+					CIstr = xmu_get_CI(model, label = x$labels[r,c], SEstyle = SEstyle, digits = digits)
+					if(is.na(CIstr)){
+						value = umx_round(x$values[r,c], digits)
+					}else{
+						value = CIstr
+					}
+				} else {
+					value = umx_round(x$values[r,c], digits)
+				}
+
+				if(from == "rows"){
+					sourceIndex = r; sinkIndex = c
+				} else { # from cols
+					sourceIndex = c; sinkIndex = r
+				}
+
+				if(length(fromLabel) == 1){
+					if(fromLabel == "one"){
+						thisFrom = fromLabel
+					} else {
+						thisFrom = paste0(fromLabel, sourceIndex)
+					}
+				} else {
+					thisFrom = fromLabel[sourceIndex]
+				}
+
+				if(length(toLabel) == 1){
+					if(toLabel == "one"){
+						thisTo = toLabel
+					} else {
+						thisTo = paste0(toLabel, sinkIndex)
+					}
+				} else {
+					thisTo = toLabel[sinkIndex]
+				}
+
+				# Show fixed cells if non-0
+				if(x$free[r,c] || (showFixed && x$values[r,c] != 0)){
+					p$str = paste0(p$str, "\n", thisFrom, " -> ", thisTo, " [dir = ", arrows, " label=\"", value, "\"];")
+					if(!is.null(fromType)){
+						if(fromType == "latent"){
+							p$latents = c(p$latents, thisFrom)
+						} else if(fromType == "manifest"){
+							p$manifests = c(p$manifests, thisFrom)
+						}else{
+							stop("not sure what to do for fromType = ", fromType, ". Legal is latent or manifest")
+						}
+					}
+					if(!is.null(toType)){
+						if(toType == "latent"){
+							p$latents   = c(p$latents, thisTo)
+						} else if(toType == "manifest"){
+							p$manifests = c(p$manifests, thisTo)
+						}else{
+							stop("not sure what to do for fromType = ", toType, ". Legal is latent or manifest")
+						}
+					}
+				}
+			} else {
+				# fixed cell
+			}
+		}
+	}
+	p$latents   = unique(p$latents)
+	p$manifests = unique(p$manifests)	
+	p
+}
+
+#' Show matrices of RAM models in a easy-to-learn-from format. 
+#'
+#' A great way to learn about models is to look at the matrix contents. `tmx_show` is designed to
+#' do this in a way that makes it easy to process for users: The matrix contents are formatted as tables, and can even 
+#' be displayed as tables in a web browser.
+#' 
+#' The user can select which matrices to view, whether to show values, free, and/or labels, and the precision of rounding.
+#'
+#' @param model an \code{\link{mxModel}} from which to show parameters.
+#' @param what legal options are "values" (default), "free", or "labels").
+#' @param show filter on what to show c("all", "free", "fixed").
+#' @param matrices to show  (default is c("S", "A")). "Thresholds" in beta.
+#' @param digits precision to report. Default = round to 2 decimal places.
+#' @param na.print How to display NAs (default = "")
+#' @param zero.print How to display 0 values (default = ".")
+#' @param report How to report the results. "html" = open in browser.
+#' @return - 
 #' @export
 #' @family Reporting Functions
 #' @references - \url{https://tbates.github.io}
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' latents  = c("G")
+#' latents  = c("g")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' umx_show(m1)
-#' umx_show(m1, digits = 3)
-#' umx_show(m1, matrices = "S")
-#' umx_show(m1, what = "free")
-#' umx_show(m1, what = "labels")
-#' umx_show(m1, what = "free", matrices = "A")
-umx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_free"), show = c("all", "free", "fixed"), matrices = c("S", "A"), digits = 2) {
+#'
+#' tmx_show(m1)
+#' tmx_show(m1, digits = 3)
+#' tmx_show(m1, matrices = "S")
+#' tmx_show(m1, what = "free")
+#' tmx_show(m1, what = "labels")
+#' tmx_show(m1, what = "free", matrices = "A")
+tmx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_free"), show = c("free", "fixed", "all"), matrices = c("S", "A", "M"), digits = 2, report = c("markdown", "inline", "html", "report"), na.print = "", zero.print = ".") {
 	if(!umx_is_RAM(model)){
-		stop("Only RAM models by default: what would you like me to do with this type of model?")
+		stop("I can only show the components of RAM models: You gave me an ", class(model)[[1]])
 	}
+	report = match.arg(report)
 	what = match.arg(what)
 	show = match.arg(show)
 	
 	if("thresholds" %in% matrices){
-		# TODO umx_show: Threshold printing not yet finalized
+		# TODO tmx_show: Threshold printing not yet finalized
 		if(!is.null(model$deviations_for_thresh)){
 			dev = TRUE
 			x = model$deviations_for_thresh
@@ -2855,9 +3067,9 @@ umx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_fre
 			} else if (show == "fixed") {
 				v[x$free == TRUE] = NA
 			}
-			umx_print(v, zero.print = ".", digits = digits)		
+			umx_print(v, zero.print = zero.print, na.print = na.print, digits = digits)
 		}else if(what == "free"){
-			umx_print(data.frame(x$free) , zero.print = ".", digits = digits)
+			umx_print(data.frame(x$free) , zero.print = zero.print, na.print = na.print, digits = digits)
 		}else if(what == "labels"){
 			l = x$labels
 			if(show == "free"){
@@ -2865,15 +3077,17 @@ umx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_fre
 			} else if (show=="fixed") {
 				l[x$free == TRUE] = ""
 			}
-			umx_print(l, zero.print = ".", digits = digits)
+			umx_print(l, zero.print = ".", na.print = na.print, digits = digits)
 		}
 	} else {
 		for (w in matrices) {
-			message("Showing ", what, " for:", w, " matrix:")
+			if(report == "html"){ file = paste0(what, w, ".html") } else { file = NA}
 			if(what == "values"){
-				umx_print(data.frame(model$matrices[[w]]$values), zero.print = ".", digits = digits)		
+				tmp = data.frame(model$matrices[[w]]$values)
+				message("\n", "Values of ", w, " matrix (0 shown as .):", appendLF = FALSE)
 			}else if(what == "free"){
-				umx_print(data.frame(model$matrices[[w]]$free) , zero.print = ".", digits = digits)
+				tmp = model$matrices[[w]]$free
+				message("\n", "Free cells in ", w, " matrix (FALSE shown as .):", appendLF = FALSE)
 			}else if(what == "labels"){
 				x = model$matrices[[w]]$labels
 				if(show=="free"){
@@ -2881,14 +3095,17 @@ umx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_fre
 				} else if (show=="fixed") {
 					x[model$matrices[[w]]$free==TRUE] = ""
 				}
-				umx_print(x, zero.print = ".", digits = digits)
+				tmp = x
+				message("\n", show, " labels for ", w, " matrix:", appendLF = FALSE)
 			}else if(what == "nonzero_or_free"){
-				message("99 means the value is fixed, but is non-zero")
+				message("99 means parameter is fixed at a non-zero value")
 				values = model$matrices[[w]]$values
 				Free   = model$matrices[[w]]$free
 				values[!Free & values !=0] = 99
-				umx_print(data.frame(values) , zero.print = ".", digits = digits)
+				tmp = data.frame(values)
+				message("\n", what, " for ", w, " matrix (0 shown as '.', 99=fixed non-zero value):", appendLF = FALSE)
 			}
+			umx_print(tmp, zero.print = zero.print, na.print = na.print, digits = digits, file= file)
 		}
 	}
 }
@@ -2940,7 +3157,7 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 			stop("If x is a list of models, each must be a valid mxModel")
 		}
 	}else if(umx_is_MxModel(x)){
-		# great, we've got a model?
+		# great, we've got a model
 	}else if(is.character(x)){
 		umx_check(x %in% c('start', 'stop'), "stop", "Valid time strings are 'start', 'stop' (or a model or list of models)")
 	}else if(is.na(x)){
@@ -2952,36 +3169,38 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 	# TODO umx_time: Improve table formating
 	for(i in 1:length(x)) {			
 		if(length(x) > 1) {
-			m = x[[i]]
+			thisX = x[[i]]
 		} else {
 			if(class(x) == "list"){
-				m = x[[i]]
+				thisX = x[[i]]
 			} else {
-				m = x
+				thisX = x
 			}
 		}
-		if(class(m) == "character"){
-			if(m == "start"){
+		if(class(thisX) == "character"){
+			if(thisX == "start"){
 				options("umx_last_time" = proc.time())
 				return(invisible())
-			} else if (m == "stop") {
+			} else if (thisX == "stop") {
 				thisTime = (proc.time()["elapsed"] - getOption("umx_last_time")["elapsed"])
 				options("umx_last_time" = proc.time())
 			}else{
-				stop("Value strings for umx_time are start and stop, not: ", omxQuotes(m))
+				stop("Value strings for umx_time are start and stop, not: ", omxQuotes(thisX))
 			}
 		} else {
 			# handle model
-			if(!umx_has_been_run(m) && autoRun){
-				m = mxRun(m)
+			if(!umx_has_been_run(thisX) && autoRun){
+				thisX = mxRun(thisX)
 				# message("You must run the model before asking for the elapsed run time")
 			}
-			thisTime = m$output$wallTime
+			thisTime = thisX$output$wallTime
 			if(i == 1){
 				lastTime = thisTime
 				timeDelta = ""
+				percentDelta = ""
 			} else {
 				timeDelta = paste0("(\u2206: ", round(thisTime - lastTime, 3), ")")
+				percentDelta = paste0(round(as.numeric(thisTime) / as.numeric(lastTime)*100, 3), "%")
 			}
 		}
 		if(formatStr == "std"){
@@ -3002,10 +3221,11 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 			}
 		}
 		
-		if(class(m) == "character"){
+		if(class(thisX) == "character"){
+			# Handle start-stop
 			timeString = format(.POSIXct(thisTime, tz), paste0("elapsed time: ", formatStr))
 		} else {
-			timeString = format(.POSIXct(thisTime, tz), paste0(m$name, ": ", formatStr, timeDelta))
+			timeString = format(.POSIXct(thisTime, tz), paste0(thisX$name, ": ", formatStr, timeDelta, ", ", percentDelta))
 		}
 		message(timeString)
 	}
@@ -3099,16 +3319,14 @@ umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print 
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' latents  = c("G")
+#' latents  = c("g")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
+#'
 #' umx_has_been_run(m1)
 umx_has_been_run <- function(model, stop = FALSE) {
 	output <- model$output
@@ -3477,22 +3695,19 @@ umx_is_ordered <- function(df, names = FALSE, strict = TRUE, binary.only = FALSE
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' latents  = c("G")
+#' latents  = c("g")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' umxSummary(m1, show = "std")
+#'
 #' if(umx_is_RAM(m1)){
 #' 	message("nice RAM model!")
 #' }
 #' if(!umx_is_RAM(m1)){
-#' 	message("model must be a RAM model")
+#' 	message("model needs to be a RAM model")
 #' }
 umx_is_RAM <- function(obj) {
 	# return((class(obj$objective)[1] == "MxRAMObjective" | class(obj$expectation)[1] == "MxExpectationRAM"))
@@ -3568,7 +3783,7 @@ umx_is_MxMatrix <- function(obj) {
 #' @param data dataframe to test
 #' @param boolean whether to return the type ("cov") or a boolean (default = string)
 #' @param verbose How much feedback to give (default = FALSE)
-#' @return - "raw", "cor", or "cov", or, if boolean= T, then T | F
+#' @return - "raw", "cor", or "cov", (or if boolean, then T | F)
 #' @export
 #' @family Test
 #' @references - \url{https://www.github.com/tbates/umx}
@@ -3580,9 +3795,10 @@ umx_is_MxMatrix <- function(obj) {
 #' umx_is_cov(df, boolean = TRUE)
 #' umx_is_cov(mtcars, boolean = TRUE)
 umx_is_cov <- function(data = NULL, boolean = FALSE, verbose = FALSE) {
-	if(is.null(data)) { stop("Error in umx_is_cov: You have to provide the data = that you want to check...\n",
-		"Or as Jack Nicholson says, 'No ticky, no laundry' :-) ") }
-
+	if(is.null(data)) {
+		stop("Error in umx_is_cov: You have to provide the data = that you want to check...\n",
+		"Or as Jack Nicholson says in The Departed: 'No ticky... no laundry' ") 
+	}
 	if( nrow(data) == ncol(data)) {
 		if(all(data[lower.tri(data)] == t(data)[lower.tri(t(data))])){
 			if(all(diag(data) == 1)){
@@ -3627,26 +3843,26 @@ umx_is_cov <- function(data = NULL, boolean = FALSE, verbose = FALSE) {
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' latents  = c("G")
+#' latents  = c("g")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
+#'
 #' umx_has_means(m1)
 #' m1 <- mxModel(m1,
 #' 	mxPath(from = "one", to = manifests),
 #' 	mxData(demoOneFactor[1:100,], type = "raw")
 #' )
 #' umx_has_means(m1)
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
+#' m1 = mxRun(m1)
 #' umx_has_means(m1)
 umx_has_means <- function(model) {
 	if(!umx_is_RAM(model)){
-		stop("TODO umx_has_means can only test RAM models so far")
+		# TODO umx_has_means could check for the means matrix used in our twin models
+		stop("umx_has_means can only test RAM models so far")
 	}
 	return(!is.null(model$matrices$M))
 }
@@ -3664,24 +3880,22 @@ umx_has_means <- function(model) {
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' latents  = c("G")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath("g", to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = "g", fixedAt = 1.0)
 #' )
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
+#'
 #' umx_has_CIs(m1) # FALSE: no CIs and no output
-#' m1 = mxModel(m1, mxCI("G_to_x1"))
+#' m1 = mxModel(m1, mxCI("g_to_x1"))
 #' umx_has_CIs(m1, check = "intervals") # TRUE intervals set
 #' umx_has_CIs(m1, check = "output")  # FALSE not yet run
 #' m1 = mxRun(m1)
 #' umx_has_CIs(m1, check = "output")  # Still FALSE: Set and Run
 #' m1 = mxRun(m1, intervals = TRUE)
 #' umx_has_CIs(m1, check = "output")  # TRUE: Set, and Run with intervals = T
+#' umxSummary(m1)
 umx_has_CIs <- function(model, check = c("both", "intervals", "output")) {
 	check = umx_default_option(check, c("both", "intervals", "output"), check=F)
 	if(is.null(model$intervals)){
@@ -3724,16 +3938,15 @@ umx_has_CIs <- function(model, check = c("both", "intervals", "output")) {
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' latents  = c("G")
+#' latents  = c("g")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
-#' umx_check_model(m1)
+#'
+#' umx_check_model(m1) # TRUE, this is a model
 #' umx_check_model(m1, type = "RAM") # equivalent to umx_is_RAM()
 #' umx_check_model(m1, hasData = TRUE)
 #' \dontrun{
@@ -3754,7 +3967,7 @@ umx_check_model <- function(obj, type = NULL, hasData = NULL, beenRun = NULL, ha
 	} else {
 		# Assume type is a class string
 		if(class(obj)[1] != type){
-			stop("You used ", callingFn, " on a model of class ", class(obj)[1], "not ", omxQuotes(type))
+			stop("You used ", callingFn, " on a model of class ", class(obj)[1], " not the expected ", omxQuotes(type))
 		}
 	}
 	if(checkSubmodels){
@@ -4286,7 +4499,7 @@ umx_scale_wide_twin_data <- function(varsToScale, sep, data) {
 	if(length(sep) != 1){
 		stop("I need one sep, you gave me ", length(sep), "\nYou, might, for instance, need to change c('_T1', '_T2') to just '_T'")
 	}
-	# TODO discover suffixes as unique digits following suffix (could be 1:6)
+	# TODO umx_scale_wide_twin_data: Discover suffixes as unique digits following suffix (could be 1:6)
 	namesNeeded = umx_paste_names(varsToScale, sep = sep, suffixes = 1:2)
 	umx_check_names(namesNeeded, data)
 	t1Traits = paste0(varsToScale, sep, 1)
@@ -4339,8 +4552,7 @@ umx_default_option <- function(x, option_list, check = TRUE){
 	# Often Rs match.arg  will work...
 	# filter = match.arg(filter)
 	if (identical(x, option_list)) {
-	    x = option_list[1]
-			return(x)
+		return(option_list[1])
 	}else{
 		if(check){
 			if((x %in% option_list)) {
@@ -4519,7 +4731,7 @@ umx_explode <- function(delimiter = character(), string) {
 #' # ========================================================================
 #' # = Using the custom collapse option to quote each item, and wrap in c() =
 #' # ========================================================================
-#' namez(mtcars, "m", collapse = "as.vector") # Paste-able R-code for a vector
+#' namez(mtcars, "m", collapse = "vector") # Paste-able R-code for a vector
 #' 
 #' # Other options passed to R's grep command
 #' umx_names(mtcars, "mpg" , invert = TRUE)  # Non-matches (instead of matches)
@@ -4540,8 +4752,12 @@ umx_explode <- function(delimiter = character(), string) {
 #' umx_names(mxData(twinData[, c("wt1", "wt2")], type= "raw"))
 #' umx_names(mxData(cov(twinData[, c("wt1", "wt2")], use="comp"), type= "cov", numObs= 1000))
 #' umx_names(mxDataWLS(na.omit(twinData[, c("wt1", "wt2")]), type= "WLS"))
-umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE, perl = FALSE, value = TRUE, fixed = FALSE, useBytes = FALSE, invert = FALSE, global = FALSE, collapse = c("as.is", "as.vector", "as.formula")) {
+#' 
+#' namez(umxMatrix("bob", "Full", 3,3)$labels)
+#' 
+umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE, perl = FALSE, value = TRUE, fixed = FALSE, useBytes = FALSE, invert = FALSE, global = FALSE, collapse = c("as.is", "vector", "formula")) {
 	collapse = match.arg(collapse)
+
 	if(fixed){
 		ignore.case = FALSE
 	}
@@ -4566,9 +4782,13 @@ umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE
 		}
 	} else if(class(df) == "character"){
 		nameVector = df
-	} else {
+	} else if(class(df) == "matrix"){
+		nameVector = as.vector(df)
+	} else if(umx_is_MxModel(df)){
 		# Assume it's one model, and we want the parameter names
 		nameVector = parameters(df)
+	}else{
+		stop("namez doesn't know how to handle objects of class", omxQuotes(class(df)))
 	}
 	if(is.null(nameVector)){
 		stop(paste0("umx_names requires a dataframe or something else with names() or parameters(), ", umx_object_as_str(df), " is a ", typeof(df)))
@@ -4585,10 +4805,10 @@ umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE
 	}
 	if(collapse == "as.is"){
 		tmp
-	}else if(collapse == "as.vector"){
+	}else if(collapse == "vector"){
 		tmp = paste(tmp, collapse  = "', '")
 		paste0("c('", tmp, "')")
-	}else if(collapse == "as.formula"){
+	}else if(collapse == "formula"){
 		tmp = paste(tmp, collapse  = " + ")
 		paste0("~ ", tmp)
 	} else {
@@ -4601,14 +4821,17 @@ namez <- umx_names
 
 #' Trim whitespace surrounding a string.
 #'
-#' Returns string w/o leading or trailing whitespace
+#' Returns string without leading or trailing whitespace, like the php function.
+#' See also built-in [trimws](trimws) does the same.
 #'
 #' @param string to trim
 #' @param removeThis if not NULL then this string is removed wherever found in 'string'
 #' @return - string
 #' @export
+#' @seealso [trimws](trimws)
 #' @family String Functions
 #' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @md
 #' @examples
 #' umx_trim(" dog") # "dog"
 #' umx_trim("dog ") # "dog"
@@ -4770,14 +4993,6 @@ umx_long2wide <- function(data, famID = NA, twinID = NA, zygosity = NA, vars2kee
 	}
 	# TODO umx_long2wide: Bother to check if zygosity is not NA in some member of family?
 	# 	to avoid problem of NA if NA in first family member found?
-	# TODO umx_long2wide: How to get unique values of passalong?
-	# if(!is.na(passalong)){
-		# One last look for the passalong columns
-		# current  = data[, c(famID, passalong)]
-		# previous = merge(previous, current, by = famID, all.x = TRUE, all.y = TRUE)
-		# x = names(previous)
-		# x[-which(names(x) %in% passalong)]
-	# }
   return(previous)
 }
 
@@ -5083,11 +5298,11 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		if(is.null(DZr)){
 			stop("Both MZr and DZr must be set if you want to generate data matching MZ and DZ correlations.")
 		}
-		mzCov = matrix(nrow = 2, byrow = T, c(
+		mzCov = matrix(nrow = 2, byrow = TRUE, c(
 			1, MZr,
 			MZr, 1)
 		);
-		dzCov = matrix(nrow = 2, byrow = T, c(
+		dzCov = matrix(nrow = 2, byrow = TRUE, c(
 			1, DZr,
 			DZr, 1)
 		);
@@ -5131,11 +5346,11 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		AC  =  AA + CC
 		hAC = (.5 * AA) + CC
 		ACE = AC + EE
-		mzCov = matrix(nrow = 2, byrow = T, c(
+		mzCov = matrix(nrow = 2, byrow = TRUE, c(
 			ACE, AC,
 			AC, ACE)
 		);
-		dzCov = matrix(nrow = 2, byrow = T, c(
+		dzCov = matrix(nrow = 2, byrow = TRUE, c(
 			ACE, hAC,
 			hAC, ACE)
 		);
@@ -5249,9 +5464,9 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		# Convert to data frames, reorder columns and add names. 
 		mzData = as.data.frame(cbind(mdatmz, mdatmz, tdatmz))
 		dzData = as.data.frame(cbind(mdatdz, mdatdz, tdatdz))
-		mzData = mzData[,c(1, 2, 3, 5, 4, 6)]
-		dzData = dzData[,c(1, 2, 3, 5, 4, 6)]
-		# TODO use var names
+		mzData = mzData[, c(1, 2, 3, 5, 4, 6)]
+		dzData = dzData[, c(1, 2, 3, 5, 4, 6)]
+		# TODO umx_make_TwinData: Use var names
 		colnames(mzData) = c('defM_T1', 'defM_T2', 'M_T1', 'var_T1', 'M_T2', 'var_T2')
 		colnames(dzData) = c('defM_T1', 'defM_T2', 'M_T1', 'var_T1', 'M_T2', 'var_T2')
 	} else {
@@ -5279,7 +5494,7 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 			# EE = 0.1
 			AC  = AA + CC
 			ACE = AA + CC + EE
-			mzCov = matrix(nrow = 2, byrow = T, c(
+			mzCov = matrix(nrow = 2, byrow = TRUE, c(
 				ACE, AC,
 				AC , ACE)
 			);
@@ -5300,7 +5515,7 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 			AA = max(0, (avgA + (thisSES * SES_2_A_beta)))
 			hAC = (.5 * AA) + CC
 			ACE = AA + CC + EE
-			dzCov = matrix(nrow = 2, byrow = T, c(
+			dzCov = matrix(nrow = 2, byrow = TRUE, c(
 				ACE, hAC,
 				hAC, ACE)
 			);
@@ -5311,7 +5526,6 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		names(mzData) = names(dzData) = c(umx_paste_names(varNames, "_T"), "M_T1", "M_T2")
 	}
 	if(!is.null(nThresh)){
-		# TODO umx_make_TwinData: Combine all columns for more accuracy 
 		tmp = rbind(mzData, dzData)
 		levelLabels = paste0("quantile", 1:(nThresh+1))
 		for (i in 1:length(varNames)) {
@@ -5602,9 +5816,12 @@ umx_cov2raw <- function(myCovariance, n, means = 0) {
 #' @family Data Functions
 #' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 #' @examples
-#' require(umx) # for umxRAM
 #' \dontrun{
-#' df = umx_read_lower(file = "", diag = F, ensurePD=TRUE)
+#' require(umx) # for umxRAM
+#' IQtests = c("brainstorm", "matrix", "moral", "shopping", "typing")
+#' allCols = c("C", IQtests, "avgIQ", "maxIQ", "video")
+#' 
+#' df = umx_read_lower(file = "", diag = FALSE)
 #' 0.38
 #' 0.86	0.30
 #' 0.42	0.12	0.27
@@ -5614,34 +5831,50 @@ umx_cov2raw <- function(myCovariance, n, means = 0) {
 #' 0.27	0.09	0.33	0.05	-0.04	0.28	.73
 #' 0.52	0.17	0.38	0.37	0.39	0.44	0.18	0.13
 #' 
-#' IQtests = c("brainstorm", "matrix", "moral", "shopping", "typing")
-#' n       = c("C", IQtests, "avgIQ", "maxIQ", "video")
+#' dimnames(df) = list(allCols, allCols) # manually add
 #' 
-#' dimnames(df) = list(n,n)
+#' df = umx_read_lower(file = "", diag = FALSE, names = allCols, ensurePD= TRUE)
+#' 0.38
+#' 0.86	0.30
+#' 0.42	0.12	0.27
+#' 0.66	0.21	0.38	0.18
+#' 0.80	0.13	0.50	0.25	0.43
+#' 0.19	0.11	0.19	0.12	-0.06	0.22
+#' 0.27	0.09	0.33	0.05	-0.04	0.28	.73
+#' 0.52	0.17	0.38	0.37	0.39	0.44	0.18	0.13
+#' 
+#' 
+#' round(df, 2) 
 #' 
 #' m1 = umxRAM("wooley", data = mxData(df, type="cov", numObs = 90),
 #' 	umxPath("g", to = IQtests),
-#' 	umxPath(var = "g", fixedAt=1),
+#' 	umxPath(var = "g", fixedAt= 1),
 #' 	umxPath(var = IQtests)
 #' )
 #' summary(m1)
 #' }
-umx_read_lower <- function(file="", diag=TRUE, names=as.character(paste("X", 1:n, sep="")), ensurePD=FALSE){
+umx_read_lower <- function(file= "", diag= TRUE, names= NULL, ensurePD= FALSE){
 	# modified from John Fox's sem package, to remove dependency on X11
 	# depends on Matrix::nearPD
-    elements <- scan(file=file)
-    m <- length(elements)
-    d <- if (diag) 1 else -1
-    n <- floor((sqrt(1 + 8*m) - d)/2)
-    if (m != n*(n + d)/2) 
+    elements = scan(file=file)
+    m = length(elements)
+    d = if (diag) 1 else -1
+    n = floor((sqrt(1 + 8*m) - d)/2)
+	if(is.null(names)){
+		names = paste0("X", 1:n)
+	}else if(length(names!= n)){
+		message("names ignored as you provided ", length(names), " but the data are n = ", n, " wide.")
+		names = paste0("X", 1:n)
+	}
+    if (m != n*(n + d)/2){
         stop("wrong number of elements (cannot make square matrix)")
-    if (length(names) != n) stop("wrong number of variable names")
-    X <- diag(n)
-    X[upper.tri(X, diag=diag)] <- elements
-    rownames(X) <- colnames(X) <- names
+	}
+    X = diag(n)
+    X[upper.tri(X, diag=diag)] = elements
+    rownames(X) = colnames(X) = names
 	X = t(X)
-	otherTri <- t(X)
-	X[upper.tri(X, diag=F)] <- otherTri[upper.tri(otherTri, diag=F)]
+	otherTri = t(X)
+	X[upper.tri(X, diag=F)] = otherTri[upper.tri(otherTri, diag=F)]
 	if(ensurePD){
 		# move to positive definite if not already there
 		if(all(eigen(X)$values>0)){
@@ -5972,7 +6205,7 @@ umxPadAndPruneForDefVars <- function(df, varNames, defNames, suffixes, highDefVa
 	return(df)
 }
 
-#' get mat[r,c] style cell address from an mxMatrix
+#' Get mat[r,c] style cell address from an mxMatrix
 #'
 #' Sometimes you want these :-) This also allows you to change the matrix name: useful for using mxMatrix addresses in an mxAlgebra.
 #'
@@ -5986,15 +6219,14 @@ umxPadAndPruneForDefVars <- function(df, varNames, defNames, suffixes, highDefVa
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' latents  = c("G")
+#' latents  = c("g")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
+#'
 #' umx_get_bracket_addresses(m1$matrices$A, free= TRUE)
 # "stdA[1,6]" "stdA[2,6]" "stdA[3,6]" "stdA[4,6]" "stdA[5,6]"
 umx_get_bracket_addresses <- function(mat, free = NA, newName = NA) {
@@ -6081,68 +6313,58 @@ umx_standardize.default <- function(model, ...){
 #'
 #' @param model The \code{\link{mxModel}} you wish to standardize
 #' @param ... Other options
-#' @return - standardized RAM model.
 #' @family Reporting functions
 #' @references - \url{https://github.com/tbates/umx}
 #' @export
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' latents  = c("G")
+#' latents  = c("g")
 #' manifests = names(demoOneFactor)
-#' m1 <- mxModel("One Factor", type = "RAM", 
-#' 	manifestVars = manifests, latentVars = latents, 
-#' 	mxPath(from = latents, to = manifests),
-#' 	mxPath(from = manifests, arrows = 2),
-#' 	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-#' 	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
 #' )
-#' m1 = umxRun(m1, setLabels = TRUE, setValues = TRUE)
-#' m1 = umx_standardize_RAM(m1, return = "model")
-#' m1 = umx_standardize(m1, return = "model")
-#' summary(m1)
+#'
+#' m1 = umx_standardize_RAM(m1)
+#' m1 = umx_standardize(m1)
+#' umxSummary(m1)
 umx_standardize_RAM <- function(model, ...) {
 	if (!umx_is_RAM(model)){
 		stop("I need a RAM model")
 	}
-	output <- model$output
-	# Stop if there is no objective function.
-	if (is.null(output))stop("Provided model has no objective function, and thus no output. I can only standardize models that have been run!")
-	# Stop if there is no output
-	if (length(output) < 1){
-		message("Model has not been run yet")
-		return(model)
-	}
+	umx_has_been_run(model)
 	# Get the names of the A, S and M matrices
-	nameA <- model$expectation$A
-	nameS <- model$expectation$S
-	nameM <- model$expectation$M
+	nameA = model$expectation$A
+	nameS = model$expectation$S
+	nameM = model$expectation$M
 	# Get the A and S matrices, and make an identity matrix
-	A <- model[[nameA]]
-	S <- model[[nameS]]
-	I <- diag(nrow(S$values))
+	A = model[[nameA]]
+	S = model[[nameS]]
+	I = diag(nrow(S$values))
 	
 	# this can fail (non-invertible etc. so we wrap it in try-catch)
 	tryCatch({	
 		# Calculate the expected covariance matrix
-		IA <- solve(I - A$values)
-		expCov <- IA %*% S$values %*% t(IA)
+		IA = solve(I - A$values)
+		expCov = IA %*% S$values %*% t(IA)
 		# Return 1/SD to a diagonal matrix
-		InvSD <- 1/sqrt(diag(expCov))
+		InvSD = 1/sqrt(diag(expCov))
 		# Give the inverse SDs names, because mxSummary treats column names as characters
-		names(InvSD) <- as.character(1:length(InvSD))
-		if (!is.null(dimnames(A$values))){names(InvSD) <- as.vector(dimnames(S$values)[[2]])}
+		names(InvSD) = as.character(1:length(InvSD))
+		if (!is.null(dimnames(A$values))){names(InvSD) = as.vector(dimnames(S$values)[[2]])}
 		# Put the inverse SDs into a diagonal matrix (might as well recycle I matrix from above)
-		diag(I) <- InvSD
+		diag(I) = InvSD
 		# Standardize the A, S and M matrices
 		#  A paths are value*sd(from)/sd(to) = I %*% A %*% solve(I)
 		#  S paths are value/(sd(from*sd(to))) = I %*% S %*% I
-		stdA <- I %*% A$values %*% solve(I)
-		stdS <- I %*% S$values %*% I
+		stdA = I %*% A$values %*% solve(I)
+		stdS = I %*% S$values %*% I
 		# Populate the model
-		model[[nameA]]$values[,] <- stdA
-		model[[nameS]]$values[,] <- stdS
-		if (!is.na(nameM)){model[[nameM]]$values[,] <- rep(0, length(InvSD))}
+		model[[nameA]]$values[,] = stdA
+		model[[nameS]]$values[,] = stdS
+		if (!is.na(nameM)){model[[nameM]]$values[,] = rep(0, length(InvSD))}
 	}, warning = function(cond) {
 	    # warning-handler-code
         message(cond)
@@ -6152,7 +6374,7 @@ umx_standardize_RAM <- function(model, ...) {
 	}, finally = {
 	    # cleanup-code
 	})
-	# Return the model, if asked
+	# Return the model
 	invisible(model)
 }
 #' @export
@@ -6261,6 +6483,53 @@ umx_standardize_ACEcov <- function(model, ...) {
 umx_standardize.MxModelACEcov <- umx_standardize_ACEcov
 
 
+
+
+#' Standardize a SexLim model
+#'
+#' `umx_standardize_SexLim` would move standardized Sexlim values into raw cells, but can't as these are algebras.
+#'
+#' @param model an \code{\link{umxSexLim}} model to standardize
+#' @param ... Other options
+#' @return - standardized \code{\link{umxSexLim}} model
+#' @export
+#' @family zAdvanced Helpers
+#' @md
+#' @examples
+#' \dontrun{
+#' model = umx_standardize_IP(model)
+#' }
+umx_standardize_SexLim <- function(model, ...){
+	stop("umx_standardize_SexLim can't work as Am etc. are algebras")
+	# 'AmStd', 'CmStd', 'EmStd',
+	# 'AfStd', 'CfStd', 'EfStd',
+	# 'Am', 'Cm', 'Em',
+	# 'Af', 'Cf', 'Ef',
+	# 'Amf', 'Cmf',
+	# 'minCor',
+	# 'Vm', 'Vf',
+	# 'iSDm', 'iSDf',
+
+	if(umx_has_been_run(model)){
+		# Standardized ACEm
+		model$top$Am$result = model$top$AmStd$result # standardized Am
+		model$top$Cm$result = model$top$CmStd$result # standardized Cm
+		model$top$Em$result = model$top$EmStd$result # standardized Em
+
+		# Standardized ACEm
+		model$top$Af$result = model$top$AfStd$result # standardized Af
+		model$top$Cf$result = model$top$CfStd$result # standardized Cf
+		model$top$Ef$result = model$top$EfStd$result # standardized Ef
+
+	} else {
+		stop("Please run umxSexLim(..., std = TRUE). All I do is copy the values from the standardized matrices already in the model..., so they have to be run!")
+	}
+	return(model)
+}
+#' @export
+umx_standardize.MxModelSexLim <- umx_standardize_SexLim
+
+
 #' umx_standardize_IP
 #'
 #' This function simply copies the standardized IP components into the ai ci ei and as cs es matrices
@@ -6281,7 +6550,7 @@ umx_standardize_IP <- function(model, ...){
 		model$top$ai$values = model$top$ai_std$result # standardized ai
 		model$top$ci$values = model$top$ci_std$result # standardized ci
 		model$top$ei$values = model$top$ei_std$result # standardized ei
-	    # Standardized specific coeficients
+	    # Standardized specific coefficients
 		model$top$as$values = model$top$as_std$result # standardized as
 		model$top$cs$values = model$top$cs_std$result # standardized cs
 		model$top$es$values = model$top$es_std$result # standardized es
@@ -6351,3 +6620,28 @@ umx_standardize_CP <- function(model, ...){
 #' @export
 umx_standardize.MxModelCP <- umx_standardize_CP
 
+# Poems one should know by heart:
+
+# William Shakespeare
+# [Tomorrow and tomorrow soliloquy](https://www.poetryfoundation.org/poems/56964/speech-tomorrow-and-tomorrow-and-tomorrow)
+# [To be or not to be](https://www.poetryfoundation.org/poems/56965/speech-to-be-or-not-to-be-that-is-the-question)
+# [The Merchant of Venice](https://www.goodreads.com/work/quotes/2682703-the-merchant-of-venice)
+#  * "How far that little candle throws his beams! So shines a good deed in a weary world."
+#  * The quality of mercy is not strained.
+#  * "One half of me is yours, the other half is yours,
+#    Mine own, I would say; but if mine, then yours,
+#    And so all yours."
+#  * If to do were as easy as to know what were good to do, chapels 
+#    had been churches, and poor men's cottages princes’ palaces.
+# * “This above all: to thine own self be true,
+
+# # PERCY BYSSHE SHELLEY
+# [Ozymandias](https://www.poetryfoundation.org/poems/46565/ozymandias)
+
+# Brevia
+#  * [Invictus](https://en.wikipedia.org/wiki/Invictus)
+#  * [Abou ben Adhem](https://www.poetryfoundation.org/poems/44433/abou-ben-adhem)
+#  * [Odi et amo](https://en.wikipedia.org/wiki/Catullus_85)
+
+# # [Yeats](https://en.wikipedia.org/wiki/W._B._Yeats)
+#  * [The Second Coming](https://en.wikipedia.org/wiki/The_Second_Coming_(poem))

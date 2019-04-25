@@ -47,6 +47,7 @@ fakeCars = umx_make_fake_data(mtcars)
 }
 \seealso{
 Other Data Functions: \code{\link{umxCovData}},
+  \code{\link{umxDescribeDataWLS}},
   \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}}, \code{\link{umx_cov2raw}},

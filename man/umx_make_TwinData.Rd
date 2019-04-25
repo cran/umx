@@ -179,6 +179,7 @@ Other Twin Data functions: \code{\link{umx_long2wide}},
   \code{\link{umx_wide2long}}, \code{\link{umx}}
 
 Other Data Functions: \code{\link{umxCovData}},
+  \code{\link{umxDescribeDataWLS}},
   \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}}, \code{\link{umx_cov2raw}},

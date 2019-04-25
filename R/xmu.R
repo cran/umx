@@ -1,5 +1,4 @@
-#
-#   Copyright 2007-2018 Timothy C. Bates
+#   Copyright 2007-2019 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -13,43 +12,281 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-# ==============================================================================
-# = Not used directly by users subject to arbitrary change and deprecation !!  =
-# ==============================================================================
+# ==================================================================================
+# = Fns not used directly by users subject to arbitrary change and deprecation !!  =
+# ==================================================================================
 
+
+# =====================
+# = Reporting helpers =
+# =====================
+
+#' Safely run and summarize a model
+#'
+#' @description
+#' The main benefit is that it returns the model, even if it can't be run.
+#' 
+#' The function will run the model if requested, wrapped in [tryCatch()] to avoid throwing an error.
+#' If summary = TRUE then [umxSummary()] is requested (again, wrapped in try).
+#' 
+#' *note*: If autoRun is logical, then it over-rides summary to match autoRun. This is useful for easy use umxRAM and twin models.
+#'
+#' @param model1 The model to attempt to run and summarize.
+#' @param model2 Optional second model to compare with model1.
+#' @param autoRun Whether to run or not (default = TRUE) Options are FALSE and "if needed".
+#' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"
+#' @param summary Whether to print model summary (default = autoRun).
+#' @param comparison Toggle to allow not making comparison, even if second model is provided (more flexible in programming).
+#' @return - \code{\link{mxModel}}
+#' @export
+#' @family xmu internal not for end user
+#' @seealso - \code{\link{mxTryHard}}
+#' @md
+#' @examples
+#' # xmu_safe_run_summary(model, autoRun = FALSE, summary = TRUE, comparison= FALSE)
+#' # xmu_safe_run_summary(model, model2, autoRun = TRUE, summary = TRUE, comparison= FALSE)
+#' # xmu_safe_run_summary(model, model2, autoRun = TRUE)
+xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), summary = TRUE, comparison = TRUE) {
+	# TODO xmu_safe_run_summary: Activate test examples
+	tryHard = match.arg(tryHard)
+	if(tryHard == "yes"){
+		tryHard = "mxTryHard"
+	}
+	if(!is.logical(autoRun)){
+		if(autoRun == "if needed" && !umx_has_been_run(model1)){
+			autoRun = FALSE
+		}else{
+			autoRun = TRUE
+		}
+	}else{
+		summary = autoRun
+	}
+	if(autoRun){
+		tryCatch({
+			if(tryHard == "no"){
+				model1 = mxRun(model1)
+			} else if (tryHard == "mxTryHard"){
+				model1 = mxTryHard(model1)
+			} else if (tryHard == "mxTryHardOrdinal"){
+				model1 = mxTryHardOrdinal(model1)
+			} else if (tryHard == "mxTryHardWideSearch"){
+				model1 = mxTryHardWideSearch(model1)
+			}
+		# }, warning = function(w){
+		# 	if(tryHard == "no"){
+		# 		message("Warning incurred trying to run model: mxTryHard might help?")
+		# 	} else {
+		# 		message("Warning incurred trying to run model")
+		# 	}
+		# 	message(w)
+		}, error = function(e){
+			if(tryHard == "no"){
+				message("Error incurred trying to run model: model = mxTryHard(model) might help?")
+			} else {
+				message("Error incurred trying to run model")
+			}
+			message(e)
+		})
+	}
+	if(!umx_has_been_run(model1)){
+		# Didn't get run... don't try and summarize it (will error)
+	} else if(summary){
+		tryCatch({
+			umxSummary(model1)
+		# }, warning = function(w) {
+		# 	message("Warning incurred trying to run umxSummary")
+		# 	message(w)
+		}, error = function(e) {
+			message("Error incurred trying to run umxSummary")
+			message(e)
+		})
+
+		tryCatch({
+			if(!is.null(model2) && comparison){
+				if(length(coef(model2)) > length(coef(model1))){
+					umxCompare(model2, model1)
+				} else {
+					umxCompare(model1, model2)
+				}
+			}
+		# }, warning = function(w) {
+		# 	message("Warning incurred trying to run umxCompare")
+		# 	message(w)
+		}, error = function(e) {
+			message("Error incurred trying to run umxCompare")
+			message(e)
+		})
+
+	}
+	invisible(model1)
+}
+
+# ===================================
+# = Data and model checking helpers =
+# ===================================
+
+#' Check data to see if model needs means.
+#'
+#' @description
+#' Check data to see if model needs means.
+#'
+#' @param data \code{\link{mxData}} to check.
+#' @param type of the data requested by the model.
+#' @param allContinuousMethod How data will be processed if used for WLS.
+#' @return - T/F
+#' @export
+#' @family xmu internal not for end user
+#' @seealso - \code{\link{xmu_make_mxData}}
+#' @examples
+#' xmu_model_needs_means(mtcars, type = "Auto")
+#' xmu_model_needs_means(mtcars, type = "FIML")
+#' # xmu_model_needs_means(mtcars, type = "cov")
+#' # xmu_model_needs_means(mtcars, type = "cor")
+#'
+#' # TRUE - marginals means means
+#' xmu_model_needs_means(mtcars, type = "WLS", allContinuousMethod= "marginals")
+#' xmu_model_needs_means(mtcars, type = "ULS", allContinuousMethod= "marginals")
+#' xmu_model_needs_means(mtcars, type = "DWLS", allContinuousMethod= "marginals")
+#'
+#' # ================================
+#' # = Provided as an mxData object =
+#' # ================================
+#' tmp = mxData(mtcars, type="raw")
+#' xmu_model_needs_means(tmp, type = "FIML") # TRUE
+#' xmu_model_needs_means(tmp, type = "ULS", allContinuousMethod= "cumulants") #FALSE
+#' # TRUE - means with marginals
+#' xmu_model_needs_means(tmp, type = "WLS", allContinuousMethod= "marginals")
+#' tmp = mxData(cov(mtcars), type="cov", numObs= 100)
+#' # Should catch this can't be type FIML
+#' xmu_model_needs_means(tmp) # FALSE
+#' tmp = mxData(cov(mtcars), means = umx_means(mtcars), type="cov", numObs= 100)
+#' xmu_model_needs_means(tmp) # TRUE
+#'
+#' # =======================
+#' # = One var is a factor =
+#' # =======================
+#' tmp = mtcars
+#' tmp$cyl = factor(tmp$cyl)
+#' xmu_model_needs_means(tmp, allContinuousMethod= "cumulants") # TRUE
+#' xmu_model_needs_means(tmp, allContinuousMethod= "marginals") # TRUE - always has means
+xmu_model_needs_means <- function(data, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants", "marginals")) {
+	# Add means if data are raw and means not requested by user
+	type = match.arg(type)
+	allContinuousMethod = match.arg(allContinuousMethod)
+	# data must be mxData
+	
+	if(class(data) == "data.frame"){
+		if(type %in% c("WLS", "DWLS", "ULS")){
+			tmp = umxDescribeDataWLS(data, allContinuousMethod = allContinuousMethod)
+			return(tmp$hasMeans)
+		}else if(type %in% c("cov", "cor")){
+			warning("You passed in raw data, but requested type cov or cor. I can't tell yet if you will need means... make data into mxData first")
+			return(FALSE)
+		}else{
+			# raw data needs means (can't tell if this would become cov with no means...)
+			return(TRUE)
+		}
+	} else if(umx_is_MxData(data)){
+		if(type %in% c('Auto', 'FIML') && (data$type == "raw")){
+			return(TRUE)
+			# Note, auto will be FIML not WLS
+		}else if(type %in% c("WLS", "DWLS", "ULS")){
+			tmp = umxDescribeDataWLS(data, allContinuousMethod = allContinuousMethod)
+			return(tmp$hasMeans)
+		}else if(is.na(data$means[[1]])){
+			# cov data no means
+			return(FALSE)		
+		}else{
+			# cov data with means
+			return(TRUE)
+		}
+	}else{
+		stop("I don't know what to do with data of type ", omxQuotes(class(data)))
+	}
+}
+
+#' Check the minimum variance in data frame
+#'
+#' @description
+#' Check that each variable exceeds a minimum variance and all are on compatible scales. Let the user know what to do if not.
+#' @param data the data frame to check
+#' @param minVar Minimum allowed variance in variables before warning user variances differ too much.
+#' @param maxVarRatio Maximum allowed ratio of variance in data before warning user variances differ too much.
+#' @return - 
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @examples
+#' data(twinData)
+#' xmu_check_variance(twinData[, c("wt1", "ht1", "wt2", "ht2")])
+#' twinData[,c("ht1", "ht2")]= twinData[,c("ht1", "ht2")] * 100
+#' xmu_check_variance(twinData[, c("wt1", "ht1", "wt2", "ht2")])
+xmu_check_variance <- function(data, minVar = .1, maxVarRatio = 1000){
+	# data = twinData[, c("wt1","ht1", "wt2", "ht2")]; minVar = .1
+	varList = umx_var(data, format = "diag")
+	if(sum(varList < minVar) > 0){
+		# At least 1 small
+		message("The variance of variable(s) ", omxQuotes(names(which(varList < minVar))), " is < ", minVar, ".\n",
+			"You might want to multiply to express the variable in smaller units, e.g. cm instead of metres (or umx_scale these variables in long-format).")
+		
+	}
+	if(max(varList)/min(varList) > maxVarRatio){
+		# At least 1 small
+		message("The variance of variable(s) ", omxQuotes(names(which.max(varList))), " is more than ", maxVarRatio, " times that of ", omxQuotes(names(which.min(varList))), ".\n",
+			"You might want multiply to get variables into units on more similar scales (or umx_scale these variables in long-format).")
+		
+	}
+
+}
 
 #' Upgrade a dataframe to an mxData type.
 #'
 #' @description
-#' Non-user function to upgrade a dataframe to an mxData type. It can also trim variables.
+#' `xmu_make_mxData` is an internal function to upgrade a dataframe to `mxData`. It can also drop variables from the dataframe.
 #'
-#' The most common use will be to give it a dataframe, and get back an mxData object of type WLS, cov, cor, or raw.
+#' The most common use will be to give it a dataframe, and get back an `mxData` object of type raw, cov, cor (WLS is just raw).
 #'
 #' @param data A \code{\link{data.frame}} or \code{\link{mxData}}
 #' @param type What data type is wanted out c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS')
 #' @param manifests If set, only these variables will be retained.
-#' @param allContinuousMethod passed for all continuous data c("cumulants", "marginals")
 #' @param verbose If verbose, report on columns kept and dropped (default FALSE)
 #' @return - \code{\link{mxData}}
 #' @export
 #' @family xmu internal not for end user
 #' @examples
+#' # =========================
+#' # = Continuous ML example =
+#' # =========================
 #' manVars = c("mpg", "cyl", "disp")
-#' tmp = xmu_make_mxData(data= mtcars, type = "Auto")
-#' tmp = xmu_make_mxData(data= mtcars, type = "Auto", manifests = manVars)
+#' tmp = xmu_make_mxData(data= mtcars, type = "Auto"); # class(tmp); # "MxDataStatic"
+#' # names(tmp$observed) # "mpg"  "cyl"  "disp"
+#' tmp = xmu_make_mxData(data= mtcars, type = "Auto", manifests = manVars); 
+#' tmp$type == "raw" # TRUE
+#'
+#' # ==============================
+#' # = All continuous WLS example =
+#' # ==============================
 #' tmp = xmu_make_mxData(data= mtcars, type = "WLS" , manifests = manVars, verbose= TRUE)
-#' 
-#' # missing data WLS example
+#' tmp$type == "raw" # TRUE (WLS is triggered by the fit function, not the data type)
+#'
+#' # ============================
+#' # = Missing data WLS example =
+#' # ============================
 #' tmp = mtcars; tmp[1, "mpg"] = NA # add NA
 #' tmp = xmu_make_mxData(data= tmp, type = "WLS", manifests = manVars, verbose= TRUE)
+#' 
+#' # ========================
+#' # = Cov and cor examples =
+#' # ========================
 #' tmp = xmu_make_mxData(data= mtcars, type = "cov")
 #' tmp = xmu_make_mxData(data= mtcars, type = "cor")
-#' # pass string through
+#'
+#' # =======================
+#' # = Pass string through =
+#' # =======================
 #' xmu_make_mxData(data= c("a", "b", "c"), type = "Auto")
 #' 
-xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS'), manifests = NULL, allContinuousMethod = c("cumulants", "marginals"), verbose = FALSE) {
+xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS'), manifests = NULL, verbose = FALSE) {
 	type = match.arg(type)
-	allContinuousMethod = match.arg(allContinuousMethod)
 	if(is.null(data)){
 		message("You must set data: either data = dataframe or data = mxData(yourData, type = 'raw|cov)', ...) or at least a list of variable names if using umxRAM in sketch mode)")
 		stop("Did you perhaps just include the data among other functions instead of via data = ?")
@@ -75,27 +312,33 @@ xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", '
 		unusedManifests = setdiff(umx_names(data), manifests)
 		dropColumns = TRUE
 	}
+
 	if (class(data)[1] == "data.frame") {
 		if(dropColumns){
 			# Trim down the data to include only the requested columns
 			data = data[, manifests, drop = FALSE]
+			xmu_check_variance(data)
 		}
 		# Upgrade data.frame to mxData of desired type
 		if(type %in% c("Auto", "FIML")){
 			data = mxData(observed = data, type = "raw")
 		}else	if(type == "cov"){
+			# TODO xmu_make_mxData: could refuse to do this, as we don't know how to handle missingness...
 			data = mxData(observed = cov(data), type = type, numObs = nrow(data))
 		}else	if(type == "cor"){
+			# TODO xmu_make_mxData: could refuse to do this, as we don't know how to handle missingness...
 			data = mxData(observed = cor(data), type = type, numObs = nrow(data))
 		} else if(type %in% c('WLS', 'DWLS', 'ULS')){
 			if(any(umx_is_ordered(data))){
-				# at least one ordered column
+				# At least one non-continuous variable
 			} else if(anyNA(data)){
-				oldRows = nrow(data)
-				data = na.omit(data)
-				message("polite note from xmu_make_mxData: Missing data can't be handled in continuous-variable WLS.\n I removed ", (nrow(data) - oldRows), " rows with missing values")				
+				# All continuous and, some NA
+				message("Polite note from xmu_make_mxData: Missing data can't be handled in continuous-variable WLS.\n You might want to remove rows with missing values")
+				# oldRows = nrow(data)
+				# data = na.omit(data)
+				# message("polite note from xmu_make_mxData: Missing data can't be handled in continuous-variable WLS.\n You might want to remove ", (nrow(data) - oldRows), " rows with missing values")
 			}
-			data = mxDataWLS(data, type = type, allContinuousMethod = allContinuousMethod)
+			data = mxData(observed = data, type = "raw")
 		}else{
 			stop("I don't know how to create data of type ", omxQuotes(type))
 		}
@@ -133,118 +376,26 @@ xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", '
 				msg_str = paste0(length(unusedManifests), " unused variable (", varList)
 			}
 		}
-		# @ preferredFit      : chr "WLS"
-		# @ numObs            : num 32
-		# @ observedStats     : list()
-		# @ .isSorted         : logi FALSE
-		# @ .needSort         : logi TRUE
-		# @ .wlsType          : chr "WLS"
-		# @ .wlsContinuousType: chr "cumulants"
-		# @ .wlsFullWeight    : logi TRUE
 		
-		if("preferredFit" %in% names(data)){
-			message("Preferred fit for data = ", data$preferredFit)
-		} else {
-			message("Data type = ", data$type)
-		}
-		if(is.na(data$means)){
-			message("No means")
-		} else {
-			message("Has means")
-		}
+		# TODO clean up notes from old-style WLS
+		# if("preferredFit" %in% names(data)){
+		# 	message("Preferred fit for data = ", data$preferredFit)
+		# } else {
+		# 	message("Data type = ", data$type)
+		# }
+		# if(is.na(data$means)){
+			# message("No means")
+		# } else {
+			# message("Has means")
+		# }
 		message("ManifestVars set to: ", paste(manifests, collapse = ", "), ". ", msg_str)
 	}
 	return(data)
 }
 
-# =====================
-# = Reporting helpers =
-# =====================
-
-#' Safely run and summarize a model
-#'
-#' @description
-#' The main benefit is that it returns the model, even if it can't be run.
-#' 
-#' The function will run the model if requested, wrapped in [tryCatch()] to avoid throwing an error.
-#' If summary = TRUE then [umxSummary()] is requested (again, wrapped in try).
-#' 
-#' *note*: If autoRun is logical, then it over-rides summary to match autoRun. This is useful for easy use umxRAM and twin models.
-#'
-#' @param model1 The model to attempt to run and summarize.
-#' @param model2 Optional second model to compare with model1.
-#' @param autoRun Whether to run or not (default = TRUE) Options are FALSE and "if needed".
-#' @param tryHard optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
-#' @param summary Whether to print model summary (default = autoRun).
-#' @param comparison Toggle to allow not making comparison, even if second model is provided (more flexible in programming).
-#' @return - \code{\link{mxModel}}
-#' @export
-#' @family xmu internal not for end user
-#' @seealso - \code{\link{mxTryHard}}
-#' @md
-#' @examples
-#' # xmu_safe_run_summary(model, autoRun = FALSE, summary = TRUE, comparison= FALSE)
-#' # xmu_safe_run_summary(model, model2, autoRun = TRUE, summary = TRUE, comparison= FALSE)
-#' # xmu_safe_run_summary(model, model2, autoRun = TRUE)
-xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard = c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), summary = TRUE, comparison = TRUE) {
-	# TODO xmu_safe_run_summary: Activate test examples
-	tryHard = match.arg(tryHard)
-	if(!is.logical(autoRun)){
-		if(autoRun == "if needed" && !umx_has_been_run(model1)){
-			autoRun = FALSE
-		}else{
-			autoRun = TRUE
-		}
-	}else{
-		summary = autoRun
-	}
-	if(autoRun){
-		tryCatch({
-			if(tryHard == "no"){
-				model1 = mxRun(model1)
-			} else if (tryHard == "mxTryHard"){
-				model1 = mxTryHard(model1)
-			} else if (tryHard == "mxTryHardOrdinal"){
-				model1 = mxTryHardOrdinal(model1)
-			} else if (tryHard == "mxTryHardWideSearch"){
-				model1 = mxTryHardWideSearch(model1)
-			}else{
-				stop("Don't know how to do tryHard = ", omxQuotes(tryHard))
-			}
-		}, warning = function(w){
-			message("Warning incurred trying to run model: try mxTryHard on it.")
-			message(w)
-		}, error = function(e){
-			message("Error incurred trying to run model: try mxTryHard on it.")
-			message(e)
-		})
-	}
-	if(!umx_has_been_run(model1)){
-		# didn't get run... don't try and summarize it (will error)
-	} else if(summary){
-		tryCatch({
-			umxSummary(model1)
-			if(!is.null(model2) && comparison){
-				if(length(coef(model2)) > length(coef(model1))){
-					umxCompare(model2, model1)
-				} else {
-					umxCompare(model1, model2)
-				}
-			}
-		}, warning = function(w) {
-			message("Warning incurred trying to run umxSummary")
-			message(w)
-		}, error = function(e) {
-			message("Error incurred trying to run umxSummary")
-			message(e)
-		})
-	}
-	invisible(model1)
-}
-
-# ===================================
-# = Data and model checking helpers =
-# ===================================
+# ==========================
+# = Model building helpers =
+# ==========================
 
 #' Just a helper to cope with deprecated suffix lying around.
 #'
@@ -297,6 +448,7 @@ xmu_set_sep_from_suffix <- function(sep, suffix) {
 #' 	sep = "", enforceSep = FALSE)
 #' xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, 
 #' 	sep = "", enforceSep = TRUE, nSib = 2, optimizer = NULL)
+#' 
 #' \dontrun{
 #' # TODO xmu_twin_check: move to a test file:
 #' # 1. stop on no rows
@@ -450,9 +602,7 @@ xmu_check_levels_identical <- function(df, selDVs, sep, action = c("stop", "igno
 	return(allIdentical)
 }
 
-# ==========================
-# = Model building helpers =
-# ==========================
+
 
 #' xmuLabel_MATRIX_Model (not a user function)
 #'
@@ -510,6 +660,17 @@ xmuLabel_MATRIX_Model <- function(model, suffix = "", verbose = TRUE) {
 #' @return - The labeled \code{\link{mxModel}}
 #' @family xmu internal not for end user
 #' @export
+#' @examples
+#' require(umx); data(demoOneFactor)
+#' # raw but no means
+#' m1 <- mxModel("One Factor", mxData(demoOneFactor, type = "raw"), type="RAM",
+#' 	manifestVars = "x1", latentVars= "G",
+#' 	umxPath("G", to = "x1"),
+#' 	umxPath(var = "x1"),
+#' 	umxPath(var = "G", fixedAt = 1)
+#' )
+#' xmuLabel_RAM_Model(m1)
+#'
 xmuLabel_RAM_Model <- function(model, suffix = "", labelFixedCells = TRUE, overRideExisting = FALSE, verbose = FALSE, name = NULL) {
 	if (!umx_is_RAM(model)) {
 		stop("'model' must be an OpenMx RAM Model")
@@ -559,14 +720,7 @@ xmuLabel_RAM_Model <- function(model, suffix = "", labelFixedCells = TRUE, overR
 	# ==============================
 	# = Add means labels if needed =
 	# ==============================
-	# TODO add a test case with raw data but no means...
 
-	if(!is.null(model$data)){
-		if(umx_check_should_have_means(model$data) & is.null(model$M)) {
-			message("You are using raw data, but have not yet added paths for the means\n")
-			message("Do this with umxPath(means = 'var')")
-		}
-	}
 	if(!is.null(model$M)){
 		meanLabels = paste0("one_to_", colnames(model$M$values), suffix)
 		if(overRideExisting){
@@ -579,15 +733,6 @@ xmuLabel_RAM_Model <- function(model, suffix = "", labelFixedCells = TRUE, overR
 		model = mxModel(model, name= name)
 	}
 	return(model)
-}
-
-umx_check_should_have_means <- function(data){
-	# TODO add ability to take a model instead of mxData
-	if(!is.null(data$preferredFit) && (data$preferredFit == "WLS") && (data$.wlsContinuousType ==  "cumulants")){
-		return(TRUE)
-	} else {
-		return(FALSE)
-	}
 }
 
 #' Internal function to help building simplex models
@@ -762,7 +907,7 @@ xmuLabel_Matrix <- function(mx_matrix = NA, baseName = NA, setfree = FALSE, drop
 #' @export
 #' @family xmu internal not for end user
 xmuMakeDeviationThresholdsMatrices <- function(df, droplevels, verbose) {
-	# TODO delete this function??
+	# TODO xmuMakeDeviationThresholdsMatrices: Delete this function??
 	isOrdinalVariable = umx_is_ordered(df) 
 	if(sum(isOrdinalVariable) == 0){
 		stop("no ordinal variables found")
@@ -831,7 +976,6 @@ xmuMakeDeviationThresholdsMatrices <- function(df, droplevels, verbose) {
 #' @export
 #' @family xmu internal not for end user
 xmu_start_value_list <- function(mean = 1, sd = NA, n = 1) {
-	# TODO: handle connection style
 	# nb: bivariate length = n-1 recursive 1=0, 2=1, 3=3, 4=7 i.e., 
 	if(is.na(sd)){
 		sd = mean/6.6
@@ -1085,6 +1229,29 @@ xmuMinLevels <- function(df, what = c("value", "name")) {
 # = RAM helpers =
 # ===============
 
+#' Remove illegal characters from labels
+#'
+#' @description
+#' Replaces . with _ in labels - e.g. from lavaan where . is common.
+#'
+#' @param label A label to clean.
+#' @param replace character to replace . with (default = _)
+#' @return - legal label string
+#' @export
+#' @family xmu internal not for end user
+#' @seealso - \code{\link{umxLabel}}
+#' @examples
+#' xmu_clean_label("data.var", replace = "_")
+#' xmu_clean_label("my.var.lab", replace = "_")
+xmu_clean_label <- function(label, replace = "_") {
+	if(length(namez(label, pattern = "^data\\.")) > 0){
+		return(label) # defn var
+	} else {
+		return(namez(label, pattern = "\\.", replacement = replace, global = TRUE))
+	}
+}
+
+
 #' xmuMakeTwoHeadedPathsFromPathList
 #'
 #' Make two-headed paths
@@ -1134,6 +1301,11 @@ xmuMakeOneHeadedPathsFromPathList <- function(sourceList, destinationList) {
 	return(toAdd)
 }
 
+
+# ====================
+# = Graphviz helpers =
+# ====================
+
 #' Internal umx function to help plotting graphviz
 #'
 #' @description
@@ -1143,7 +1315,8 @@ xmuMakeOneHeadedPathsFromPathList <- function(sourceList, destinationList) {
 #' @param digraph Graphviz code for a model
 #' @param strip_zero Whether to remove the leading "0." in digits in the diagram
 #' @return -
-#' @family xmu
+#' @family xmu internal not for end user
+#' @family Graphviz
 xmu_dot_maker <- function(model, file, digraph, strip_zero= TRUE){
 	if(strip_zero){
 		# strip leading "0." (pad "0.5" to "50")
@@ -1180,6 +1353,66 @@ xmu_dot_maker <- function(model, file, digraph, strip_zero= TRUE){
 	}
 }
 
+
+#' xmu_dot_move_ranks (not for end users)
+#'
+#'
+#' @param min vars to group at top of plot
+#' @param same vars to group at the same level
+#' @param max vars to group at bottom of plot
+#' @param old_min vars to group at top of plot
+#' @param old_same vars to group at the same level
+#' @param old_max vars to group at bottom of plot
+#' @return - list(min=min, same=same, max=max)
+#' @export
+#' @family xmu internal not for end user
+#' @family Graphviz
+#' # add L1 to min
+#' xmu_dot_move_ranks(min = "L1", old_min = c("min1", "min2"), old_same = c("s1", "s2"), old_max = paste0("x", 1:3))
+#' # move min1 to max
+#' xmu_dot_move_ranks(max = "min1", old_min = c("min1", "min2"), old_same = c("s1", "s2"), old_max = paste0("x", 1:3))
+xmu_dot_move_ranks <- function(min = NULL, same = NULL, max = NULL, old_min, old_same, old_max) {
+	# Remove items in user's "max" from other lists...
+	old_min  = setdiff(old_min,  max)
+	old_max  = setdiff(old_max,  max)
+	old_same = setdiff(old_same, max)
+	# Remove items in user's "max" from other lists...
+	old_min  = setdiff(old_min,  min)
+	old_max  = setdiff(old_max,  min)
+	old_same = setdiff(old_same, min)
+
+	old_min  = setdiff(old_min,  same)
+	old_max  = setdiff(old_max,  same)
+	old_same = setdiff(old_same, same)
+
+	# Append user to existing
+	max  = c(old_max, max)
+	min  = c(old_min, min)
+	same = c(old_same, same)
+	return(list(min=min, same=same, max=max))
+}
+
+#' xmu_dot_rank_str (not for end users)
+#'
+#'
+#' @param min vars to group at top of plot
+#' @param same vars to group at the same level
+#' @param max vars to group at bottom of plot
+#' @return - GraphViz rank string
+#' @export
+#' @family xmu internal not for end user
+#' @family Graphviz
+#' xmu_dot_rank_str(min = "L1", same = c("x1", "x2"), max = paste0("e", 1:3))
+xmu_dot_rank_str <- function(min = NULL, same = NULL, max = NULL) {
+	rankVariables = paste0("\t{rank=min; ", paste(min, collapse = "; "), "};\n")
+	rankVariables = paste0(rankVariables, "\t{rank=same; ", paste(same, collapse = " "), "};\n")
+	if(length(max) > 0){
+		rankVariables = paste0(rankVariables, "\t{rank=max; ", paste(max, collapse = " "), "};\n")
+	}
+	return(rankVariables)
+}
+
+
 #' xmu_dot_make_residuals (not for end users)
 #'
 #'
@@ -1191,6 +1424,7 @@ xmu_dot_maker <- function(model, file, digraph, strip_zero= TRUE){
 #' @return - list of variance names and variances
 #' @export
 #' @family xmu internal not for end user
+#' @family Graphviz
 xmu_dot_make_residuals <- function(mxMat, latents = NULL, fixed = TRUE, digits = 2, resid = c("circle", "line")) {
 	mxMat_vals   = mxMat$values
 	mxMat_free   = mxMat$free
@@ -1208,7 +1442,6 @@ xmu_dot_make_residuals <- function(mxMat, latents = NULL, fixed = TRUE, digits =
 			thisPathVal   = round(mxMat_vals[to, from], digits)
 
 			if(thisPathFree){ prefix = "" } else { prefix = "@" }
-			# FIXME "a_with_a", "var_a" & "resid_a" in place of all being like "a_with_a"?
 			if(thisPathFree | (thisPathVal !=0 && fixed)) {
 				if((to == from)) {
 					if(resid =="circle"){
@@ -1244,6 +1477,7 @@ xmu_dot_make_residuals <- function(mxMat, latents = NULL, fixed = TRUE, digits =
 #' @return - string
 #' @export
 #' @family xmu internal not for end user
+#' @family Graphviz
 xmu_dot_make_paths <- function(mxMat, stringIn, heads = NULL, fixed = TRUE, comment = "More paths", showResiduals = TRUE, pathLabels = "labels", digits = 2) {
 	if(is.null(heads)){
 		stop("You must set 'heads' to 1 or 2 (was NULL)")
@@ -1359,4 +1593,115 @@ xmu_string2path <- function(from) {
 			umx_explode("", a)
 		}
 	}
+}
+
+#' xmu_get_CI
+#'
+#' Look up CIs for free parameters in a model, and return as APA-formatted text string.
+#' If std are available then they are reported.
+#'
+#' @param model an \code{\link{mxModel}} to get CIs from
+#' @param label the label of the cell to interrogate for a CI, e.g. "ai_r1c1"
+#' @param prefix The submodel to look in (default = "top.")
+#' @param suffix The suffix for algebras when standardized (default = "_std")
+#' @param SEstyle If TRUE, report "b(se)" instead of b CI95[l,u] (default = FALSE)
+#' @param digits = 2
+#' @param verbose = FALSE
+#' @return - the CI string, e.g. ".73[-.20, .98]" or .73(.10)
+#' @export
+#' @family Reporting Functions
+#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @examples
+#' require(umx); data(demoOneFactor)
+#' latents = c("g"); manifests = names(demoOneFactor)
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+#' 	umxPath(latents, to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = latents, fixedAt = 1.0)
+#' )
+#' m1 = umxCI(m1, run= "yes")
+#' 
+#' # Get CI by parameter label
+#' xmu_get_CI(model= m1, "x1_with_x1")
+#' xmu_get_CI(model= m1, "x1_with_x1", SEstyle=TRUE, digits=3)
+#' 
+#' # prefix (submodel) and suffix (e.g. std) are ignored if not needed
+#' xmu_get_CI(model =m1, "x1_with_x1", prefix = "top.", suffix = "_std")
+#' 
+#' \dontrun{
+#' xmu_get_CI(fit_IP, label = "ai_r1c1", prefix = "top.", suffix = "_std")
+#' xmu_get_CI(fit_IP, label = "ai_r1c1", prefix = "top.", SEstyle = TRUE, suffix = "_std")
+#' }
+xmu_get_CI <- function(model, label, prefix = "top.", suffix = "_std", digits = 2, SEstyle = FALSE, verbose= FALSE){
+	# xmu_get_CI ?
+	# TODO xmu_get_CI: Look for CIs, if not found look for SEs, if not found compute with mxSE (high priority!)
+	# TODO xmu_get_CI: Add choice of separator for CI (stash as preference) (easy)
+	if(!umx_has_CIs(model)){
+		if(verbose){
+			message("no CIs")
+		}
+		return(NA)
+	} else {
+		# We want "top.ai_std[1,1]" from "ai_r1c1"
+		result = tryCatch({
+			CIlist = model$output$confidenceIntervals
+			intervalNames = dimnames(CIlist)[[1]]
+			if(label %in% intervalNames){
+				# Easy case - the actual cell label was given, and will have been used by OpenMx to label the CI
+				check = label
+			}else{
+				# Probably an auto-bracket-labelled CI e.g. "top.A_std[1,3]", in which case label would be "A_r1c3"
+				grepStr = '^(.*)_r([0-9]+)c([0-9]+)$' # 1 = matrix names, 2 = row, 3 = column
+				mat = sub(x = label, pattern = grepStr, replacement = '\\1', perl = TRUE);
+				row = sub(x = label, pattern = grepStr, replacement = '\\2', perl = TRUE);
+				col = sub(x = label, pattern = grepStr, replacement = '\\3', perl = TRUE);
+				# prefix = "top."
+				dimIndex    = paste0(prefix, mat, suffix, "[", row, ",", col, "]")
+				dimNoSuffix = paste0(prefix, mat, "[", row, ",", col, "]")
+
+				if(dimIndex %in% intervalNames){
+					check = dimIndex
+				} else {
+					check = dimNoSuffix
+				}
+			}
+			if(SEstyle){
+				est = CIlist[check, "estimate"]
+				if(is.na(CIlist[check, "lbound"])){
+					# no lbound found: use ubound to form SE (SE not defined if ubound also NA :-(
+					DIFF = (CIlist[check, "ubound"] - est)
+				} else if (is.na(CIlist[check, "ubound"])){
+					# lbound, but no ubound: use lbound to form SE
+					DIFF = (est - CIlist[check, "lbound"])
+				}else{
+					# Both bounds present: average to get an SE
+					DIFF = mean(c( (CIlist[check, "ubound"] - est), (est - CIlist[check, "lbound"]) ))
+				}
+			   APAstr = paste0(round(est, digits), " (", round(DIFF/(1.96 * 2), digits), ")")
+			} else {
+			   APAstr = paste0(
+					umx_APA_pval(CIlist[check, "estimate"], min = -1, digits = digits), "[",
+					umx_APA_pval(CIlist[check, "lbound"], min = -1, digits = digits)  , ",",
+					umx_APA_pval(CIlist[check, "ubound"], min = -1, digits = digits)  , "]"
+			   )
+			}
+		   return(APAstr) 
+		}, warning = function(cond) {
+			if(verbose){
+				message(paste0("warning ", cond, " for CI ", omxQuotes(label)))
+			}
+		    return(NA) 
+		}, error = function(cond) {
+			if(verbose){
+				message(paste0("error: ", cond, " for CI ", omxQuotes(label), "\n",
+				"dimIndex = ", dimIndex))
+				print(intervalNames)
+			}
+		    return(NA) 
+		}, finally = {
+		    # cleanup-code
+		})
+		return(result)
+	}
+	# if estimate differs...
 }

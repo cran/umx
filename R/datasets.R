@@ -1,5 +1,5 @@
 #
-#  Copyright 2007-2017 Timothy C. Bates
+#  Copyright 2007-2019 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 
 # How I coded this data from the Boulder example
 #
-# GFF = read.table("~/bin/umx/data/DHBQ_bs.dat", header = T, sep = "\t", as.is = c(T), na.strings = -999)
+# GFF = read.table("~/bin/umx/data/DHBQ_bs.dat", header = TRUE, sep = "\t", as.is = c(T), na.strings = -999)
 # x   = umx_rename(GFF, old = "zyg2"     , replace = "zyg_2grp"); names(x)
 # x   = umx_rename(x  , old = "zyg"      , replace = "zyg_6grp"); names(x)
 # x   = umx_rename(x , grep = "([12bs])$", replace = "_T\\1")   ; names(x)
@@ -79,8 +79,8 @@
 #' Ladder from best- to worst-possible life (Cantril, 1965).
 #' 
 #' \describe{
-#'   \item{zyg_6grp}{Six-level measure of zygosity: 'MZMM', 'DZMM', 'MZFF', 'DZFF', 'DZMF', 'DZFM'}
-#'   \item{zyg_2grp}{Two-level measure of zygosity: 'MZ', 'DZ'}
+#'   \item{zyg_6grp}{Six-level zygosity: MZMM, DZMM, MZFF, DZFF, DZMF, DZFM}
+#'   \item{zyg_2grp}{Two-level zygosity measure: 'MZ', 'DZ'}
 #'   \item{divorce}{Parental divorce status: 0 = No, 1 = Yes}
 #'   \item{sex_T1}{Sex of twin 1: 0 = "male", 1 = "female"}
 #'   \item{age_T1}{Age of twin 1 (years)}
@@ -156,7 +156,10 @@ NULL
 #' Anthropometric data on twins
 #'
 #' A dataset containing height, weight, BMI, and skin-fold fat measures in several
-#' hundred US twin families participating in the MCV Cardiovascular Twin Study (PI Schieken)
+#' hundred US twin families participating in the MCV Cardiovascular Twin Study (PI Schieken).
+#' Biceps and Triceps are folds above and below the upper arm (holding arm palm upward),
+#' Calf (fold on the calf muscle), Subscapular (fold over the shoulder blade), 
+#' Suprailiacal (fold between the hip and ribs).
 #' 
 #' \itemize{
 #'   \item fan FamilyID (t1=male,t2=female)
@@ -247,3 +250,49 @@ NULL
 #' plot(IQ_age1_T1 ~ IQ_age4_T2, data = subset(iqdat, zygosity == "MZ"))
 #' par(mfrow = c(1, 1))  # back to as it was
 NULL
+
+# ==========================
+# = Fischbein weight data  =
+# ==========================
+#' Weight data across time.
+#'
+#' A dataframe containing correlations of weight for 66 females measured 6 times at 6-month intervals.
+#' 
+#' \itemize{
+#'   \item Weight1: Weight at time 1 (t0)
+#'   \item Weight2: Weight at time 2 (t0 + 6 months)
+#'   \item Weight3: Weight at time 3 (t0 + 12 months)
+#'   \item Weight4: Weight at time 4 (t0 + 18 months)
+#'   \item Weight5: Weight at time 5 (t0 + 24 months)
+#'   \item Weight6: Weight at time 6 (t0 + 32 months)
+#' }
+#' 
+#' @details
+#' Created as follows:
+#' 
+#' ```R
+#' Fischbein_wt = umx_read_lower(file = "", diag = TRUE, names = paste0("Weight", 1:6), ensurePD= TRUE)
+#' 1.000
+#' 0.985	1.000
+#' 0.968	0.981	1.000
+#' 0.957	0.970	0.985	1.000
+#' 0.932	0.940	0.964	0.975	1.000
+#' 0.890	0.897	0.927	0.949	0.973	1.000
+#' ```
+#' 
+#' @docType data
+#' @keywords datasets
+#' @family datasets
+#' @name Fischbein_wt
+#' @references Fischbein, S. (1977). Intra-pair similarity in physical growth of monozygotic and of dizygotic twins during puberty. *Annals of Human Biology*, **4**. 417-430.
+#' \url{https://doi.org/10.1080/03014467700002401}
+#' @usage data(Fischbein_wt)
+#' @format A 6*6 correlation matrix based on n = 66 females
+#' @md
+#' @examples
+#' data(Fischbein_wt) # load the data
+#' str(Fischbein_wt) # data.frame
+#' as.matrix(Fischbein_wt) # convert to matrix
+NULL
+
+

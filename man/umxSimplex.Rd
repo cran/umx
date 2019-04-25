@@ -7,7 +7,7 @@
 umxSimplex(name = "simplex", selDVs, dzData, mzData, sep = NULL,
   equateMeans = TRUE, dzAr = 0.5, dzCr = 1, addStd = TRUE,
   addCI = TRUE, autoRun = getOption("umx_auto_run"),
-  tryHard = c("no", "mxTryHard", "mxTryHardOrdinal",
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal",
   "mxTryHardWideSearch"), optimizer = NULL)
 }
 \arguments{
@@ -34,7 +34,7 @@ Combined with selDVs to form the full var names, i.e., just "dep" --> c("dep_T1"
 
 \item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
 
-\item{tryHard}{optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")}
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
 
 \item{optimizer}{Optionally set the optimizer (default NULL does nothing).}
 }
@@ -136,11 +136,11 @@ m1 = umxSimplex(selDVs = paste0("IQ_age", 1:3),
 }
 
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEnew}},
+  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
   \code{\link{umxACEv}}, \code{\link{umxACE}},
   \code{\link{umxCPold}}, \code{\link{umxCP}},
   \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPnew}},
+  \code{\link{umxGxE}}, \code{\link{umxIPold}},
   \code{\link{umxIP}}, \code{\link{umxSexLim}},
   \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},

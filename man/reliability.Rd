@@ -17,6 +17,7 @@ Compute and report Coefficient alpha (extracted from Rcmdr to avoid its dependen
 }
 \examples{
 # treat vehicle aspects as items of a test
+data(mtcars)
 reliability(cov(mtcars))
 }
 \references{

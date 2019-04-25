@@ -41,59 +41,78 @@ Defaults to NA = do not create plot output}
 }
 \description{
 Summarize a fitted Cholesky model returned by \code{\link{umxSexLim}}. Can control digits, report comparison model fits,
-optionally show the Rg (genetic and environmental correlations), and show confidence intervals. the report parameter allows
+optionally show the Rg (genetic and environmental correlations), and show confidence intervals. The report parameter allows
 drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
 }
 \details{
 See documentation for other umx models summary here: \code{\link{umxSummary}}.
 }
 \examples{
+\dontrun{
+# ======================================================
+# = Beta: Should be good to use for Boulder/March 2020 =
+# ======================================================
+
+# =============================================
+# = Run Qualitative Sex Differences ACE model =
+# =============================================
+
 # =========================
 # = Load and Process Data =
 # =========================
 require(umx)
+umx_set_optimizer("SLSQP")
 data("us_skinfold_data")
 # rescale vars
-us_skinfold_data[, c('bic_T1', 'bic_T2')] <- us_skinfold_data[, c('bic_T1', 'bic_T2')]/3.4
-us_skinfold_data[, c('tri_T1', 'tri_T2')] <- us_skinfold_data[, c('tri_T1', 'tri_T2')]/3
-us_skinfold_data[, c('caf_T1', 'caf_T2')] <- us_skinfold_data[, c('caf_T1', 'caf_T2')]/3
-us_skinfold_data[, c('ssc_T1', 'ssc_T2')] <- us_skinfold_data[, c('ssc_T1', 'ssc_T2')]/5
-us_skinfold_data[, c('sil_T1', 'sil_T2')] <- us_skinfold_data[, c('sil_T1', 'sil_T2')]/5
+us_skinfold_data[, c('bic_T1', 'bic_T2')] = us_skinfold_data[, c('bic_T1', 'bic_T2')]/3.4
+us_skinfold_data[, c('tri_T1', 'tri_T2')] = us_skinfold_data[, c('tri_T1', 'tri_T2')]/3
+us_skinfold_data[, c('caf_T1', 'caf_T2')] = us_skinfold_data[, c('caf_T1', 'caf_T2')]/3
+us_skinfold_data[, c('ssc_T1', 'ssc_T2')] = us_skinfold_data[, c('ssc_T1', 'ssc_T2')]/5
+us_skinfold_data[, c('sil_T1', 'sil_T2')] = us_skinfold_data[, c('sil_T1', 'sil_T2')]/5
 
 # Variables for Analysis
-selDVs = c('ssc','sil','caf','tri','bic') # (was Vars)
-# Data objects for Multiple Groups
+selDVs = c('ssc','sil','caf','tri','bic')
+# Data for each of the 5 twin-type groups
 mzmData = subset(us_skinfold_data, zyg == 1)
 mzfData = subset(us_skinfold_data, zyg == 2)
 dzmData = subset(us_skinfold_data, zyg == 3)
 dzfData = subset(us_skinfold_data, zyg == 4)
 dzoData = subset(us_skinfold_data, zyg == 5)
 
-# ============================================================
-# = NOT WORKING YET! Should be good to use for Boulder/March =
-# ============================================================
-m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", autoRun=FALSE,
-	  mzmData = mzmData, dzmData = dzmData, 
-       mzfData = mzfData, dzfData = dzfData, 
-       dzoData = dzoData)
-\dontrun{
+# ======================
+# = Bivariate example =
+# ======================
+
+selDVs = c('tri','bic')
+m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", tryHard = "yes",
+	mzmData = mzmData, dzmData = dzmData, 
+	mzfData = mzfData, dzfData = dzfData, 
+	dzoData = dzoData
+)
 umxSummary(m1, file = NA);
-umxSummarySexLim(m1, file = "name", std = TRUE)
-stdFit = umxSummarySexLim(m1, returnStd = TRUE);
+
+# ===============
+# = Switch to C =
+# ===============
+m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "C", tryHard = "yes",
+	mzmData = mzmData, dzmData = dzmData, 
+	mzfData = mzfData, dzfData = dzfData, 
+	dzoData = dzoData
+)
 }
 }
 \references{
 - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
 }
 \seealso{
-- \code{\link{umxACE}}
+- \code{\link{umxSexLim}}
 
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEnew}},
+  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
   \code{\link{umxACEv}}, \code{\link{umxACE}},
   \code{\link{umxCPold}}, \code{\link{umxCP}},
   \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPnew}},
+  \code{\link{umxGxE}}, \code{\link{umxIPold}},
   \code{\link{umxIP}}, \code{\link{umxSexLim}},
   \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},

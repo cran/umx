@@ -4,14 +4,15 @@
 \alias{umxACEv}
 \title{Build and run 2-group uni- or multi-variate ACE models based on VARIANCE (not paths).}
 \usage{
-umxACEv(name = "ACEv", selDVs, selCovs = NULL, sep = NULL,
-  type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), dzData,
-  mzData, dzAr = 0.5, dzCr = 1, addStd = TRUE, addCI = TRUE,
-  numObsDZ = NULL, numObsMZ = NULL, boundDiag = NULL,
-  weightVar = NULL, equateMeans = TRUE, bVector = FALSE,
-  thresholds = c("deviationBased"), covMethod = c("fixed", "random"),
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "mxTryHard",
-  "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL)
+umxACEv(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData,
+  mzData, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+  allContinuousMethod = c("cumulants", "marginals"), dzAr = 0.5,
+  dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL,
+  numObsMZ = NULL, boundDiag = NULL, weightVar = NULL,
+  equateMeans = TRUE, bVector = FALSE, covMethod = c("fixed",
+  "random"), autoRun = getOption("umx_auto_run"), tryHard = c("no",
+  "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL)
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE").}
@@ -22,11 +23,13 @@ umxACEv(name = "ACEv", selDVs, selCovs = NULL, sep = NULL,
 
 \item{sep}{The separator in twin var names, often "_T" in vars like "dep_T1". Simplifies selDVs.}
 
-\item{type}{Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS").}
-
 \item{dzData}{The DZ dataframe.}
 
 \item{mzData}{The MZ dataframe.}
+
+\item{type}{Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS").}
+
+\item{allContinuousMethod}{"cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.}
 
 \item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating).}
 
@@ -48,13 +51,11 @@ umxACEv(name = "ACEv", selDVs, selCovs = NULL, sep = NULL,
 
 \item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE).}
 
-\item{thresholds}{How to implement ordinal thresholds c("deviationBased").}
-
 \item{covMethod}{How to treat covariates: "fixed" (default) or "random".}
 
 \item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
 
-\item{tryHard}{optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")}
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
 
 \item{optimizer}{Optionally set the optimizer (default NULL does nothing).}
 }
@@ -154,10 +155,8 @@ m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE, name="AE")
 # 
 require(umx)
 data(twinData) # ?twinData from Australian twins.
-# Pick the variables
-selDVs = "ht"
-twinData$ht1 = twinData$ht1*10
-twinData$ht2 = twinData$ht2*10
+# height var is very small: move from m to cm to increase.
+twinData[,c("ht1", "ht2")]= twinData[,c("ht1", "ht2")]*100
 mzData <- twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
 m1 = umxACEv(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
@@ -180,8 +179,7 @@ m3 = umxModify(m2, update = "C_r1c1", comparison = TRUE, name = "AE")
 # =====================================
 
 data(twinData)
-twinData$ht1 = twinData$ht1 * 1000 # Convert m to mm
-twinData$ht2 = twinData$ht2 * 1000
+twinData[,c("ht1", "ht2")]= twinData[,c("ht1", "ht2")]*100
 mzData = twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"), ]
 dzData = twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
 mzData = mzData[1:80, ] # Quicker run to keep CRAN happy
@@ -270,11 +268,11 @@ to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.n
 }
 \seealso{
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEnew}},
+  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
   \code{\link{umxACE}}, \code{\link{umxCPold}},
   \code{\link{umxCP}}, \code{\link{umxGxE_window}},
   \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
-  \code{\link{umxIPnew}}, \code{\link{umxIP}},
+  \code{\link{umxIPold}}, \code{\link{umxIP}},
   \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
   \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},

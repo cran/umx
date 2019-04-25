@@ -1,13 +1,23 @@
 # umx
-![alt text](https://zenodo.org/badge/5184/tbates/umx.svg)
 
-[![CRAN status](http://www.r-pkg.org/badges/version/umx)](https://cran.r-project.org/package=umx)
+[![Build Status](https://travis-ci.org/tbates/umx.svg?branch=master)](https://travis-ci.org/tbates/umx)
+[![cran version](http://www.r-pkg.org/badges/version/umx)](https://cran.r-project.org/package=umx)
+[![Monthly Downloads](http://cranlogs.r-pkg.org/badges/umx)](http://cranlogs.r-pkg.org/badges/umx)
+[![Total Downloads](http://cranlogs.r-pkg.org/badges/grand-total/umx)](http://cranlogs.r-pkg.org/badges/grand-total/umx)
+[![Rdoc](http://www.rdocumentation.org/badges/version/umx)](http://www.rdocumentation.org/packages/umx)
+[![DOI](https://img.shields.io/badge/doi-10.1017/thg.2019.2-yellow.svg?style=flat)](https://doi.org/10.1017/thg.2019.2)
 
 umx is a structural equation modeling package designed to make SEM easier, from building, to modifying and reporting.
 
-It includes high-level functions for complex models such as multi-group twin models, as well as for graphical model output.
+Please cite as:
 
-Grab it from CRAN with
+`citation("umx")`
+
+Timothy C. Bates, Michael C. Neale, Hermine H. Maes, (2019). umx: A library for Structural Equation and Twin Modelling in R. *Twin Research and Human Genetics*, **22**, 27-41. [DOI:10.1017/thg.2019.2](https://doi.org/10.1017/thg.2019.2)
+
+`umx` includes high-level functions for complex models such as multi-group twin models, as well as graphical model output.
+
+Install it from CRAN:
 
 ```splus
 install.packages("umx")
@@ -19,7 +29,7 @@ Most functions have extensive and practical examples (even figures for the twin 
 
 See what is on offer with '?umx'. There are online tutorials at  [tbates.github.io](http://tbates.github.io).
 
-`umx` stands for "user" OpenMx functions. It provides over 100 functions from high-level umxRAM and umxPath functions that make [Structural Equation Modeling](http://en.wikipedia.org/wiki/Structural_equation_modeling) in R straightforward, to low-level functions to automate activities such as labelling, setting start values etc.,
+`umx` stands for "user" OpenMx functions. It provides over 100 functions from high-level umxRAM and umxPath functions that make [Structural Equation Modeling](http://en.wikipedia.org/wiki/Structural_equation_modeling) in R straightforward, to low-level functions to automate activities such as labeling, setting start values etc.,
 
 Some highlights include:
 
@@ -35,16 +45,17 @@ Some highlights include:
 4. Twin modeling!
 	* `umxACE()` *# Twin ACE modeling with aplomb* paths are labeled! Works with `plot()` and `umxSummary`!
 	* `umxCP()`, `umxIP()`, `umxGxE()`, `umxCP()` …
-	* ![umxACE](https://github.com/tbates/umx/blob/master/man/figures/ACE.png)
+	* ![umxACE](https://github.com/tbates/umx/blob/master/man/figures/ACEunivariate.png)
 5. Easy-to-remember options
 	* `umx_set_cores()`
 	* `umx_set_optimizer()`
 6. Many more miscellaneous helpers e.g.
-	* `umx_time(model)`  *# Report the time taken by a model in a compact programable format*
+	* `umx_time(model1, model2)` reports and compares run times in a compact programmable format (also start and stop a timer)
 	* `umxHcor(data, use = "pairwise.complete.obs")` *# Compute appropriate pair-wise correlations for mixed data types.*
 	* Dozens more (?umx to see them all). Check out the "family links" in any help file also!
 
 Feel free to use, and submit code and requests via Github. Tell your friends! Publish more good science :-)
+
 
 For thrill-seekers and collaborators only: the bleeding-edge development version is here:
 

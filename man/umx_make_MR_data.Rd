@@ -44,6 +44,7 @@ plot(m1)
 umx_make_TwinData
 
 Other Data Functions: \code{\link{umxCovData}},
+  \code{\link{umxDescribeDataWLS}},
   \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}}, \code{\link{umx_cov2raw}},

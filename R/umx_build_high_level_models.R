@@ -1,5 +1,5 @@
 #
-#   Copyright 2007-2018 Timothy C. Bates
+#   Copyright 2007-2019 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@
 umxEFA <- function(x = NULL, factors = NULL, data = NULL, n.obs = NULL, 
 	scores = c("none", 'ML', 'WeightedML', 'Regression'), minManifests = NA,
 	rotation = c("varimax", "promax", "none"), name = "efa", digits = 2, return = c("model", "loadings"), report = c("markdown", "html"), covmat = NULL){
-	# TODO: umxEFA: Detect ordinal items and switch to UWLS
+	# TODO: umxEFA: Detect ordinal items and switch to DWLS?
 	rotation = umx_default_option(rotation, c("varimax", "promax", "none"), check = FALSE)
 	scores   = match.arg(scores)
 	return   = match.arg(return)

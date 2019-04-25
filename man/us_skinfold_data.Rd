@@ -10,7 +10,10 @@ data(us_skinfold_data)
 }
 \description{
 A dataset containing height, weight, BMI, and skin-fold fat measures in several
-hundred US twin families participating in the MCV Cardiovascular Twin Study (PI Schieken)
+hundred US twin families participating in the MCV Cardiovascular Twin Study (PI Schieken).
+Biceps and Triceps are folds above and below the upper arm (holding arm palm upward),
+Calf (fold on the calf muscle), Subscapular (fold over the shoulder blade), 
+Suprailiacal (fold between the hip and ribs).
 }
 \details{
 \itemize{
@@ -52,8 +55,8 @@ Archives of Pediatrics and Adolescent Medicine, \strong{153}, 446-453.
 \url{https://www.ncbi.nlm.nih.gov/pubmed/10323623}
 }
 \seealso{
-Other datasets: \code{\link{GFF}}, \code{\link{iqdat}},
-  \code{\link{umx}}
+Other datasets: \code{\link{Fischbein_wt}},
+  \code{\link{GFF}}, \code{\link{iqdat}}, \code{\link{umx}}
 }
 \concept{datasets}
 \keyword{datasets}

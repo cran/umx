@@ -7,10 +7,9 @@
 umxACE_cov_fixed(name = "ACEcov", selDVs, selCovs = NULL, dzData,
   mzData, sep = NULL, dzAr = 0.5, dzCr = 1, addStd = TRUE,
   addCI = TRUE, boundDiag = 0, weightVar = NULL,
-  equateMeans = TRUE, bVector = FALSE,
-  thresholds = c("deviationBased", "WLS"), optimizer = NULL,
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "mxTryHard",
-  "mxTryHardOrdinal", "mxTryHardWideSearch"))
+  equateMeans = TRUE, bVector = FALSE, optimizer = NULL,
+  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
+  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"))
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACEcov").}
@@ -42,13 +41,11 @@ Used to expand selDVs into full column names, i.e., "dep" --> c("dep_T1", "dep_T
 
 \item{bVector}{Whether to compute row-wise likelihoods (defaults to FALSE).}
 
-\item{thresholds}{How to implement ordinal thresholds: c("deviationBased", "left_censored").}
-
 \item{optimizer}{(optionally) set the optimizer. Default (NULL) does nothing.}
 
 \item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
 
-\item{tryHard}{optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")}
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
 }
 \value{
 - \code{\link{mxModel}} of subclass mxModel.ACEcov
@@ -115,11 +112,11 @@ m1 = umxACE(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
 umx_residualize umxACE
 
 Other Twin Modeling Functions: \code{\link{umxACEcov}},
-  \code{\link{umxACEnew}}, \code{\link{umxACEv}},
+  \code{\link{umxACEold}}, \code{\link{umxACEv}},
   \code{\link{umxACE}}, \code{\link{umxCPold}},
   \code{\link{umxCP}}, \code{\link{umxGxE_window}},
   \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
-  \code{\link{umxIPnew}}, \code{\link{umxIP}},
+  \code{\link{umxIPold}}, \code{\link{umxIP}},
   \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
   \code{\link{umxSummaryACEcov}},
   \code{\link{umxSummaryACEv}},

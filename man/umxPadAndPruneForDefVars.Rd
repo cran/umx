@@ -38,6 +38,7 @@ df = umxPadAndPruneForDefVars(twinData, varNames = "ht", defNames = "wt", c("1",
 }
 \seealso{
 Other Data Functions: \code{\link{umxCovData}},
+  \code{\link{umxDescribeDataWLS}},
   \code{\link{umxHetCor}}, \code{\link{umx_as_numeric}},
   \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
   \code{\link{umx_make_MR_data}},

@@ -35,6 +35,7 @@ df = umx_as_numeric(df, force=TRUE); str(df)
 }
 \seealso{
 Other Data Functions: \code{\link{umxCovData}},
+  \code{\link{umxDescribeDataWLS}},
   \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},

@@ -1,4 +1,4 @@
-#   Copyright 2007-2018 Timothy C. Bates
+#   Copyright 2007-2019 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@
 #' @param mzData The MZ dataframe.
 #' @param sep The separator in twin var names, often "_T" in vars like "dep_T1". Simplifies selDVs.
 #' @param type Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS").
+#' @param allContinuousMethod "cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.
 #' @param dzAr The DZ genetic correlation (defaults to .5, vary to examine assortative mating).
 #' @param dzCr The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).
 #' @param addStd Whether to add the algebras to compute a std model (defaults to TRUE).
@@ -78,10 +79,9 @@
 #' @param weightVar = If provided, a vector objective will be used to weight the data. (default = NULL).
 #' @param equateMeans Whether to equate the means across twins (defaults to TRUE).
 #' @param bVector Whether to compute row-wise likelihoods (defaults to FALSE).
-#' @param thresholds How to implement ordinal thresholds c("deviationBased").
 #' @param covMethod How to treat covariates: "fixed" (default) or "random".
 #' @param autoRun Whether to run the model, and return that (default), or just to create it and return without running.
-#' @param tryHard optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
+#' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"
 #' @param optimizer Optionally set the optimizer (default NULL does nothing).
 #' @return - \code{\link{mxModel}} of subclass mxModel.ACE
 #' @export
@@ -133,10 +133,8 @@
 #' # 
 #' require(umx)
 #' data(twinData) # ?twinData from Australian twins.
-#' # Pick the variables
-#' selDVs = "ht"
-#' twinData$ht1 = twinData$ht1*10
-#' twinData$ht2 = twinData$ht2*10
+#' # height var is very small: move from m to cm to increase.
+#' twinData[,c("ht1", "ht2")]= twinData[,c("ht1", "ht2")]*100
 #' mzData <- twinData[twinData$zygosity %in% "MZFF", ]
 #' dzData <- twinData[twinData$zygosity %in% "DZFF", ]
 #' m1 = umxACEv(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
@@ -159,8 +157,7 @@
 #' # =====================================
 #' 
 #' data(twinData)
-#' twinData$ht1 = twinData$ht1 * 1000 # Convert m to mm
-#' twinData$ht2 = twinData$ht2 * 1000
+#' twinData[,c("ht1", "ht2")]= twinData[,c("ht1", "ht2")]*100
 #' mzData = twinData[twinData$zygosity %in% c("MZFF", "MZMM"), ]
 #' dzData = twinData[twinData$zygosity %in% c("DZFF", "DZMM", "DZOS"), ]
 #' mzData = mzData[1:80, ] # Quicker run to keep CRAN happy
@@ -242,14 +239,14 @@
 #' m1 = umxACEv(selDVs = selDVs, sep= "", dzData = dz, mzData= mz, numObsDZ= 569, numObsMZ= 351)
 #' umxSummary(m1, std = FALSE)
 #' 
-umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
-	dzData, mzData, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, 
-	boundDiag = NULL, weightVar = NULL, equateMeans = TRUE, bVector = FALSE, 
-	thresholds = c("deviationBased"), covMethod = c("fixed", "random"), autoRun = getOption("umx_auto_run"), tryHard = c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL) {
+umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, mzData, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants", "marginals"),
+	dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, 
+	boundDiag = NULL, weightVar = NULL, equateMeans = TRUE, bVector = FALSE,  covMethod = c("fixed", "random"), 
+	autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL) {
 		nSib = 2 # number of siblings in a twin pair
 		covMethod  = match.arg(covMethod)
-		thresholds = match.arg(thresholds)
 		type = match.arg(type)
+		allContinuousMethod = match.arg(allContinuousMethod)
 
 		xmu_twin_check(selDVs= selDVs, sep = sep, dzData = dzData, mzData = mzData, enforceSep = TRUE, nSib = nSib, optimizer = optimizer)
 		
@@ -260,18 +257,20 @@ umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, type = c(
 		if(!is.null(selCovs)){
 			if(covMethod == "fixed"){
 				stop("Implementing fixed means effects for version 2.0")
-				# umxACEvdefcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun, tryHard = tryHard)
+				# TODO add allContinuousMethod = allContinuousMethod and type
+				# umxACEvdefcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, autoRun = autoRun, tryHard = tryHard)
 			} else if(covMethod == "random") {
 				message("umxACEvcov not yet implemented")
 				# TODO implement umxACEvcov or refactor
-				# umxACEvcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, thresholds = thresholds, autoRun = autoRun, tryHard = tryHard)
+				# TODO add allContinuousMethod = allContinuousMethod and type
+				# umxACEvcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, autoRun = autoRun, tryHard = tryHard)
 			}
 		} else {
-			# nSib = 2, equateMeans = TRUE, threshType = c("deviationBased"), verbose = verbose
+			# nSib = 2, equateMeans = TRUE, verbose = verbose
 			selVars = tvars(selDVs, sep = sep, suffixes= 1:nSib)
 			nVar = length(selVars)/nSib; # Number of dependent variables ** per INDIVIDUAL ( so times-2 for a family) **
 
-			bits = xmu_make_top_twin_models(mzData = mzData, dzData = dzData, selDVs= selDVs, sep = sep, equateMeans = equateMeans, type = type, numObsMZ = numObsMZ, numObsDZ = numObsDZ, weightVar = weightVar, bVector = bVector)
+			bits = xmu_make_top_twin(mzData = mzData, dzData = dzData, selDVs= selDVs, sep = sep, equateMeans = equateMeans, type = type, allContinuousMethod = allContinuousMethod, numObsMZ = numObsMZ, numObsDZ = numObsDZ, weightVar = weightVar, bVector = bVector)
 			top  = bits$top
 			MZ   = bits$MZ
 			DZ   = bits$DZ
@@ -310,7 +309,7 @@ umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, type = c(
 		# =======================================
 		# = 		Assemble models into supermodel =
 		# =======================================
-		model = xmu_assemble_twin_supermodel(name, MZ, DZ, top, bVector, mzWeightMatrix, dzWeightMatrix)
+		model = xmu_assemble_twin_supermodel(name, MZ, DZ, top, mzWeightMatrix, dzWeightMatrix)
 		
 		if(!is.null(boundDiag)){
 			if(!is.numeric(boundDiag)){
@@ -615,6 +614,12 @@ umxSummary.MxModelACEv <- umxSummaryACEv
 #' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
 #' plot(m1, std = FALSE) # don't standardize
 umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, ...) {
+	# TODO umxPlotACEv: update to matrix version instead of label hunting
+	# TODO umxPlotACEv: use umx_dot_define_shapes etc.?
+	# preOut  = umx_dot_define_shapes(latents = out$latents, manifests = selDVs[1:varCount])
+	# top     = umx_dot_rank(out$latents, "^[ace]_cp", "min")
+	# bottom  = umx_dot_rank(out$latents, "^[ace]s[0-9]+$", "max")
+	# digraph = paste0("digraph G {\nsplines=\"FALSE\";\n", preOut, top, bottom, out$str, "\n}");
 	if(!class(x) == "MxModelACEv"){
 		stop("The first parameter of umxPlotACE must be an ACEv model, you gave me a ", class(x))
 	}
@@ -631,7 +636,7 @@ umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = 
 	}
 	varCount = length(selDVs)/2;
 	parameterKeyList = omxGetParameters(model);
-	# e.g. expMean_r1c1       A_r1c1       C_r1c1       E_r1c1
+	# e.g. expMean_r1c1  A_r1c1  C_r1c1  E_r1c1
 
 	for(thisParam in names(parameterKeyList) ) {
 		value = parameterKeyList[thisParam]
@@ -674,9 +679,9 @@ umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = 
 		var  = as.numeric(sub('([ACE])([0-9]+)', '\\2', l, perl = TRUE)); # target is [ACE]n		
 	   l_to_v_at_1 = paste0(l_to_v_at_1, "\t ", l, "-> ", selDVs[var], " [label = \"@1\"];\n")
 	}
-	
+
 	rankVars = paste("\t{rank = same; ", paste(selDVs[1:varCount], collapse = "; "), "};\n") # {rank = same; v1T1; v2T1;}
-	# grep('a', latents, value=T)
+	# grep('a', latents, value= T)
 	rankA   = paste("\t{rank = min; ", paste(grep('A'   , latents, value = TRUE), collapse = "; "), "};\n") # {rank=min; a1; a2}
 	rankCE  = paste("\t{rank = max; ", paste(grep('[CE]', latents, value = TRUE), collapse = "; "), "};\n") # {rank=min; c1; e1}
 	digraph = paste0("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, l_to_v_at_1, rankVars, rankA, rankCE, "\n}");

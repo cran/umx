@@ -28,7 +28,8 @@ umxCovData(mtcars, c("mpg", "hp"))
 - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
 }
 \seealso{
-Other Data Functions: \code{\link{umxHetCor}},
+Other Data Functions: \code{\link{umxDescribeDataWLS}},
+  \code{\link{umxHetCor}},
   \code{\link{umxPadAndPruneForDefVars}},
   \code{\link{umx_as_numeric}}, \code{\link{umx_cov2raw}},
   \code{\link{umx_lower2full}},

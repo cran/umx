@@ -58,7 +58,7 @@
 #' Thus, in a model where the means for twin 1 and twin 2 had been equated 
 #' (set = to T1), you could make them independent again with this script:
 #'
-#' `m1$top$expMean$labels[1,4:6] =  c("expMean_r1c4", "expMean_r1c5", "expMean_r1c6")`
+#' `m1$top$expMean$labels[1,4:6] = c("expMean_r1c4", "expMean_r1c5", "expMean_r1c6")`
 #'
 #' @param name The name of the model (defaults to "simplex")
 #' @param selDVs The BASENAMES of the variables i.e., c(`obese`), not c(`obese_T1`, `obese_T2`)
@@ -72,7 +72,7 @@
 #' @param addStd Whether to add the algebras to compute a std model (default = TRUE).
 #' @param addCI Whether to add the interval requests for CIs (default = TRUE).
 #' @param autoRun Whether to run the model, and return that (default), or just to create it and return without running.
-#' @param tryHard optionally tryHard (default 'no' uses normal mxRun). c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
+#' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"
 #' @param optimizer Optionally set the optimizer (default NULL does nothing).
 #' @return - \code{\link{mxModel}}
 #' @export
@@ -99,8 +99,13 @@
 #' 			dzData = dzData, mzData = mzData, sep = "_T", tryHard = "mxTryHard")
 #' }
 #' @md
-umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equateMeans = TRUE, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, autoRun = getOption("umx_auto_run"), tryHard = c("no", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL) {
+umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equateMeans = TRUE, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL) {
 	message("This is beta code - will be ready for Boulder 2020")
+	# TODO: modernize
+	tryHard = match.arg(tryHard)
+	if(tryHard == "yes"){
+		tryHard = "mxTryHard"
+	}
 	nSib = 2
 	xmu_twin_check(selDVs = selDVs, dzData = dzData, mzData = mzData, enforceSep = TRUE, sep = sep, nSib = nSib, optimizer = optimizer)
 	nVar = length(selDVs) # enforce sep means these are known to be base names
@@ -444,8 +449,10 @@ umxSummary.MxModelSimplex <- umxSummarySimplex
 #' # plot(m1)
 #' }
 umxPlotSimplex <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE,  format = c("current", "graphviz", "DiagrammeR"), strip_zero = TRUE, ...) {
+	# TODO: umxPlotSimplex walks across the known matrices to obviate problems with arbitrary names in label based approaches.
+	# 1. Could add dimnames() to A, C, E?
 	if(!class(x) == "MxModelSimplex"){
-		stop("The first parameter of umxPlotCP must be a CP model, you gave me a ", class(x))
+		stop("The first parameter of umxPlotSimplex must be a umxSimplex model, you gave me a ", class(x))
 	}
 	format = match.arg(format)
 	model = x # Just to emphasise that x has to be a model 
@@ -455,10 +462,14 @@ umxPlotSimplex <- function(x = NA, file = "name", digits = 2, means = FALSE, std
 	}
 	parameterKeyList = omxGetParameters(model)
 
+	# 1. extract model variables
 	nVar   = dim(model$top$as$values)[[1]]
 	selDVs = dimnames(model$MZ$data$observed)[[2]]
 	selDVs = selDVs[1:(nVar)]
 	selDVs = sub("(_T)?[0-9]$", "", selDVs)
+	manifests = selDVs
+
+	# 2. Build lists of expected paths for which to discover values
 	asLatents = paste0("as", 1:nVar)
 	csLatents = paste0("cs", 1:nVar)
 	esLatents = paste0("es", 1:nVar)
@@ -471,7 +482,6 @@ umxPlotSimplex <- function(x = NA, file = "name", digits = 2, means = FALSE, std
 	ciLatents = paste0("ci", 2:(nVar))
 	eiLatents = paste0("ei", 2:(nVar))
 
-	manifests = selDVs
 	latents   = c(atLatents, aiLatents, asLatents);
 
 	pre = "# Latents\n"
@@ -512,7 +522,7 @@ umxPlotSimplex <- function(x = NA, file = "name", digits = 2, means = FALSE, std
 	ranks = paste0(ranks, "\n{rank=max; ", paste0("as", 1:nVar, collapse = " "),  "};")
 	# ranks = paste0("{rank=sink; ", paste(cSpecifics, collapse = "; "), "}");
 
-	# CIstr = umx_APA_model_CI(model, cellLabel = thisParam, prefix = "top.", suffix = "_std", digits = digits)
+	# CIstr = xmu_get_CI(model, label = thisParam, prefix = "top.", suffix = "_std", digits = digits)
 
 	digraph = paste0("digraph G {\nsplines=\"FALSE\";\n", pre, ranks, out, "\n}");
 	if(format != "current"){
