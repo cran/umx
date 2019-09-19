@@ -9,7 +9,7 @@ umx_cont_2_quantiles(x, nlevels = NULL, type = c("mxFactor", "ordered",
   "unordered"), verbose = FALSE, returnCutpoints = FALSE)
 }
 \arguments{
-\item{x}{a variable to recode as ordinal (email me if you'd like this upgraded to handle df input)}
+\item{x}{a variable to recode as ordinal (email maintainer("umx") if you'd like this upgraded to handle df input)}
 
 \item{nlevels}{How many bins or levels (at most) to use (i.e., 10 = deciles)}
 
@@ -20,11 +20,13 @@ umx_cont_2_quantiles(x, nlevels = NULL, type = c("mxFactor", "ordered",
 \item{returnCutpoints}{just return the cutpoints, for use directly}
 }
 \value{
-- recoded variable as an \code{\link{mxFactor}}
+\itemize{
+\item recoded variable as an \code{\link[=mxFactor]{mxFactor()}}
+}
 }
 \description{
 Recode a continuous variable into n-quantiles (default = deciles (10 levels)).
-It returns an \code{\link{mxFactor}}, with the levels labeled with the max value
+It returns an \code{\link[=mxFactor]{mxFactor()}}, with the levels labeled with the max value
 in each quantile (i.e., open on the left-side). quantiles are labeled "quantile1"
 "quantile2" etc.
 }
@@ -61,19 +63,22 @@ x = umx_cont_2_quantiles(mtcars[, "cyl"], nlevels = 10) # more levels than integ
 x = umx_cont_2_quantiles(rbinom(10000, 1, .5), nlevels = 2)
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
-  \code{\link{qm}}, \code{\link{umxBrownie}},
-  \code{\link{umxFactor}}, \code{\link{umxVersion}},
-  \code{\link{umx_array_shift}},
-  \code{\link{umx_cell_is_on}},
-  \code{\link{umx_find_object}}, \code{\link{umx_make}},
-  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
-  \code{\link{umx_pad}}, \code{\link{umx_pb_note}},
-  \code{\link{umx_print}}, \code{\link{umx_scale}},
-  \code{\link{umx_score_scale}}, \code{\link{umx}},
-  \code{\link{xmu_check_variance}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
+  \code{\link{qm}()}, \code{\link{umxBrownie}()},
+  \code{\link{umxFactor}()}, \code{\link{umxLav2RAM}()},
+  \code{\link{umxVersion}()},
+  \code{\link{umx_array_shift}()},
+  \code{\link{umx_find_object}()},
+  \code{\link{umx_make}()}, \code{\link{umx_msg}()},
+  \code{\link{umx_open_CRAN_page}()},
+  \code{\link{umx_pad}()}, \code{\link{umx_pb_note}()},
+  \code{\link{umx_print}()},
+  \code{\link{umx_score_scale}()}, \code{\link{umx}},
+  \code{\link{xmu_cell_is_on}()}
 }
 \concept{Miscellaneous Utility Functions}

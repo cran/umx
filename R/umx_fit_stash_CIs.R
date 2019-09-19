@@ -1,20 +1,22 @@
 #' Stash the CI values of a model as strings in the values of the model
 #'
 #' @description
-#' Stash formatted CIs (e.g. ".1 [-.1, .3]") as strings overwriting the parameter values of the model.
+#' Stash formatted CIs (e.g. ".1 \[-.1, .3\]") as strings, *overwriting* the parameter values of the model.
 #'
 #' @details I might change this to a lookup-function that gets a CI string if one exists.
 #'
-#' @param model An \code{\link{mxModel}} to get CIs from.
+#' @param model An [mxModel()] to get CIs from.
 #' @param digits rounding.
 #' @param dropZeros makes strings for failed CIs?
 #' @param stdAlg2mat treat std as algebra: stash in non std matrix.
-#' @return - \code{\link{mxModel}}
+#' @return - [mxModel()]
 #' @export
-#' @family zAdvanced Helpers
-#' @seealso - \code{\link{umxConfint}}, \code{\link{xmu_get_CI}}
-#' @references - \url{https://github.com/tbates/umx}
-umx_stash_CIs <- function(model, digits = 3, dropZeros = FALSE, stdAlg2mat = TRUE) {
+#' @family xmu internal not for end user
+#' @seealso - [umxConfint()], [xmu_get_CI()]
+#' @md
+#' @references - <https://github.com/tbates/umx>
+#'
+xmu_CI_stash <- function(model, digits = 3, dropZeros = FALSE, stdAlg2mat = TRUE) {
 	# model = cp3h
 	# TODO rationalize with xmu_get_CI
 	if(!umx_has_CIs(model, "output")) {
@@ -39,7 +41,7 @@ umx_stash_CIs <- function(model, digits = 3, dropZeros = FALSE, stdAlg2mat = TRU
 	for(n in 1:nCIs) { # n = 4
 		thisCI = CIlist[n, ]
 			# lbound    estimate  ubound     name
-			# 0.4473444 0.5850266 0.6878915 top.a_cp[1,1]
+			# 0.4473444 0.5850266 0.6878915 top.a_cp\[1,1\]
 		CIname = thisCI$name # CIname = "top.a_cp[1,1]" ; CIname = "cp_loadings_r1c1"
 
 		# Make a CI report string "x[a,b]"
@@ -62,12 +64,12 @@ umx_stash_CIs <- function(model, digits = 3, dropZeros = FALSE, stdAlg2mat = TRU
 			thisMat = tmp[1, "matrix"]
 			thisRow = tmp[1, "row"]
 			thisCol = tmp[1, "col"]
-			#' CIname = top.cp_loadings_std[1,1]
-			#' thisSub = top; thisMat = cp_loadings_std; thisRow = 1; thisCol = 1
+			# CIname = top.cp_loadings_std[1,1]
+			# thisSub = top; thisMat = cp_loadings_std; thisRow = 1; thisCol = 1
 		}
 		# umx_msg(CIname); # umx_msg(thisSub); umx_msg(thisMat); umx_msg(thisRow); umx_msg(thisCol)
 		# thisMat = "cp_loadings_std"
-		if(stdAlg2mat && sub(".*_(std)$", replacement = "\\1", x = thisMat)=="std"){
+		if(stdAlg2mat && sub(".*_(std)$", replacement = "\\1", x = thisMat) == "std"){
 			# Assume _std is an algebra
 			baseMat = sub("(.*)_std$", replacement = "\\1", x = thisMat)
 			model@submodels[thisSub][[1]]@matrices[baseMat][[1]]$values[thisRow, thisCol] = CIString

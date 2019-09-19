@@ -10,28 +10,25 @@ install.OpenMx(loc = c("NPSOL", "travis", "CRAN",
   repos = getOption("repos"))
 }
 \arguments{
-\item{loc}{Which install to get: "UVa" (the default), "travis" (latest build),
-or open the travis list of builds on the web to view/pick a url.}
+\item{loc}{Version to get default is "NPSOL". "travis" (latest build),CRAN, list of builds.}
 
-\item{url}{A custom URL if you have/need one (probably not). If you're on a Mac, you can set this to "Finder" and the package selected in the Finder will be installed. Overrides other settings.}
+\item{url}{Custom URL. On Mac, set this to "Finder" and the package selected in the Finder will be installed.}
 
 \item{lib}{Where to install the package.}
 
 \item{repos}{Which repository to use (ignored currently).}
 }
 \value{
--
+None
 }
 \description{
-You can install OpenMx, including the latest parallel/NPSOL enabled build of OpenMx. Options are:
-
-1. "NPSOL": Install from our repository (default: This is where we maintain binaries supporting parallel processing and NPSOL).
-
-2. "travis": Install the latest travis built (currently MacOS only).
-
-3. "CRAN": Install from CRAN.
-
-4. "open travis build page": Open the list of travis builds in a browser window.
+You can install OpenMx, including the latest NPSOL-enabled build of OpenMx. Options are:
+\enumerate{
+\item "NPSOL": Install from our repository (default): This is where we maintain binaries supporting parallel processing and NPSOL.
+\item "travis": Install the latest travis built (MacOS only).
+\item "CRAN": Install from CRAN.
+\item "open travis build page": Open the list of travis builds in a browser window.
+}
 }
 \examples{
 \dontrun{
@@ -42,21 +39,24 @@ install.OpenMx("open travis build page") # Open web page of travis builds
 }
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-\code{\link{umxVersion}}
+\code{\link[=umxVersion]{umxVersion()}}
 
-Other Miscellaneous Utility Functions: \code{\link{qm}},
-  \code{\link{umxBrownie}}, \code{\link{umxFactor}},
-  \code{\link{umxVersion}}, \code{\link{umx_array_shift}},
-  \code{\link{umx_cell_is_on}},
-  \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_find_object}}, \code{\link{umx_make}},
-  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
-  \code{\link{umx_pad}}, \code{\link{umx_pb_note}},
-  \code{\link{umx_print}}, \code{\link{umx_scale}},
-  \code{\link{umx_score_scale}}, \code{\link{umx}},
-  \code{\link{xmu_check_variance}}
+Other Miscellaneous Utility Functions: \code{\link{qm}()},
+  \code{\link{umxBrownie}()}, \code{\link{umxFactor}()},
+  \code{\link{umxLav2RAM}()}, \code{\link{umxVersion}()},
+  \code{\link{umx_array_shift}()},
+  \code{\link{umx_cont_2_quantiles}()},
+  \code{\link{umx_find_object}()},
+  \code{\link{umx_make}()}, \code{\link{umx_msg}()},
+  \code{\link{umx_open_CRAN_page}()},
+  \code{\link{umx_pad}()}, \code{\link{umx_pb_note}()},
+  \code{\link{umx_print}()},
+  \code{\link{umx_score_scale}()}, \code{\link{umx}},
+  \code{\link{xmu_cell_is_on}()}
 }
 \concept{Miscellaneous Utility Functions}

@@ -2,6 +2,7 @@
 % Please edit documentation in R/umx_build_umxSexLim.R
 \name{umxPlotSexLim}
 \alias{umxPlotSexLim}
+\alias{plot.MxModelSexLim}
 \title{Draw and display a graphical figure of a Sex limitation model}
 \usage{
 umxPlotSexLim(x = NA, file = "name", digits = 2, means = FALSE,
@@ -9,7 +10,7 @@ umxPlotSexLim(x = NA, file = "name", digits = 2, means = FALSE,
   SEstyle = FALSE, strip_zero = TRUE, ...)
 }
 \arguments{
-\item{x}{\code{\link{mxModel}} to display graphically}
+\item{x}{\code{\link[=mxModel]{mxModel()}} to display graphically}
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
@@ -28,13 +29,13 @@ umxPlotSexLim(x = NA, file = "name", digits = 2, means = FALSE,
 \item{...}{Optional additional parameters}
 }
 \value{
-- Optionally return the dot code
+\itemize{
+\item Optionally return the dot code
+}
 }
 \description{
-Options include digits (rounding), showing means or not, and which output format is desired.
-}
-\details{
-# @aliases plot.MxModelCP
+Will plot a graphical figure for a sex limitation model.
+Options include \code{digits} (rounding), showing \code{means} or not, and which output \code{format} is desired.
 }
 \examples{
 \dontrun{
@@ -69,19 +70,21 @@ plot(m1) # no need to remember a special name: plot works fine!
 }
 }
 \references{
-- \url{https://tbates.github.io}
+\itemize{
+\item \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
+\itemize{
+\item \code{\link[=umxSexLim]{umxSexLim()}}, \code{\link[=umxSummarySexLim]{umxSummarySexLim()}}
+}
 
-- \code{\link{umxCP}}
-
-Other Plotting functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCPold}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxEbiv}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxPlotSimplex}},
-  \code{\link{umx}}
+Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
+  \code{\link{plot.MxModel}()},
+  \code{\link{umxPlotACEcov}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxPlotACE}()},
+  \code{\link{umxPlotCP}()}, \code{\link{umxPlotGxEbiv}()},
+  \code{\link{umxPlotGxE}()}, \code{\link{umxPlotIP}()},
+  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
 }
 \concept{Plotting functions}

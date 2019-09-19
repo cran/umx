@@ -4,10 +4,10 @@
 #' This is the example code used in our Twin Research and Human Genetics Paper on `umx`
 #'
 #' @export
-#' @seealso - \code{\link{umx}}
+#' @seealso - [umx()]
 #' @references - Bates, T. C., Neale, M. C., & Maes, H. H. (2019). 
 #' umx: A library for Structural Equation and Twin Modelling in R. 
-#' *Twin Research and Human Genetics*, **22**, 27-41. doi:10.1017/thg.2019.2
+#' *Twin Research and Human Genetics*, **22**, 27-41. DOI: [https://doi.org/10.1017/thg.2019.2](https://doi.org/10.1017/thg.2019.2)
 #' @md
 #' @aliases umxExampleCode_TRHGpaper
 #' @examples
@@ -17,17 +17,18 @@
 #' # = Example code from Twin Research and Human Genetics Paper on umx(model) =
 #' # ==========================================================================
 #' 
-#' # Installing \pkg{umx} can be done using the R-code:
+#' # Installing umx can be done using the R-code:
 #' install.packages("umx")
 #' # load as usual
 #' library("umx")
-#' # current package version can be shown with:
+#' 
+#' # The current package version can be shown with:
 #' umxVersion("umx")
 #' 
-#' # Get the latest parallel and NPSOL build of OpenMx
+#' # Get the latest NPSOL and multi-core build of OpenMx
 #' install.OpenMx("NPSOL")
 #' 
-#' # NPSOL and multi-core version of OpenMx
+#' # Bleeding edge version of OpenMx for MacOS
 #' install.OpenMx("travis")
 #' 
 #' # ============
@@ -36,6 +37,7 @@
 #' 
 #' # Load the umx library (this is assumed in subsequent examples
 #' library("umx")
+#'
 #' # Load demo data consisting of 5 correlated variables, x1:x5 
 #' data(demoOneFactor)
 #' 
@@ -44,7 +46,7 @@
 #' 
 #' # Create model cfa1, with name 'CFA', data demoOneFactor, and the CFA paths.
 #' 
-#' cfa1 <- umxRAM("CFA", data = demoOneFactor,
+#' cfa1 = umxRAM("CFA", data = demoOneFactor,
 #' 	# Create latent variable 'G', with fixed variance of 1 and mean of 0
 #' 	umxPath(v1m0 = "G"),
 #' 	# Create 5 manifest variables, x1:x5, with free variance and mean

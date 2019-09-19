@@ -28,7 +28,7 @@ xmu_twin_check(selDVs, dzData = dzData, mzData = mzData, sep = NULL,
 \item{optimizer}{Set by name (if you want to change it).}
 }
 \value{
--
+None
 }
 \description{
 Check that DVs are in the data, that the data have rows, set the optimizer if requested.
@@ -58,27 +58,58 @@ xmu_twin_check(selDVs = c("wt", "ht"), dzData = dzData, mzData = mzData, enforce
 }
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPold}},
-  \code{\link{umxIP}}, \code{\link{umxSexLim}},
-  \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}}
-
-Other Check or test: \code{\link{umx_check_names}},
-  \code{\link{umx_is_class}}, \code{\link{umx_is_numeric}},
-  \code{\link{umx}}
+Other xmu internal not for end user: \code{\link{umxModel}()},
+  \code{\link{umx_standardize}()}, \code{\link{umx}},
+  \code{\link{xmuHasSquareBrackets}()},
+  \code{\link{xmuLabel_MATRIX_Model}()},
+  \code{\link{xmuLabel_Matrix}()},
+  \code{\link{xmuLabel_RAM_Model}()},
+  \code{\link{xmuMI}()},
+  \code{\link{xmuMakeDeviationThresholdsMatrices}()},
+  \code{\link{xmuMakeOneHeadedPathsFromPathList}()},
+  \code{\link{xmuMakeTwoHeadedPathsFromPathList}()},
+  \code{\link{xmuMaxLevels}()},
+  \code{\link{xmuMinLevels}()},
+  \code{\link{xmuPropagateLabels}()},
+  \code{\link{xmu_CI_merge}()},
+  \code{\link{xmu_CI_stash}()},
+  \code{\link{xmu_DF_to_mxData_TypeCov}()},
+  \code{\link{xmu_PadAndPruneForDefVars}()},
+  \code{\link{xmu_assemble_twin_supermodel}()},
+  \code{\link{xmu_check_levels_identical}()},
+  \code{\link{xmu_check_needs_means}()},
+  \code{\link{xmu_check_variance}()},
+  \code{\link{xmu_clean_label}()},
+  \code{\link{xmu_describe_data_WLS}()},
+  \code{\link{xmu_dot_make_paths}()},
+  \code{\link{xmu_dot_make_residuals}()},
+  \code{\link{xmu_dot_maker}()},
+  \code{\link{xmu_dot_move_ranks}()},
+  \code{\link{xmu_dot_rank_str}()},
+  \code{\link{xmu_get_CI}()},
+  \code{\link{xmu_lavaan_process_group}()},
+  \code{\link{xmu_make_bin_cont_pair_data}()},
+  \code{\link{xmu_make_mxData}()},
+  \code{\link{xmu_make_top_twin}()},
+  \code{\link{xmu_name_from_lavaan_str}()},
+  \code{\link{xmu_safe_run_summary}()},
+  \code{\link{xmu_set_sep_from_suffix}()},
+  \code{\link{xmu_show_fit_or_comparison}()},
+  \code{\link{xmu_simplex_corner}()},
+  \code{\link{xmu_standardize_ACEcov}()},
+  \code{\link{xmu_standardize_ACEv}()},
+  \code{\link{xmu_standardize_ACE}()},
+  \code{\link{xmu_standardize_CP}()},
+  \code{\link{xmu_standardize_IP}()},
+  \code{\link{xmu_standardize_RAM}()},
+  \code{\link{xmu_standardize_SexLim}()},
+  \code{\link{xmu_standardize_Simplex}()},
+  \code{\link{xmu_start_value_list}()},
+  \code{\link{xmu_starts}()}
 }
-\concept{Check or test}
-\concept{Twin Modeling Functions}
+\concept{xmu internal not for end user}

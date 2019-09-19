@@ -7,12 +7,12 @@
 \usage{
 umxSummaryGxEbiv(model = NULL, digits = 2, xlab = NA,
   location = "topleft", separateGraphs = FALSE,
-  file = getOption("umx_auto_plot"), returnStd = NULL,
-  comparison = NULL, std = NULL, reduce = FALSE, CIs = NULL,
-  report = c("markdown", "html"), ...)
+  file = getOption("umx_auto_plot"), comparison = FALSE, std = NULL,
+  reduce = FALSE, CIs = NULL, report = c("markdown", "html"),
+  returnStd = NULL, show = c("std", "raw"), ...)
 }
 \arguments{
-\item{model}{A fitted \code{\link{umxGxEbiv}} model to summarize}
+\item{model}{A fitted \code{\link[=umxGxEbiv]{umxGxEbiv()}} model to summarize}
 
 \item{digits}{round to how many digits (default = 2)}
 
@@ -24,9 +24,7 @@ umxSummaryGxEbiv(model = NULL, digits = 2, xlab = NA,
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
-\item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
-
-\item{comparison}{mxCompare model with comparison (default = NULL).}
+\item{comparison}{mxCompare model with comparison (default = FALSE).}
 
 \item{std}{Whether to show the standardized model (not implemented! TRUE)}
 
@@ -36,24 +34,28 @@ umxSummaryGxEbiv(model = NULL, digits = 2, xlab = NA,
 
 \item{report}{markdown or html (html opens in browser)}
 
+\item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
+
+\item{show}{Here to support being called from generic xmu_safe_run_summary. User should ignore: can be c("std", "raw")}
+
 \item{...}{Optional additional parameters}
 }
 \value{
-- optional \code{\link{mxModel}}
+\itemize{
+\item optional \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
-umxSummaryGxEbiv summarizes a bivariate moderation model, as returned by \code{\link{umxGxEbiv}}.
+\code{umxSummaryGxEbiv} summarizes a bivariate moderation model, as returned by \code{\link[=umxGxEbiv]{umxGxEbiv()}}.
 }
 \examples{
-data(twinData) 
-selDVs  = "wt"
-selDefs = "ht"
+data(twinData)
 df = umx_scale_wide_twin_data(twinData, varsToScale = c("ht", "wt"), sep = "")
 mzData  = subset(df, zygosity \%in\%  c("MZFF", "MZMM"))
 dzData  = subset(df, zygosity \%in\%  c("DZFF", "DZMM", "DZOS"))
 
 \dontrun{
-m1 = umxGxEbiv(selDVs = selDVs, selDefs = selDefs, 
+m1 = umxGxEbiv(selDVs = "wt", selDefs = "ht", 
 	dzData = dzData, mzData = mzData, sep = "", dropMissingDef = TRUE)
 # Plot Moderation
 umxSummary(m1)
@@ -62,24 +64,26 @@ umxSummary(m1, separateGraphs = FALSE)
 }
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{umxGxEbiv}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, and ACE models.
-
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPold}},
-  \code{\link{umxIP}}, \code{\link{umxSexLim}},
-  \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
+\itemize{
+\item \code{\link{umxGxEbiv}()}, \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, and ACE models.
 }
-\concept{Twin Modeling Functions}
+
+Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
+  \code{\link{umxReduceACE}()},
+  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
+  \code{\link{umxSummarizeTwinData}()},
+  \code{\link{umxSummaryACEcov}()},
+  \code{\link{umxSummaryACEv}()},
+  \code{\link{umxSummaryACE}()},
+  \code{\link{umxSummaryCP}()},
+  \code{\link{umxSummaryGxE}()},
+  \code{\link{umxSummaryIP}()},
+  \code{\link{umxSummarySexLim}()},
+  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
+}
+\concept{Twin Reporting Functions}

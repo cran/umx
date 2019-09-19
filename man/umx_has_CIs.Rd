@@ -7,21 +7,23 @@
 umx_has_CIs(model, check = c("both", "intervals", "output"))
 }
 \arguments{
-\item{model}{The \code{\link{mxModel}} to check for presence of CIs}
+\item{model}{The \code{\link[=mxModel]{mxModel()}} to check for presence of CIs}
 
 \item{check}{What to check for: "intervals" requested, "output" present, or "both". Defaults to "both"}
 }
 \value{
-- TRUE or FALSE
+\itemize{
+\item TRUE or FALSE
+}
 }
 \description{
-A utility function to return a binary answer to the question "does this \code{\link{mxModel}} have confidence intervals?"
+A utility function to return a binary answer to the question "does this \code{\link[=mxModel]{mxModel()}} have confidence intervals?"
 }
 \examples{
 require(umx)
 data(demoOneFactor)
 manifests = names(demoOneFactor)
-m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+m1 = umxRAM("_has_CI_ex", data = demoOneFactor, type = "cov",
 	umxPath("g", to = manifests),
 	umxPath(var = manifests),
 	umxPath(var = "g", fixedAt = 1.0)
@@ -38,22 +40,23 @@ umx_has_CIs(m1, check = "output")  # TRUE: Set, and Run with intervals = T
 umxSummary(m1)
 }
 \references{
-- https://www.github.com/tbates/umx/
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Test: \code{\link{umx_check_OS}},
-  \code{\link{umx_check_model}},
-  \code{\link{umx_check_names}},
-  \code{\link{umx_check_parallel}},
-  \code{\link{umx_check}}, \code{\link{umx_has_been_run}},
-  \code{\link{umx_has_means}},
-  \code{\link{umx_has_square_brackets}},
-  \code{\link{umx_is_MxData}},
-  \code{\link{umx_is_MxMatrix}},
-  \code{\link{umx_is_MxModel}}, \code{\link{umx_is_RAM}},
-  \code{\link{umx_is_cov}},
-  \code{\link{umx_is_endogenous}},
-  \code{\link{umx_is_exogenous}},
-  \code{\link{umx_is_ordered}}
+Other Test: \code{\link{umx_check_OS}()},
+  \code{\link{umx_check_model}()},
+  \code{\link{umx_check_names}()},
+  \code{\link{umx_check_parallel}()},
+  \code{\link{umx_check}()},
+  \code{\link{umx_has_been_run}()},
+  \code{\link{umx_has_means}()},
+  \code{\link{umx_has_square_brackets}()},
+  \code{\link{umx_is_MxData}()},
+  \code{\link{umx_is_MxMatrix}()},
+  \code{\link{umx_is_MxModel}()},
+  \code{\link{umx_is_RAM}()}, \code{\link{umx_is_cov}()},
+  \code{\link{umx_is_ordered}()}
 }
 \concept{Test}

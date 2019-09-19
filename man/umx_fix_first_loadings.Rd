@@ -8,7 +8,7 @@ umx_fix_first_loadings(model, latents = NULL, at = 1,
   freeFixedLatent = TRUE)
 }
 \arguments{
-\item{model}{An \code{\link{mxModel}} to set.}
+\item{model}{An \code{\link[=mxModel]{mxModel()}} to set.}
 
 \item{latents}{Which latents to fix from (NULL = all).}
 
@@ -18,7 +18,7 @@ umx_fix_first_loadings(model, latents = NULL, at = 1,
 }
 \value{
 \itemize{
-\item \code{\link{mxModel}}
+\item \code{\link[=mxModel]{mxModel()}}
 }
 }
 \description{
@@ -30,7 +30,7 @@ how to scale models with fixed latent or fixed first path...
 require(umx)
 data(demoOneFactor)
 manifests = names(demoOneFactor)
-m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+m1 = umxRAM("fix_first", data = demoOneFactor, type = "cov",
 	umxPath("g", to = manifests),
 	umxPath(var = manifests),
 	umxPath(var = "g", fixedAt = 1.0)
@@ -42,16 +42,16 @@ tmx_show(m1, "free", matrices="A") # path from g to var1 fixed @ 1.
 }
 \references{
 \itemize{
-\item \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{https://openmx.ssri.psu.edu}
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
-Other Advanced Model Building Functions: \code{\link{umxJiggle}},
-  \code{\link{umxLabel}}, \code{\link{umxLatent}},
-  \code{\link{umxRAM2Ordinal}},
-  \code{\link{umxThresholdMatrix}},
-  \code{\link{umxValues}}, \code{\link{umx_fix_latents}},
-  \code{\link{umx_get_bracket_addresses}},
-  \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
+Other Advanced Model Building Functions: \code{\link{umxJiggle}()},
+  \code{\link{umxLabel}()}, \code{\link{umxRAM2Ordinal}()},
+  \code{\link{umxThresholdMatrix}()},
+  \code{\link{umxValues}()},
+  \code{\link{umx_fix_latents}()},
+  \code{\link{umx_get_bracket_addresses}()},
+  \code{\link{umx_string_to_algebra}()}, \code{\link{umx}}
 }
 \concept{Advanced Model Building Functions}

@@ -5,20 +5,18 @@
 \alias{umxFactanal}
 \title{FIML-based Exploratory Factor Analysis (EFA)}
 \usage{
-umxEFA(x = NULL, factors = NULL, data = NULL, n.obs = NULL,
-  scores = c("none", "ML", "WeightedML", "Regression"),
-  minManifests = NA, rotation = c("varimax", "promax", "none"),
-  name = "efa", digits = 2, return = c("model", "loadings"),
-  report = c("markdown", "html"), covmat = NULL)
+umxEFA(x = NULL, factors = NULL, data = NULL, scores = c("none",
+  "ML", "WeightedML", "Regression"), minManifests = NA,
+  rotation = c("varimax", "promax", "none"), return = c("model",
+  "loadings"), report = c("markdown", "html"), summary = FALSE,
+  name = "efa", digits = 2, n.obs = NULL, covmat = NULL)
 }
 \arguments{
-\item{x}{Either 1: data, 2: A formula (not implemented yet), 3: A vector of variable names, or 4: A name for the model.}
+\item{x}{Either 1: data, 2: Right-hand-side ~ formula , 3: Vector of variable names, or 4: Name for the model.}
 
 \item{factors}{Either number of factors to request or a vector of factor names.}
 
-\item{data}{A dataframe of manifest columns you are modeling}
-
-\item{n.obs}{Number of observations in covmat (if provided, default = NA)}
+\item{data}{A dataframe you are modeling.}
 
 \item{scores}{Type of scores to produce, if any. The default is none, "Regression" gives Thompson's scores. Other options are 'ML', 'WeightedML', Partial matching allows these names to be abbreviated.}
 
@@ -26,26 +24,32 @@ umxEFA(x = NULL, factors = NULL, data = NULL, n.obs = NULL,
 
 \item{rotation}{A rotation to perform on the loadings (default  = "varimax" (orthogonal))}
 
-\item{name}{A name for your model}
-
-\item{digits}{rounding (default = 2)}
-
 \item{return}{by default, the resulting MxModel is returned. Say "loadings" to get a fact.anal object.}
 
 \item{report}{Report as markdown to the console, or open a table in browser ("html")}
 
+\item{summary}{run \code{\link[=umxSummary]{umxSummary()}} on the underlying umxRAM model? (Default = FALSE)}
+
+\item{name}{A name for your model (default = efa)}
+
+\item{digits}{rounding (default = 2)}
+
+\item{n.obs}{Number of observations in if covmat provided (default = NA)}
+
 \item{covmat}{Covariance matrix of data you are modeling (not implemented)}
 }
 \value{
-- EFA \code{\link{mxModel}}
+\itemize{
+\item EFA \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
 Perform full-information maximum-likelihood factor analysis on a data matrix.
 }
 \details{
-As in \code{\link{factanal}}, you need only specify the number of factors and offer up
+As in \code{\link[=factanal]{factanal()}}, you need only specify the number of factors and offer up
 some manifest data, e.g:
-                                                             
+
 \code{umxEFA(factors = 2, data = mtcars)}
 
 Equivalently, you can also give a list of factor names:
@@ -61,16 +65,23 @@ You can request \code{scores} from the model. Unlike factanal, these can cope wi
 
 You can also rotate the factors using any rotation function.
 
-
 In an EFA, all items may load on all factors.
 
-For identification we need m^2 degrees of freedom. We get m * (m+1)/2 from fixing factor variances to 1 and covariances to 0.
-We get another m(m-1)/2 degrees of freedom by fixing the upper-right hand corner of the factor loadings
-component of the A matrix. The manifest variances are also lbounded at 0.
+Should work with rotations provided in \code{library("GPArotation")} and \code{library("psych")}, e.g
+
+\strong{Orthogonal}: "varimax", "quartimax", "bentlerT", "equamax", "varimin", "geominT" and "bifactor"
+\strong{Oblique}: "Promax", "promax", "oblimin", "simplimax", "bentlerQ", "geominQ", "biquartimin" and "cluster"
+
+For identification we need \ifelse{html}{\out{m<sup>2</sup>}}{\eqn{m^2}} degrees of freedom.
+We get m(m+1)/2 from fixing factor variances to 1 and covariances to 0.
+We get another m(m-1)/2 degrees of freedom by fixing the upper-right hand corner of
+the factor loadings component of the A matrix at 0.
+
+To aid optimization, manifest residual variances are \code{lbounded} at 0.
 
 EFA reports standardized loadings: to do this, we scale the data.
 
-\emph{note}: Bear in mind that factor scores are indeterminate.
+\emph{note}: Bear in mind that factor scores are indeterminate (can be rotated to an infinity of equivalent solutions).
 
 Thanks to @ConorDolan for code implementing the rotation matrix and other suggestions!
 }
@@ -80,10 +91,13 @@ myVars <- c("mpg", "disp", "hp", "wt", "qsec")
 m1 = umxEFA(mtcars[, myVars], factors =   2, rotation = "promax")
 loadings(m1)
 
-# Formula interface in base-R factanal()
+# Formula interface in base-R factanal
 m2 = factanal(~ mpg + disp + hp + wt + qsec, factors = 2, rotation = "promax", data = mtcars)
 loadings(m2)
-plot(m2)
+
+# Formula interface in umxEFA
+m2 = factanal(~ mpg + disp + hp + wt + qsec, factors = 2, rotation = "promax", data = mtcars)
+loadings(m2)
 
 # Return a loadings object
 x = umxEFA(mtcars[, myVars], factors = 2, return = "loadings")
@@ -96,13 +110,20 @@ x = umxEFA(name = "score", factors = "g", data = mtcars[, myVars], scores= "Regr
 }
 }
 \references{
-- \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://github.com/tbates/umx},
+}
+
+Hendrickson, A. E. and White, P. O. (1964). Promax: a quick method for rotation to orthogonal oblique structure. \emph{British Journal of Statistical Psychology}, \strong{17}, 65–70. doi: \href{https://doi.org/10.1111/j.2044-8317.1964.tb00244.x}{10.1111/j.2044-8317.1964.tb00244.x}.
+
+Kaiser, H. F. (1958). The varimax criterion for analytic rotation in factor analysis. \emph{Psychometrika}, \strong{23}, 187–200. doi: \href{https://doi.org/10.1007/BF02289233}{10.1007/BF02289233}.
 }
 \seealso{
-- \code{\link{factanal}}, \code{\link{mxFactorScores}}
+\itemize{
+\item \code{\link[=factanal]{factanal()}}, \code{\link[=mxFactorScores]{mxFactorScores()}}
+}
 
-Other Super-easy helpers: \code{\link{umxLav2RAM}},
-  \code{\link{umxRAM2}}, \code{\link{umxTwoStage}},
+Other Super-easy helpers: \code{\link{umxMendelianRandomization}()},
   \code{\link{umx}}
 }
 \concept{Super-easy helpers}

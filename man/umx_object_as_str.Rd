@@ -10,22 +10,28 @@ umx_object_as_str(x)
 \item{x}{an object}
 }
 \value{
-- name as string
+\itemize{
+\item name as string
+}
 }
 \description{
 Utility to return an object's name as a string
 }
 \examples{
-umx_object_as_str(mtcars) # "mtcars"
+umx_object_as_str(mtcars)
+# "mtcars"
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other String Functions: \code{\link{umx_explode_twin_names}},
-  \code{\link{umx_explode}}, \code{\link{umx_grep}},
-  \code{\link{umx_names}}, \code{\link{umx_paste_names}},
-  \code{\link{umx_rot}}, \code{\link{umx_trim}},
-  \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
+Other String Functions: \code{\link{umx_explode_twin_names}()},
+  \code{\link{umx_explode}()}, \code{\link{umx_grep}()},
+  \code{\link{umx_names}()},
+  \code{\link{umx_paste_names}()}, \code{\link{umx_rot}()},
+  \code{\link{umx_trim}()},
+  \code{\link{umx_write_to_clipboard}()}, \code{\link{umx}}
 }
 \concept{String Functions}

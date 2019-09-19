@@ -5,13 +5,14 @@
 \title{Build and run 2-group uni- or multi-variate ACE models based on VARIANCE (not paths).}
 \usage{
 umxACEv(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData,
-  mzData, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
-  allContinuousMethod = c("cumulants", "marginals"), dzAr = 0.5,
-  dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL,
-  numObsMZ = NULL, boundDiag = NULL, weightVar = NULL,
-  equateMeans = TRUE, bVector = FALSE, covMethod = c("fixed",
-  "random"), autoRun = getOption("umx_auto_run"), tryHard = c("no",
-  "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  mzData, dzAr = 0.5, dzCr = 1, type = c("Auto", "FIML", "cov",
+  "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants",
+  "marginals"), data = NULL, zyg = "zygosity", weightVar = NULL,
+  numObsDZ = NULL, numObsMZ = NULL, addStd = TRUE, addCI = TRUE,
+  boundDiag = NULL, equateMeans = TRUE, bVector = FALSE,
+  covMethod = c("fixed", "random"),
+  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
+  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
   optimizer = NULL)
 }
 \arguments{
@@ -27,25 +28,29 @@ umxACEv(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData,
 
 \item{mzData}{The MZ dataframe.}
 
-\item{type}{Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS").}
-
-\item{allContinuousMethod}{"cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.}
-
 \item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating).}
 
 \item{dzCr}{The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).}
 
-\item{addStd}{Whether to add the algebras to compute a std model (defaults to TRUE).}
+\item{type}{Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS").}
 
-\item{addCI}{Whether to add intervals to compute CIs (defaults to TRUE).}
+\item{allContinuousMethod}{"cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.}
+
+\item{data}{If provided, dzData and mzData are treated as valid levels of zyg to select() data sets (default = NULL)}
+
+\item{zyg}{If data provided, this column is used to select rows by zygosity (Default = "zygosity")}
+
+\item{weightVar}{= If provided, a vector objective will be used to weight the data. (default = NULL).}
 
 \item{numObsDZ}{= Number of DZ twins: Set this if you input covariance data.}
 
 \item{numObsMZ}{= Number of MZ twins: Set this if you input covariance data.}
 
-\item{boundDiag}{= Numeric lbound for diagonal of the a, c, and e matrices. Default = NULL (no bound)}
+\item{addStd}{Whether to add the algebras to compute a std model (defaults to TRUE).}
 
-\item{weightVar}{= If provided, a vector objective will be used to weight the data. (default = NULL).}
+\item{addCI}{Whether to add intervals to compute CIs (defaults to TRUE).}
+
+\item{boundDiag}{= Numeric lbound for diagonal of the a, c, and e matrices. Default = NULL (no bound)}
 
 \item{equateMeans}{Whether to equate the means across twins (defaults to TRUE).}
 
@@ -53,24 +58,26 @@ umxACEv(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData,
 
 \item{covMethod}{How to treat covariates: "fixed" (default) or "random".}
 
-\item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+\item{autoRun}{Whether to run the model (default), or just to create it and return without running.}
 
 \item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
 
 \item{optimizer}{Optionally set the optimizer (default NULL does nothing).}
 }
 \value{
-- \code{\link{mxModel}} of subclass mxModel.ACE
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}} of subclass mxModel.ACE
+}
 }
 \description{
-A common task in twin modeling involves using the genetic and environmental differences 
+A common task in twin modeling involves using the genetic and environmental differences
 between large numbers of pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
 to model the genetic and environmental structure of one, or, typically, several phenotypes
 (measured behaviors).
 }
 \details{
 The ACE variance-based model decomposes phenotypic variance into additive genetic (A),
-unique environmental (E) and, optionally, either common environment (shared-environment, C) or 
+unique environmental (E) and, optionally, either common environment (shared-environment, C) or
 non-additive genetic effects (D). Scroll down to details for how to use the function, a figure
 and multiple examples.
 
@@ -82,18 +89,17 @@ The following figure shows the A components of a trivariate ACEv model:
 \emph{NOTE}: This function does not use the Cholesky decomposition. Instead it directly models variance.
 This ensures unbiased type-I error rates. It means that occasionally
 estimates of variance may be negative. This should be used as an occasion to inspect you model
-choices and data. `umxACEv` can be used as a base model to validate the ACE Cholesky model, 
+choices and data. \code{umxACEv} can be used as a base model to validate the ACE Cholesky model,
 a core model in behavior genetics (Neale and Cardon, 1992).
 
-
 \strong{Data Input}
-The function flexibly accepts raw data, and also summary covariance data 
+The function flexibly accepts raw data, and also summary covariance data
 (in which case the user must also supple numbers of observations for the two input data sets).
 
 \strong{Ordinal Data}
 In an important capability, the model transparently handles ordinal (binary or multi-level
 ordered factor data) inputs, and can handle mixtures of continuous, binary, and ordinal
-data in any combination. 
+data in any combination.
 
 The function also supports weighting of individual data rows. In this case,
 the model is estimated for each row individually, then each row likelihood
@@ -104,7 +110,7 @@ This feature is used in the non-linear GxE model functions.
 \strong{Additional features}
 The umxACEv function supports varying the DZ genetic association (defaulting to .5)
 to allow exploring assortative mating effects, as well as varying the DZ \dQuote{C} factor
-from 1 (the default for modeling family-level effects shared 100% by twins in a pair),
+from 1 (the default for modeling family-level effects shared 100\% by twins in a pair),
 to .25 to model dominance effects.
 
 \emph{note}: Only one of C or D may be estimated simultaneously. This restriction reflects the lack
@@ -126,15 +132,16 @@ data(twinData) # ?twinData from Australian twins.
 #    Function generates: "wt" -> "wt1" "wt2"
 # 2. umxACEv picks the variables it needs from the data.
 
-selDVs = "wt"
-mzData <- twinData[twinData$zygosity \%in\% "MZFF", ]
-dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
-m1 = umxACEv(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
+mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
+dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
+m1 = umxACEv(selDVs = "wt", sep = "", dzData = dzData, mzData = mzData)
 
+# A short cut (which is even shorter for "_T" twin data with "MZ"/"DZ" data in zygosity column is:
+m1 = umxACEv(selDVs = "wt", sep = "", dzData = "MZFF", mzData = "DZFF", data = twinData)
 # ========================================================
 # = Evidence for dominance ? (DZ correlation set to .25) =
 # ========================================================
-m2 = umxACEv("ADE", selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData, dzCr = .25)
+m2 = umxACEv("ADE", selDVs = "wt", sep = "", dzData = dzData, mzData = mzData, dzCr = .25)
 # note: the underlying matrices are still called A, C, and E.
 # I catch this in the summary table, so columns are labeled A, D, and E.
 # However, currently, the plot will say A, C, E.
@@ -159,7 +166,7 @@ data(twinData) # ?twinData from Australian twins.
 twinData[,c("ht1", "ht2")]= twinData[,c("ht1", "ht2")]*100
 mzData <- twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData <- twinData[twinData$zygosity \%in\% "DZFF", ]
-m1 = umxACEv(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
+m1 = umxACEv(selDVs = "ht", sep = "", dzData = dzData, mzData = mzData)
 umxSummary(m1, std = FALSE) # unstandardized
 # tip: with report = "html", umxSummary can print the table to your browser!
 plot(m1)
@@ -167,7 +174,7 @@ plot(m1)
 # ========================================================
 # = Evidence for dominance ? (DZ correlation set to .25) =
 # ========================================================
-m2 = umxACEv("ADE", selDVs = selDVs, sep="", dzData = dzData, mzData = mzData, dzCr = .25)
+m2 = umxACEv("ADE", selDVs = "ht", sep="", dzData = dzData, mzData = mzData, dzCr = .25)
 umxCompare(m2, m1) # Is ADE better?
 umxSummary(m2, comparison = m1) # nb: though this is ADE, matrices are still called A,C,E
 
@@ -263,24 +270,20 @@ umxSummary(m1, std = FALSE)
 
 }
 \references{
-- Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches 
-to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.nature.com/articles/hdy1978101.pdf}
+\itemize{
+\item Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches
+to the analysis of human behaviour. \emph{Heredity}, \strong{41}, 249-320. \url{https://www.nature.com/articles/hdy1978101.pdf}
+}
 }
 \seealso{
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACE}}, \code{\link{umxCPold}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
-  \code{\link{umxIPold}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
-  \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
+Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
+  \code{\link{umxACE_cov_fixed}()},
+  \code{\link{umxACEcov}()}, \code{\link{umxACE}()},
+  \code{\link{umxCP}()}, \code{\link{umxGxE_window}()},
+  \code{\link{umxGxEbiv}()}, \code{\link{umxGxE}()},
+  \code{\link{umxIP}()},
+  \code{\link{umxRotate.MxModelCP}()},
+  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
+  \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

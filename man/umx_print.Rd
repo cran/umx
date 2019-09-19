@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.R
 \name{umx_print}
 \alias{umx_print}
-\title{Print tables in a range of formats (markdown default, see \code{\link{umx_set_table_format}} for other formats)
+\title{Print tables in a range of formats (markdown default, see \code{\link[=umx_set_table_format]{umx_set_table_format()}} for other formats)
 or as a web browser table.}
 \usage{
 umx_print(x, digits = getOption("digits"), quote = FALSE,
@@ -29,7 +29,9 @@ umx_print(x, digits = getOption("digits"), quote = FALSE,
 \item{...}{Optional parameters for print}
 }
 \value{
-- A dataframe of text
+\itemize{
+\item A dataframe of text
+}
 }
 \description{
 To aid interpretability of printed tables from OpenMx (and elsewhere)
@@ -44,31 +46,32 @@ umx_print(mtcars[1:10,], file = "tmp.html")
 }
 }
 \seealso{
-\code{\link{umx_msg}}, \code{\link{umx_set_table_format}}
+\code{\link[=umx_msg]{umx_msg()}}, \code{\link[=umx_set_table_format]{umx_set_table_format()}}
 
-Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
-  \code{\link{qm}}, \code{\link{umxBrownie}},
-  \code{\link{umxFactor}}, \code{\link{umxVersion}},
-  \code{\link{umx_array_shift}},
-  \code{\link{umx_cell_is_on}},
-  \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_find_object}}, \code{\link{umx_make}},
-  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
-  \code{\link{umx_pad}}, \code{\link{umx_pb_note}},
-  \code{\link{umx_scale}}, \code{\link{umx_score_scale}},
-  \code{\link{umx}}, \code{\link{xmu_check_variance}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
+  \code{\link{qm}()}, \code{\link{umxBrownie}()},
+  \code{\link{umxFactor}()}, \code{\link{umxLav2RAM}()},
+  \code{\link{umxVersion}()},
+  \code{\link{umx_array_shift}()},
+  \code{\link{umx_cont_2_quantiles}()},
+  \code{\link{umx_find_object}()},
+  \code{\link{umx_make}()}, \code{\link{umx_msg}()},
+  \code{\link{umx_open_CRAN_page}()},
+  \code{\link{umx_pad}()}, \code{\link{umx_pb_note}()},
+  \code{\link{umx_score_scale}()}, \code{\link{umx}},
+  \code{\link{xmu_cell_is_on}()}
 
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
-  \code{\link{umxAPA}}, \code{\link{umxEval}},
-  \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
-  \code{\link{umx_names}}, \code{\link{umx_parameters}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{tmx_show}()}, \code{\link{umxAPA}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_names}()},
+  \code{\link{umx_time}()}, \code{\link{umx}}
 }
 \concept{Miscellaneous Utility Functions}
 \concept{Reporting Functions}

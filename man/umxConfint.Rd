@@ -4,15 +4,15 @@
 \alias{umxConfint}
 \title{Get confidence intervals from a umx model}
 \usage{
-umxConfint(object, parm = c("existing", "smart", "all",
-  "or one or more labels"), wipeExistingRequests = TRUE, level = 0.95,
-  run = FALSE, showErrorCodes = FALSE, optimizer = c("current",
-  "SLSQP"))
+umxConfint(object, parm = c("existing", "all", "or one or more labels",
+  "smart"), wipeExistingRequests = TRUE, level = 0.95, run = FALSE,
+  showErrorCodes = FALSE, optimizer = c("SLSQP", "NPSOL", "CSOLNP",
+  "current"))
 }
 \arguments{
-\item{object}{An \code{\link{mxModel}}, possibly already containing \code{\link{mxCI}}s that have been \code{\link{mxRun}} with intervals = TRUE))}
+\item{object}{An \code{\link[=mxModel]{mxModel()}}, possibly already containing \code{\link[=mxCI]{mxCI()}}s that have been \code{\link[=mxRun]{mxRun()}} with intervals = TRUE))}
 
-\item{parm}{Which parameters to get confidence intervals. Can be "existing", "smart", "all", or a vector of names.}
+\item{parm}{Which parameters to get confidence intervals for. Can be "existing", "all", or one or more parameter names.}
 
 \item{wipeExistingRequests}{Whether to remove existing CIs when adding new ones (ignored if parm = 'existing').}
 
@@ -22,13 +22,13 @@ umxConfint(object, parm = c("existing", "smart", "all",
 
 \item{showErrorCodes}{(default = FALSE)}
 
-\item{optimizer}{defaults to "SLSQP". Might try "NelderMead"}
+\item{optimizer}{For difficult CIs, trying other optimizers can help!}
 
 \item{...}{Additional argument(s) for umxConfint.}
 }
 \value{
 \itemize{
-\item \code{\link{mxModel}}
+\item \code{\link[=mxModel]{mxModel()}}
 }
 }
 \description{
@@ -38,20 +38,20 @@ Implements confidence interval function for umx models.
 Note: By default, requesting new CIs wipes the existing ones.
 To keep these, set wipeExistingRequests = FALSE.
 
-\emph{Note}: \code{\link{confint}} is an OpenMx function which will return SE-based CIs.
+\emph{Note}: \code{\link[=confint]{confint()}} is an OpenMx function which will return SE-based CIs.
 
 Because these can take time to run, by default only CIs already computed will be reported. Set run = TRUE to run new CIs.
-If parm is empty, and run = FALSE, a message will alert you to add run = TRUE.
+If \code{parm} is empty, and \code{run = FALSE}, a message will alert you to set \code{run = TRUE}.
 }
 \examples{
 require(umx)
 data(demoOneFactor)
-latents = c("G")
+
 manifests = names(demoOneFactor)
-m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-	umxPath(from = latents, to = manifests),
+m1 = umxRAM("OneFactor", data = demoOneFactor, type = "cov",
+	umxPath(from = "G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1)
+	umxPath(var = "G", fixedAt = 1)
 )
 
 m1 = umxConfint(m1, run = TRUE) # There are no existing CI requests...
@@ -76,9 +76,9 @@ tmp = umxConfint(m1, parm = "A", run = TRUE)
 tmp = umxConfint(m1, parm = "G_to_x1", run = TRUE, wipeExistingRequests = TRUE) 
 
 \dontrun{
-# For complex twin models, where algebras have parameters in some cells, smart might help
+# For some twin models, "all" uses a "smart" mode
 # note: only implemented for umxCP so far
-m2 =  umxConfint(m1, "smart")
+m2 =  umxConfint(m1, "all")
 }
 
 }
@@ -89,23 +89,20 @@ m2 =  umxConfint(m1, "smart")
 }
 \seealso{
 \itemize{
-\item \code{\link[stats]{confint}}, \code{\link{umxCI}}
+\item \code{\link[stats:confint]{stats::confint()}}, \code{\link[=umxCI]{umxCI()}}
 }
 
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxExpCov}},
-  \code{\link{umxExpMeans}}, \code{\link{umxFitIndices}},
-  \code{\link{umxPlotACEv}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+Other Reporting functions: \code{\link{RMSEA.MxModel}()},
+  \code{\link{RMSEA.summary.mxmodel}()},
+  \code{\link{RMSEA}()},
+  \code{\link{extractAIC.MxModel}()},
+  \code{\link{loadings}()},
+  \code{\link{residuals.MxModel}()},
+  \code{\link{umxCI_boot}()}, \code{\link{umxCI}()},
+  \code{\link{umxCompare}()}, \code{\link{umxExpCov}()},
+  \code{\link{umxExpMeans}()},
+  \code{\link{umxFitIndices}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxRotate}()},
+  \code{\link{umxSummary.MxModel}()}
 }
 \concept{Reporting functions}

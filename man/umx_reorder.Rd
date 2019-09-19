@@ -24,24 +24,23 @@ umx_reorder(oldMatrix, newOrder = c("hp", "disp", "cyl")) # subset and reordered
 umx_reorder(oldMatrix, "hp") # edge-case of just 1-var
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+- <https://www.github.com/tbates/umx>
 }
 \seealso{
-Other Data Functions: \code{\link{umxCovData}},
-  \code{\link{umxDescribeDataWLS}},
-  \code{\link{umxHetCor}},
-  \code{\link{umxPadAndPruneForDefVars}},
-  \code{\link{umx_as_numeric}}, \code{\link{umx_cov2raw}},
-  \code{\link{umx_lower2full}},
-  \code{\link{umx_make_MR_data}},
-  \code{\link{umx_make_TwinData}},
-  \code{\link{umx_make_bin_cont_pair_data}},
-  \code{\link{umx_make_fake_data}},
-  \code{\link{umx_polychoric}},
-  \code{\link{umx_polypairwise}},
-  \code{\link{umx_polytriowise}},
-  \code{\link{umx_read_lower}}, \code{\link{umx_rename}},
-  \code{\link{umx_stack}}, \code{\link{umx_swap_a_block}},
-  \code{\link{umx}}
+Other Data Functions: \code{\link{umxHetCor}()},
+  \code{\link{umx_as_numeric}()},
+  \code{\link{umx_lower2full}()},
+  \code{\link{umx_make_MR_data}()},
+  \code{\link{umx_make_TwinData}()},
+  \code{\link{umx_make_fake_data}()},
+  \code{\link{umx_make_raw_from_cov}()},
+  \code{\link{umx_polychoric}()},
+  \code{\link{umx_polypairwise}()},
+  \code{\link{umx_polytriowise}()},
+  \code{\link{umx_read_lower}()},
+  \code{\link{umx_rename}()},
+  \code{\link{umx_select_valid}()},
+  \code{\link{umx_stack}()}, \code{\link{umx}},
+  \code{\link{xmu_data_swap_a_block}()}
 }
 \concept{Data Functions}

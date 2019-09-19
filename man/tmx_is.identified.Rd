@@ -12,11 +12,13 @@ tmx_is.identified(nVariables, nFactors)
 \item{nFactors}{the number of factors posited.}
 }
 \value{
-- Binary
+\itemize{
+\item Binary
+}
 }
 \description{
 Test if a factor model is identified by establishing if the number of variables is equal too or grater than
-the number of model parameters. See also \code{\link{mxCheckIdentification}} for checking actual models.
+the number of model parameters. See also \code{\link[=mxCheckIdentification]{mxCheckIdentification()}} for checking actual models.
 }
 \examples{
 tmx_is.identified(nVariables = 2, nFactors = 1) # FALSE
@@ -25,25 +27,29 @@ tmx_is.identified(nVariables = 4, nFactors = 2) # FALSE
 tmx_is.identified(nVariables = 5, nFactors = 2) # TRUE
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{mxCheckIdentification}}
+\itemize{
+\item \code{\link[=mxCheckIdentification]{mxCheckIdentification()}}
+}
 
-Other Teaching and testing Functions: \code{\link{tmx_genotypic_effect}},
+Other Teaching and testing Functions: \code{\link{tmx_genotypic_effect}()},
   \code{\link{umx}}
 
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_show}}, \code{\link{umxAPA}},
-  \code{\link{umxEval}}, \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
-  \code{\link{umx_names}}, \code{\link{umx_parameters}},
-  \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_show}()}, \code{\link{umxAPA}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_names}()},
+  \code{\link{umx_print}()}, \code{\link{umx_time}()},
+  \code{\link{umx}}
 }
 \concept{Reporting Functions}
 \concept{Teaching and testing Functions}

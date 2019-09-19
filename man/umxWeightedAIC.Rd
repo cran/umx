@@ -12,10 +12,12 @@ umxWeightedAIC(models, digits = 2)
 \item{digits}{(default 2)}
 }
 \value{
-- Best model
+\itemize{
+\item Best model
+}
 }
 \description{
-Returns the best model by AIC, and computes the probabilities 
+Returns the best model by AIC, and computes the probabilities
 according to AIC weight-based conditional probabilities (Wagenmakers & Farrell, 2004).
 }
 \examples{
@@ -24,21 +26,25 @@ l2 = lm(mpg~ wt, data=mtcars)
 umxWeightedAIC(models = list(l1, l2))
 }
 \references{
-- Wagenmakers E.J., Farrell S. (2004), 192-196. AIC model selection using Akaike weights. *Psychonomic Bulletin and Review*. **11**, 192-196. \url{https://www.ncbi.nlm.nih.gov/pubmed/15117008}
+\itemize{
+\item Wagenmakers E.J., Farrell S. (2004), 192-196. AIC model selection using Akaike weights. \emph{Psychonomic Bulletin and Review}. \strong{11}, 192-196. \url{https://www.ncbi.nlm.nih.gov/pubmed/15117008}
+}
 }
 \seealso{
-- \code{\link{AIC}}
+\itemize{
+\item \code{\link[=AIC]{AIC()}}
+}
 
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
-  \code{\link{umxAPA}}, \code{\link{umxEval}},
-  \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umx_APA_pval}},
-  \code{\link{umx_aggregate}}, \code{\link{umx_names}},
-  \code{\link{umx_parameters}}, \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{tmx_show}()}, \code{\link{umxAPA}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_names}()},
+  \code{\link{umx_print}()}, \code{\link{umx_time}()},
+  \code{\link{umx}}
 }
 \concept{Reporting Functions}

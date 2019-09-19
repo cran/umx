@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.R
 \name{umx_get_bracket_addresses}
 \alias{umx_get_bracket_addresses}
-\title{Get mat[r,c] style cell address from an mxMatrix}
+\title{Get bracket-style addresses from an mxMatrix}
 \usage{
 umx_get_bracket_addresses(mat, free = NA, newName = NA)
 }
@@ -14,7 +14,9 @@ umx_get_bracket_addresses(mat, free = NA, newName = NA)
 \item{newName}{= NA}
 }
 \value{
-- a list of bracket style labels
+\itemize{
+\item a list of bracket style labels
+}
 }
 \description{
 Sometimes you want these :-) This also allows you to change the matrix name: useful for using mxMatrix addresses in an mxAlgebra.
@@ -22,27 +24,26 @@ Sometimes you want these :-) This also allows you to change the matrix name: use
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("g")
 manifests = names(demoOneFactor)
-m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
-	umxPath(latents, to = manifests),
+m1 = umxRAM("get_add_ex", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
-)
-
+	umxPath(var = "G", fixedAt = 1)
+)#'
 umx_get_bracket_addresses(m1$matrices$A, free= TRUE)
 }
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-Other Advanced Model Building Functions: \code{\link{umxJiggle}},
-  \code{\link{umxLabel}}, \code{\link{umxLatent}},
-  \code{\link{umxRAM2Ordinal}},
-  \code{\link{umxThresholdMatrix}},
-  \code{\link{umxValues}},
-  \code{\link{umx_fix_first_loadings}},
-  \code{\link{umx_fix_latents}},
-  \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
+Other Advanced Model Building Functions: \code{\link{umxJiggle}()},
+  \code{\link{umxLabel}()}, \code{\link{umxRAM2Ordinal}()},
+  \code{\link{umxThresholdMatrix}()},
+  \code{\link{umxValues}()},
+  \code{\link{umx_fix_first_loadings}()},
+  \code{\link{umx_fix_latents}()},
+  \code{\link{umx_string_to_algebra}()}, \code{\link{umx}}
 }
 \concept{Advanced Model Building Functions}

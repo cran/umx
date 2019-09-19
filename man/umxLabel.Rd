@@ -9,7 +9,7 @@ umxLabel(obj, suffix = "", baseName = NA, setfree = FALSE,
   verbose = FALSE, overRideExisting = FALSE, name = NULL)
 }
 \arguments{
-\item{obj}{An \code{\link{mxModel}} (RAM or matrix based), \code{\link{mxPath}}, or \code{\link{mxMatrix}}}
+\item{obj}{An \code{\link[=mxModel]{mxModel()}} (RAM or matrix based), \code{\link[=mxPath]{mxPath()}}, or \code{\link[=mxMatrix]{mxMatrix()}}}
 
 \item{suffix}{String to append to each label (might be used to distinguish, say male and female submodels in a model)}
 
@@ -32,11 +32,13 @@ umxLabel(obj, suffix = "", baseName = NA, setfree = FALSE,
 \item{name}{Optional new name if given a model. Default (NULL) does not rename model.}
 }
 \value{
-- \code{\link{mxModel}}
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
-umxLabel adds labels to things, be it an: \code{\link{mxModel}} (RAM or matrix based), an \code{\link{mxPath}}, or an \code{\link{mxMatrix}}
-This is a core function in umx: Adding labels to paths opens the door to \code{\link{umxEquate}}, as well as \code{\link{omxSetParameters}}
+umxLabel adds labels to things, be it an: \code{\link[=mxModel]{mxModel()}} (RAM or matrix based), an \code{\link[=mxPath]{mxPath()}}, or an \code{\link[=mxMatrix]{mxMatrix()}}
+This is a core function in umx: Adding labels to paths opens the door to \code{\link[=umxEquate]{umxEquate()}}, as well as \code{\link[=omxSetParameters]{omxSetParameters()}}
 }
 \examples{
 # ==============================================================
@@ -46,13 +48,14 @@ require(umx)
 data(demoOneFactor)
 latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- mxModel("One Factor", type = "RAM",
+m1 = mxModel("One Factor", type = "RAM", 
 	manifestVars = manifests, latentVars = latents, 
-	mxPath(from = latents, to = manifests),
+	mxPath(from = latents  , to = manifests),
 	mxPath(from = manifests, arrows = 2),
-	mxPath(from = latents, arrows = 2, free = FALSE, values = 1),
-	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+	mxPath(from = latents  , arrows = 2, free = FALSE, values = 1.0),
+	mxData(cov(demoOneFactor), type = "cov", numObs=500)
 )
+
 umxGetParameters(m1) # Default "matrix address" labels, i.e "One Factor.S[2,2]"
 m1 = umxLabel(m1)
 umxGetParameters(m1, free = TRUE) # Informative labels: "G_to_x1", "x4_with_x4", etc.
@@ -78,16 +81,18 @@ umxLabel(a, verbose = TRUE, overRideExisting = FALSE)
 umxLabel(a, verbose = TRUE, overRideExisting = TRUE)
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Advanced Model Building Functions: \code{\link{umxJiggle}},
-  \code{\link{umxLatent}}, \code{\link{umxRAM2Ordinal}},
-  \code{\link{umxThresholdMatrix}},
-  \code{\link{umxValues}},
-  \code{\link{umx_fix_first_loadings}},
-  \code{\link{umx_fix_latents}},
-  \code{\link{umx_get_bracket_addresses}},
-  \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
+Other Advanced Model Building Functions: \code{\link{umxJiggle}()},
+  \code{\link{umxRAM2Ordinal}()},
+  \code{\link{umxThresholdMatrix}()},
+  \code{\link{umxValues}()},
+  \code{\link{umx_fix_first_loadings}()},
+  \code{\link{umx_fix_latents}()},
+  \code{\link{umx_get_bracket_addresses}()},
+  \code{\link{umx_string_to_algebra}()}, \code{\link{umx}}
 }
 \concept{Advanced Model Building Functions}

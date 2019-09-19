@@ -16,26 +16,24 @@ RMSEA(x, ci.lower, ci.upper, digits)
 \item{digits}{digits to show}
 }
 \value{
-- RMSEA object containing value (and perhaps a CI)
+\itemize{
+\item RMSEA object containing value (and perhaps a CI)
+}
 }
 \description{
-See \code{\link[umx]{RMSEA.MxModel}} to access the RMSEA of MxModels
+See \code{\link[=RMSEA.MxModel]{RMSEA.MxModel()}} to access the RMSEA of MxModels
 }
 \seealso{
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}},
-  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+Other Reporting functions: \code{\link{RMSEA.MxModel}()},
+  \code{\link{RMSEA.summary.mxmodel}()},
+  \code{\link{extractAIC.MxModel}()},
+  \code{\link{loadings}()},
+  \code{\link{residuals.MxModel}()},
+  \code{\link{umxCI_boot}()}, \code{\link{umxCI}()},
+  \code{\link{umxCompare}()}, \code{\link{umxConfint}()},
+  \code{\link{umxExpCov}()}, \code{\link{umxExpMeans}()},
+  \code{\link{umxFitIndices}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxRotate}()},
+  \code{\link{umxSummary.MxModel}()}
 }
 \concept{Reporting functions}

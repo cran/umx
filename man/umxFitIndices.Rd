@@ -7,7 +7,7 @@
 umxFitIndices(model, refModels = mxRefModels(model, run = TRUE))
 }
 \arguments{
-\item{model}{The \code{\link{mxModel}} for which you want fit indices.}
+\item{model}{The \code{\link[=mxModel]{mxModel()}} for which you want fit indices.}
 
 \item{refModels}{Independence and saturated models. default mxRefModels(model, run = TRUE)}
 }
@@ -17,12 +17,12 @@ Table of fit statistics
 \description{
 A list of fit indices. Originated in this thread: https://openmx.ssri.psu.edu/thread/765
 note: This is not a full-fat fit reporter. It is not robust across multi-group designs,
-definition variables. It is primarily designed to add less-often reported fit indices for 
+definition variables. It is primarily designed to add less-often reported fit indices for
 RAM models where reviewer 2 wants something other than CFA/TLI/RMSEA :-).
 }
 \details{
-Fit information reported includes: N, deviance, N.parms, Chi, df, p.Chi, Chi.df, AICchi, AICdev, BCCchi, BCCdev, BICchi, BICdev, 
-CAICchi, CAICdev, RMSEA, SRMR, RMR, SMAR, MAR, SMAR.nodiag, MAR.nodiag, GFI, AGFI, PGFI, 
+Fit information reported includes: N, deviance, N.parms, Chi, df, p.Chi, Chi.df, AICchi, AICdev, BCCchi, BCCdev, BICchi, BICdev,
+CAICchi, CAICdev, RMSEA, SRMR, RMR, SMAR, MAR, SMAR.nodiag, MAR.nodiag, GFI, AGFI, PGFI,
 NFI, RFI, IFI, NNFI.TLI, CFI, PRATIO, PNFI, PCFI, NCP, ECVIchi, ECVIdev, MECVIchi, MECVIdev, MFI, GH
 
 Want more? File a report at github
@@ -30,42 +30,34 @@ Want more? File a report at github
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- umxRAM("One Factor",
-	data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-	umxPath(latents, to = manifests),
+
+m1 = umxRAM("fit_ex", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1)
+	umxPath(var = "G", fixedAt = 1)
 )
 umxFitIndices(m1)
 # And with raw data
-m1 <- umxRAM("m1", data = demoOneFactor,
-	umxPath(latents, to = manifests),
+m1 = umxRAM("m1", data = demoOneFactor,
+	umxPath("G", to = manifests),
 	umxPath(v.m. = manifests),
-	umxPath(v1m0 = latents)
+	umxPath(v1m0 = "G")
 )
 umxFitIndices(m1)
 umxAPA(umxFitIndices(m1), digits = 3)
 }
-\references{
--
-}
 \seealso{
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxPlotACEv}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+Other Reporting functions: \code{\link{RMSEA.MxModel}()},
+  \code{\link{RMSEA.summary.mxmodel}()},
+  \code{\link{RMSEA}()},
+  \code{\link{extractAIC.MxModel}()},
+  \code{\link{loadings}()},
+  \code{\link{residuals.MxModel}()},
+  \code{\link{umxCI_boot}()}, \code{\link{umxCI}()},
+  \code{\link{umxCompare}()}, \code{\link{umxConfint}()},
+  \code{\link{umxExpCov}()}, \code{\link{umxExpMeans}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxRotate}()},
+  \code{\link{umxSummary.MxModel}()}
 }
 \concept{Reporting functions}

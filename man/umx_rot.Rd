@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.R
 \name{umx_rot}
 \alias{umx_rot}
-\title{umx_rot}
+\title{Rotate a vector}
 \usage{
 umx_rot(vec)
 }
@@ -10,10 +10,12 @@ umx_rot(vec)
 \item{vec}{vector to rotate}
 }
 \value{
-- \code{\link{mxModel}}
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
-rotate a vector (default, rotate by 1)
+\code{umx_rot} rotates the items of a vector (1 place, by default). So: c(1,2,3) -> c(2,3,1)
 }
 \examples{
 umx_rot(1:10)
@@ -21,13 +23,17 @@ umx_rot(c(3,4,5,6,7))
 # [1] 4 5 6 7 3
 }
 \references{
-- \url{https://tbates.github.io}
+\itemize{
+\item \url{https://tbates.github.io}
+}
 }
 \seealso{
-Other String Functions: \code{\link{umx_explode_twin_names}},
-  \code{\link{umx_explode}}, \code{\link{umx_grep}},
-  \code{\link{umx_names}}, \code{\link{umx_object_as_str}},
-  \code{\link{umx_paste_names}}, \code{\link{umx_trim}},
-  \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
+Other String Functions: \code{\link{umx_explode_twin_names}()},
+  \code{\link{umx_explode}()}, \code{\link{umx_grep}()},
+  \code{\link{umx_names}()},
+  \code{\link{umx_object_as_str}()},
+  \code{\link{umx_paste_names}()},
+  \code{\link{umx_trim}()},
+  \code{\link{umx_write_to_clipboard}()}, \code{\link{umx}}
 }
 \concept{String Functions}

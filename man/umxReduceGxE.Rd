@@ -5,14 +5,17 @@
 \title{Reduce a GxE model.}
 \usage{
 umxReduceGxE(model, report = c("markdown", "inline", "html", "report"),
-  baseFileName = "tmp_gxe", ...)
+  baseFileName = "tmp_gxe", tryHard = c("no", "yes", "mxTryHard",
+  "mxTryHardOrdinal", "mxTryHardWideSearch"), ...)
 }
 \arguments{
-\item{model}{An \code{\link{mxModel}} to reduce.}
+\item{model}{An \code{\link[=mxModel]{mxModel()}} to reduce.}
 
 \item{report}{How to report the results. "html" = open in browser.}
 
 \item{baseFileName}{(optional) custom filename for html output (defaults to "tmp").}
+
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
 
 \item{...}{Other parameters to control model summary.}
 }
@@ -20,12 +23,14 @@ umxReduceGxE(model, report = c("markdown", "inline", "html", "report"),
 best model
 }
 \description{
-This function can perform model reduction for \link{umxGxE},
-testing dropping means-moderation, a\code{,c} & e\code{, as well as c & c}, a & a` etc.
+This function can perform model reduction for \code{\link[=umxGxE]{umxGxE()}} models,
+testing dropping a\verb{,c} & e\verb{, as well as c & c}, a & a` etc.
 
 It reports the results in a table. Set the format of the table with
-\link{umx_set_table_format}. Or set \code{report} to "html" to open a
+\code{\link[=umx_set_table_format]{umx_set_table_format()}}. Or set \code{report = "html"} to open a
 table for pasting into a word processor.
+
+In addition to printing a table, the function returns the preferred model.
 }
 \examples{
 \dontrun{
@@ -39,11 +44,19 @@ model = umxReduce(model)
 }
 }
 \seealso{
-\code{\link{umxReduceACE}}, \code{\link{umxReduce}}
+\code{\link[=umxReduceACE]{umxReduceACE()}}, \code{\link[=umxReduce]{umxReduce()}}
 
-Other Twin Reporting Functions: \code{\link{umxPlotCPold}},
-  \code{\link{umxPlotCP}}, \code{\link{umxReduceACE}},
-  \code{\link{umxReduce}},
-  \code{\link{umxSummarizeTwinData}}, \code{\link{umx}}
+Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
+  \code{\link{umxReduceACE}()}, \code{\link{umxReduce}()},
+  \code{\link{umxSummarizeTwinData}()},
+  \code{\link{umxSummaryACEcov}()},
+  \code{\link{umxSummaryACEv}()},
+  \code{\link{umxSummaryACE}()},
+  \code{\link{umxSummaryCP}()},
+  \code{\link{umxSummaryGxEbiv}()},
+  \code{\link{umxSummaryGxE}()},
+  \code{\link{umxSummaryIP}()},
+  \code{\link{umxSummarySexLim}()},
+  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
 }
 \concept{Twin Reporting Functions}

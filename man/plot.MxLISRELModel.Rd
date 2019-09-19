@@ -5,12 +5,12 @@
 \title{Create and display a graphical path diagram for a LISREL model.}
 \usage{
 \method{plot}{MxLISRELModel}(x = NA, std = FALSE, fixed = TRUE,
-  means = TRUE, digits = 2, file = "name", pathLabels = c("none",
+  means = TRUE, digits = 2, file = "name", labels = c("none",
   "labels", "both"), resid = c("circle", "line", "none"),
   strip_zero = TRUE, ...)
 }
 \arguments{
-\item{x}{A LISREL \code{\link{mxModel}} from which to make a path diagram}
+\item{x}{A LISREL \code{\link[=mxModel]{mxModel()}} from which to make a path diagram}
 
 \item{std}{Whether to standardize the model (default = FALSE).}
 
@@ -22,7 +22,7 @@
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
-\item{pathLabels}{Whether to show labels on the paths. both will show both the parameter and the label. ("both", "none" or "labels")}
+\item{labels}{Whether to show labels on the paths. both will show both the parameter and the label. ("both", "none" or "labels")}
 
 \item{resid}{How to show residuals and variances default is "circle". Options are "line" & "none"}
 
@@ -31,25 +31,23 @@
 \item{...}{Optional parameters}
 }
 \description{
-plot() produces SEM diagrams using \code{\link{DiagrammeR}} (or a 
-graphviz application) to create the image. 
-The commercial application \dQuote{OmniGraffle} is great for editing these images.
+\code{plot.MxLISRELModel} produces SEM diagrams using \code{\link[DiagrammeR:DiagrammeR]{DiagrammeR::DiagrammeR()}} (or a graphviz application) to create the image.
 }
 \details{
-If you use umx_set_plot_format("graphviz"), figures will open in a graphviz helper app (if installed).
+\emph{Note:} By default, plots open in your browser (or plot pane if using RStudio).
+
+\strong{Opening in an external editor/app}
+
+The underlying format is graphviz.
+If you use \code{umx_set_plot_format("graphviz")}, figures will open in a graphviz helper app (if installed).
 If you use graphviz, we try and use that app, but YOU HAVE TO INSTALL IT!
 
-On OS X we try and open an app: you may need to associate the \sQuote{.gv}
-extension with the graphviz app.
-Find the .gv file made by plot, get info (cmd-I), then choose \dQuote{open with}, 
+On MacOS, you may need to associate the \sQuote{.gv} extension with your graphviz app.
+Find the .gv file made by plot, get info (cmd-I), then choose \dQuote{open with},
 select graphviz.app (or OmniGraffle professional),
 then set \dQuote{change all}.
 
-On unix \code{\link{plot}}() will create a pdf and open it in your default pdf reader.
-
-\emph{Note:} By default, plots open in your browser (or plot pane if using RStudio).
-
-The underlying format is graphviz.
+The commercial application \dQuote{OmniGraffle} is great for editing these images.
 }
 \examples{
 # plot()
@@ -57,24 +55,24 @@ The underlying format is graphviz.
 # Figure out how to map its matrices to plot. Don't do without establishing demand.
 }
 \references{
-- \url{https://www.github.com/tbates/umx}, \url{https://en.wikipedia.org/wiki/DOT_(graph_description_language)}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}, \url{https://en.wikipedia.org/wiki/DOT_(graph_description_language)}
+}
 }
 \seealso{
-- \code{\link{umx_set_plot_format}}, \code{\link{plot.MxModel}}, \code{\link{umxPlotACE}}, \code{\link{umxPlotCP}}, \code{\link{umxPlotIP}}, \code{\link{umxPlotGxE}}
-
-Other Core Modeling Functions: \code{\link{plot.MxModel}},
-  \code{\link{umxAlgebra}}, \code{\link{umxMatrix}},
-  \code{\link{umxModify}}, \code{\link{umxPath}},
-  \code{\link{umxRAM}}, \code{\link{umxRun}},
-  \code{\link{umxSuperModel}}, \code{\link{umx}}
-
-Other Plotting functions: \code{\link{plot.MxModel}},
-  \code{\link{umxPlotACEcov}}, \code{\link{umxPlotACEv}},
-  \code{\link{umxPlotACE}}, \code{\link{umxPlotCPold}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxEbiv}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxPlotSexLim}},
-  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
+\itemize{
+\item \code{\link[=umx_set_plot_format]{umx_set_plot_format()}}, \code{\link[=umx_set_auto_plot]{umx_set_auto_plot()}}, \code{\link[=umx_set_plot_format]{umx_set_plot_format()}}, \code{\link[=plot.MxModel]{plot.MxModel()}}, \code{\link[=umxPlotACE]{umxPlotACE()}}, \code{\link[=umxPlotCP]{umxPlotCP()}}, \code{\link[=umxPlotIP]{umxPlotIP()}}, \code{\link[=umxPlotGxE]{umxPlotGxE()}}
 }
-\concept{Core Modeling Functions}
+
+Other umx S3 functions: \code{\link{plot.MxModel}()}
+
+Other Plotting functions: \code{\link{plot.MxModel}()},
+  \code{\link{umxPlotACEcov}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxPlotACE}()},
+  \code{\link{umxPlotCP}()}, \code{\link{umxPlotGxEbiv}()},
+  \code{\link{umxPlotGxE}()}, \code{\link{umxPlotIP}()},
+  \code{\link{umxPlotSexLim}()},
+  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
+}
 \concept{Plotting functions}
+\concept{umx S3 functions}

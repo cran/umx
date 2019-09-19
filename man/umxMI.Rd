@@ -8,7 +8,7 @@ umxMI(model = NA, matrices = NA, full = TRUE, numInd = NA,
   typeToShow = "both", decreasing = TRUE)
 }
 \arguments{
-\item{model}{An \code{\link{mxModel}} for which to report modification indices}
+\item{model}{An \code{\link[=mxModel]{mxModel()}} for which to report modification indices}
 
 \item{matrices}{which matrices to test. The default (NA) will test A & S for RAM models}
 
@@ -26,36 +26,39 @@ or dropped, would improve fit.
 }
 \details{
 Notes:
-1. Runs much faster with full = FALSE (but this does not allow the model to re-fit around the newly-
+\enumerate{
+\item Runs much faster with full = FALSE (but this does not allow the model to re-fit around the newly-
 freed parameter).
-2. Compared to mxMI, this function returns top changes, and also suppresses the run message.
-3. Finally, of course: see the requirements for (legitimate) post-hoc modeling in \code{\link{mxMI}}
+\item Compared to mxMI, this function returns top changes, and also suppresses the run message.
+\item Finally, of course: see the requirements for (legitimate) post-hoc modeling in \code{\link[=mxMI]{mxMI()}}
 You are almost certainly doing better science when testing competing models rather than modifying a model to fit.
+}
 }
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("G")
-manifests = names(demoOneFactor)[1:3]
-df = mxData(cov(demoOneFactor[,manifests]), type = "cov", numObs = 500)
-m1 <- umxRAM("One Factor", data = df,
-	umxPath(latents, to = manifests),
+manifests = names(demoOneFactor)
+m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1)
-)
-umxMI(m1, full=FALSE)
+	umxPath(var = "G", fixedAt = 1)
+)#' umxMI(m1, full=FALSE)
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-- \code{\link{mxMI}}
+\itemize{
+\item \code{\link[=mxMI]{mxMI()}}
+}
 
-Other Modify or Compare Models: \code{\link{umxAdd1}},
-  \code{\link{umxDrop1}}, \code{\link{umxEquate}},
-  \code{\link{umxFixAll}}, \code{\link{umxModify}},
-  \code{\link{umxSetParameters}},
-  \code{\link{umxUnexplainedCausalNexus}},
+Other Modify or Compare Models: \code{\link{umxAdd1}()},
+  \code{\link{umxDrop1}()}, \code{\link{umxEquate}()},
+  \code{\link{umxFixAll}()}, \code{\link{umxModify}()},
+  \code{\link{umxSetParameters}()},
+  \code{\link{umxUnexplainedCausalNexus}()},
   \code{\link{umx}}
 }
 \concept{Modify or Compare Models}

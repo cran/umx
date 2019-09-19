@@ -71,14 +71,15 @@
 #' @param dzCr The DZ "C" correlation (defaults = 1. To make an ADE model, set = .25).
 #' @param addStd Whether to add the algebras to compute a std model (default = TRUE).
 #' @param addCI Whether to add the interval requests for CIs (default = TRUE).
-#' @param autoRun Whether to run the model, and return that (default), or just to create it and return without running.
+#' @param autoRun Whether to run the model (default), or just to create it and return without running.
 #' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"
 #' @param optimizer Optionally set the optimizer (default NULL does nothing).
-#' @return - \code{\link{mxModel}}
+#' @return - [mxModel()]
 #' @export
 #' @family Twin Modeling Functions
-#' @seealso - \code{\link{umxACE}()} for more examples of twin modeling, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
-#' @references - \url{https://www.github.com/tbates/umx}
+#' @seealso - \code{\link{umxACE}()} for more examples of twin modeling, [plot()], [umxSummary()] work for IP, CP, GxE, SAT, and ACE models.
+#' @references - <https://www.github.com/tbates/umx>
+#' @md
 #' @examples
 #' \dontrun{
 #' data(iqdat)
@@ -193,14 +194,14 @@ umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equ
 
 #' Shows a compact, publication-style, summary of a Simplex model.
 #'
-#' Summarize a fitted Simplex model returned by \code{\link{umxSimplex}}. Can control digits, report comparison model fits,
+#' Summarize a fitted Simplex model returned by [umxSimplex()]. Can control digits, report comparison model fits,
 #' optionally show the Rg (genetic and environmental correlations), and show confidence intervals. the report parameter allows
 #' drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
 #'
-#' See documentation for other umx models here: \code{\link{umxSummary}}.
+#' See documentation for other umx models here: [umxSummary()].
 #' 
 #' @aliases umxSummary.MxModelSimplex
-#' @param model an \code{\link{mxModel}} to summarize
+#' @param model an [mxModel()] to summarize
 #' @param digits round to how many digits (default = 2)
 #' @param file The name of the dot file to write: "name" = use the name of the model.
 #' Defaults to NA = no plot.
@@ -212,13 +213,14 @@ umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equ
 #' @param report If "html", then open an html table of the results (default = 'markdown')
 #' @param extended how much to report (default = FALSE)
 #' @param zero.print How to show zeros (default = ".")
+#' @param show Here to support being called from generic xmu_safe_run_summary. User should ignore: can be c("std", "raw")
 #' @param ... Other parameters to control model summary
-#' @return - optional \code{\link{mxModel}}
+#' @return - optional [mxModel()]
 #' @export
-#' @family Twin Modeling Functions
-#' @family Reporting functions
-#' @seealso - \code{\link{umxSimplex}}
-#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @family Twin Reporting Functions
+#' @seealso - [umxSimplex()]
+#' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
+#' @md
 #' @examples
 #' \dontrun{
 #' # 4 time model
@@ -230,8 +232,14 @@ umxSimplex <- function(name = "simplex", selDVs, dzData, mzData, sep = NULL, equ
 #' m1= umxSimplex(selDVs= vars, sep= "_T", dzData= dzData, mzData= mzData, tryHard= "mxTryHard")
 #' umxSummary(m1, file = NA);
 #' }
-umxSummarySimplex <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
+umxSummarySimplex <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", show = c("std", "raw"), ...) {
 	# Depends on R2HTML::HTML
+	show = match.arg(show)
+	if(show != "std"){
+		std = FALSE
+		# message("Polite message: in next version, show= will be replaced with std=TRUE/FALSE/NULL  or vice versa...")
+	}
+	
 	report = match.arg(report)
 	if(typeof(model) == "list"){ # call self recursively
 		for(thisFit in model) {
@@ -240,7 +248,7 @@ umxSummarySimplex <- function(model, digits = 2, file = getOption("umx_auto_plot
 		}
 	} else {
 	umx_has_been_run(model, stop = TRUE)
-	umx_show_fit_or_comparison(model, comparison = comparison, digits = digits)
+	xmu_show_fit_or_comparison(model, comparison = comparison, digits = digits)
 	# Starting Values
 	selDVs = model$MZ$expectation$dims
 	nVar   = length(selDVs)/2;
@@ -248,7 +256,7 @@ umxSummarySimplex <- function(model, digits = 2, file = getOption("umx_auto_plot
 	if(std){
 		# Calculate standardized variance components
 		message("Standardized solution (note: std is alpha quality)")
-		model = umx_standardize_Simplex(model)
+		model = xmu_standardize_Simplex(model)
 	} else {
 		message("Raw solution")
 	}
@@ -425,7 +433,7 @@ umxSummary.MxModelSimplex <- umxSummarySimplex
 #' Options include digits (rounding), showing means or not, and which output format is desired.
 #'
 #' @aliases plot.MxModelSimplex
-#' @param x The \code{\link{umxSimplex}} model to display graphically
+#' @param x The [umxSimplex()] model to display graphically
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param digits How many decimals to include in path loadings (defaults to 2)
 #' @param means Whether to show means paths (defaults to FALSE)
@@ -435,12 +443,12 @@ umxSummary.MxModelSimplex <- umxSummarySimplex
 #' @param ... Optional additional parameters
 #' @return - Optionally return the dot code
 #' @export
-#' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, simplex, ACEv, or ACE model.
-#' @seealso - \code{\link{umxSimplex}}
+#' @seealso - [plot()], [umxSummary()] work for IP, CP, GxE, SAT, simplex, ACEv, or ACE model.
+#' @seealso - [umxSimplex()]
 #' @family Plotting functions
+#' @md
 #' @examples
 #' \dontrun{
-#' # TODO Add example from umxSimplex help
 #' data(iqdat)
 #' mzData = subset(iqdat, zygosity == "MZ")
 #' dzData = subset(iqdat, zygosity == "DZ")
@@ -449,7 +457,7 @@ umxSummary.MxModelSimplex <- umxSummarySimplex
 #' # plot(m1)
 #' }
 umxPlotSimplex <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE,  format = c("current", "graphviz", "DiagrammeR"), strip_zero = TRUE, ...) {
-	# TODO: umxPlotSimplex walks across the known matrices to obviate problems with arbitrary names in label based approaches.
+	# umxPlotSimplex walks across the known matrices to obviate problems with arbitrary names in label based approaches.
 	# 1. Could add dimnames() to A, C, E?
 	if(!class(x) == "MxModelSimplex"){
 		stop("The first parameter of umxPlotSimplex must be a umxSimplex model, you gave me a ", class(x))
@@ -458,7 +466,7 @@ umxPlotSimplex <- function(x = NA, file = "name", digits = 2, means = FALSE, std
 	model = x # Just to emphasise that x has to be a model 
 	if(std){
 		message("std is beta for simplex plot")
-		model = umx_standardize_Simplex(model)
+		model = xmu_standardize_Simplex(model)
 	}
 	parameterKeyList = omxGetParameters(model)
 
@@ -536,14 +544,15 @@ plot.MxModelSimplex <- umxPlotSimplex
 
 #' Standardize a Simplex twin model
 #'
-#' umx_standardize_Simplex
+#' xmu_standardize_Simplex
 #'
-#' @param model an \code{\link{umxSimplex}} model to standardize
+#' @param model an [umxSimplex()] model to standardize
 #' @param ... Other options
-#' @return - Standardized Simplex \code{\link{umxSimplex}} model
+#' @return - Standardized Simplex [umxSimplex()] model
 #' @export
-#' @family zAdvanced Helpers
-#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @family xmu internal not for end user
+#' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
+#' @md
 #' @examples
 #' \dontrun{
 #' data(iqdat)
@@ -551,10 +560,10 @@ plot.MxModelSimplex <- umxPlotSimplex
 #' dzData = subset(iqdat, zygosity == "DZ")
 #' m1  = umxSimplex(selDVs = paste0("IQ_age", 1:4), sep = "_T", 
 #' 			dzData = dzData, mzData = mzData, tryHard = "mxTryHard")
-#' std = umx_standardize_Simplex(m1)
+#' std = xmu_standardize_Simplex(m1)
 #' }
 #' 
-umx_standardize_Simplex <- function(model, ...) {
+xmu_standardize_Simplex <- function(model, ...) {
 	if(typeof(model) == "list"){ # Call self recursively
 		for(thisFit in model) {
 			message("Output for Model: ", thisFit$name)
@@ -562,7 +571,7 @@ umx_standardize_Simplex <- function(model, ...) {
 		}
 	} else {
 		if(!umx_has_been_run(model)){
-			stop("I can only standardize Simplex models that have been run. Just do\n",
+			stop("I can only standardize Simplex models that have been run. First do\n",
 			"yourModel = mxRun(yourModel)")
 		}
 		selDVs = model$MZ$expectation$dims
@@ -602,9 +611,9 @@ umx_standardize_Simplex <- function(model, ...) {
 	}
 }
 #' @export
-umx_standardize.MxModelSimplex <- umx_standardize_Simplex
+umx_standardize.MxModelSimplex <- xmu_standardize_Simplex
 
-# umx_standardize_Simplex <- function(model, ...) {
+# xmu_standardize_Simplex <- function(model, ...) {
 # 	if(typeof(model) == "list"){ # Call self recursively
 # 		for(thisFit in model) {
 # 			message("Output for Model: ", thisFit$name)
@@ -656,5 +665,5 @@ umx_standardize.MxModelSimplex <- umx_standardize_Simplex
 # 		return(model)
 # 	}
 # }
-# #' @export
-# umx_standardize.MxModelSimplex <- umx_standardize_Simplex
+#' # @export
+# umx_standardize.MxModelSimplex <- xmu_standardize_Simplex

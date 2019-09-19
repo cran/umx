@@ -7,7 +7,7 @@
 umxSummarizeTwinData(data = NULL, selVars = "wt", sep = "_T",
   zyg = "zygosity", MZ = NULL, DZ = NULL, MZFF = "MZFF",
   DZFF = "DZFF", MZMM = "MZMM", DZMM = "DZMM", DZOS = "DZOS",
-  digits = 2)
+  digits = 2, report = c("markdown", "html"))
 }
 \arguments{
 \item{data}{The twin data.}
@@ -33,9 +33,13 @@ umxSummarizeTwinData(data = NULL, selVars = "wt", sep = "_T",
 \item{DZOS}{The level in zyg corresponding to DZ OS pairs: e.g., "DZOS".}
 
 \item{digits}{Rounding precision of the report (default 2).}
+
+\item{report}{What to return (default = 'markdown'). Use 'html' to open a web table.}
 }
 \value{
-- formatted table, e.g. in markdown.
+\itemize{
+\item formatted table, e.g. in markdown.
+}
 }
 \description{
 Produce a summary of wide-format twin data, showing the number of individuals, the mean and SD for each trait, and the correlation for each twin-type.
@@ -49,14 +53,26 @@ MZs = c("MZMM", "MZFF"); DZs = c("DZFF","DZMM", "DZOS")
 umxSummarizeTwinData(twinData, sep = "", selVars = c("wt", "ht"), MZ = MZs, DZ = DZs)
 }
 \references{
-- \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-- \code{\link{umxAPA}}
+\itemize{
+\item \code{\link[=umxAPA]{umxAPA()}}
+}
 
-Other Twin Reporting Functions: \code{\link{umxPlotCPold}},
-  \code{\link{umxPlotCP}}, \code{\link{umxReduceACE}},
-  \code{\link{umxReduceGxE}}, \code{\link{umxReduce}},
-  \code{\link{umx}}
+Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
+  \code{\link{umxReduceACE}()},
+  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
+  \code{\link{umxSummaryACEcov}()},
+  \code{\link{umxSummaryACEv}()},
+  \code{\link{umxSummaryACE}()},
+  \code{\link{umxSummaryCP}()},
+  \code{\link{umxSummaryGxEbiv}()},
+  \code{\link{umxSummaryGxE}()},
+  \code{\link{umxSummaryIP}()},
+  \code{\link{umxSummarySexLim}()},
+  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
 }
 \concept{Twin Reporting Functions}

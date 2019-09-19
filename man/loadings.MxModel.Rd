@@ -12,34 +12,41 @@
 \item{...}{Other parameters (currently unused)}
 }
 \value{
-- loadings matrix
+\itemize{
+\item loadings matrix
+}
 }
 \description{
 loadings extracts the factor loadings from an EFA (factor analysis) model.
-It behaves equivalently to stats::loadings, returning the loadings from an 
+It behaves equivalently to stats::loadings, returning the loadings from an
 EFA (factor analysis). However it does not store the rotation matrix.
 }
 \examples{
 myVars <- c("mpg", "disp", "hp", "wt", "qsec")
 m1 = umxEFA(name = "test", factors = 2, data = mtcars[, myVars])
 loadings(m1)
+
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{factanal}}, \code{\link{loadings}}
+\itemize{
+\item \code{\link[=factanal]{factanal()}}, \code{\link[=loadings]{loadings()}}
+}
 
-Other Reporting Functions: \code{\link{tmx_is.identified}},
-  \code{\link{tmx_show}}, \code{\link{umxAPA}},
-  \code{\link{umxEval}}, \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
-  \code{\link{umx_names}}, \code{\link{umx_parameters}},
-  \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{tmx_show}()}, \code{\link{umxAPA}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_names}()},
+  \code{\link{umx_print}()}, \code{\link{umx_time}()},
+  \code{\link{umx}}
 }
 \concept{Reporting Functions}

@@ -7,7 +7,7 @@
 umxDiagnose(model, tryHard = FALSE, diagonalizeExpCov = FALSE)
 }
 \arguments{
-\item{model}{an \code{\link{mxModel}} to diagnose}
+\item{model}{an \code{\link[=mxModel]{mxModel()}} to diagnose}
 
 \item{tryHard}{whether I should try and fix it? (defaults to FALSE)}
 
@@ -19,33 +19,35 @@ umxDiagnose(model, tryHard = FALSE, diagonalizeExpCov = FALSE)
 }
 }
 \description{
-The goal of this function is to diagnose problems in a model and return suggestions to the user.
+The goal of this function \strong{WILL BE} (not currently functional) is to diagnose problems in
+a model and return suggestions to the user.
 It is a work in progress, and of no use as yet.
 }
 \details{
 Best diagnostics are:
 \enumerate{
-\item observed data variances and means
-\item expected variances and means
-3 Difference of these?
+\item Observed data variances and means
+\item Expected variances and means
+\item Difference of these?
 }
 
 Try
 * diagonalizeExpCov diagonal.
-* umx_any_ordinal()
+* \code{\link[=umx_is_ordered]{umx_is_ordered()}}\preformatted{more tricky - we should really report the variances and the standardized thresholds.
+}
 
-more tricky - we should really report the variances and the standardized thresholds.
+The guidance would be to try starting with unit variances and thresholds that are within
++/- 2SD of the mean. \href{https://openmx.ssri.psu.edu/thread/3899}{bivariate outliers \%p option}
 }
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("G")
 manifests = names(demoOneFactor)
-myData = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
-m1 <- umxRAM("OneFactor", data = myData,
-	umxPath(latents, to = manifests),
+
+m1 = umxRAM("OneFactor", data = demoOneFactor, type= "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1)
+	umxPath(var = "G", fixedAt = 1)
 )
 m1 = mxRun(m1)
 umxSummary(m1, show = "std")
@@ -53,7 +55,10 @@ umxDiagnose(m1)
 }
 \references{
 \itemize{
-\item \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
 }
+}
+\seealso{
+Other Teaching and Testing functions: \code{\link{umxPower}()}
 }
 \concept{Teaching and Testing functions}

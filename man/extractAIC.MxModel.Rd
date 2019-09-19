@@ -7,7 +7,7 @@
 \method{extractAIC}{MxModel}(fit, scale, k, ...)
 }
 \arguments{
-\item{fit}{an fitted \code{\link{mxModel}} from which to get the AIC}
+\item{fit}{an fitted \code{\link[=mxModel]{mxModel()}} from which to get the AIC}
 
 \item{scale}{not used}
 
@@ -16,7 +16,9 @@
 \item{...}{any other parameters (not used)}
 }
 \value{
-- AIC value
+\itemize{
+\item AIC value
+}
 }
 \description{
 Returns the AIC for an OpenMx model.
@@ -25,36 +27,35 @@ Original Author: Brandmaier
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-	umxPath(latents, to = manifests),
+m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1)
+	umxPath(var = "G", fixedAt = 1)
 )
 extractAIC(m1)
 # -2.615998
 AIC(m1)
 }
 \references{
-- \url{https://openmx.ssri.psu.edu/thread/931#comment-4858}
+\itemize{
+\item \url{https://openmx.ssri.psu.edu/thread/931#comment-4858}
+}
 }
 \seealso{
-- \code{\link{AIC}}, \code{\link{umxCompare}}, \code{\link{logLik}}
+\itemize{
+\item \code{\link[=AIC]{AIC()}}, \code{\link[=umxCompare]{umxCompare()}}, \code{\link[=logLik]{logLik()}}
+}
 
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{loadings}}, \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+Other Reporting functions: \code{\link{RMSEA.MxModel}()},
+  \code{\link{RMSEA.summary.mxmodel}()},
+  \code{\link{RMSEA}()}, \code{\link{loadings}()},
+  \code{\link{residuals.MxModel}()},
+  \code{\link{umxCI_boot}()}, \code{\link{umxCI}()},
+  \code{\link{umxCompare}()}, \code{\link{umxConfint}()},
+  \code{\link{umxExpCov}()}, \code{\link{umxExpMeans}()},
+  \code{\link{umxFitIndices}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxRotate}()},
+  \code{\link{umxSummary.MxModel}()}
 }
 \concept{Reporting functions}

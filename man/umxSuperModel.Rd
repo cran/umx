@@ -6,50 +6,53 @@
 \usage{
 umxSuperModel(name = "top", ..., autoRun = getOption("umx_auto_run"),
   tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal",
-  "mxTryHardWideSearch"))
+  "mxTryHardWideSearch"), std = FALSE)
 }
 \arguments{
 \item{name}{The name for the container model (default = 'top')}
 
 \item{...}{Models forming the multiple groups contained in the supermodel.}
 
-\item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+\item{autoRun}{Whether to run the model (default), or just to create it and return without running.}
 
 \item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
+
+\item{std}{Show standardized parameters, raw (default), or just the fit indices (null)}
 }
 \value{
-- \code{\link{mxModel}}
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
 umxSuperModel takes 1 or more models and wraps them in a supermodel with a
-\code{\link{mxFitFunctionMultigroup}} fit function that minimizes the sum of the
+\code{\link[=mxFitFunctionMultigroup]{mxFitFunctionMultigroup()}} fit function that minimizes the sum of the
 fits of the sub-models.
 }
 \examples{
 library(umx)
 # Create two sets of data in which X & Y correlate ~ .4 in both datasets.
+manifests = c("x","y")
 tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 150, 
-		AA = 0, CC = .4, EE = .6, varNames = c("x", "y"))
+		AA = 0, CC = .4, EE = .6, varNames = manifests)
 
 # Group 1
-ds1 = tmp[[1]];
-m1Data = mxData(cov(ds1), type = "cov", numObs = nrow(ds1), means=umx_means(ds1))
+grp1 = tmp[tmp$zygosity == "MZ", manifests]
+g1Data = mxData(cov(grp1), type = "cov", numObs = nrow(grp1), means=umx_means(grp1))
 
 # Group 2
-ds2 = tmp[[2]];
-m2Data = mxData(cov(ds2), type = "cov", numObs = nrow(ds2), means=umx_means(ds2))
-cor(ds1); cor(ds2)
+grp2 = tmp[tmp$zygosity == "DZ", manifests]
+g2Data = mxData(cov(grp2), type = "cov", numObs = nrow(grp2), means=umx_means(grp2))
 
-manifests = names(ds1)
 
-# Model 1
-m1 <- umxRAM("m1", data = m1Data,
+# Model 1 (could add auto=FALSE if you don't want to run this as it is being built)
+m1 = umxRAM("m1", data = g1Data,
 	umxPath("x", to = "y", labels = "beta"),
 	umxPath(var = manifests, labels = c("Var_x", "Resid_y_grp1")),
 	umxPath(means = manifests, labels = c("Mean_x", "Mean_y"))
 )
 # Model 2
-m2 <- umxRAM("m2", data = m2Data,
+m2 = umxRAM("m2", data = g2Data,
 	umxPath("x", to = "y", labels = "beta"),
 	umxPath(var = manifests, labels=c("Var_x", "Resid_y_grp2")),
 	umxPath(means = manifests, labels=c("Mean_x", "Mean_y"))
@@ -74,15 +77,19 @@ summary(m3)
 
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{mxFitFunctionMultigroup}}, \code{\link{umxRAM}}
+\itemize{
+\item \code{\link[=mxFitFunctionMultigroup]{mxFitFunctionMultigroup()}}, \code{\link[=umxRAM]{umxRAM()}}
+}
 
-Other Core Modeling Functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxAlgebra}},
-  \code{\link{umxMatrix}}, \code{\link{umxModify}},
-  \code{\link{umxPath}}, \code{\link{umxRAM}},
-  \code{\link{umxRun}}, \code{\link{umx}}
+Other Core Modeling Functions: \code{\link{umxAlgebra}()},
+  \code{\link{umxMatrix}()}, \code{\link{umxModify}()},
+  \code{\link{umxPath}()}, \code{\link{umxRAM}()},
+  \code{\link{umxRun}()}, \code{\link{umxSummary}()},
+  \code{\link{umx}}
 }
 \concept{Core Modeling Functions}

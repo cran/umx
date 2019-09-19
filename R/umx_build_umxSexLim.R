@@ -1,19 +1,11 @@
-# oddsratio <- function(grp1= c(n, N), grp2= c(n, N)) {
-# 	odds1 = odds(grp1[1], grp1[2])
-# 	odds2 = odds(grp2[1], grp2[2])
-# 	OR = odds1/odds2
-# 	list(odds1=odds1,odds2=odds2, OR=OR)
-# }
-# odds <- function(n,N) {
-# 	n/(N-n)
-# }
+# TODO sexlim: This k scalar heterogeneity model is not yet implemented in umx.
 
 #' Multivariate sex limitation twin model
 #'
 #' @description
 #' Multivariate twin analysis allowing for sex limitation (factors operate differently in males 
 #' vs. females) based on a correlated factors model. With 5-groups of twins, this model allows
-#' for both Quantitative & Qualitative Sex-Limitation.
+#' for both Quantitative and Qualitative Sex-Limitation.
 #'
 #' *Quantitative* differences refer to different amounts of phenotypic variance produced by 
 #' the same A, C, or E components when operating in one sex compared to the other sex.
@@ -24,15 +16,7 @@
 #' The correlation approach ensures that variable order does not affect the ability
 #' of the model to account for DZOS data.
 #' 
-#' @details
-#' 
-#' **A or C**
-#' 
-#' Due to limitations on the degrees of freedom allowed by the twin model, we can model 
-#' qualitative sex differences for only one of A or C at a time.
-#' 
-#' 
-#' ** 1. Nonscalar Sex Limitation **
+#' **1. Nonscalar Sex Limitation**
 #' 
 #' Allow quantitative (distinct male and female paths) and qualitative sex differences 
 #' on A or C. Allows distinct between variable correlations (`Ra`, `Rc` and `Re`)
@@ -48,9 +32,15 @@
 #' This is the model assumed by the basic ACE model: equal variance components in both sexes. 
 #' Different means may be allowed for males and females.
 #' 
-#' *notes*:
-#' There is a half-way house model of heterogeneity in which a, c, and e components are scaled by a 
-#' scalar constant in one sex. # TODO sexlim: This k scalar heterogeneity model is not yet implemented in umx.
+#' @details
+#' **A or C**
+#' 
+#' Due to limitations on the degrees of freedom allowed by the twin model, we can model 
+#' qualitative sex differences for only one of A or C at a time.
+#' 
+#' *notes*: There is a half-way house model of heterogeneity in which a, c, and e components are scaled by a 
+#' scalar constant in one sex.
+#' 
 #' 
 #' *General restrictions*: Assumes means and variances can be equated across birth order within zygosity groups.
 #'
@@ -69,12 +59,12 @@
 #' @param autoRun Whether to mxRun the model (default TRUE: the estimated model will be returned).
 #' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"
 #' @param optimizer optionally set the optimizer. Default (NULL) does nothing.
-#' @return - \code{\link{mxModel}} of subclass mxModel.CFSexLim
-#' @export
+#' @return - [mxModel()] of subclass mxModel.CFSexLim
+#' @export 
+#' @seealso [umxSummarySexLim()], [umxPlotSexLim()]
 #' @family Twin Modeling Functions
 #' @references - Neale et al. (2006). 
-#' Multivariate genetic analysis of sex-lim and GxE interaction.
-#' \emph{Twin Research & Human Genetics}, \bold{9}, pp. 481--489.
+#' Multivariate genetic analysis of sex-lim and GxE interaction. *Twin Research & Human Genetics*, **9**, pp. 481--489.
 #' @md
 #' @examples
 #  # =============================================
@@ -133,7 +123,7 @@
 #'		mzmData = mzmData, dzmData = dzmData, 
 #'		mzfData = mzfData, dzfData = dzfData, 
 #'		dzoData = dzoData
-#')
+#') 
 #'
 #' # Show our manual drop of qualitative is the same as umxSexLim with sexlim= "scalar"s
 #' umxCompare(m1a, m2)
@@ -146,7 +136,7 @@
 #'		mzmData = mzmData, dzmData = dzmData, 
 #'		mzfData = mzfData, dzfData = dzfData, 
 #'		dzoData = dzoData
-#')
+#' )
 #' umxCompare(m1, c(m2, m3))
 #'
 #' # ===========================================
@@ -156,7 +146,7 @@
 #'		mzmData = mzmData, dzmData = dzmData, 
 #'		mzfData = mzfData, dzfData = dzfData, 
 #'		dzoData = dzoData
-#')
+#' )
 #' 
 #' # Scalar sex limitation (same correlation among components for m and f)
 #' m2 = umxSexLim(selDVs = c("bic", "tri"), sep = "_T", 
@@ -164,7 +154,7 @@
 #'		mzmData = mzmData, dzmData = dzmData, 
 #'		mzfData = mzfData, dzfData = dzfData, 
 #'		dzoData = dzoData
-#')
+#' )
 #' # Drop qualitative sex limitation
 #' #  Distinct af and am (& c & e), but shared Ra (& Rc & Re) between variables
 #' #  	i.e., same correlations for males and females.
@@ -183,21 +173,21 @@
 #' m2c = umxModify(m2b, regex = "^e[fm]_", newlabels="e_", name = "eq_ace_no_qual", comparison = TRUE)
 #' umxCompare(m1, c(m1a, m1b, m1c, m1d))
 #'
-#'# =============================
-#'# = Run multi-variate example =
-#'# =============================
+#' # =============================
+#' # = Run multi-variate example =
+#' # =============================
 #' # Variables for Analysis
 #' selDVs = c('ssc','sil','caf','tri','bic')
 #' selDVs = c('ssc','tri','bic')
 #' m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", tryHard = "mxTryHard",
-#'		mzmData = mzmData, dzmData = dzmData, 
-#'    mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
+#'	mzmData = mzmData, dzmData = dzmData, 
+#'  mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
 #')
 #'
 #' m2 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", sexlim = "Nonscalar",
 #' 	tryHard = "mxTryHard",
-#'		mzmData = mzmData, dzmData = dzmData, 
-#'    mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
+#'	mzmData = mzmData, dzmData = dzmData, 
+#'  mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
 #')
 #'
 #' # umxSummary(m1)
@@ -437,32 +427,33 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 
 #' Shows a compact, publication-style, summary of a umx Sex Limitation model
 #'
-#' Summarize a fitted Cholesky model returned by \code{\link{umxSexLim}}. Can control digits, report comparison model fits,
+#' Summarize a fitted Cholesky model returned by [umxSexLim()]. Can control digits, report comparison model fits,
 #' optionally show the Rg (genetic and environmental correlations), and show confidence intervals. The report parameter allows
 #' drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
 #'
-#' See documentation for other umx models summary here: \code{\link{umxSummary}}.
+#' See documentation for summary functions for other types of umx model here: [umxSummary()].
 #'
 #' @aliases umxSummary.MxModelSexLim
-#' @param model a \code{\link{umxSexLim}} model to summarize
+#' @param model a [umxSexLim()] model to summarize
 #' @param digits round to how many digits (default = 2)
-#' @param file The name of the dot file to write: "name" = use the name of the model.
-#' Defaults to NA = do not create plot output
 #' @param comparison you can run mxCompare on a comparison model (NULL)
 #' @param std Whether to standardize the output (default = TRUE)
 #' @param showRg = whether to show the genetic correlations (FALSE)
 #' @param CIs Whether to show Confidence intervals if they exist (T)
-#' @param returnStd Whether to return the standardized form of the model (default = FALSE)
 #' @param report If "html", then open an html table of the results
+#' @param file The name of the dot file to write: "name" = use the name of the model.
+#' Defaults to NA = do not create plot output
+#' @param show Here to support being called from generic xmu_safe_run_summary. User should ignore: can be c("std", "raw")
+#' @param returnStd Whether to return the standardized form of the model (default = FALSE)
 #' @param extended how much to report (FALSE)
 #' @param zero.print How to show zeros (".")
 #' @param ... Other parameters to control model summary
-#' @return - optional \code{\link{mxModel}}
+#' @return - optional [mxModel()]
 #' @export
-#' @family Twin Modeling Functions
-#' @family Reporting functions
-#' @seealso - \code{\link{umxSexLim}} 
-#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @family Twin Reporting Functions
+#' @seealso - [umxSexLim()], [umxPlotSexLim()]
+#' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
+#' @md
 #' @examples
 #' \dontrun{
 #' # ======================================================
@@ -516,7 +507,12 @@ umxSexLim <- function(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfDat
 #' 	dzoData = dzoData
 #' )
 #' }
-umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
+umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), extended = FALSE, zero.print = ".", show = c("std", "raw"), returnStd = FALSE, ...) {
+	show = match.arg(show, c("std", "raw"))
+	if(show != "std"){
+		std = FALSE
+	}
+
 	# Depends on R2HTML::HTML
 	message("umxSummarySexLim is a beta feature. Some things are broken. If any desired stats are not presented, let me know what's missing")
 	report = match.arg(report)
@@ -538,7 +534,7 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 		}
 	} else {
 	umx_has_been_run(model, stop = TRUE)
-	umx_show_fit_or_comparison(model, comparison = comparison, digits = digits)
+	xmu_show_fit_or_comparison(model, comparison = comparison, digits = digits)
 	selVars = model$MZm$expectation$dims
 	selDVs  = dimnames(model$top$Vm)[[1]]
 	nVar    = length(selDVs)
@@ -734,35 +730,36 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 		if(CIs){
 			message("If you asked for CIs, returned model is not runnable (contains CIs not parameter values)")
 		}
-		umx_standardize_ACE(model)
+		xmu_standardize_ACE(model)
 	}
 }
 
 #' @export
 umxSummary.MxModelSexLim <- umxSummarySexLim
 
-# TODO: umxPlotSexLim Add SEstyle code from plotCP
+# TODO: umxPlotSexLim Add SE-style code from plotCP
 
 #' Draw and display a graphical figure of a Sex limitation model
 #'
-#' Options include digits (rounding), showing means or not, and which output format is desired.
+#' Will plot a graphical figure for a sex limitation model.
+#' Options include `digits` (rounding), showing `means` or not, and which output `format` is desired.
 #'
-#' # @aliases plot.MxModelCP
-#' @param x \code{\link{mxModel}} to display graphically
+#' @aliases plot.MxModelSexLim
+#' @param x [mxModel()] to display graphically
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param digits How many decimals to include in path loadings (defaults to 2)
 #' @param means Whether to show means paths (defaults to FALSE)
 #' @param std Whether to standardize the model (defaults to TRUE)
 #' @param format = c("current", "graphviz", "DiagrammeR") 
-#' @param SEstyle report "b (se)" instead of "b [lower, upper]" (Default)
+#' @param SEstyle report "b (se)" instead of "b \[lower, upper\]" (Default)
 #' @param strip_zero Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)
 #' @param ... Optional additional parameters
 #' @return - Optionally return the dot code
 #' @export
-#' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
-#' @seealso - \code{\link{umxCP}}
+#' @seealso - [umxSexLim()], [umxSummarySexLim()]
 #' @family Plotting functions
-#' @references - \url{https://tbates.github.io}
+#' @references - <https://tbates.github.io>
+#' @md
 #' @examples
 #' \dontrun{
 #' require(umx)
@@ -848,36 +845,36 @@ umxPlotSexLim <- function(x = NA, file = "name", digits = 2, means = FALSE, std 
 	# Process diag (a|c|e)(mf) matrices
 	# Am cells are Am1 -> selDVs[1]; Am2 -> selDVs[2], etc.
 	# TODO need a plain-matrix substitute here...(because sexlim uses algebras for most or what we need)
-	out = umx_dot_mat2dot(Am, cells = "diag", from = "cols", fromType = "latent", toLabel = selDVs, p = out)
-	out = umx_dot_mat2dot(Cm, cells = "diag", from = "cols", fromType = "latent", toLabel = selDVs, p = out)
-	out = umx_dot_mat2dot(Em, cells = "diag", from = "cols", fromType = "latent", toLabel = selDVs, p = out)
+	out = xmu_dot_mat2dot(Am, cells = "diag", from = "cols", fromType = "latent", toLabel = selDVs, p = out)
+	out = xmu_dot_mat2dot(Cm, cells = "diag", from = "cols", fromType = "latent", toLabel = selDVs, p = out)
+	out = xmu_dot_mat2dot(Em, cells = "diag", from = "cols", fromType = "latent", toLabel = selDVs, p = out)
 
 	# 2. On the lower
 	# from = "<name><rowNum>"; target = "<name><colNum>"
-	out = umx_dot_mat2dot(model$top$a_cp, cells = "lower", from = "cols", arrows = "both", p = out)
-	out = umx_dot_mat2dot(model$top$c_cp, cells = "lower", from = "cols", arrows = "both", p = out)
-	out = umx_dot_mat2dot(model$top$e_cp, cells = "lower", from = "cols", arrows = "both", p = out)
+	out = xmu_dot_mat2dot(model$top$a_cp, cells = "lower", from = "cols", arrows = "both", p = out)
+	out = xmu_dot_mat2dot(model$top$c_cp, cells = "lower", from = "cols", arrows = "both", p = out)
+	out = xmu_dot_mat2dot(model$top$e_cp, cells = "lower", from = "cols", arrows = "both", p = out)
 
 	# Process "cp_loadings" nManifests * nFactors matrix: latents into common paths.
 	# out = list(str = "", latents = c(), manifests = c())
-	out = umx_dot_mat2dot(model$top$cp_loadings, cells= "any", toLabel= selDVs, from= "cols", fromLabel= "common", fromType= "latent", p= out)
+	out = xmu_dot_mat2dot(model$top$cp_loadings, cells= "any", toLabel= selDVs, from= "cols", fromLabel= "common", fromType= "latent", p= out)
 	# from    = "common<c>"
 	# target  = selDVs[row]
 	# latents = append(latents, from)
 
 	# Process "as" matrix
-	out = umx_dot_mat2dot(model$top$as, cells = "any", toLabel = selDVs, from = "rows", fromType = "latent", p = out)
-	out = umx_dot_mat2dot(model$top$cs, cells = "any", toLabel = selDVs, from = "rows", fromType = "latent", p = out)
-	out = umx_dot_mat2dot(model$top$es, cells = "any", toLabel = selDVs, from = "rows", fromType = "latent", p = out)
+	out = xmu_dot_mat2dot(model$top$as, cells = "any", toLabel = selDVs, from = "rows", fromType = "latent", p = out)
+	out = xmu_dot_mat2dot(model$top$cs, cells = "any", toLabel = selDVs, from = "rows", fromType = "latent", p = out)
+	out = xmu_dot_mat2dot(model$top$es, cells = "any", toLabel = selDVs, from = "rows", fromType = "latent", p = out)
 
 	# Process "expMean" 1 * nVar matrix
 	if(means){
 		# from = "one"; target = selDVs[c]
-		out = umx_dot_mat2dot(model$top$expMean, cells = "left", toLabel = selDVs, from = "rows", fromLabel = "one", fromType = "latent", p = out)
+		out = xmu_dot_mat2dot(model$top$expMean, cells = "left", toLabel = selDVs, from = "rows", fromLabel = "one", fromType = "latent", p = out)
 	}
-	preOut  = umx_dot_define_shapes(latents = out$latents, manifests = selDVs[1:nVar])
-	top     = umx_dot_rank(out$latents, "^[ace]_cp", "min")
-	bottom  = umx_dot_rank(out$latents, "^[ace]s[0-9]+$", "max")
+	preOut  = xmu_dot_define_shapes(latents = out$latents, manifests = selDVs[1:nVar])
+	top     = xmu_dot_rank(out$latents, "^[ace]_cp", "min")
+	bottom  = xmu_dot_rank(out$latents, "^[ace]s[0-9]+$", "max")
 	digraph = paste0("digraph G {\nsplines=\"FALSE\";\n", preOut, top, bottom, out$str, "\n}");
 	if(format != "current"){
 		umx_set_plot_format(format)

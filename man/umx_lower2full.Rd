@@ -8,7 +8,7 @@ umx_lower2full(lower.data, diag = NULL, byrow = TRUE,
   dimnames = NULL)
 }
 \arguments{
-\item{lower.data}{An \code{\link{mxMatrix}}}
+\item{lower.data}{An [mxMatrix()]}
 
 \item{diag}{A boolean specifying whether the lower.data includes the diagonal}
 
@@ -17,11 +17,11 @@ umx_lower2full(lower.data, diag = NULL, byrow = TRUE,
 \item{dimnames}{Optional dimnames for the matrix (defaults to NULL)}
 }
 \value{
-- \code{\link{mxMatrix}}
+- [mxMatrix()]
 }
 \description{
 Takes a vector of the lower-triangle of cells in a matrix as you might read-in
-from a journal article), OR a matrix (for instance from a "lower" \code{\link{mxMatrix}}, 
+from a journal article), OR a matrix (for instance from a "lower" [mxMatrix()], 
 and returns a full matrix, copying the lower triangle into the upper.
 }
 \details{
@@ -97,23 +97,22 @@ umx_lower2full(tmp, byrow = FALSE, diag = TRUE)
 
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+- <https://www.github.com/tbates/umx>
 }
 \seealso{
-Other Data Functions: \code{\link{umxCovData}},
-  \code{\link{umxDescribeDataWLS}},
-  \code{\link{umxHetCor}},
-  \code{\link{umxPadAndPruneForDefVars}},
-  \code{\link{umx_as_numeric}}, \code{\link{umx_cov2raw}},
-  \code{\link{umx_make_MR_data}},
-  \code{\link{umx_make_TwinData}},
-  \code{\link{umx_make_bin_cont_pair_data}},
-  \code{\link{umx_make_fake_data}},
-  \code{\link{umx_polychoric}},
-  \code{\link{umx_polypairwise}},
-  \code{\link{umx_polytriowise}},
-  \code{\link{umx_read_lower}}, \code{\link{umx_rename}},
-  \code{\link{umx_reorder}}, \code{\link{umx_stack}},
-  \code{\link{umx_swap_a_block}}, \code{\link{umx}}
+Other Data Functions: \code{\link{umxHetCor}()},
+  \code{\link{umx_as_numeric}()},
+  \code{\link{umx_make_MR_data}()},
+  \code{\link{umx_make_TwinData}()},
+  \code{\link{umx_make_fake_data}()},
+  \code{\link{umx_make_raw_from_cov}()},
+  \code{\link{umx_polychoric}()},
+  \code{\link{umx_polypairwise}()},
+  \code{\link{umx_polytriowise}()},
+  \code{\link{umx_read_lower}()},
+  \code{\link{umx_rename}()}, \code{\link{umx_reorder}()},
+  \code{\link{umx_select_valid}()},
+  \code{\link{umx_stack}()}, \code{\link{umx}},
+  \code{\link{xmu_data_swap_a_block}()}
 }
 \concept{Data Functions}

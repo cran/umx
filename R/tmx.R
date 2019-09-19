@@ -15,7 +15,7 @@
 #' @description
 #' `tmx_genotypic_effect` allows you to explore the concept of genotypic effect at a locus. With it,
 #' you can interactively explore the effects of allele frequency, additive variance, and 
-#' [dominance](https://en.wikipedia.org/wiki/Dominance_\(genetics\)).
+#' dominance.
 #' 
 #' This function lets you explore the simplest two–allele system (`B` and `b`), with three possible 
 #' genotypes, `BB`, `Bb`, and `bb`.
@@ -225,7 +225,7 @@ tmx_genotypic_effect <- function(p = .75, q = (1-p), a = .5, d = 0, m = 0, show 
 #'
 #' @description
 #' Test if a factor model is identified by establishing if the number of variables is equal too or grater than
-#' the number of model parameters. See also \code{\link{mxCheckIdentification}} for checking actual models.
+#' the number of model parameters. See also [mxCheckIdentification()] for checking actual models.
 #'
 #' @param nVariables the number of variables measured.
 #' @param nFactors the number of factors posited.
@@ -233,8 +233,9 @@ tmx_genotypic_effect <- function(p = .75, q = (1-p), a = .5, d = 0, m = 0, show 
 #' @export
 #' @family Teaching and testing Functions
 #' @family Reporting Functions
-#' @seealso - \code{\link{mxCheckIdentification}}
-#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+#' @seealso - [mxCheckIdentification()]
+#' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
+#' @md
 #' @examples
 #' tmx_is.identified(nVariables = 2, nFactors = 1) # FALSE
 #' tmx_is.identified(nVariables = 3, nFactors = 1) # TRUE

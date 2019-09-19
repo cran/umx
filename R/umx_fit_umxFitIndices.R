@@ -11,29 +11,28 @@
 #'
 #' Want more? File a report at github
 #' 
-#' @param model The \code{\link{mxModel}} for which you want fit indices.
+#' @param model The [mxModel()] for which you want fit indices.
 #' @param refModels Independence and saturated models. default mxRefModels(model, run = TRUE)
 #' @return Table of fit statistics
 #' @export
 #' @family Reporting functions
-#' @references - 
+#' @md
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
-#' latents  = c("G")
 #' manifests = names(demoOneFactor)
-#' m1 <- umxRAM("One Factor",
-#' 	data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-#' 	umxPath(latents, to = manifests),
+#'
+#' m1 = umxRAM("fit_ex", data = demoOneFactor, type = "cov",
+#' 	umxPath("G", to = manifests),
 #' 	umxPath(var = manifests),
-#' 	umxPath(var = latents, fixedAt = 1)
+#' 	umxPath(var = "G", fixedAt = 1)
 #' )
 #' umxFitIndices(m1)
 #' # And with raw data
-#' m1 <- umxRAM("m1", data = demoOneFactor,
-#' 	umxPath(latents, to = manifests),
+#' m1 = umxRAM("m1", data = demoOneFactor,
+#' 	umxPath("G", to = manifests),
 #' 	umxPath(v.m. = manifests),
-#' 	umxPath(v1m0 = latents)
+#' 	umxPath(v1m0 = "G")
 #' )
 #' umxFitIndices(m1)
 # Round to 3 places, and report as a markdown table

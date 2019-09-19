@@ -14,32 +14,32 @@ loadings(x, ...)
 \item{...}{additional parameters}
 }
 \value{
-- matrix of loadings
+\itemize{
+\item matrix of loadings
+}
 }
 \description{
 See \code{\link[umx]{loadings.MxModel}} to access the loadings of OpenMx EFA models.
 }
 \details{
-Base \code{\link[stats]{loadings}} handles \code{\link{factanal}} objects.
+Base \code{\link[stats]{loadings}} handles \code{\link[=factanal]{factanal()}} objects.
 }
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{extractAIC.MxModel}},
-  \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+Other Reporting functions: \code{\link{RMSEA.MxModel}()},
+  \code{\link{RMSEA.summary.mxmodel}()},
+  \code{\link{RMSEA}()},
+  \code{\link{extractAIC.MxModel}()},
+  \code{\link{residuals.MxModel}()},
+  \code{\link{umxCI_boot}()}, \code{\link{umxCI}()},
+  \code{\link{umxCompare}()}, \code{\link{umxConfint}()},
+  \code{\link{umxExpCov}()}, \code{\link{umxExpMeans}()},
+  \code{\link{umxFitIndices}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxRotate}()},
+  \code{\link{umxSummary.MxModel}()}
 }
 \concept{Reporting functions}

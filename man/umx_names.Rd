@@ -48,7 +48,7 @@ the literal string values themselves respectively.
 
 In addition, \code{umx_names} can do \link[=grep]{replacement} of a found string (see examples). It can also collapse the result (using \link{paste0})
 
-\emph{Note}: \code{namez} (with a z) is a shortcut for \code{umx_names}, which makes it easy to replace where you'd otherwise use \link{names}.
+\emph{Note}: \code{namez} (with a z) is a shortcut for \code{umx_names}, which makes it easy to replace where you would otherwise use \link{names}.
 
 You can learn more about the matching options (like inverting the selection etc.) in the help for base-R \link{grep}.
 }
@@ -97,33 +97,33 @@ namez(umxMatrix("bob", "Full", 3,3)$labels)
 }
 \references{
 \itemize{
-\item \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
 \itemize{
-\item Base-R pattern matching functions: \code{\link{grep}}.
-And \code{\link{umx_check_names}} to check for existence of names in a dataframe.
+\item Base-R pattern matching functions: \code{\link[=grep]{grep()}}.
+And \code{\link[=umx_check_names]{umx_check_names()}} to check for existence of names in a dataframe.
 }
 
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
-  \code{\link{umxAPA}}, \code{\link{umxEval}},
-  \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
-  \code{\link{umx_parameters}}, \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{tmx_show}()}, \code{\link{umxAPA}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_print}()},
+  \code{\link{umx_time}()}, \code{\link{umx}}
 
-Other String Functions: \code{\link{umx_explode_twin_names}},
-  \code{\link{umx_explode}}, \code{\link{umx_grep}},
-  \code{\link{umx_object_as_str}},
-  \code{\link{umx_paste_names}}, \code{\link{umx_rot}},
-  \code{\link{umx_trim}},
-  \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
+Other String Functions: \code{\link{umx_explode_twin_names}()},
+  \code{\link{umx_explode}()}, \code{\link{umx_grep}()},
+  \code{\link{umx_object_as_str}()},
+  \code{\link{umx_paste_names}()}, \code{\link{umx_rot}()},
+  \code{\link{umx_trim}()},
+  \code{\link{umx_write_to_clipboard}()}, \code{\link{umx}}
 }
 \concept{Reporting Functions}
 \concept{String Functions}

@@ -2,22 +2,21 @@
 % Please edit documentation in R/fit_and_reporting.R
 \name{umxSummary.MxModel}
 \alias{umxSummary.MxModel}
+\alias{umxSummary.MxRAMModel}
 \title{Shows a compact, publication-style, summary of a RAM model}
 \usage{
-\method{umxSummary}{MxModel}(model, refModels = NULL,
-  showEstimates = c("raw", "std", "none", "both"), digits = 2,
-  report = c("markdown", "html"), filter = c("ALL", "NS", "SIG"),
-  SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE,
-  std = "deprecated", ...)
+\method{umxSummary}{MxModel}(model, refModels = NULL, std = FALSE,
+  digits = 2, report = c("markdown", "html"), filter = c("ALL", "NS",
+  "SIG"), SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE,
+  show = c("deprecated", "raw", "std", "none"), ...)
 }
 \arguments{
-\item{model}{The \code{\link{mxModel}} whose fit will be reported}
+\item{model}{The [mxModel()] whose fit will be reported}
 
 \item{refModels}{Saturated models if needed for fit indices (see example below:
 If NULL will be competed on demand. If FALSE will not be computed. Only needed for raw data.}
 
-\item{showEstimates}{What estimates to show. By default, the raw estimates are shown 
-(Options = c("raw", "std", "none", "both").}
+\item{std}{deprecated: use show = "std" instead!}
 
 \item{digits}{How many decimal places to report (default = 2)}
 
@@ -31,7 +30,8 @@ If NULL will be competed on demand. If FALSE will not be computed. Only needed f
 
 \item{matrixAddresses}{Whether to show "matrix address" columns (Default = FALSE)}
 
-\item{std}{deprecated: use show = "std" instead!}
+\item{show}{What estimates to show. By default, the raw estimates are shown 
+(Options = c("raw", "std", "none").}
 
 \item{...}{Other parameters to control model summary}
 }
@@ -43,7 +43,7 @@ Report the fit of a model in a compact form suitable for a journal. Emits a "war
 when model fit is worse than accepted criterion (TLI >= .95 and RMSEA <= .06; (Hu & Bentler, 1999; Yu, 2002).
 }
 \details{
-Note: For some (multi-group) models, you will need to fall back on \code{\link{summary}}
+Note: For some (multi-group) models, you will need to fall back on [summary()]
 
 CIs and Identification
 This function uses the standard errors reported by OpenMx to produce the CIs you see in umxSummary
@@ -51,7 +51,7 @@ These are used to derive confidence intervals based on the formula 95%CI = estim
 
 Sometimes they appear NA. This often indicates a model which is not identified (see\url{http://davidakenny.net/cm/identify.htm}).
 This can include empirical under-identification - for instance two factors
-that are essentially identical in structure. use \code{\link{mxCheckIdentification}} to check identification.
+that are essentially identical in structure. use [mxCheckIdentification()] to check identification.
 
 One or more paths estimated at or close to zero suggests that fixing one or two of 
 these to zero may fix the standard error calculation, 
@@ -64,28 +64,27 @@ Fixing a factor loading to 1 and estimating factor variances can help here.
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- umxRAM("One Factor",
-	data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-	umxPath(latents, to = manifests),
+m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1)
+	umxPath(var = "G", fixedAt = 1)
 )
-umxSummary(m1, showEstimates = "std")
+umxSummary(m1, std = TRUE)
 # output as latex
 umx_set_table_format("latex")
-umxSummary(m1, showEstimates = "std")
+umxSummary(m1, std = TRUE)
 umx_set_table_format("markdown")
 # output as raw
-umxSummary(m1, show = "raw")
-m1 <- mxModel(m1,
-  mxData(demoOneFactor[1:100,], type = "raw"),
-  umxPath(mean = manifests),
-  umxPath(mean = latents, fixedAt = 0)
+umxSummary(m1, std = FALSE)
+
+# switch to a raw data model
+m1 = umxRAM("One Factor", data = demoOneFactor[1:100, ],
+	umxPath("G", to = manifests),
+	umxPath(v.m. = manifests),
+	umxPath(v1m0 = "G")
 )
-m1 <- mxRun(m1)
-umxSummary(m1, showEstimates = "std", filter = "NS")
+umxSummary(m1, std = TRUE, filter = "NS")
 }
 \references{
 - Hu, L., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance 
@@ -95,24 +94,21 @@ umxSummary(m1, showEstimates = "std", filter = "NS")
  with binary and continuous outcomes. University of California, Los Angeles, Los Angeles.
  Retrieved from \url{https://www.statmodel.com/download/Yudissertation.pdf}
 
-\url{https://tbates.github.io}
+<https://tbates.github.io>
 }
 \seealso{
-- \code{\link{umxRun}}
+- [umxRun()]
 
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+Other Reporting functions: \code{\link{RMSEA.MxModel}()},
+  \code{\link{RMSEA.summary.mxmodel}()},
+  \code{\link{RMSEA}()},
+  \code{\link{extractAIC.MxModel}()},
+  \code{\link{loadings}()},
+  \code{\link{residuals.MxModel}()},
+  \code{\link{umxCI_boot}()}, \code{\link{umxCI}()},
+  \code{\link{umxCompare}()}, \code{\link{umxConfint}()},
+  \code{\link{umxExpCov}()}, \code{\link{umxExpMeans}()},
+  \code{\link{umxFitIndices}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxRotate}()}
 }
 \concept{Reporting functions}

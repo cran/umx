@@ -10,12 +10,14 @@ umx_msg(x)
 \item{x}{the thing you want to pretty-print}
 }
 \value{
-- NULL
+\itemize{
+\item NULL
+}
 }
 \description{
-Helper function to ease debugging with console notes like:  "ObjectName = <object value>".
-This is primarily useful for inline debugging, where seeing "nVar = NULL" can be useful.
-The ability to say \code{umxMsg(nVar)} makes this easy.
+Helper function to ease debugging with console notes like:  "ObjectName = \<Object Value\>".
+This is primarily useful for inline debugging, where seeing, e.g., "nVar = 3" can be useful.
+The ability to say \code{umx_msg(nVar)} makes this easy.
 }
 \examples{
 a = "brian"
@@ -25,19 +27,23 @@ umx_msg(b)
 umx_msg(mtcars)
 }
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
-  \code{\link{qm}}, \code{\link{umxBrownie}},
-  \code{\link{umxFactor}}, \code{\link{umxVersion}},
-  \code{\link{umx_array_shift}},
-  \code{\link{umx_cell_is_on}},
-  \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_find_object}}, \code{\link{umx_make}},
-  \code{\link{umx_open_CRAN_page}}, \code{\link{umx_pad}},
-  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
-  \code{\link{umx_scale}}, \code{\link{umx_score_scale}},
-  \code{\link{umx}}, \code{\link{xmu_check_variance}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
+  \code{\link{qm}()}, \code{\link{umxBrownie}()},
+  \code{\link{umxFactor}()}, \code{\link{umxLav2RAM}()},
+  \code{\link{umxVersion}()},
+  \code{\link{umx_array_shift}()},
+  \code{\link{umx_cont_2_quantiles}()},
+  \code{\link{umx_find_object}()},
+  \code{\link{umx_make}()},
+  \code{\link{umx_open_CRAN_page}()},
+  \code{\link{umx_pad}()}, \code{\link{umx_pb_note}()},
+  \code{\link{umx_print}()},
+  \code{\link{umx_score_scale}()}, \code{\link{umx}},
+  \code{\link{xmu_cell_is_on}()}
 }
 \concept{Miscellaneous Utility Functions}

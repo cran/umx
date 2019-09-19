@@ -10,7 +10,7 @@ umx_open_CRAN_page(package = "umx")
 \item{package}{An \R package name.}
 }
 \value{
--
+None
 }
 \description{
 On MacOS, this function opens the CRAN page for a package.
@@ -23,16 +23,17 @@ umx_open_CRAN_page("umx")
 }
 }
 \seealso{
-Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
-  \code{\link{qm}}, \code{\link{umxBrownie}},
-  \code{\link{umxFactor}}, \code{\link{umxVersion}},
-  \code{\link{umx_array_shift}},
-  \code{\link{umx_cell_is_on}},
-  \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_find_object}}, \code{\link{umx_make}},
-  \code{\link{umx_msg}}, \code{\link{umx_pad}},
-  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
-  \code{\link{umx_scale}}, \code{\link{umx_score_scale}},
-  \code{\link{umx}}, \code{\link{xmu_check_variance}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
+  \code{\link{qm}()}, \code{\link{umxBrownie}()},
+  \code{\link{umxFactor}()}, \code{\link{umxLav2RAM}()},
+  \code{\link{umxVersion}()},
+  \code{\link{umx_array_shift}()},
+  \code{\link{umx_cont_2_quantiles}()},
+  \code{\link{umx_find_object}()},
+  \code{\link{umx_make}()}, \code{\link{umx_msg}()},
+  \code{\link{umx_pad}()}, \code{\link{umx_pb_note}()},
+  \code{\link{umx_print}()},
+  \code{\link{umx_score_scale}()}, \code{\link{umx}},
+  \code{\link{xmu_cell_is_on}()}
 }
 \concept{Miscellaneous Utility Functions}

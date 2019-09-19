@@ -16,12 +16,14 @@ umx_apply(FUN, of, by = c("columns", "rows"), ...)
 \item{...}{optional arguments to FUN, e.g., na.rm = TRUE.}
 }
 \value{
-- object
+\itemize{
+\item object
+}
 }
 \description{
 Tries to make apply more readable. so "mean of x by columns", instead of "of x, by 2, mean"
 Other functions to think of include:
-\code{\link{cumsum}}, \code{\link{rowSums}}, \code{\link{colMeans}}, etc.
+\code{\link[=cumsum]{cumsum()}}, \code{\link[=rowSums]{rowSums()}}, \code{\link[=colMeans]{colMeans()}}, etc.
 }
 \examples{
 umx_apply(mean, mtcars, by = "columns")
@@ -29,16 +31,24 @@ umx_apply(mean, of = mtcars, by = "columns")
 umx_apply(mean, by = "rows", of = mtcars[1:3,], na.rm = TRUE)
 }
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-- \code{\link{umx_aggregate}}
+\itemize{
+\item \code{\link[=umx_aggregate]{umx_aggregate()}}
+}
 
-Other Miscellaneous Stats Helpers: \code{\link{reliability}},
-  \code{\link{umxCov2cor}}, \code{\link{umxHetCor}},
-  \code{\link{umx_cor}}, \code{\link{umx_fun_mean_sd}},
-  \code{\link{umx_means}}, \code{\link{umx_r_test}},
-  \code{\link{umx_round}}, \code{\link{umx_var}},
-  \code{\link{umx}}
+Other Miscellaneous Stats Helpers: \code{\link{SE_from_p}()},
+  \code{\link{oddsratio}()},
+  \code{\link{print.oddsratio}()},
+  \code{\link{print.reliability}()},
+  \code{\link{reliability}()}, \code{\link{umxCov2cor}()},
+  \code{\link{umxHetCor}()}, \code{\link{umx_cor}()},
+  \code{\link{umx_fun_mean_sd}()},
+  \code{\link{umx_means}()}, \code{\link{umx_r_test}()},
+  \code{\link{umx_round}()}, \code{\link{umx_scale}()},
+  \code{\link{umx_var}()}, \code{\link{umx}}
 }
 \concept{Miscellaneous Stats Helpers}

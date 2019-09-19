@@ -9,7 +9,7 @@ umxPlotACEv(x = NA, file = "name", digits = 2, means = FALSE,
   std = TRUE, strip_zero = TRUE, ...)
 }
 \arguments{
-\item{x}{\code{\link{umxACEv}} model to plot.}
+\item{x}{\code{\link[=umxACEv]{umxACEv()}} model to plot.}
 
 \item{file}{The name of the dot file to write: Default ("name") = use the name of the model. NA = don't plot.}
 
@@ -24,7 +24,9 @@ umxPlotACEv(x = NA, file = "name", digits = 2, means = FALSE,
 \item{...}{Additional (optional) parameters}
 }
 \value{
-- optionally return the dot code
+\itemize{
+\item optionally return the dot code
+}
 }
 \description{
 Plots an ACE model graphically, opening the result in the browser (or a graphviz application).
@@ -39,32 +41,31 @@ m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
 plot(m1, std = FALSE) # don't standardize
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Plotting functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACE}}, \code{\link{umxPlotCPold}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxEbiv}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxPlotSexLim}},
-  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
+Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
+  \code{\link{plot.MxModel}()},
+  \code{\link{umxPlotACEcov}()},
+  \code{\link{umxPlotACE}()}, \code{\link{umxPlotCP}()},
+  \code{\link{umxPlotGxEbiv}()},
+  \code{\link{umxPlotGxE}()}, \code{\link{umxPlotIP}()},
+  \code{\link{umxPlotSexLim}()},
+  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
 
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+Other Reporting functions: \code{\link{RMSEA.MxModel}()},
+  \code{\link{RMSEA.summary.mxmodel}()},
+  \code{\link{RMSEA}()},
+  \code{\link{extractAIC.MxModel}()},
+  \code{\link{loadings}()},
+  \code{\link{residuals.MxModel}()},
+  \code{\link{umxCI_boot}()}, \code{\link{umxCI}()},
+  \code{\link{umxCompare}()}, \code{\link{umxConfint}()},
+  \code{\link{umxExpCov}()}, \code{\link{umxExpMeans}()},
+  \code{\link{umxFitIndices}()}, \code{\link{umxRotate}()},
+  \code{\link{umxSummary.MxModel}()}
 }
 \concept{Plotting functions}
 \concept{Reporting functions}

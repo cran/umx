@@ -10,13 +10,13 @@ umx_make_sql_from_excel(theFile = "Finder")
 \item{theFile}{The xlsx file to read. Default = "Finder")}
 }
 \value{
--
+None
 }
 \description{
 Unlikely to be of use to anyone but the package author :-)
 }
 \details{
-On OS X, the default (theFile= "Finder" will use the file selected in the front-most Finder window.
+On OS X, by default, the file selected in the front-most Finder window will be chosen.
 If it is blank, a choose file dialog will be thrown.
 
 Read an xlsx file and convert into SQL insert statements (placed on the clipboard)
@@ -29,12 +29,11 @@ itemText	direction	scale	type	[optional	response	options]
 The SQL fields generated are:
 itemID, test, native_item_number, item_text, direction, scale, format, author
 
-
 tabbedPlus: list scored from 0 to n-1
 
-tabbedVertPlus: tabbed, but vertical lay-out 
+tabbedVertPlus: tabbed, but vertical lay-out
 
-number	2+2<itemBreak>min='0' max='7' step='1'
+number	2+2\<itemBreak\>min='0' max='7' step='1'
 
 5fm Scored 1-5, anchored: Strongly Disagree | Disagree  | Neutral | Agree | Strongly Agree
 
@@ -53,12 +52,14 @@ umx_make_sql_from_excel("~/Desktop/test.xlsx") # provide a path
 }
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other File Functions: \code{\link{dl_from_dropbox}},
-  \code{\link{umx_move_file}}, \code{\link{umx_open}},
-  \code{\link{umx_rename_file}},
-  \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
+Other File Functions: \code{\link{dl_from_dropbox}()},
+  \code{\link{umx_move_file}()}, \code{\link{umx_open}()},
+  \code{\link{umx_rename_file}()},
+  \code{\link{umx_write_to_clipboard}()}, \code{\link{umx}}
 }
 \concept{File Functions}

@@ -20,13 +20,13 @@
 #' 
 #' For raw and WLS data, `top` contains a means matrix (if needed). For summary data, the top model contains only a name.
 #' 
-#' For ordinal data, `top` gains `top.threshMat` (from a call to [umxThresholdMatrix]()]).
+#' For ordinal data, `top` gains `top.threshMat` (from a call to [umxThresholdMatrix()]).
 #' 
 #' *MZ and DZ models*
 #' 
 #' `MZ` and `DZ` contain the data, and an expectation referencing `top.expCovMZ` and `top.expMean`, and, `vector = bVector`.
-#' For continuous raw data, MZ and DZ contain [mxExpectationNormal]()] and [mxFitFunctionML]()].
-#' For WLS these the fit function is switched to [mxFitFunctionWLS]()] with appropriate `type` and `allContinuousMethod`.
+#' For continuous raw data, MZ and DZ contain [OpenMx::mxExpectationNormal()] and [OpenMx::mxFitFunctionML()].
+#' For WLS these the fit function is switched to [OpenMx::mxFitFunctionWLS()] with appropriate `type` and `allContinuousMethod`.
 #' 
 #'
 #' For binary, a constraint and algebras are included to constrain `Vtot` (A+C+E) to 1.
@@ -37,24 +37,25 @@
 #'
 #' **Matrices created**
 #' 
-#' If needed means matrices are added. Decent starts are guessed from the data.
-#' For continuous raw data, top contains a means matrix "expMean". 
-#' For Models with ordinal, top adds an [umxThresholdMatrix]()]. 
+#' Decent starts are guessed from the data.
+#' Where needed, e.g. continuous raw data, top adds a means matrix "expMean". 
+#' For ordinal data, top adds a [umxThresholdMatrix()]. 
 #' 
-#' If binary variables are present, matrices and a constraint to hold A+C+E ==1 are added to top.
+#' If binary variables are present, matrices and a constraint to hold `A+C+E == 1` are added to top.
 #'
 #' If a weight variable is offered up, an `mzWeightMatrix` will be added.
 #'
 #' **Data handling**
 #' 
-#' In terms of data handling, `xmu_make_top_twin` was primarily designed to take data.frames and process these into mxData. 
+#' In terms of data handling, `xmu_make_top_twin` was primarily designed to take 
+#' data.frames and process these into mxData. 
 #' It can also, however, handle cov and mxData input.
 #' 
 #' It can process data into all the types supported by `mxData`.
 #' 
 #' Raw data input with a target of `cov` or `cor` type requires the `numObsMZ` and `numObsDZ` to be set.
 #' 
-#' Type "WLS", "DWLS", or "ULS", data remain raw, but are handled as WLS in the [mxFitFunctionWLS]()].
+#' Type "WLS", "DWLS", or "ULS", data remain raw, but are handled as WLS in the [OpenMx::mxFitFunctionWLS()].
 #' 
 #' Unused columns are dropped.
 #' 
@@ -73,7 +74,7 @@
 #' @param numObsDZ Number of DZ observations contributing (for summary data only)
 #' @param bVector Whether to compute row-wise likelihoods (defaults to FALSE).
 #' @param verbose (default = FALSE)
-#' @return - \code{\link{mxModel}}s for top, MZ and DZ.
+#' @return - [mxModel()]s for top, MZ and DZ.
 #' @export
 #' @family xmu internal not for end user
 #' @md
@@ -408,17 +409,39 @@ xmu_make_top_twin <- function(mzData, dzData, selDVs, sep = NULL, type = c("Auto
 #' selDVs = c("wt", "ht")
 #' mzData = twinData[twinData$zygosity %in%  "MZFF", ] 
 #' dzData = twinData[twinData$zygosity %in%  "DZFF", ]
+#' 
 #' round(sqrt(var(dzData[,tvars(selDVs, "")], na.rm=TRUE)/3),3)
+#' 
 #' tmp = xmu_starts(mzData, dzData, selVars = selDVs, sep= "", 
 #'		equateMeans = TRUE, varForm = "Cholesky")
 #' tmp
+#' 
 #' round(var(dzData[,tvars(selDVs, "")], na.rm=TRUE)/3,3)
 #' tmp = xmu_starts(mzData, dzData, selVars = selDVs, sep= "", 
-#'		equateMeans = TRUE, varForm = "Cholesky", SD=FALSE)
+#'		equateMeans = TRUE, varForm = "Cholesky", SD= FALSE)
+#' 
 #' tmp
+#' 
 #' # one variable
 #' tmp = xmu_starts(mzData, dzData, selVars = "wt", sep= "", 
 #'		equateMeans = TRUE, varForm = "Cholesky", SD= FALSE)
+#' 
+#' # Ordinal/continuous mix
+#' data(twinData)
+#' twinData= umx_scale_wide_twin_data(data=twinData,varsToScale="wt",sep= "")
+#' # Cut BMI column to form ordinal obesity variables
+#' obLevels   = c('normal', 'overweight', 'obese')
+#' cuts       = quantile(twinData[, "bmi1"], probs = c(.5, .8), na.rm = TRUE)
+#' twinData$obese1=cut(twinData$bmi1,breaks=c(-Inf,cuts,Inf),labels=obLevels)
+#' twinData$obese2=cut(twinData$bmi2,breaks=c(-Inf,cuts,Inf),labels=obLevels)
+#' # Make the ordinal variables into mxFactors
+#' ordDVs = c("obese1", "obese2")
+#' twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
+#' mzData = twinData[twinData$zygosity %in% "MZFF",] 
+#' dzData = twinData[twinData$zygosity %in% "DZFF",]
+#' tmp = xmu_starts(mzData, dzData, selVars = c("wt","obese"), sep= "", 
+#'		equateMeans = TRUE, varForm = "Cholesky", SD= FALSE)
+#'
 xmu_starts <- function(mzData, dzData, selVars = selVars, sep = NULL, equateMeans= NULL, nSib = 2, varForm = c("Cholesky"), SD= TRUE, divideBy = 3) {
 	# Make mxData, dropping any unused columns
 	if(!is.null(sep)){
@@ -454,6 +477,8 @@ xmu_starts <- function(mzData, dzData, selVars = selVars, sep = NULL, equateMean
 		het_mz = umx_reorder(mzData, selVars)		
 		het_dz = umx_reorder(dzData, selVars)
 		varStarts = (diag(het_mz)[1:nVar]+ diag(het_dz)[1:nVar])/2
+	}else{
+		stop("xmu_starts can only handle raw and cov/cor data types. You gave me ", omxQuotes(dataType))
 	}
 	# Covariance matrix, 1/3 allocated to each of A=C=E.
 	varStarts = varStarts/divideBy
@@ -485,9 +510,10 @@ xmu_starts <- function(mzData, dzData, selVars = selVars, sep = NULL, equateMean
 #' @param top the top model
 #' @param mzWeightMatrix if bVector, then use this as the MZ weights matrix
 #' @param dzWeightMatrix if bVector, then use this as the DZ weights matrix
-#' @return - \code{\link{mxModel}}
+#' @return - [mxModel()]
 #' @export
 #' @family xmu internal not for end user
+#' @md
 xmu_assemble_twin_supermodel <- function(name, MZ, DZ, top, mzWeightMatrix = NULL, dzWeightMatrix = NULL) {
 	# TODO: xmu_assemble_twin_supermodel: Add working example.
 	# TODO: xmu_assemble_twin_supermodel: Add a check that MZ & DZ models have vector=TRUE selected if the mzWeightMatrix's is !NULL

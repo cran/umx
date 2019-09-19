@@ -5,8 +5,9 @@
 \title{"make" the umx package using devtools: release to CRAN etc.}
 \usage{
 umx_make(what = c("quick_install", "install_full", "spell",
-  "run_examples", "check", "win", "rhub", "release"), pkg = "~/bin/umx",
-  check = TRUE, run = FALSE, start = NULL, spelling = "en_US")
+  "run_examples", "check", "win", "rhub", "release", "travisCI", "sitrep"),
+  pkg = "~/bin/umx", check = TRUE, run = FALSE, start = NULL,
+  spelling = "en_US")
 }
 \arguments{
 \item{what}{whether to "install", "release" to CRAN, check on "win", "check", "rhub", "spell" check, or check "examples"))}
@@ -22,7 +23,7 @@ umx_make(what = c("quick_install", "install_full", "spell",
 \item{spelling}{Whether to check spelling before release (default = "en_US": set NULL to not check).}
 }
 \value{
--
+None
 }
 \description{
 Easily  run devtools "install", "release", "win", "examples" etc.
@@ -39,19 +40,22 @@ umx_make(what = "release"))  # Release to CRAN
 }
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
-  \code{\link{qm}}, \code{\link{umxBrownie}},
-  \code{\link{umxFactor}}, \code{\link{umxVersion}},
-  \code{\link{umx_array_shift}},
-  \code{\link{umx_cell_is_on}},
-  \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_find_object}}, \code{\link{umx_msg}},
-  \code{\link{umx_open_CRAN_page}}, \code{\link{umx_pad}},
-  \code{\link{umx_pb_note}}, \code{\link{umx_print}},
-  \code{\link{umx_scale}}, \code{\link{umx_score_scale}},
-  \code{\link{umx}}, \code{\link{xmu_check_variance}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
+  \code{\link{qm}()}, \code{\link{umxBrownie}()},
+  \code{\link{umxFactor}()}, \code{\link{umxLav2RAM}()},
+  \code{\link{umxVersion}()},
+  \code{\link{umx_array_shift}()},
+  \code{\link{umx_cont_2_quantiles}()},
+  \code{\link{umx_find_object}()}, \code{\link{umx_msg}()},
+  \code{\link{umx_open_CRAN_page}()},
+  \code{\link{umx_pad}()}, \code{\link{umx_pb_note}()},
+  \code{\link{umx_print}()},
+  \code{\link{umx_score_scale}()}, \code{\link{umx}},
+  \code{\link{xmu_cell_is_on}()}
 }
 \concept{Miscellaneous Utility Functions}

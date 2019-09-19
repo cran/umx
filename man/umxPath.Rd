@@ -52,11 +52,11 @@ Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate
 
 \item{Cholesky}{Treat \strong{Cholesky} variables as latent and \strong{to} as measured, and connect as in an ACE model.}
 
-\item{defn}{Makes a latent variable, var@0 mean fixed, set label to 'data.<defn>'}
+\item{defn}{Makes a latent variable, var@0 mean fixed, set label to 'data.defVarName'}
 
-\item{connect}{as in mxPath - nb: Only used when using from and to}
+\item{connect}{as in mxPath - nb: from and to must also be set.}
 
-\item{arrows}{as in mxPath - nb: Only used when using from and to}
+\item{arrows}{as in mxPath - nb: from and to must also be set.}
 
 \item{free}{whether the value is free to be optimised}
 
@@ -71,7 +71,9 @@ Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate
 \item{hasMeans}{Used in 'forms' case to know whether the data have means or not.}
 }
 \value{
-- 1 or more \code{\link{mxPath}}s
+\itemize{
+\item 1 or more \code{\link[=mxPath]{mxPath()}}s
+}
 }
 \description{
 The goal of this function is to enable quick-to-write, quick-to-read, flexible path descriptions for RAM models in OpenMx.
@@ -80,7 +82,7 @@ It introduces the following new words to our vocabulary for describing paths: \s
 
 The new preposition \dQuote{with} means you no-longer need set arrows = 2 on covariances. Instead, you can say:
 
-   \code{umxPath(A, with = B)} instead of \code{mxPath(from = A, to = B, arrows = 2)}.
+\code{umxPath(A, with = B)} instead of \code{mxPath(from = A, to = B, arrows = 2)}.
 
 Specify a variance for A with
 
@@ -100,7 +102,7 @@ To fix a path at a value, you can say:
 
 \code{umxPath(var = "A", fixedAt = 1)} .
 
-instead of \code{mxPath(from = A, to = A, arrows = 2, free = FALSE, values = 1)} 
+instead of \code{mxPath(from = A, to = A, arrows = 2, free = FALSE, values = 1)}
 
 The common task of creating a variable with variance fixed at 1 and mean at 0 is done thus:
 
@@ -115,28 +117,22 @@ how to fill in connect = in mxPath (you can still use connect if you wish).
 
 So, to create paths creates A<->A, B<->B, and A->B, you would say:
 
-\code{umxPath(unique.pairs = c('A',"B"))} 
+\code{umxPath(unique.pairs = c('A',"B"))}
 
 To create paths A<->B, B<->C, and A<->C, you would say:
 \code{umxPath(unique.bivariate = c('A',"B","C"))}
 
 \code{umxPath(fromEach = c('A',"B","C"))} Creates one-headed arrows on the all.bivariate pattern
 
-
 Setting up a latent trait, you can scale with a fixed first path thus:
 
-\code{umxPath("A", to = c("B","C","D"),  firstAt = 1)}  
+\code{umxPath("A", to = c("B","C","D"),  firstAt = 1)}
 
 This is equivalent to \code{mxPath(from = A, to = c(B,C,D), free = c(F, T, T), values = c(1, .5, .4))}.
 
 To create Cholesky-pattern connections:
 
 \code{umxPath(Cholesky = c("A1", "A2"), to c("var1", "var2"))}
-
-Finally, not implemented in this release, but intended for the future is
-John Fox "sem"-package style notation,
-
-i.e., "A -> B; X <-> B; "
 }
 \details{
 This function returns a standard mxPath, but gives new options for specifying the path. In addition to the normal
@@ -148,13 +144,11 @@ Finally, (in future) it will allow sem-style \dQuote{A->B} string specification.
 \examples{
 # A worked example
 data(demoOneFactor)
-latents  = c("G")
 manifests = names(demoOneFactor)
-myData = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
-m1 <- umxRAM("One Factor", data = myData,
-	umxPath(latents, to = manifests),
+m1 = umxRAM("One Factor", data = demoOneFactor, type= "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
+	umxPath(var = "G", fixedAt = 1.0)
 )
 umxSummary(m1, show = "std")
 require(umx)
@@ -170,6 +164,7 @@ umxPath(var = LETTERS[1:5], fixedAt = 1)
 umxPath(means = c("A","B")) # Create a means model for A: from = "one", to = "A"
 umxPath(v1m0 = "A") # Give "A" variance and a mean, fixed at 1 and 0 respectively
 umxPath(v.m. = "A") # Give "A" variance and a mean, leaving both free.
+umxPath(v0m0 = "W", label = c(NA, "data.W"))
 umxPath("A", with = "B") # using with: same as "to = B, arrows = 2"
 umxPath("A", with = "B", fixedAt = .5) # 2-head path fixed at .5
 umxPath("A", with = c("B", "C"), firstAt = 1) # first covariance fixed at 1
@@ -183,35 +178,34 @@ umxPath(Cholesky = c("A1","A2"), to = c("m1", "m2")) # Cholesky
 # = Cholesky example =
 # ====================
 \dontrun{
-latents   = paste0("A", 1:3)
+# ======================================================================
+# = 3-factor Cholesky (A component of a 5-variable 3-factor ACE model) =
+# ======================================================================
+latents = paste0("A", 1:3)
 manifests = names(demoOneFactor)
-myData = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
-m1 <- umxRAM("Chol", data = myData,
+m1 = umxRAM("Chol", data = demoOneFactor, type = "cov",
 	umxPath(Cholesky = latents, to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
+	umxPath(var = latents, fixedAt = 1)
 )
+plot(m1, splines= FALSE)
 }
 
-# The following NOT YET implemented!!
-# umxPath("A <-> B") # same path as above using a string
-# umxPath("A -> B") # one-headed arrow with string syntax
-# umxPath("A <> B; A <-- B") # This is ok too
-# umxPath("A -> B; B>C; C --> D") # two paths. white space and hyphens not needed
-# # manifests is a reserved word, as is latents.
-# # It allows the string syntax to use the manifestVars variable
-# umxPath("A -> manifests") 
 }
 \references{
-- \url{https://tbates.github.io}
+\itemize{
+\item \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{mxPath}}
+\itemize{
+\item \code{\link[=mxPath]{mxPath()}}
+}
 
-Other Core Modeling Functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxAlgebra}},
-  \code{\link{umxMatrix}}, \code{\link{umxModify}},
-  \code{\link{umxRAM}}, \code{\link{umxRun}},
-  \code{\link{umxSuperModel}}, \code{\link{umx}}
+Other Core Modeling Functions: \code{\link{umxAlgebra}()},
+  \code{\link{umxMatrix}()}, \code{\link{umxModify}()},
+  \code{\link{umxRAM}()}, \code{\link{umxRun}()},
+  \code{\link{umxSummary}()},
+  \code{\link{umxSuperModel}()}, \code{\link{umx}}
 }
 \concept{Core Modeling Functions}

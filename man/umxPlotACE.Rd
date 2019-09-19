@@ -3,13 +3,13 @@
 \name{umxPlotACE}
 \alias{umxPlotACE}
 \alias{plot.MxModelACE}
-\title{umxPlotACE}
+\title{Make a graphical display of an ACE model}
 \usage{
 umxPlotACE(x = NA, file = "name", digits = 2, means = FALSE,
   std = TRUE, strip_zero = TRUE, ...)
 }
 \arguments{
-\item{x}{\code{\link{mxModel}} to plot (created by umxACE in order to inherit the MxModelACE class)}
+\item{x}{\code{\link[=mxModel]{mxModel()}} to plot (created by umxACE in order to inherit the MxModelACE class)}
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
@@ -24,10 +24,12 @@ umxPlotACE(x = NA, file = "name", digits = 2, means = FALSE,
 \item{...}{Additional (optional) parameters}
 }
 \value{
-- optionally return the dot code
+\itemize{
+\item optionally return the dot code
+}
 }
 \description{
-Make a graphical display of an ACE model
+plot method for \code{\link[=umxACE]{umxACE()}} models. Make a graphical display of an ACE model
 }
 \examples{
 require(umx)
@@ -35,23 +37,30 @@ data(twinData)
 selDVs = "bmi"
 mzData <- subset(twinData, zygosity == "MZFF")
 dzData <- subset(twinData, zygosity == "DZFF")
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
+m1 = umxACE("plotACEexample", selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
 plot(m1, std = FALSE) # don't standardize
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-- \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
+\itemize{
+\item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, and ACE models.
+}
 
-- \code{\link{umxACE}}
+\itemize{
+\item \code{\link[=umxACE]{umxACE()}}
+}
 
-Other Plotting functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACEv}}, \code{\link{umxPlotCPold}},
-  \code{\link{umxPlotCP}}, \code{\link{umxPlotGxEbiv}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxPlotSexLim}},
-  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
+Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
+  \code{\link{plot.MxModel}()},
+  \code{\link{umxPlotACEcov}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxPlotCP}()},
+  \code{\link{umxPlotGxEbiv}()},
+  \code{\link{umxPlotGxE}()}, \code{\link{umxPlotIP}()},
+  \code{\link{umxPlotSexLim}()},
+  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
 }
 \concept{Plotting functions}

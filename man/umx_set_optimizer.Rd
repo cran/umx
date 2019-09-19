@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.R
 \name{umx_set_optimizer}
 \alias{umx_set_optimizer}
-\title{umx_set_optimizer}
+\title{Set the optimizer in OpenMx}
 \usage{
 umx_set_optimizer(opt = NA, model = NULL, silent = FALSE)
 }
@@ -15,10 +15,12 @@ umx_set_optimizer(opt = NA, model = NULL, silent = FALSE)
 \item{silent}{If TRUE, no message will be printed.}
 }
 \value{
--
+\itemize{
+\item current optimizer if nothing requested to be set.
+}
 }
 \description{
-Set the optimizer in OpenMx
+\code{umx_set_optimizer} provides an easy way to get and set the default optimizer.
 }
 \examples{
 library(umx)
@@ -28,21 +30,25 @@ umx_set_optimizer("SLSQP") # update globally
 umx_set_optimizer(old) # set back
 }
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-Other Get and set: \code{\link{umx_default_option}},
-  \code{\link{umx_get_checkpoint}},
-  \code{\link{umx_get_options}},
-  \code{\link{umx_set_auto_plot}},
-  \code{\link{umx_set_auto_run}},
-  \code{\link{umx_set_checkpoint}},
-  \code{\link{umx_set_condensed_slots}},
-  \code{\link{umx_set_cores}},
-  \code{\link{umx_set_data_variance_check}},
-  \code{\link{umx_set_optimization_options}},
-  \code{\link{umx_set_plot_file_suffix}},
-  \code{\link{umx_set_plot_format}},
-  \code{\link{umx_set_table_format}}, \code{\link{umx}}
+Other Get and set: \code{\link{umx_get_checkpoint}()},
+  \code{\link{umx_get_options}()},
+  \code{\link{umx_set_auto_plot}()},
+  \code{\link{umx_set_auto_run}()},
+  \code{\link{umx_set_checkpoint}()},
+  \code{\link{umx_set_condensed_slots}()},
+  \code{\link{umx_set_cores}()},
+  \code{\link{umx_set_data_variance_check}()},
+  \code{\link{umx_set_mvn_optimization_options}()},
+  \code{\link{umx_set_plot_file_suffix}()},
+  \code{\link{umx_set_plot_format}()},
+  \code{\link{umx_set_separator}()},
+  \code{\link{umx_set_silent}()},
+  \code{\link{umx_set_table_format}()}, \code{\link{umx}},
+  \code{\link{xmu_match.arg}()}
 }
 \concept{Get and set}

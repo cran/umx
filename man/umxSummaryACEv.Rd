@@ -8,10 +8,10 @@
 umxSummaryACEv(model, digits = 2, file = getOption("umx_auto_plot"),
   comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE,
   report = c("markdown", "html"), returnStd = FALSE,
-  extended = FALSE, zero.print = ".", ...)
+  extended = FALSE, zero.print = ".", show = c("std", "raw"), ...)
 }
 \arguments{
-\item{model}{an \code{\link{mxModel}} to summarize}
+\item{model}{an \code{\link[=mxModel]{mxModel()}} to summarize}
 
 \item{digits}{round to how many digits (default = 2)}
 
@@ -34,24 +34,28 @@ Defaults to NA = no plot.}
 
 \item{zero.print}{How to show zeros (".")}
 
+\item{show}{Here to support being called from generic xmu_safe_run_summary. User should ignore: can be c("std", "raw")}
+
 \item{...}{Other parameters to control model summary}
 }
 \value{
-- optional \code{\link{mxModel}}
+\itemize{
+\item optional \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
-Summarize a fitted Cholesky model returned by \code{\link{umxACEv}}. Can control digits, report comparison model fits,
+Summarize a fitted Cholesky model returned by \code{\link[=umxACEv]{umxACEv()}}. Can control digits, report comparison model fits,
 optionally show the Rg (genetic and environmental correlations), and show confidence intervals. the report parameter allows
 drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
 }
 \details{
-See documentation for other umx models here: \code{\link{umxSummary}}.
+See documentation for other umx models here: \code{\link[=umxSummary]{umxSummary()}}.
 }
 \examples{
 require(umx)
 data(twinData)
-mzData <- subset(twinData, zygosity == "MZFF")
-dzData <- subset(twinData, zygosity == "DZFF")
+mzData = subset(twinData, zygosity == "MZFF")
+dzData = subset(twinData, zygosity == "DZFF")
 m1 = umxACEv(selDVs = "bmi", sep = "", dzData = dzData, mzData = mzData)
 umxSummary(m1, std = FALSE)
 \dontrun{
@@ -61,40 +65,26 @@ stdFit = umxSummary(m1, returnStd = TRUE)
 }
 }
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-- \code{\link{umxACEv}}
-
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPold}},
-  \code{\link{umxIP}}, \code{\link{umxSexLim}},
-  \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
-
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+\itemize{
+\item \code{\link[=umxACEv]{umxACEv()}}
 }
-\concept{Reporting functions}
-\concept{Twin Modeling Functions}
+
+Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
+  \code{\link{umxReduceACE}()},
+  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
+  \code{\link{umxSummarizeTwinData}()},
+  \code{\link{umxSummaryACEcov}()},
+  \code{\link{umxSummaryACE}()},
+  \code{\link{umxSummaryCP}()},
+  \code{\link{umxSummaryGxEbiv}()},
+  \code{\link{umxSummaryGxE}()},
+  \code{\link{umxSummaryIP}()},
+  \code{\link{umxSummarySexLim}()},
+  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
+}
+\concept{Twin Reporting Functions}

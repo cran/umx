@@ -10,7 +10,7 @@ umxPlotSimplex(x = NA, file = "name", digits = 2, means = FALSE,
   strip_zero = TRUE, ...)
 }
 \arguments{
-\item{x}{The \code{\link{umxSimplex}} model to display graphically}
+\item{x}{The \code{\link[=umxSimplex]{umxSimplex()}} model to display graphically}
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
@@ -27,14 +27,15 @@ umxPlotSimplex(x = NA, file = "name", digits = 2, means = FALSE,
 \item{...}{Optional additional parameters}
 }
 \value{
-- Optionally return the dot code
+\itemize{
+\item Optionally return the dot code
+}
 }
 \description{
 Options include digits (rounding), showing means or not, and which output format is desired.
 }
 \examples{
 \dontrun{
-# TODO Add example from umxSimplex help
 data(iqdat)
 mzData = subset(iqdat, zygosity == "MZ")
 dzData = subset(iqdat, zygosity == "DZ")
@@ -44,16 +45,20 @@ m1 = umxSimplex(selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData)
 }
 }
 \seealso{
-- \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, simplex, ACEv, or ACE model.
+\itemize{
+\item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, simplex, ACEv, or ACE model.
+}
 
-- \code{\link{umxSimplex}}
+\itemize{
+\item \code{\link[=umxSimplex]{umxSimplex()}}
+}
 
-Other Plotting functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCPold}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxEbiv}}, \code{\link{umxPlotGxE}},
-  \code{\link{umxPlotIP}}, \code{\link{umxPlotSexLim}},
-  \code{\link{umx}}
+Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
+  \code{\link{plot.MxModel}()},
+  \code{\link{umxPlotACEcov}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxPlotACE}()},
+  \code{\link{umxPlotCP}()}, \code{\link{umxPlotGxEbiv}()},
+  \code{\link{umxPlotGxE}()}, \code{\link{umxPlotIP}()},
+  \code{\link{umxPlotSexLim}()}, \code{\link{umx}}
 }
 \concept{Plotting functions}

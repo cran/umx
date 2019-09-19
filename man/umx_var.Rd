@@ -4,25 +4,30 @@
 \alias{umx_var}
 \title{Get variances from a df that might contain some non-numeric columns}
 \usage{
-umx_var(df, ordVar = 1, format = c("full", "diag", "lower"),
+umx_var(df, format = c("full", "diag", "lower"),
   use = c("complete.obs", "pairwise.complete.obs", "everything",
-  "all.obs", "na.or.complete"), digits = NULL, strict = TRUE)
+  "all.obs", "na.or.complete"), ordVar = 1, digits = NULL,
+  strict = TRUE, allowCorForFactorCovs = FALSE)
 }
 \arguments{
 \item{df}{A dataframe of raw data from which to get variances.}
 
-\item{ordVar}{The value to return at any ordinal columns (defaults to 1).}
-
 \item{format}{to return: options are c("full", "diag", "lower"). Defaults to full, but this is not implemented yet.}
 
-\item{use}{Passed to \code{\link{cov}} - defaults to "complete.obs" (see param default for other options).}
+\item{use}{Passed to \code{\link[=cov]{cov()}} - defaults to "complete.obs" (see param default for other options).}
 
-\item{digits}{Ignored if NULL. Set for easy printing.}
+\item{ordVar}{The value to return at any ordinal columns (defaults to 1).}
+
+\item{digits}{digits to round output to (Ignored if NULL). Set for easy printing.}
 
 \item{strict}{Whether to allow non-ordered factors to be processed (default = FALSE (no)).}
+
+\item{allowCorForFactorCovs}{When ordinal data are present, use heterochoric correlations in affected cells, in place of covariances.}
 }
 \value{
-- \code{\link{mxModel}}
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
 Pass in any dataframe and get variances despite some non-numeric columns.
@@ -36,16 +41,45 @@ umx_var(tmp, format = "diag", ordVar = 1, use = "pair")
 tmp2 = tmp[, c(1, 3)]
 umx_var(tmp2, format = "diag")
 umx_var(tmp2, format = "full")
+
+data(myFADataRaw)
+df = myFADataRaw[,c("z1", "z2", "z3")]
+df$z1 = mxFactor(df$z1, levels = c(0, 1))
+df$z2 = mxFactor(df$z2, levels = c(0, 1))
+df$z3 = mxFactor(df$z3, levels = c(0, 1, 2))    
+umx_var(df, format = "diag")
+umx_var(df, format = "full", allowCorForFactorCovs=TRUE)
+
+# Ordinal/continuous mix
+data(twinData)
+twinData= umx_scale_wide_twin_data(data=twinData,varsToScale="wt",sep= "")
+# Cut BMI column to form ordinal obesity variables
+obLevels   = c('normal', 'overweight', 'obese')
+cuts       = quantile(twinData[, "bmi1"], probs = c(.5, .8), na.rm = TRUE)
+twinData$obese1=cut(twinData$bmi1,breaks=c(-Inf,cuts,Inf),labels=obLevels)
+twinData$obese2=cut(twinData$bmi2,breaks=c(-Inf,cuts,Inf),labels=obLevels)
+# Make the ordinal variables into mxFactors
+ordDVs = c("obese1", "obese2")
+twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
+varStarts = umx_var(twinData[, c(ordDVs, "wt1", "wt2")], 
+		format= "diag", ordVar = 1, use = "pairwise.complete.obs")
+
 }
 \references{
-- \url{https://tbates.github.io}
+\itemize{
+\item \url{https://tbates.github.io}
+}
 }
 \seealso{
-Other Miscellaneous Stats Helpers: \code{\link{reliability}},
-  \code{\link{umxCov2cor}}, \code{\link{umxHetCor}},
-  \code{\link{umx_apply}}, \code{\link{umx_cor}},
-  \code{\link{umx_fun_mean_sd}}, \code{\link{umx_means}},
-  \code{\link{umx_r_test}}, \code{\link{umx_round}},
+Other Miscellaneous Stats Helpers: \code{\link{SE_from_p}()},
+  \code{\link{oddsratio}()},
+  \code{\link{print.oddsratio}()},
+  \code{\link{print.reliability}()},
+  \code{\link{reliability}()}, \code{\link{umxCov2cor}()},
+  \code{\link{umxHetCor}()}, \code{\link{umx_apply}()},
+  \code{\link{umx_cor}()}, \code{\link{umx_fun_mean_sd}()},
+  \code{\link{umx_means}()}, \code{\link{umx_r_test}()},
+  \code{\link{umx_round}()}, \code{\link{umx_scale}()},
   \code{\link{umx}}
 }
 \concept{Miscellaneous Stats Helpers}

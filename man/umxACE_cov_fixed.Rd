@@ -43,18 +43,20 @@ Used to expand selDVs into full column names, i.e., "dep" --> c("dep_T1", "dep_T
 
 \item{optimizer}{(optionally) set the optimizer. Default (NULL) does nothing.}
 
-\item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+\item{autoRun}{Whether to run the model (default), or just to create it and return without running.}
 
 \item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
 }
 \value{
-- \code{\link{mxModel}} of subclass mxModel.ACEcov
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}} of subclass mxModel.ACEcov
+}
 }
 \description{
 Often, it is appropriate to include covariates in models.
-A simple method is to regress covariates from the data using \code{\link{lm}}.
+A simple method is to regress covariates from the data using \code{\link[=lm]{lm()}}.
 This is a 'fixed' effects approach.
-\code{\link{umx_residualize}} makes this easier, even on twin data, and with complex regression formulas.
+\code{\link[=umx_residualize]{umx_residualize()}} makes this easier, even on twin data, and with complex regression formulas.
 }
 \details{
 While these estimates are unbiased, modeling this regression in the means element of the twin model
@@ -67,18 +69,18 @@ The following figure shows how the ACE model with fixed covariates appears as a 
 \if{html}{\figure{ACEcovOnMeans.png}{options: width="50\%" alt="Figure: ACEcovOnMeans.png"}}
 \if{latex}{\figure{ACEcovOnMeans.pdf}{options: width=7cm}}
 
-
-On the plus side, there is no distributional assumption for this method. A downside of this approach is that all 
+On the plus side, there is no distributional assumption for this method. A downside of this approach is that all
 covariates must be non-NA, thus dropping any rows where one or more covariates are missing.
 This is wasteful of data, but often cannot be avoided (though see note below).
 
-\emph{note}: An alternative is the \code{\link{umxACEcov}} 'random' option. This model adds covariates to
+\emph{note}: An alternative is the \code{\link[=umxACEcov]{umxACEcov()}} 'random' option. This model adds covariates to
 the expected covariance matrix, thus allowing all data to be preserved.
 The (BIG) downside is that this method has a strong assumption of multivariate normality.
 Covariates like age, which are perfectly correlated in twins cannot be used.
 Covariates like sex, which are ordinal, violate the normality assumption.
 }
 \examples{
+\dontrun{
 require(umx)
 data(twinData) # ?twinData from Australian twins.
 # Pick the variables
@@ -93,8 +95,8 @@ m2 = umxACE(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
 # = lm-based equivalent =
 # =======================
 df_res = umx_residualize(ht ~ age, suffixes = c("1", "2"), data = twinData)
-mzData <- df_res[df_res$zygosity \%in\% "MZFF", ]
-dzData <- df_res[df_res$zygosity \%in\% "DZFF", ]
+mzData = df_res[df_res$zygosity \%in\% "MZFF", ]
+dzData = df_res[df_res$zygosity \%in\% "DZFF", ]
 m3 = umxACE("lm_based", selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
 # ===============================
 # = Example with two covariates =
@@ -108,23 +110,17 @@ m1 = umxACE_cov_fixed(selDVs = selDVs, selCovs = selCovs, sep = "",
 	     dzData = dzData, mzData = mzData)
 m1 = umxACE(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
 }
+}
 \seealso{
 umx_residualize umxACE
 
-Other Twin Modeling Functions: \code{\link{umxACEcov}},
-  \code{\link{umxACEold}}, \code{\link{umxACEv}},
-  \code{\link{umxACE}}, \code{\link{umxCPold}},
-  \code{\link{umxCP}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
-  \code{\link{umxIPold}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
-  \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
+Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
+  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
+  \code{\link{umxACE}()}, \code{\link{umxCP}()},
+  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
+  \code{\link{umxGxE}()}, \code{\link{umxIP}()},
+  \code{\link{umxRotate.MxModelCP}()},
+  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
+  \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

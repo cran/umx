@@ -5,14 +5,15 @@
 \title{umxIP: Build and run an Independent pathway twin model}
 \usage{
 umxIP(name = "IP", selDVs, dzData, mzData, sep = NULL, nFac = c(a =
-  1, c = 1, e = 1), type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS",
-  "ULS"), allContinuousMethod = c("cumulants", "marginals"),
-  dzAr = 0.5, dzCr = 1, correlatedA = FALSE, numObsDZ = NULL,
-  numObsMZ = NULL, autoRun = getOption("umx_auto_run"),
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal",
-  "mxTryHardWideSearch"), optimizer = NULL, equateMeans = TRUE,
-  weightVar = NULL, addStd = TRUE, addCI = TRUE,
-  freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE)
+  1, c = 1, e = 1), data = NULL, zyg = "zygosity", type = c("Auto",
+  "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+  allContinuousMethod = c("cumulants", "marginals"), dzAr = 0.5,
+  dzCr = 1, correlatedA = FALSE, numObsDZ = NULL, numObsMZ = NULL,
+  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
+  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL, equateMeans = TRUE, weightVar = NULL,
+  addStd = TRUE, addCI = TRUE, freeLowerA = FALSE,
+  freeLowerC = FALSE, freeLowerE = FALSE)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "IP").}
@@ -26,6 +27,10 @@ umxIP(name = "IP", selDVs, dzData, mzData, sep = NULL, nFac = c(a =
 \item{sep}{The suffix for twin 1 and twin 2. e.g. selDVs= "dep", sep= "_T" -> c("dep_T1", "dep_T2")}
 
 \item{nFac}{How many common factors for a, c, and e. If one number is given, applies to all three.}
+
+\item{data}{If provided, dzData and mzData are treated as levels of zyg to select() MZ and DZ data sets (default = NULL)}
+
+\item{zyg}{If data provided, this column is used to select rows by zygosity (Default = "zygosity")}
 
 \item{type}{Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS")}
 
@@ -63,7 +68,7 @@ umxIP(name = "IP", selDVs, dzData, mzData, sep = NULL, nFac = c(a =
 }
 \value{
 \itemize{
-\item \code{\link{mxModel}}
+\item \code{\link[=mxModel]{mxModel()}}
 }
 }
 \description{
@@ -78,11 +83,11 @@ As can be seen, each phenotype also by default has A, C, and E influences specif
 Features of the model include the ability to include add more one set of independent pathways, different numbers
 of pathways for a, c, and e, as well the ability to use ordinal data, and different fit functions, e.g. WLS.
 
-\strong{note}: The function \code{umx_set_optimization_options}() allow users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
+\strong{note}: The function \code{umx_set_mvn_optimization_options}() allow users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
 It defaults to .001. You might find that '0.01' works better for ordinal models.
 }
 \details{
-Like the \code{\link{umxACE}} model, the CP model decomposes phenotypic variance
+Like the \code{\link[=umxACE]{umxACE()}} model, the CP model decomposes phenotypic variance
 into Additive genetic, unique environmental (E) and, optionally, either
 common or shared-environment (C) or
 non-additive genetic effects (D).
@@ -105,7 +110,7 @@ data in any combination.
 
 \code{umxIP} supports varying the DZ genetic association (defaulting to .5)
 to allow exploring assortative mating effects, as well as varying the DZ \dQuote{C} factor
-from 1 (the default for modeling family-level effects shared 100% by twins in a pair),
+from 1 (the default for modeling family-level effects shared 100\% by twins in a pair),
 to .25 to model dominance effects.
 
 \strong{Matrices and Labels in CP model}
@@ -163,8 +168,6 @@ m2 = umxIP(selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData, nFac =
 	tryHard = "mxTryHard")
 umxCompare(m1, m2)
 }
-# TODO: sep enforcement: move to test case 
-# m1 = umxIP(selDVs = selDVs, dzData = dzData, mzData = mzData)
 }
 \references{
 \itemize{
@@ -173,23 +176,17 @@ umxCompare(m1, m2)
 }
 \seealso{
 \itemize{
-\item \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
+\item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, and ACE models.
 }
 
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPold}},
-  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
-  \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
+Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
+  \code{\link{umxACE_cov_fixed}()},
+  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
+  \code{\link{umxACE}()}, \code{\link{umxCP}()},
+  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
+  \code{\link{umxGxE}()},
+  \code{\link{umxRotate.MxModelCP}()},
+  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
+  \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

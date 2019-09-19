@@ -6,7 +6,8 @@
 \usage{
 xmu_safe_run_summary(model1, model2 = NULL, autoRun = TRUE,
   tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal",
-  "mxTryHardWideSearch"), summary = TRUE, comparison = TRUE)
+  "mxTryHardWideSearch"), summary = !umx_set_silent(silent = TRUE),
+  std = FALSE, comparison = TRUE, digits = 3, show = "deprecated")
 }
 \arguments{
 \item{model1}{The model to attempt to run and summarize.}
@@ -19,11 +20,17 @@ xmu_safe_run_summary(model1, model2 = NULL, autoRun = TRUE,
 
 \item{summary}{Whether to print model summary (default = autoRun).}
 
+\item{std}{What to print in summary (default FALSE) means raw, TRUE = standardize, null = omit parameter table.}
+
 \item{comparison}{Toggle to allow not making comparison, even if second model is provided (more flexible in programming).}
+
+\item{digits}{Rounding precision in tables and plots}
+
+\item{show}{= "deprecated"}
 }
 \value{
 \itemize{
-\item \code{\link{mxModel}}
+\item \code{\link[=mxModel]{mxModel()}}
 }
 }
 \description{
@@ -32,43 +39,82 @@ The main benefit is that it returns the model, even if it can't be run.
 The function will run the model if requested, wrapped in \code{\link[=tryCatch]{tryCatch()}} to avoid throwing an error.
 If summary = TRUE then \code{\link[=umxSummary]{umxSummary()}} is requested (again, wrapped in try).
 
-\emph{note}: If autoRun is logical, then it over-rides summary to match autoRun. This is useful for easy use umxRAM and twin models.
+\emph{note}: If \code{autoRun} is logical, then it over-rides \code{summary} to match \code{autoRun}. This is useful for easy use \code{\link[=umxRAM]{umxRAM()}} and twin models.
 }
 \examples{
-# xmu_safe_run_summary(model, autoRun = FALSE, summary = TRUE, comparison= FALSE)
-# xmu_safe_run_summary(model, model2, autoRun = TRUE, summary = TRUE, comparison= FALSE)
-# xmu_safe_run_summary(model, model2, autoRun = TRUE)
+m1 = umxRAM("tim", data = mtcars,
+	umxPath(c("wt", "disp"), to = "mpg"),
+	umxPath("wt", with = "disp"),
+	umxPath(v.m. = c("wt", "disp", "mpg"))
+)
+m2 = umxModify(m1, "wt_to_mpg")
+
+# Summary ignored if run is false
+xmu_safe_run_summary(m1, autoRun = FALSE, summary = TRUE)
+# Run, no summary
+xmu_safe_run_summary(m1, autoRun = TRUE, summary = FALSE)
+# Default summary is just fit string
+xmu_safe_run_summary(m1, autoRun = TRUE, summary = TRUE)
+# Show std parameters
+xmu_safe_run_summary(m1, autoRun = TRUE, summary = TRUE, std = TRUE)
+# Run + Summary + comparison
+xmu_safe_run_summary(m1, m2, autoRun = TRUE, summary = TRUE)
+# Run + Summary + no comparison
+xmu_safe_run_summary(m1, m2, autoRun = TRUE, summary = TRUE, std = TRUE, comparison= FALSE)
+
 }
 \seealso{
 \itemize{
-\item \code{\link{mxTryHard}}
+\item \code{\link[=mxTryHard]{mxTryHard()}}
 }
 
-Other xmu internal not for end user: \code{\link{umxModel}},
-  \code{\link{umx}}, \code{\link{xmuHasSquareBrackets}},
-  \code{\link{xmuLabel_MATRIX_Model}},
-  \code{\link{xmuLabel_Matrix}},
-  \code{\link{xmuLabel_RAM_Model}}, \code{\link{xmuMI}},
-  \code{\link{xmuMakeDeviationThresholdsMatrices}},
-  \code{\link{xmuMakeOneHeadedPathsFromPathList}},
-  \code{\link{xmuMakeTwoHeadedPathsFromPathList}},
-  \code{\link{xmuMaxLevels}}, \code{\link{xmuMinLevels}},
-  \code{\link{xmuPropagateLabels}},
-  \code{\link{xmu_assemble_twin_supermodel}},
-  \code{\link{xmu_check_levels_identical}},
-  \code{\link{xmu_clean_label}},
-  \code{\link{xmu_dot_make_paths}},
-  \code{\link{xmu_dot_make_residuals}},
-  \code{\link{xmu_dot_maker}},
-  \code{\link{xmu_dot_move_ranks}},
-  \code{\link{xmu_dot_rank_str}},
-  \code{\link{xmu_lavaan_process_group}},
-  \code{\link{xmu_make_mxData}},
-  \code{\link{xmu_make_top_twin}},
-  \code{\link{xmu_model_needs_means}},
-  \code{\link{xmu_set_sep_from_suffix}},
-  \code{\link{xmu_simplex_corner}},
-  \code{\link{xmu_start_value_list}},
-  \code{\link{xmu_starts}}
+Other xmu internal not for end user: \code{\link{umxModel}()},
+  \code{\link{umx_standardize}()}, \code{\link{umx}},
+  \code{\link{xmuHasSquareBrackets}()},
+  \code{\link{xmuLabel_MATRIX_Model}()},
+  \code{\link{xmuLabel_Matrix}()},
+  \code{\link{xmuLabel_RAM_Model}()},
+  \code{\link{xmuMI}()},
+  \code{\link{xmuMakeDeviationThresholdsMatrices}()},
+  \code{\link{xmuMakeOneHeadedPathsFromPathList}()},
+  \code{\link{xmuMakeTwoHeadedPathsFromPathList}()},
+  \code{\link{xmuMaxLevels}()},
+  \code{\link{xmuMinLevels}()},
+  \code{\link{xmuPropagateLabels}()},
+  \code{\link{xmu_CI_merge}()},
+  \code{\link{xmu_CI_stash}()},
+  \code{\link{xmu_DF_to_mxData_TypeCov}()},
+  \code{\link{xmu_PadAndPruneForDefVars}()},
+  \code{\link{xmu_assemble_twin_supermodel}()},
+  \code{\link{xmu_check_levels_identical}()},
+  \code{\link{xmu_check_needs_means}()},
+  \code{\link{xmu_check_variance}()},
+  \code{\link{xmu_clean_label}()},
+  \code{\link{xmu_describe_data_WLS}()},
+  \code{\link{xmu_dot_make_paths}()},
+  \code{\link{xmu_dot_make_residuals}()},
+  \code{\link{xmu_dot_maker}()},
+  \code{\link{xmu_dot_move_ranks}()},
+  \code{\link{xmu_dot_rank_str}()},
+  \code{\link{xmu_get_CI}()},
+  \code{\link{xmu_lavaan_process_group}()},
+  \code{\link{xmu_make_bin_cont_pair_data}()},
+  \code{\link{xmu_make_mxData}()},
+  \code{\link{xmu_make_top_twin}()},
+  \code{\link{xmu_name_from_lavaan_str}()},
+  \code{\link{xmu_set_sep_from_suffix}()},
+  \code{\link{xmu_show_fit_or_comparison}()},
+  \code{\link{xmu_simplex_corner}()},
+  \code{\link{xmu_standardize_ACEcov}()},
+  \code{\link{xmu_standardize_ACEv}()},
+  \code{\link{xmu_standardize_ACE}()},
+  \code{\link{xmu_standardize_CP}()},
+  \code{\link{xmu_standardize_IP}()},
+  \code{\link{xmu_standardize_RAM}()},
+  \code{\link{xmu_standardize_SexLim}()},
+  \code{\link{xmu_standardize_Simplex}()},
+  \code{\link{xmu_start_value_list}()},
+  \code{\link{xmu_starts}()},
+  \code{\link{xmu_twin_check}()}
 }
 \concept{xmu internal not for end user}

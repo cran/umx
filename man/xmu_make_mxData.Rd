@@ -8,7 +8,7 @@ xmu_make_mxData(data = NULL, type = c("Auto", "FIML", "cov", "cor",
   "WLS", "DWLS", "ULS"), manifests = NULL, verbose = FALSE)
 }
 \arguments{
-\item{data}{A \code{\link{data.frame}} or \code{\link{mxData}}}
+\item{data}{A \code{\link[=data.frame]{data.frame()}} or \code{\link[=mxData]{mxData()}}}
 
 \item{type}{What data type is wanted out c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS')}
 
@@ -17,12 +17,14 @@ xmu_make_mxData(data = NULL, type = c("Auto", "FIML", "cov", "cor",
 \item{verbose}{If verbose, report on columns kept and dropped (default FALSE)}
 }
 \value{
-- \code{\link{mxData}}
+\itemize{
+\item \code{\link[=mxData]{mxData()}}
+}
 }
 \description{
-`xmu_make_mxData` is an internal function to upgrade a dataframe to `mxData`. It can also drop variables from the dataframe.
+\code{xmu_make_mxData} is an internal function to upgrade a dataframe to \code{mxData}. It can also drop variables from the dataframe.
 
-The most common use will be to give it a dataframe, and get back an `mxData` object of type raw, cov, cor (WLS is just raw).
+The most common use will be to give it a dataframe, and get back an \code{mxData} object of type raw, cov, cor (WLS is just raw).
 }
 \examples{
 # =========================
@@ -46,6 +48,14 @@ tmp$type == "raw" # TRUE (WLS is triggered by the fit function, not the data typ
 tmp = mtcars; tmp[1, "mpg"] = NA # add NA
 tmp = xmu_make_mxData(data= tmp, type = "WLS", manifests = manVars, verbose= TRUE)
 
+# ==========================
+# = already mxData example =
+# ==========================
+m1 = umxRAM("auto", data = mxData(mtcars, type = "raw"),
+umxPath(var= "wt"),
+umxPath(mean=  "wt")
+)
+
 # ========================
 # = Cov and cor examples =
 # ========================
@@ -59,31 +69,53 @@ xmu_make_mxData(data= c("a", "b", "c"), type = "Auto")
 
 }
 \seealso{
-Other xmu internal not for end user: \code{\link{umxModel}},
-  \code{\link{umx}}, \code{\link{xmuHasSquareBrackets}},
-  \code{\link{xmuLabel_MATRIX_Model}},
-  \code{\link{xmuLabel_Matrix}},
-  \code{\link{xmuLabel_RAM_Model}}, \code{\link{xmuMI}},
-  \code{\link{xmuMakeDeviationThresholdsMatrices}},
-  \code{\link{xmuMakeOneHeadedPathsFromPathList}},
-  \code{\link{xmuMakeTwoHeadedPathsFromPathList}},
-  \code{\link{xmuMaxLevels}}, \code{\link{xmuMinLevels}},
-  \code{\link{xmuPropagateLabels}},
-  \code{\link{xmu_assemble_twin_supermodel}},
-  \code{\link{xmu_check_levels_identical}},
-  \code{\link{xmu_clean_label}},
-  \code{\link{xmu_dot_make_paths}},
-  \code{\link{xmu_dot_make_residuals}},
-  \code{\link{xmu_dot_maker}},
-  \code{\link{xmu_dot_move_ranks}},
-  \code{\link{xmu_dot_rank_str}},
-  \code{\link{xmu_lavaan_process_group}},
-  \code{\link{xmu_make_top_twin}},
-  \code{\link{xmu_model_needs_means}},
-  \code{\link{xmu_safe_run_summary}},
-  \code{\link{xmu_set_sep_from_suffix}},
-  \code{\link{xmu_simplex_corner}},
-  \code{\link{xmu_start_value_list}},
-  \code{\link{xmu_starts}}
+Other xmu internal not for end user: \code{\link{umxModel}()},
+  \code{\link{umx_standardize}()}, \code{\link{umx}},
+  \code{\link{xmuHasSquareBrackets}()},
+  \code{\link{xmuLabel_MATRIX_Model}()},
+  \code{\link{xmuLabel_Matrix}()},
+  \code{\link{xmuLabel_RAM_Model}()},
+  \code{\link{xmuMI}()},
+  \code{\link{xmuMakeDeviationThresholdsMatrices}()},
+  \code{\link{xmuMakeOneHeadedPathsFromPathList}()},
+  \code{\link{xmuMakeTwoHeadedPathsFromPathList}()},
+  \code{\link{xmuMaxLevels}()},
+  \code{\link{xmuMinLevels}()},
+  \code{\link{xmuPropagateLabels}()},
+  \code{\link{xmu_CI_merge}()},
+  \code{\link{xmu_CI_stash}()},
+  \code{\link{xmu_DF_to_mxData_TypeCov}()},
+  \code{\link{xmu_PadAndPruneForDefVars}()},
+  \code{\link{xmu_assemble_twin_supermodel}()},
+  \code{\link{xmu_check_levels_identical}()},
+  \code{\link{xmu_check_needs_means}()},
+  \code{\link{xmu_check_variance}()},
+  \code{\link{xmu_clean_label}()},
+  \code{\link{xmu_describe_data_WLS}()},
+  \code{\link{xmu_dot_make_paths}()},
+  \code{\link{xmu_dot_make_residuals}()},
+  \code{\link{xmu_dot_maker}()},
+  \code{\link{xmu_dot_move_ranks}()},
+  \code{\link{xmu_dot_rank_str}()},
+  \code{\link{xmu_get_CI}()},
+  \code{\link{xmu_lavaan_process_group}()},
+  \code{\link{xmu_make_bin_cont_pair_data}()},
+  \code{\link{xmu_make_top_twin}()},
+  \code{\link{xmu_name_from_lavaan_str}()},
+  \code{\link{xmu_safe_run_summary}()},
+  \code{\link{xmu_set_sep_from_suffix}()},
+  \code{\link{xmu_show_fit_or_comparison}()},
+  \code{\link{xmu_simplex_corner}()},
+  \code{\link{xmu_standardize_ACEcov}()},
+  \code{\link{xmu_standardize_ACEv}()},
+  \code{\link{xmu_standardize_ACE}()},
+  \code{\link{xmu_standardize_CP}()},
+  \code{\link{xmu_standardize_IP}()},
+  \code{\link{xmu_standardize_RAM}()},
+  \code{\link{xmu_standardize_SexLim}()},
+  \code{\link{xmu_standardize_Simplex}()},
+  \code{\link{xmu_start_value_list}()},
+  \code{\link{xmu_starts}()},
+  \code{\link{xmu_twin_check}()}
 }
 \concept{xmu internal not for end user}

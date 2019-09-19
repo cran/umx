@@ -10,7 +10,7 @@ umxEquate(model, master, slave, free = c(TRUE, FALSE, NA),
   comparison = TRUE)
 }
 \arguments{
-\item{model}{An \code{\link{mxModel}} within which to equate parameters}
+\item{model}{An \code{\link[=mxModel]{mxModel()}} within which to equate parameters}
 
 \item{master}{A list of "master" labels to which slave labels will be equated}
 
@@ -22,19 +22,21 @@ umxEquate(model, master, slave, free = c(TRUE, FALSE, NA),
 
 \item{name}{name for the returned model (optional: Leave empty to leave name unchanged)}
 
-\item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+\item{autoRun}{Whether to run the model (default), or just to create it and return without running.}
 
 \item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
 
 \item{comparison}{Compare the new model to the old (if updating an existing model: default = TRUE)}
 }
 \value{
-- \code{\link{mxModel}}
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
 In addition to dropping or adding parameters, a second common task in modeling
-is to equate parameters. umx provides a convenience function to equate parameters 
-by setting one or more parameters (the "slave" set) equal to one or more "master" 
+is to equate parameters. umx provides a convenience function to equate parameters
+by setting one or more parameters (the "slave" set) equal to one or more "master"
 parameters. These parameters are picked out via their labels, and setting two or more
 parameters to have the same value is accomplished by setting the slave(s) to have
 the same label(s) as the master parameters, thus constraining them to take the same
@@ -42,23 +44,22 @@ value during model fitting.
 }
 \details{
 \emph{note}: In addition to using this method to equating parameters, you can
-also equate one parameter to another by setting its label to the 
+also equate one parameter to another by setting its label to the
 "square bracket" address of the master, e.g. "a[r,c]".
 
-\emph{Tip}: To find labels of free parameters use \code{\link{umxGetParameters}} 
+\emph{Tip}: To find labels of free parameters use \code{\link[=umxGetParameters]{umxGetParameters()}}
 with free = TRUE
 
-\emph{Tip}: To find labels by name, use the regex parameter of \code{\link{umxGetParameters}}
+\emph{Tip}: To find labels by name, use the regex parameter of \code{\link[=umxGetParameters]{umxGetParameters()}}
 }
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-	umxPath(latents, to = manifests),
+m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1)
+	umxPath(var = "G", fixedAt = 1)
 )
 # By default, umxEquate just equates master and slave labels
 m2 = umxEquate(m1, master = "G_to_x1", slave = "G_to_x2", name = "Eq x1 x2 loadings")
@@ -68,16 +69,18 @@ m2 = umxEquate(m1, autoRun = TRUE, comparison = TRUE, name = "Eq x1 x2",
 )
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-\code{\link{umxModify}}, \code{\link{umxCompare}}
+\code{\link[=umxModify]{umxModify()}}, \code{\link[=umxCompare]{umxCompare()}}
 
-Other Modify or Compare Models: \code{\link{umxAdd1}},
-  \code{\link{umxDrop1}}, \code{\link{umxFixAll}},
-  \code{\link{umxMI}}, \code{\link{umxModify}},
-  \code{\link{umxSetParameters}},
-  \code{\link{umxUnexplainedCausalNexus}},
+Other Modify or Compare Models: \code{\link{umxAdd1}()},
+  \code{\link{umxDrop1}()}, \code{\link{umxFixAll}()},
+  \code{\link{umxMI}()}, \code{\link{umxModify}()},
+  \code{\link{umxSetParameters}()},
+  \code{\link{umxUnexplainedCausalNexus}()},
   \code{\link{umx}}
 }
 \concept{Modify or Compare Models}

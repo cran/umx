@@ -8,7 +8,7 @@
   digits = 3)
 }
 \arguments{
-\item{x}{an \code{\link{mxModel}} summary from which to get RMSEA}
+\item{x}{an \code{\link[=mxModel]{mxModel()}} summary from which to get RMSEA}
 
 \item{ci.lower}{the lower CI to compute}
 
@@ -17,7 +17,9 @@
 \item{digits}{digits to show (defaults to 3)}
 }
 \value{
-- object containing the RMSEA and lower and upper bounds
+\itemize{
+\item object containing the RMSEA and lower and upper bounds
+}
 }
 \description{
 Compute the confidence interval on RMSEA
@@ -25,32 +27,32 @@ Compute the confidence interval on RMSEA
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-	umxPath(latents, to = manifests),
+
+m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
+	umxPath(var = "G", fixedAt = 1.0)
 )
+
 RMSEA(m1)
 }
 \references{
-- \url{https://github.com/simsem/semTools/wiki/Functions}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://github.com/simsem/semTools/wiki/Functions}, \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA}}, \code{\link{extractAIC.MxModel}},
-  \code{\link{loadings}}, \code{\link{residuals.MxModel}},
-  \code{\link{umxCI_boot}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+Other Reporting functions: \code{\link{RMSEA.MxModel}()},
+  \code{\link{RMSEA}()},
+  \code{\link{extractAIC.MxModel}()},
+  \code{\link{loadings}()},
+  \code{\link{residuals.MxModel}()},
+  \code{\link{umxCI_boot}()}, \code{\link{umxCI}()},
+  \code{\link{umxCompare}()}, \code{\link{umxConfint}()},
+  \code{\link{umxExpCov}()}, \code{\link{umxExpMeans}()},
+  \code{\link{umxFitIndices}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxRotate}()},
+  \code{\link{umxSummary.MxModel}()}
 }
 \concept{Reporting functions}

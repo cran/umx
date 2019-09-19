@@ -7,7 +7,7 @@
 umxSummary(model, ...)
 }
 \arguments{
-\item{model}{The \code{\link{mxModel}} whose fit will be reported}
+\item{model}{The \code{\link[=mxModel]{mxModel()}} whose fit will be reported}
 
 \item{...}{Other parameters to control model summary}
 }
@@ -15,31 +15,23 @@ umxSummary(model, ...)
 Report the fit of a OpenMx model or specialized model class (such as ACE, CP etc.)
 in a compact form suitable for reporting in a journal.
 
-See documentation for RAM models summary here: \code{\link{umxSummary.MxModel}}.
+See documentation for RAM models summary here: \code{\link[=umxSummary.MxModel]{umxSummary.MxModel()}}.
 
-View documentation on the ACE model subclass here: \code{\link{umxSummaryACE}}.
+View documentation on the ACE model subclass here: \code{\link[=umxSummaryACE]{umxSummaryACE()}}.
 
-View documentation on the ACEv model subclass here: \code{\link{umxSummaryACEv}}.
+View documentation on the ACEv model subclass here: \code{\link[=umxSummaryACEv]{umxSummaryACEv()}}.
 
-View documentation on the IP model subclass here: \code{\link{umxSummaryIP}}.
+View documentation on the IP model subclass here: \code{\link[=umxSummaryIP]{umxSummaryIP()}}.
 
-View documentation on the CP model subclass here: \code{\link{umxSummaryCP}}.
+View documentation on the CP model subclass here: \code{\link[=umxSummaryCP]{umxSummaryCP()}}.
 
-View documentation on the GxE model subclass here: \code{\link{umxSummaryGxE}}.
+View documentation on the GxE model subclass here: \code{\link[=umxSummaryGxE]{umxSummaryGxE()}}.
 }
 \seealso{
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
-  \code{\link{umxAPA}}, \code{\link{umxEval}},
-  \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxWeightedAIC}}, \code{\link{umx_APA_pval}},
-  \code{\link{umx_aggregate}}, \code{\link{umx_names}},
-  \code{\link{umx_parameters}}, \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Core Modeling Functions: \code{\link{umxAlgebra}()},
+  \code{\link{umxMatrix}()}, \code{\link{umxModify}()},
+  \code{\link{umxPath}()}, \code{\link{umxRAM}()},
+  \code{\link{umxRun}()}, \code{\link{umxSuperModel}()},
+  \code{\link{umx}}
 }
-\concept{Core Modeling Functions
-\url{https://www.github.com/tbates/umx}}
-\concept{Reporting Functions}
+\concept{Core Modeling Functions}

@@ -7,25 +7,25 @@
 umx_has_means(model)
 }
 \arguments{
-\item{model}{The \code{\link{mxModel}} to check for presence of means}
+\item{model}{The \code{\link[=mxModel]{mxModel()}} to check for presence of means}
 }
 \value{
-- TRUE or FALSE
+\itemize{
+\item TRUE or FALSE
+}
 }
 \description{
-A utility function to return a binary answer to the question "does this \code{\link{mxModel}} have a means model?"
+A utility function to return a binary answer to the question "does this \code{\link[=mxModel]{mxModel()}} have a means model?"
 }
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("g")
 manifests = names(demoOneFactor)
-m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
-	umxPath(latents, to = manifests),
+m1 = umxRAM("has_means_ex", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
-)
-
+	umxPath(var = "G", fixedAt = 1)
+)#'
 umx_has_means(m1)
 m1 <- mxModel(m1,
 	mxPath(from = "one", to = manifests),
@@ -36,22 +36,22 @@ m1 = mxRun(m1)
 umx_has_means(m1)
 }
 \references{
-- https://www.github.com/tbates/umx/
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Test: \code{\link{umx_check_OS}},
-  \code{\link{umx_check_model}},
-  \code{\link{umx_check_names}},
-  \code{\link{umx_check_parallel}},
-  \code{\link{umx_check}}, \code{\link{umx_has_CIs}},
-  \code{\link{umx_has_been_run}},
-  \code{\link{umx_has_square_brackets}},
-  \code{\link{umx_is_MxData}},
-  \code{\link{umx_is_MxMatrix}},
-  \code{\link{umx_is_MxModel}}, \code{\link{umx_is_RAM}},
-  \code{\link{umx_is_cov}},
-  \code{\link{umx_is_endogenous}},
-  \code{\link{umx_is_exogenous}},
-  \code{\link{umx_is_ordered}}
+Other Test: \code{\link{umx_check_OS}()},
+  \code{\link{umx_check_model}()},
+  \code{\link{umx_check_names}()},
+  \code{\link{umx_check_parallel}()},
+  \code{\link{umx_check}()}, \code{\link{umx_has_CIs}()},
+  \code{\link{umx_has_been_run}()},
+  \code{\link{umx_has_square_brackets}()},
+  \code{\link{umx_is_MxData}()},
+  \code{\link{umx_is_MxMatrix}()},
+  \code{\link{umx_is_MxModel}()},
+  \code{\link{umx_is_RAM}()}, \code{\link{umx_is_cov}()},
+  \code{\link{umx_is_ordered}()}
 }
 \concept{Test}

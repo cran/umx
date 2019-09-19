@@ -4,8 +4,9 @@
 \alias{umxCP}
 \title{umxCP: Build and run a Common pathway twin model}
 \usage{
-umxCP(name = "CP", selDVs, dzData, mzData, sep = NULL, nFac = 1,
-  type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+umxCP(name = "CP", selDVs, dzData = NULL, mzData = NULL,
+  sep = NULL, nFac = 1, type = c("Auto", "FIML", "cov", "cor", "WLS",
+  "DWLS", "ULS"), data = NULL, zyg = "zygosity",
   allContinuousMethod = c("cumulants", "marginals"),
   correlatedA = FALSE, dzAr = 0.5, dzCr = 1,
   autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
@@ -31,6 +32,10 @@ omit sep in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2").}
 
 \item{type}{One of "Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"}
 
+\item{data}{If provided, dzData and mzData are treated as valid levels of zyg to select() data sets (default = NULL)}
+
+\item{zyg}{If data provided, this column is used to select rows by zygosity (Default = "zygosity")}
+
 \item{allContinuousMethod}{"cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.}
 
 \item{correlatedA}{?? (default = FALSE).}
@@ -39,7 +44,7 @@ omit sep in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2").}
 
 \item{dzCr}{The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).}
 
-\item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+\item{autoRun}{Whether to run the model (default), or just to create it and return without running.}
 
 \item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
 
@@ -69,7 +74,7 @@ omit sep in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2").}
 }
 \value{
 \itemize{
-\item \code{\link{mxModel}}
+\item \code{\link[=mxModel]{mxModel()}}
 }
 }
 \description{
@@ -92,10 +97,10 @@ As can be seen, each phenotype also by default has A, C, and E influences specif
 
 Features include the ability to include more than one common pathway, to use ordinal data.
 
-\strong{note}: The function \code{umx_set_optimization_options}() allow users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
+\strong{note}: The function \code{umx_set_mvn_optimization_options}() allow users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
 It defaults to .001. You might find that '0.01' works better for ordinal models.
 
-Like the \code{\link{umxACE}} model, the CP model decomposes phenotypic variance
+Like the \code{\link[=umxACE]{umxACE()}} model, the CP model decomposes phenotypic variance
 into Additive genetic, unique environmental (E) and, optionally, either
 common or shared-environment (C) or
 non-additive genetic effects (D).
@@ -116,7 +121,7 @@ data in any combination.
 
 The umxCP function supports varying the DZ genetic association (defaulting to .5)
 to allow exploring assortative mating effects, as well as varying the DZ \dQuote{C} factor
-from 1 (the default for modeling family-level effects shared 100% by twins in a pair),
+from 1 (the default for modeling family-level effects shared 100\% by twins in a pair),
 to .25 to model dominance effects.
 
 \strong{Matrices and Labels in CP model}
@@ -158,8 +163,10 @@ dzData = subset(GFF, zyg_2grp == "DZ")
 selDVs = c("gff", "fc", "qol", "hap", "sat", "AD") 
 m1 = umxCP("new", selDVs = selDVs, sep = "_T", nFac = 3, optimizer = "SLSQP",
 		dzData = dzData, mzData = mzData, tryHard = "mxTryHardOrdinal")
-mold = umxCPold("old", selDVs = selDVs, sep = "_T", nFac = 3, dzData = dzData, mzData = mzData)
-umxCompare(m1, mold)
+
+# Shortcut using "data ="
+selDVs = c("gff", "fc", "qol", "hap", "sat", "AD") 
+m1 = umxCP(selDVs = selDVs, nFac = 3, data=GFF, zyg="zyg_2grp")
 
 # ===================
 # = Do it using WLS =
@@ -196,14 +203,14 @@ mzData = subset(GFF, zyg_2grp == "MZ")
 dzData = subset(GFF, zyg_2grp == "DZ")
 
 # umx_set_optimizer("NPSOL")
-# umx_set_optimization_options("mvnRelEps", .01)
+# umx_set_mvn_optimization_options("mvnRelEps", .01)
 m1 = umxCP(selDVs = selDVs, sep = "_T", nFac = 3, dzData = dzData, mzData = mzData)
 m2 = umxModify(m1, regex = "(cs_r[3-5]|c_cp_r[12])", name = "dropC", comp= TRUE)
 
 # Do it using WLS
-# m3 = umxCP(selDVs = selDVs, sep = "_T", nFac = 3, dzData = dzData, mzData = mzData,
-#		tryHard = "mxTryHardOrdinal", type= "DWLS")
-# TODO fix WLS with umxCP 
+m3 = umxCP(selDVs = selDVs, sep = "_T", nFac = 3, dzData = dzData, mzData = mzData,
+		tryHard = "mxTryHardOrdinal", type= "DWLS")
+# TODO umxCPL fix WLS here
 # label at row 1 and column 1 of matrix 'top.binLabels'' in model 'CP3fac' : object 'Vtot'
 
 # Correlated factors example
@@ -223,24 +230,18 @@ m1 = umxCP("new", selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData,
 }
 \seealso{
 \itemize{
-\item \code{\link{umxSummaryCP}}, \code{\link{umxPlotCP}}. See \code{\link{umxACE}} for more examples of twin modeling.
-\code{link{plot}} and \code{link{umxSummary}} work for IP, CP, GxE, SAT, and ACE models. For a deep dive, see \code{\link{xmu_make_top_twin}}
+\item \code{\link[=umxSummaryCP]{umxSummaryCP()}}, \code{\link[=umxPlotCP]{umxPlotCP()}}. See \code{\link[=umxACE]{umxACE()}} for more examples of twin modeling.
+\code{\link[=plot]{plot()}} and \code{\link[=umxSummary]{umxSummary()}} work for all twin models, e.g., \code{\link[=umxIP]{umxIP()}}, \code{\link[=umxCP]{umxCP()}}, \code{\link[=umxGxE]{umxGxE()}}, and \code{\link[=umxACE]{umxACE()}}. For a deep-dive, see \code{\link[=xmu_make_top_twin]{xmu_make_top_twin()}}
 }
 
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxGxE_window}},
-  \code{\link{umxGxEbiv}}, \code{\link{umxGxE}},
-  \code{\link{umxIPold}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
-  \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
+Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
+  \code{\link{umxACE_cov_fixed}()},
+  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
+  \code{\link{umxACE}()}, \code{\link{umxGxE_window}()},
+  \code{\link{umxGxEbiv}()}, \code{\link{umxGxE}()},
+  \code{\link{umxIP}()},
+  \code{\link{umxRotate.MxModelCP}()},
+  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
+  \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

@@ -7,10 +7,11 @@
 \usage{
 umxSummaryCP(model, digits = 2, std = TRUE, CIs = FALSE,
   showRg = FALSE, comparison = NULL, report = c("markdown", "html"),
-  file = getOption("umx_auto_plot"), returnStd = FALSE, ...)
+  file = getOption("umx_auto_plot"), returnStd = FALSE, show = NULL,
+  ...)
 }
 \arguments{
-\item{model}{A fitted \code{\link{umxCP}} model to summarize}
+\item{model}{A fitted \code{\link[=umxCP]{umxCP()}} model to summarize}
 
 \item{digits}{Round to how many digits (default = 2)}
 
@@ -28,13 +29,17 @@ umxSummaryCP(model, digits = 2, std = TRUE, CIs = FALSE,
 
 \item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
 
+\item{show}{parameter used in all summary functions. Not sure which of show and std will be supported long term: sing out if you have an opinion.}
+
 \item{...}{Optional additional parameters}
 }
 \value{
-- optional \code{\link{mxModel}}
+\itemize{
+\item optional \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
-Summarizes a Common-Pathway model, as returned by \code{\link{umxCP}}
+Summarizes a Common-Pathway model, as returned by \code{\link[=umxCP]{umxCP()}}
 }
 \examples{
 \dontrun{
@@ -67,25 +72,26 @@ umxSummary(m1, CIs = TRUE, file = NA);
 
 }
 \references{
-- \url{https://www.github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{umxCP}()}, \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
-
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPold}},
-  \code{\link{umxIP}}, \code{\link{umxSexLim}},
-  \code{\link{umxSimplex}}, \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
+\itemize{
+\item \code{\link{umxCP}()}, \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, and ACE models.
 }
-\concept{Twin Modeling Functions}
+
+Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
+  \code{\link{umxReduceACE}()},
+  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
+  \code{\link{umxSummarizeTwinData}()},
+  \code{\link{umxSummaryACEcov}()},
+  \code{\link{umxSummaryACEv}()},
+  \code{\link{umxSummaryACE}()},
+  \code{\link{umxSummaryGxEbiv}()},
+  \code{\link{umxSummaryGxE}()},
+  \code{\link{umxSummaryIP}()},
+  \code{\link{umxSummarySexLim}()},
+  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
+}
+\concept{Twin Reporting Functions}

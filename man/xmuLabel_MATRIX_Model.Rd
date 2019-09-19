@@ -14,58 +14,82 @@ xmuLabel_MATRIX_Model(model, suffix = "", verbose = TRUE)
 \item{verbose}{how much feedback to give}
 }
 \value{
-- The labeled \code{\link{mxModel}}
+\itemize{
+\item The labeled \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
-This function will label all the free parameters in a (non-RAM) OpenMx \code{\link{mxModel}}
+This function will label all the free parameters in a (non-RAM) OpenMx \code{\link[=mxModel]{mxModel()}}
 nb: We don't assume what each matrix is for. Instead, the function just sticks labels like "a_r1c1" into each cell
 i.e., matrix-name + _ + r + rowNumber + c + colNumber
 }
 \details{
-End users should just call \code{\link{umxLabel}}
+End users should just call \code{\link[=umxLabel]{umxLabel()}}
 }
 \examples{
 require(umx)
 data(demoOneFactor)
-m2 <- mxModel("One Factor",
+m2 <- mxModel("label_ex",
 	mxMatrix("Full", 5, 1, values = 0.2, free = TRUE, name = "A"), 
 	mxMatrix("Symm", 1, 1, values = 1.0, free = FALSE, name = "L"), 
 	mxMatrix("Diag", 5, 5, values = 1.0, free = TRUE, name = "U"), 
 	mxAlgebra(A \%*\% L \%*\% t(A) + U, name = "R"), 
 	mxExpectationNormal("R", dimnames = names(demoOneFactor)),
 	mxFitFunctionML(),
-	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+	mxData(cov(demoOneFactor), type = "cov", numObs=500)
 )
 m3 = umx:::xmuLabel_MATRIX_Model(m2)
 m4 = umx:::xmuLabel_MATRIX_Model(m2, suffix = "male")
 # explore these with omxGetParameters(m4)
 }
 \seealso{
-Other xmu internal not for end user: \code{\link{umxModel}},
-  \code{\link{umx}}, \code{\link{xmuHasSquareBrackets}},
-  \code{\link{xmuLabel_Matrix}},
-  \code{\link{xmuLabel_RAM_Model}}, \code{\link{xmuMI}},
-  \code{\link{xmuMakeDeviationThresholdsMatrices}},
-  \code{\link{xmuMakeOneHeadedPathsFromPathList}},
-  \code{\link{xmuMakeTwoHeadedPathsFromPathList}},
-  \code{\link{xmuMaxLevels}}, \code{\link{xmuMinLevels}},
-  \code{\link{xmuPropagateLabels}},
-  \code{\link{xmu_assemble_twin_supermodel}},
-  \code{\link{xmu_check_levels_identical}},
-  \code{\link{xmu_clean_label}},
-  \code{\link{xmu_dot_make_paths}},
-  \code{\link{xmu_dot_make_residuals}},
-  \code{\link{xmu_dot_maker}},
-  \code{\link{xmu_dot_move_ranks}},
-  \code{\link{xmu_dot_rank_str}},
-  \code{\link{xmu_lavaan_process_group}},
-  \code{\link{xmu_make_mxData}},
-  \code{\link{xmu_make_top_twin}},
-  \code{\link{xmu_model_needs_means}},
-  \code{\link{xmu_safe_run_summary}},
-  \code{\link{xmu_set_sep_from_suffix}},
-  \code{\link{xmu_simplex_corner}},
-  \code{\link{xmu_start_value_list}},
-  \code{\link{xmu_starts}}
+Other xmu internal not for end user: \code{\link{umxModel}()},
+  \code{\link{umx_standardize}()}, \code{\link{umx}},
+  \code{\link{xmuHasSquareBrackets}()},
+  \code{\link{xmuLabel_Matrix}()},
+  \code{\link{xmuLabel_RAM_Model}()},
+  \code{\link{xmuMI}()},
+  \code{\link{xmuMakeDeviationThresholdsMatrices}()},
+  \code{\link{xmuMakeOneHeadedPathsFromPathList}()},
+  \code{\link{xmuMakeTwoHeadedPathsFromPathList}()},
+  \code{\link{xmuMaxLevels}()},
+  \code{\link{xmuMinLevels}()},
+  \code{\link{xmuPropagateLabels}()},
+  \code{\link{xmu_CI_merge}()},
+  \code{\link{xmu_CI_stash}()},
+  \code{\link{xmu_DF_to_mxData_TypeCov}()},
+  \code{\link{xmu_PadAndPruneForDefVars}()},
+  \code{\link{xmu_assemble_twin_supermodel}()},
+  \code{\link{xmu_check_levels_identical}()},
+  \code{\link{xmu_check_needs_means}()},
+  \code{\link{xmu_check_variance}()},
+  \code{\link{xmu_clean_label}()},
+  \code{\link{xmu_describe_data_WLS}()},
+  \code{\link{xmu_dot_make_paths}()},
+  \code{\link{xmu_dot_make_residuals}()},
+  \code{\link{xmu_dot_maker}()},
+  \code{\link{xmu_dot_move_ranks}()},
+  \code{\link{xmu_dot_rank_str}()},
+  \code{\link{xmu_get_CI}()},
+  \code{\link{xmu_lavaan_process_group}()},
+  \code{\link{xmu_make_bin_cont_pair_data}()},
+  \code{\link{xmu_make_mxData}()},
+  \code{\link{xmu_make_top_twin}()},
+  \code{\link{xmu_name_from_lavaan_str}()},
+  \code{\link{xmu_safe_run_summary}()},
+  \code{\link{xmu_set_sep_from_suffix}()},
+  \code{\link{xmu_show_fit_or_comparison}()},
+  \code{\link{xmu_simplex_corner}()},
+  \code{\link{xmu_standardize_ACEcov}()},
+  \code{\link{xmu_standardize_ACEv}()},
+  \code{\link{xmu_standardize_ACE}()},
+  \code{\link{xmu_standardize_CP}()},
+  \code{\link{xmu_standardize_IP}()},
+  \code{\link{xmu_standardize_RAM}()},
+  \code{\link{xmu_standardize_SexLim}()},
+  \code{\link{xmu_standardize_Simplex}()},
+  \code{\link{xmu_start_value_list}()},
+  \code{\link{xmu_starts}()},
+  \code{\link{xmu_twin_check}()}
 }
 \concept{xmu internal not for end user}

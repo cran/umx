@@ -44,13 +44,13 @@ umxSexLim(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfData,
 }
 \value{
 \itemize{
-\item \code{\link{mxModel}} of subclass mxModel.CFSexLim
+\item \code{\link[=mxModel]{mxModel()}} of subclass mxModel.CFSexLim
 }
 }
 \description{
 Multivariate twin analysis allowing for sex limitation (factors operate differently in males
 vs. females) based on a correlated factors model. With 5-groups of twins, this model allows
-for both Quantitative & Qualitative Sex-Limitation.
+for both Quantitative and Qualitative Sex-Limitation.
 
 \emph{Quantitative} differences refer to different amounts of phenotypic variance produced by
 the same A, C, or E components when operating in one sex compared to the other sex.
@@ -60,14 +60,8 @@ component which operates in one sex one but not in the other.
 
 The correlation approach ensures that variable order does not affect the ability
 of the model to account for DZOS data.
-}
-\details{
-\strong{A or C}
 
-Due to limitations on the degrees of freedom allowed by the twin model, we can model
-qualitative sex differences for only one of A or C at a time.
-
-** 1. Nonscalar Sex Limitation **
+\strong{1. Nonscalar Sex Limitation}
 
 Allow quantitative (distinct male and female paths) and qualitative sex differences
 on A or C. Allows distinct between variable correlations (\code{Ra}, \code{Rc} and \code{Re})
@@ -82,10 +76,15 @@ Just one set of Ra, Rc and Re between variables (same for males and females)
 
 This is the model assumed by the basic ACE model: equal variance components in both sexes.
 Different means may be allowed for males and females.
+}
+\details{
+\strong{A or C}
 
-\emph{notes}:
-There is a half-way house model of heterogeneity in which a, c, and e components are scaled by a
-scalar constant in one sex. # TODO sexlim: This k scalar heterogeneity model is not yet implemented in umx.
+Due to limitations on the degrees of freedom allowed by the twin model, we can model
+qualitative sex differences for only one of A or C at a time.
+
+\emph{notes}: There is a half-way house model of heterogeneity in which a, c, and e components are scaled by a
+scalar constant in one sex.
 
 \emph{General restrictions}: Assumes means and variances can be equated across birth order within zygosity groups.
 }
@@ -142,7 +141,7 @@ m2 = umxSexLim(selDVs = "bic", sep = "_T", sexlim = "Scalar", tryHard = "yes",
 	mzmData = mzmData, dzmData = dzmData, 
 	mzfData = mzfData, dzfData = dzfData, 
 	dzoData = dzoData
-)
+) 
 
 # Show our manual drop of qualitative is the same as umxSexLim with sexlim= "scalar"s
 umxCompare(m1a, m2)
@@ -199,14 +198,14 @@ umxCompare(m1, c(m1a, m1b, m1c, m1d))
 selDVs = c('ssc','sil','caf','tri','bic')
 selDVs = c('ssc','tri','bic')
 m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", tryHard = "mxTryHard",
-	mzmData = mzmData, dzmData = dzmData, 
-   mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
+mzmData = mzmData, dzmData = dzmData, 
+ mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
 )
 
 m2 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", sexlim = "Nonscalar",
 	tryHard = "mxTryHard",
-	mzmData = mzmData, dzmData = dzmData, 
-   mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
+mzmData = mzmData, dzmData = dzmData, 
+ mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
 )
 
 # umxSummary(m1)
@@ -217,25 +216,19 @@ m2 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", sexlim = "Nonscalar",
 \references{
 \itemize{
 \item Neale et al. (2006).
-Multivariate genetic analysis of sex-lim and GxE interaction.
-\emph{Twin Research & Human Genetics}, \bold{9}, pp. 481--489.
+Multivariate genetic analysis of sex-lim and GxE interaction. \emph{Twin Research & Human Genetics}, \strong{9}, pp. 481--489.
 }
 }
 \seealso{
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPold}},
-  \code{\link{umxIP}}, \code{\link{umxSimplex}},
-  \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
+\code{\link[=umxSummarySexLim]{umxSummarySexLim()}}, \code{\link[=umxPlotSexLim]{umxPlotSexLim()}}
+
+Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
+  \code{\link{umxACE_cov_fixed}()},
+  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
+  \code{\link{umxACE}()}, \code{\link{umxCP}()},
+  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
+  \code{\link{umxGxE}()}, \code{\link{umxIP}()},
+  \code{\link{umxRotate.MxModelCP}()},
+  \code{\link{umxSimplex}()}, \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

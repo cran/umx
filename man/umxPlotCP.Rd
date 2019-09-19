@@ -5,31 +5,35 @@
 \alias{plot.MxModelCP}
 \title{Draw and display a graphical figure of Common Pathway model}
 \usage{
-umxPlotCP(x = NA, file = "name", digits = 2, means = FALSE,
-  std = TRUE, format = c("current", "graphviz", "DiagrammeR"),
-  SEstyle = FALSE, strip_zero = TRUE, ...)
+umxPlotCP(x = NA, means = FALSE, std = TRUE, digits = 2,
+  showFixed = TRUE, file = "name", format = c("current", "graphviz",
+  "DiagrammeR"), SEstyle = FALSE, strip_zero = TRUE, ...)
 }
 \arguments{
-\item{x}{The Common Pathway \code{\link{mxModel}} to display graphically}
-
-\item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
-
-\item{digits}{How many decimals to include in path loadings (defaults to 2)}
+\item{x}{The Common Pathway \code{\link[=mxModel]{mxModel()}} to display graphically}
 
 \item{means}{Whether to show means paths (defaults to FALSE)}
 
 \item{std}{Whether to standardize the model (defaults to TRUE)}
 
+\item{digits}{How many decimals to include in path loadings (defaults to 2)}
+
+\item{showFixed}{Whether to graph paths that are fixed but != 0 (default = TRUE)}
+
+\item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
+
 \item{format}{= c("current", "graphviz", "DiagrammeR")}
 
-\item{SEstyle}{report "b (se)" instead of "b [lower, upper]" (Default)}
+\item{SEstyle}{report "b (se)" instead of "b [lower, upper]" when CIs are found (Default FALSE)}
 
 \item{strip_zero}{Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)}
 
 \item{...}{Optional additional parameters}
 }
 \value{
-- Optionally return the dot code
+\itemize{
+\item Optionally return the dot code
+}
 }
 \description{
 Options include digits (rounding), showing means or not, and which output format is desired.
@@ -51,25 +55,40 @@ plot(m1) # No need to remember a special name: plot works fine!
 }
 }
 \references{
-- \url{https://tbates.github.io}
+\itemize{
+\item \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
+\itemize{
+\item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, and ACE models.
+}
 
-- \code{\link{umxCP}}
+\itemize{
+\item \code{\link[=umxCP]{umxCP()}}
+}
 
-Other Plotting functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCPold}}, \code{\link{umxPlotGxEbiv}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxPlotSexLim}},
-  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
+Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
+  \code{\link{plot.MxModel}()},
+  \code{\link{umxPlotACEcov}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxPlotACE}()},
+  \code{\link{umxPlotGxEbiv}()},
+  \code{\link{umxPlotGxE}()}, \code{\link{umxPlotIP}()},
+  \code{\link{umxPlotSexLim}()},
+  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
 
-Other Twin Reporting Functions: \code{\link{umxPlotCPold}},
-  \code{\link{umxReduceACE}}, \code{\link{umxReduceGxE}},
-  \code{\link{umxReduce}},
-  \code{\link{umxSummarizeTwinData}}, \code{\link{umx}}
+Other Twin Reporting Functions: \code{\link{umxReduceACE}()},
+  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
+  \code{\link{umxSummarizeTwinData}()},
+  \code{\link{umxSummaryACEcov}()},
+  \code{\link{umxSummaryACEv}()},
+  \code{\link{umxSummaryACE}()},
+  \code{\link{umxSummaryCP}()},
+  \code{\link{umxSummaryGxEbiv}()},
+  \code{\link{umxSummaryGxE}()},
+  \code{\link{umxSummaryIP}()},
+  \code{\link{umxSummarySexLim}()},
+  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
 }
 \concept{Plotting functions}
 \concept{Twin Reporting Functions}

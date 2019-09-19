@@ -10,7 +10,9 @@ umx_has_square_brackets(input)
 \item{input}{The label to check for square brackets (string input)}
 }
 \value{
-- boolean
+\itemize{
+\item boolean
+}
 }
 \description{
 Helper function to check if a label has square brackets, e.g. "A[1,1]"
@@ -20,21 +22,22 @@ umx_has_square_brackets("[hello]")
 umx_has_square_brackets("goodbye")
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Test: \code{\link{umx_check_OS}},
-  \code{\link{umx_check_model}},
-  \code{\link{umx_check_names}},
-  \code{\link{umx_check_parallel}},
-  \code{\link{umx_check}}, \code{\link{umx_has_CIs}},
-  \code{\link{umx_has_been_run}},
-  \code{\link{umx_has_means}}, \code{\link{umx_is_MxData}},
-  \code{\link{umx_is_MxMatrix}},
-  \code{\link{umx_is_MxModel}}, \code{\link{umx_is_RAM}},
-  \code{\link{umx_is_cov}},
-  \code{\link{umx_is_endogenous}},
-  \code{\link{umx_is_exogenous}},
-  \code{\link{umx_is_ordered}}
+Other Test: \code{\link{umx_check_OS}()},
+  \code{\link{umx_check_model}()},
+  \code{\link{umx_check_names}()},
+  \code{\link{umx_check_parallel}()},
+  \code{\link{umx_check}()}, \code{\link{umx_has_CIs}()},
+  \code{\link{umx_has_been_run}()},
+  \code{\link{umx_has_means}()},
+  \code{\link{umx_is_MxData}()},
+  \code{\link{umx_is_MxMatrix}()},
+  \code{\link{umx_is_MxModel}()},
+  \code{\link{umx_is_RAM}()}, \code{\link{umx_is_cov}()},
+  \code{\link{umx_is_ordered}()}
 }
 \concept{Test}

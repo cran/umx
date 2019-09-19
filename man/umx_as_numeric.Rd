@@ -7,7 +7,7 @@
 umx_as_numeric(df, which = NULL, force = FALSE)
 }
 \arguments{
-\item{df}{A \code{\link{data.frame}} to convert}
+\item{df}{A [data.frame()] to convert}
 
 \item{which}{which columns to convert (default (null) selects all)}
 
@@ -21,33 +21,35 @@ Convert each column of a dataframe to numeric
 }
 \examples{
 df = mtcars
-# make mpg into string
+# make mpg into string, and cyl into a factor
 df$mpg = as.character(df$mpg)
 df$cyl = factor(df$cyl)
-df = umx_as_numeric(df); str(df)
+
+df = umx_as_numeric(df); str(df) # mpg not touched
+df = umx_as_numeric(df, force=TRUE); str(df) # mpg coerced back to numeric
+\dontrun{
+# coercing a real string will cause NAs
+df$mpg = c(letters[1:16]); str(df) # replace mpg with letters.
 df = umx_as_numeric(df, force=TRUE); str(df)
-# Make one variable alpha
-df$mpg = c(letters,letters[1:6]); str(df)
-df = umx_as_numeric(df, force=TRUE); str(df)
+}
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+- <https://www.github.com/tbates/umx>
 }
 \seealso{
-Other Data Functions: \code{\link{umxCovData}},
-  \code{\link{umxDescribeDataWLS}},
-  \code{\link{umxHetCor}},
-  \code{\link{umxPadAndPruneForDefVars}},
-  \code{\link{umx_cov2raw}}, \code{\link{umx_lower2full}},
-  \code{\link{umx_make_MR_data}},
-  \code{\link{umx_make_TwinData}},
-  \code{\link{umx_make_bin_cont_pair_data}},
-  \code{\link{umx_make_fake_data}},
-  \code{\link{umx_polychoric}},
-  \code{\link{umx_polypairwise}},
-  \code{\link{umx_polytriowise}},
-  \code{\link{umx_read_lower}}, \code{\link{umx_rename}},
-  \code{\link{umx_reorder}}, \code{\link{umx_stack}},
-  \code{\link{umx_swap_a_block}}, \code{\link{umx}}
+Other Data Functions: \code{\link{umxHetCor}()},
+  \code{\link{umx_lower2full}()},
+  \code{\link{umx_make_MR_data}()},
+  \code{\link{umx_make_TwinData}()},
+  \code{\link{umx_make_fake_data}()},
+  \code{\link{umx_make_raw_from_cov}()},
+  \code{\link{umx_polychoric}()},
+  \code{\link{umx_polypairwise}()},
+  \code{\link{umx_polytriowise}()},
+  \code{\link{umx_read_lower}()},
+  \code{\link{umx_rename}()}, \code{\link{umx_reorder}()},
+  \code{\link{umx_select_valid}()},
+  \code{\link{umx_stack}()}, \code{\link{umx}},
+  \code{\link{xmu_data_swap_a_block}()}
 }
 \concept{Data Functions}

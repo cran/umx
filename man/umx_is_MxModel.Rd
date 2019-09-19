@@ -7,12 +7,14 @@
 umx_is_MxModel(obj, listOK = FALSE)
 }
 \arguments{
-\item{obj}{An object to be tested to see if it is an OpenMx \code{\link{mxModel}}}
+\item{obj}{An object to be tested to see if it is an OpenMx \code{\link[=mxModel]{mxModel()}}}
 
 \item{listOK}{Is it acceptable to pass in a list of models? (Default = FALSE)}
 }
 \value{
-- Boolean
+\itemize{
+\item Boolean
+}
 }
 \description{
 Utility function returning a binary answer to the question "Is this an OpenMx model?"
@@ -27,22 +29,22 @@ if(umx_is_MxModel(list(m1,m1), listOK = TRUE)){
 }
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Test: \code{\link{umx_check_OS}},
-  \code{\link{umx_check_model}},
-  \code{\link{umx_check_names}},
-  \code{\link{umx_check_parallel}},
-  \code{\link{umx_check}}, \code{\link{umx_has_CIs}},
-  \code{\link{umx_has_been_run}},
-  \code{\link{umx_has_means}},
-  \code{\link{umx_has_square_brackets}},
-  \code{\link{umx_is_MxData}},
-  \code{\link{umx_is_MxMatrix}}, \code{\link{umx_is_RAM}},
-  \code{\link{umx_is_cov}},
-  \code{\link{umx_is_endogenous}},
-  \code{\link{umx_is_exogenous}},
-  \code{\link{umx_is_ordered}}
+Other Test: \code{\link{umx_check_OS}()},
+  \code{\link{umx_check_model}()},
+  \code{\link{umx_check_names}()},
+  \code{\link{umx_check_parallel}()},
+  \code{\link{umx_check}()}, \code{\link{umx_has_CIs}()},
+  \code{\link{umx_has_been_run}()},
+  \code{\link{umx_has_means}()},
+  \code{\link{umx_has_square_brackets}()},
+  \code{\link{umx_is_MxData}()},
+  \code{\link{umx_is_MxMatrix}()},
+  \code{\link{umx_is_RAM}()}, \code{\link{umx_is_cov}()},
+  \code{\link{umx_is_ordered}()}
 }
 \concept{Test}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.R
 \name{reliability}
 \alias{reliability}
-\title{reliability}
+\title{Report coefficient alpha (reliability)}
 \usage{
 reliability(S)
 }
@@ -10,7 +10,7 @@ reliability(S)
 \item{S}{A square, symmetric, numeric covariance matrix}
 }
 \value{
--
+None
 }
 \description{
 Compute and report Coefficient alpha (extracted from Rcmdr to avoid its dependencies)
@@ -24,11 +24,15 @@ reliability(cov(mtcars))
 - \url{https://cran.r-project.org/package=Rcmdr}
 }
 \seealso{
-Other Miscellaneous Stats Helpers: \code{\link{umxCov2cor}},
-  \code{\link{umxHetCor}}, \code{\link{umx_apply}},
-  \code{\link{umx_cor}}, \code{\link{umx_fun_mean_sd}},
-  \code{\link{umx_means}}, \code{\link{umx_r_test}},
-  \code{\link{umx_round}}, \code{\link{umx_var}},
-  \code{\link{umx}}
+Other Miscellaneous Stats Helpers: \code{\link{SE_from_p}()},
+  \code{\link{oddsratio}()},
+  \code{\link{print.oddsratio}()},
+  \code{\link{print.reliability}()},
+  \code{\link{umxCov2cor}()}, \code{\link{umxHetCor}()},
+  \code{\link{umx_apply}()}, \code{\link{umx_cor}()},
+  \code{\link{umx_fun_mean_sd}()},
+  \code{\link{umx_means}()}, \code{\link{umx_r_test}()},
+  \code{\link{umx_round}()}, \code{\link{umx_scale}()},
+  \code{\link{umx_var}()}, \code{\link{umx}}
 }
 \concept{Miscellaneous Stats Helpers}

@@ -10,7 +10,7 @@ umxPlotGxE(x, xlab = NA, location = "topleft",
   ...)
 }
 \arguments{
-\item{x}{A fitted \code{\link{umxGxE}} model to plot}
+\item{x}{A fitted \code{\link[=umxGxE]{umxGxE()}} model to plot}
 
 \item{xlab}{String to use for the x label (default = NA, which will use the variable name)}
 
@@ -24,7 +24,7 @@ see ?legend for alternatives like bottomright}
 \item{...}{Optional additional parameters}
 }
 \value{
--
+None
 }
 \description{
 Plot GxE results (univariate environmental moderation of ACE components).
@@ -33,31 +33,34 @@ You can also set the label for the x axis (xlab), and choose the location of the
 }
 \examples{
 require(umx)
-data(twinData) 
+data(twinData)
 twinData$age1 = twinData$age2 = twinData$age
-selDVs  = "bmi"
-selDefs = "age"
-mzData  = subset(twinData, zygosity == "MZFF")
-dzData  = subset(twinData, zygosity == "DZFF")
-m1 = umxGxE(selDVs = selDVs, selDefs = selDefs, 
- 	dzData = dzData, mzData = mzData, sep= "", dropMissing = TRUE)
+mzData = subset(twinData, zygosity == "MZFF")
+dzData = subset(twinData, zygosity == "DZFF")
+m1= umxGxE(selDVs= "bmi", selDefs= "age", dzData= dzData, mzData= mzData, sep="", tryHard="yes")
 plot(m1)
 umxPlotGxE(x = m1, xlab = "SES", separateGraphs = TRUE, location = "topleft")
 }
 \references{
-- \url{https://tbates.github.io}
+\itemize{
+\item \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
+\itemize{
+\item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, and ACE models.
+}
 
-- \code{\link{umxGxE}}
+\itemize{
+\item \code{\link[=umxGxE]{umxGxE()}}
+}
 
-Other Plotting functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCPold}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxEbiv}}, \code{\link{umxPlotIP}},
-  \code{\link{umxPlotSexLim}},
-  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
+Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
+  \code{\link{plot.MxModel}()},
+  \code{\link{umxPlotACEcov}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxPlotACE}()},
+  \code{\link{umxPlotCP}()}, \code{\link{umxPlotGxEbiv}()},
+  \code{\link{umxPlotIP}()}, \code{\link{umxPlotSexLim}()},
+  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
 }
 \concept{Plotting functions}

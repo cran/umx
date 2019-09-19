@@ -5,38 +5,47 @@
 \title{umxGxE: Implements ACE models with moderation of paths, e.g. by SES.}
 \usage{
 umxGxE(name = "G_by_E", selDVs, selDefs, dzData, mzData, sep = NULL,
-  lboundACE = NA, lboundM = NA, dropMissingDef = FALSE,
+  data = NULL, zyg = "zygosity", digits = 3, lboundACE = NA,
+  lboundM = NA, dropMissingDef = TRUE,
   autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
   "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
   optimizer = NULL)
 }
 \arguments{
-\item{name}{The name of the model (defaults to "G_by_E")}
+\item{name}{The name of the model (default= "G_by_E")}
 
-\item{selDVs}{The dependent variable (e.g. IQ)}
+\item{selDVs}{The dependent variable (e.g. "IQ")}
 
-\item{selDefs}{The definition variable (e.g. socioeconomic status)}
+\item{selDefs}{The definition variable (e.g. "SES")}
 
 \item{dzData}{The DZ dataframe containing the Twin 1 and Twin 2 DV and moderator (4 columns)}
 
 \item{mzData}{The MZ dataframe containing the Twin 1 and Twin 2 DV and moderator (4 columns)}
 
-\item{sep}{Expand variable base names, i.e., "_T" makes var -> var_T1 and var_T2}
+\item{sep}{How to expand selDVs into full names, i.e., "_T" makes "var" -> "var_T1" and "var_T2"}
 
-\item{lboundACE}{= numeric: If !is.na, then lbound the main effects at this value (default = NA)}
+\item{data}{If provided, dzData and mzData are treated as valid levels of zyg to select() data sets (default = NULL)}
 
-\item{lboundM}{= numeric: If !is.na, then lbound the moderators at this value (default = NA)}
+\item{zyg}{If data provided, this column is used to select rows by zygosity (Default = "zygosity")}
 
-\item{dropMissingDef}{Whether to automatically drop missing def var rows for the user (gives a warning) default = FALSE}
+\item{digits}{Rounding precision for tables (default 3)}
 
-\item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+\item{lboundACE}{If not NA, then lbound the main effects at this value (default = NA, can help to set this to 0)}
 
-\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
+\item{lboundM}{If not NA, then lbound the moderator effects at this value (default = NA, can help to set this to 0)}
 
-\item{optimizer}{optionally set the optimizer (default NULL does nothing)}
+\item{dropMissingDef}{Whether to automatically drop missing def var rows for the user (default = TRUE). You get a polite note.}
+
+\item{autoRun}{Optionally run the model (default), or just to create it and return without running.}
+
+\item{tryHard}{Optionally tryHard to get the model to converge (Default = 'no'). "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch".}
+
+\item{optimizer}{Optionally set the optimizer (default NULL does nothing)}
 }
 \value{
-- GxE \code{\link{mxModel}}
+\itemize{
+\item GxE \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
 Make a 2-group GxE (moderated ACE) model (Purcell, 2002). GxE interaction studies test the hypothesis that the strength
@@ -60,11 +69,12 @@ selDefs = "age"
 mzData  = subset(twinData, zygosity == "MZFF")[100,]
 dzData  = subset(twinData, zygosity == "DZFF")[100,]
 umx_time("start")
-m1 = umxGxE(selDVs = "bmi", selDefs = "age", sep = "", dzData = dzData, mzData = mzData, 
-			dropMissingDef = TRUE, tryHard = "mxTryHard")
+m1 = umxGxE(selDVs= "bmi", selDefs= "age", sep= "", dzData= dzData, mzData= mzData, tryHard= "yes")
 umx_time("stop")
 
 \dontrun{
+# Select the data on the fly with data= and zygosity levels
+m1 = umxGxE(selDVs= "bmi", selDefs= "age", sep="", dzData= "DZFF", mzData= "MZFF", data= twinData)
 # Controlling umxSummary
 umxSummaryGxE(m1)
 umxSummary(m1, location = "topright")
@@ -78,26 +88,24 @@ umxReduce(m1)
 }
 }
 \references{
-- Purcell, S. (2002). Variance components models for gene-environment interaction in twin analysis. \emph{Twin Research},
- \strong{6}, 554-571. DOI: https://doi.org/10.1375/twin.5.6.554
+\itemize{
+\item Purcell, S. (2002). Variance components models for gene-environment interaction in twin analysis. \emph{Twin Research},
+\strong{6}, 554-571. DOI: \href{https://doi.org/10.1375/twin.5.6.554}{10.1375/twin.5.6.554}
+}
 }
 \seealso{
-- \code{\link{plot}()}, \code{\link{umxSummary}}, \code{\link{umxReduce}}
+\itemize{
+\item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}}, \code{\link[=umxReduce]{umxReduce()}}
+}
 
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxIPold}}, \code{\link{umxIP}},
-  \code{\link{umxSexLim}}, \code{\link{umxSimplex}},
-  \code{\link{umxSummaryACEcov}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
+Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
+  \code{\link{umxACE_cov_fixed}()},
+  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
+  \code{\link{umxACE}()}, \code{\link{umxCP}()},
+  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
+  \code{\link{umxIP}()},
+  \code{\link{umxRotate.MxModelCP}()},
+  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
+  \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

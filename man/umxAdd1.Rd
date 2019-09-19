@@ -8,7 +8,7 @@ umxAdd1(model, pathList1 = NULL, pathList2 = NULL, arrows = 2,
   maxP = 1)
 }
 \arguments{
-\item{model}{an \code{\link{mxModel}} to alter}
+\item{model}{an \code{\link[=mxModel]{mxModel()}} to alter}
 
 \item{pathList1}{a list of variables to generate a set of paths}
 
@@ -30,14 +30,16 @@ model = umxAdd1(model)
 }
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Modify or Compare Models: \code{\link{umxDrop1}},
-  \code{\link{umxEquate}}, \code{\link{umxFixAll}},
-  \code{\link{umxMI}}, \code{\link{umxModify}},
-  \code{\link{umxSetParameters}},
-  \code{\link{umxUnexplainedCausalNexus}},
+Other Modify or Compare Models: \code{\link{umxDrop1}()},
+  \code{\link{umxEquate}()}, \code{\link{umxFixAll}()},
+  \code{\link{umxMI}()}, \code{\link{umxModify}()},
+  \code{\link{umxSetParameters}()},
+  \code{\link{umxUnexplainedCausalNexus}()},
   \code{\link{umx}}
 }
 \concept{Modify or Compare Models}

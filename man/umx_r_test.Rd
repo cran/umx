@@ -8,33 +8,39 @@ umx_r_test(data = NULL, vars = vars, alternative = c("two.sided",
   "greater", "less"))
 }
 \arguments{
-\item{data}{the dataset}
+\item{data}{The dataset.}
 
-\item{vars}{the 4 vars needed: "j & k" and "h & m"}
+\item{vars}{Four variables forming the two pairs of columns: "j & k" and "h & m".}
 
-\item{alternative}{two (default) or one-sided (greater less) test}
+\item{alternative}{A two (default) or one-sided (greater less) test.}
 }
 \value{
--
+cocor result.
 }
 \description{
-umx_r_test is a wrapper around the cocor test of difference between correlations.
+\code{umx_r_test} is a wrapper around the cocor test of difference between correlations.
 }
 \details{
-Currently it handles the test of whether r.jk and r.hm differ in magnitude.
+Currently \code{umx_r_test} handles the test of whether \code{r.jk} and \code{r.hm} differ in magnitude.
 i.e, two non-overlapping (no variable in common) correlations in the same dataset.
 In the future it will be expanded to handle overlapping correlations, and to take correlation matrices as input.
 }
 \examples{
+# Is the correlation of mpg with cylinder count different from that 
+# obtaining between disp and hp?
 vars = c("mpg", "cyl", "disp", "hp")
 umx_r_test(mtcars, vars)
 }
 \seealso{
-Other Miscellaneous Stats Helpers: \code{\link{reliability}},
-  \code{\link{umxCov2cor}}, \code{\link{umxHetCor}},
-  \code{\link{umx_apply}}, \code{\link{umx_cor}},
-  \code{\link{umx_fun_mean_sd}}, \code{\link{umx_means}},
-  \code{\link{umx_round}}, \code{\link{umx_var}},
+Other Miscellaneous Stats Helpers: \code{\link{SE_from_p}()},
+  \code{\link{oddsratio}()},
+  \code{\link{print.oddsratio}()},
+  \code{\link{print.reliability}()},
+  \code{\link{reliability}()}, \code{\link{umxCov2cor}()},
+  \code{\link{umxHetCor}()}, \code{\link{umx_apply}()},
+  \code{\link{umx_cor}()}, \code{\link{umx_fun_mean_sd}()},
+  \code{\link{umx_means}()}, \code{\link{umx_round}()},
+  \code{\link{umx_scale}()}, \code{\link{umx_var}()},
   \code{\link{umx}}
 }
 \concept{Miscellaneous Stats Helpers}

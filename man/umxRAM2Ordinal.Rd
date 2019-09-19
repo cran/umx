@@ -14,7 +14,9 @@ umxRAM2Ordinal(model, verbose = TRUE, name = NULL)
 \item{name}{= A new name for the modified model. Default (NULL) = leave it as is).}
 }
 \value{
-- \code{\link{mxModel}}
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
 umxRAM2Ordinal: Convert a RAM model whose data contain ordinal variables to a threshold-based model
@@ -42,15 +44,17 @@ m1 = umxRAM("tim", data = mzData,
 }
 }
 \seealso{
-- \code{\link{umxRAM}}
+\itemize{
+\item \code{\link[=umxRAM]{umxRAM()}}
+}
 
-Other Advanced Model Building Functions: \code{\link{umxJiggle}},
-  \code{\link{umxLabel}}, \code{\link{umxLatent}},
-  \code{\link{umxThresholdMatrix}},
-  \code{\link{umxValues}},
-  \code{\link{umx_fix_first_loadings}},
-  \code{\link{umx_fix_latents}},
-  \code{\link{umx_get_bracket_addresses}},
-  \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
+Other Advanced Model Building Functions: \code{\link{umxJiggle}()},
+  \code{\link{umxLabel}()},
+  \code{\link{umxThresholdMatrix}()},
+  \code{\link{umxValues}()},
+  \code{\link{umx_fix_first_loadings}()},
+  \code{\link{umx_fix_latents}()},
+  \code{\link{umx_get_bracket_addresses}()},
+  \code{\link{umx_string_to_algebra}()}, \code{\link{umx}}
 }
 \concept{Advanced Model Building Functions}

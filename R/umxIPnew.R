@@ -12,11 +12,11 @@
 #' Features of the model include the ability to include add more one set of independent pathways, different numbers
 #' of pathways for a, c, and e, as well the ability to use ordinal data, and different fit functions, e.g. WLS.
 #' 
-#' **note**: The function `umx_set_optimization_options`() allow users to see and set `mvnRelEps` and `mvnMaxPointsA`
+#' **note**: The function `umx_set_mvn_optimization_options`() allow users to see and set `mvnRelEps` and `mvnMaxPointsA`
 #' It defaults to .001. You might find that '0.01' works better for ordinal models.
 #' 
 #' @details
-#' Like the \code{\link{umxACE}} model, the CP model decomposes phenotypic variance
+#' Like the [umxACE()] model, the CP model decomposes phenotypic variance
 #' into Additive genetic, unique environmental (E) and, optionally, either
 #' common or shared-environment (C) or 
 #' non-additive genetic effects (D).
@@ -79,6 +79,8 @@
 #' @param mzData The MZ dataframe.
 #' @param nFac How many common factors for a, c, and e. If one number is given, applies to all three.
 #' @param type Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS")
+#' @param data If provided, dzData and mzData are treated as levels of zyg to select() MZ and DZ data sets (default = NULL)
+#' @param zyg If data provided, this column is used to select rows by zygosity (Default = "zygosity")
 #' @param allContinuousMethod "cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.
 #' @param numObsDZ = For cov data, the number of DZ pairs.
 #' @param numObsMZ = For cov data, the number of MZ pairs.
@@ -95,11 +97,11 @@
 #' @param freeLowerA ignore: Whether to leave the lower triangle of A free (default = FALSE).
 #' @param freeLowerC ignore: Whether to leave the lower triangle of C free (default = FALSE).
 #' @param freeLowerE ignore: Whether to leave the lower triangle of E free (default = FALSE).
-#' @return - \code{\link{mxModel}}
+#' @return - [mxModel()]
 #' @export
 #' @family Twin Modeling Functions
-#' @seealso - \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
-#' @references - \url{https://www.github.com/tbates/umx}
+#' @seealso - [plot()], [umxSummary()] work for IP, CP, GxE, SAT, and ACE models.
+#' @references - <https://www.github.com/tbates/umx>
 #' @md
 #' @examples
 #' \dontrun{
@@ -127,10 +129,8 @@
 #'		tryHard = "mxTryHard")
 #' umxCompare(m1, m2)
 #' }
-#' # TODO: sep enforcement: move to test case 
-#' # m1 = umxIP(selDVs = selDVs, dzData = dzData, mzData = mzData)
 #
-umxIP <- function(name = "IP", selDVs, dzData, mzData, sep = NULL, nFac = c(a=1, c=1, e=1), type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants", "marginals"), dzAr = .5, dzCr = 1, correlatedA = FALSE, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL, equateMeans = TRUE, weightVar = NULL, addStd = TRUE, addCI = TRUE, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE) {
+umxIP <- function(name = "IP", selDVs, dzData, mzData, sep = NULL, nFac = c(a=1, c=1, e=1), data = NULL, zyg = "zygosity", type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants", "marginals"), dzAr = .5, dzCr = 1, correlatedA = FALSE, numObsDZ = NULL, numObsMZ = NULL, autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL, equateMeans = TRUE, weightVar = NULL, addStd = TRUE, addCI = TRUE, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE) {
 	# TODO implement correlatedA
 	type                = match.arg(type)
 	allContinuousMethod = match.arg(allContinuousMethod)
@@ -140,7 +140,18 @@ umxIP <- function(name = "IP", selDVs, dzData, mzData, sep = NULL, nFac = c(a=1,
 
 	if(correlatedA){ message("Sorry, I haven't implemented correlated A yet...") }
 
-	# TODO umxIP: check covs
+	if(!is.null(data)){
+		if(is.null(dzData)){
+			dzData = "DZ"
+			mzData = "MZ"
+		}
+		if(is.null(sep)){
+			sep = "_T"
+		}			
+		mzData = data[data[,zyg] %in% mzData, ]
+		dzData = data[data[,zyg] %in% dzData, ]
+	}
+	# TODO umxIP: check covariates
 	xmu_twin_check(selDVs= selDVs, sep = sep, dzData = dzData, mzData = mzData, enforceSep = TRUE, nSib = nSib, optimizer = optimizer)
 
 	if(length(nFac) == 1){

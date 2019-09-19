@@ -2,13 +2,13 @@
 % Please edit documentation in R/misc_and_utility.R
 \name{umx_rename_file}
 \alias{umx_rename_file}
-\title{umx_rename_file}
+\title{Rename files}
 \usage{
 umx_rename_file(findStr = NA, replaceStr = NA, baseFolder = "Finder",
   listPattern = NA, test = TRUE, overwrite = FALSE)
 }
 \arguments{
-\item{findStr}{The (regex) string to find, i.e., "c[ao]t"}
+\item{findStr}{The (regex) string to find, i.e., "cat"}
 
 \item{replaceStr}{The (regex) replacement string "\1 are not dogs"}
 
@@ -21,11 +21,11 @@ umx_rename_file(findStr = NA, replaceStr = NA, baseFolder = "Finder",
 \item{overwrite}{Boolean determining if an existing file will be overwritten (Defaults to the safe FALSE)}
 }
 \value{
--
+None
 }
 \description{
-rename files. On OS X, the function can access the current front-most Finder window.
-The file renaming is fast and, because you can use regular expressions, powerful
+Rename files. On OS X, the function can access the current front-most Finder window.
+The file renaming is fast and, because you can use regular expressions, powerful.
 }
 \examples{
 \dontrun{
@@ -34,12 +34,14 @@ umx_rename_file("[Ss]eason +([0-9]+)", replaceStr="S\\1", baseFolder = "Finder",
 }
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other File Functions: \code{\link{dl_from_dropbox}},
-  \code{\link{umx_make_sql_from_excel}},
-  \code{\link{umx_move_file}}, \code{\link{umx_open}},
-  \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
+Other File Functions: \code{\link{dl_from_dropbox}()},
+  \code{\link{umx_make_sql_from_excel}()},
+  \code{\link{umx_move_file}()}, \code{\link{umx_open}()},
+  \code{\link{umx_write_to_clipboard}()}, \code{\link{umx}}
 }
 \concept{File Functions}

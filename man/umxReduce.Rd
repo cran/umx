@@ -4,11 +4,11 @@
 \alias{umxReduce}
 \title{Reduce models, and report the results.}
 \usage{
-umxReduce(model, report = c("markdown", "inline", "html", "report"),
+umxReduce(model, report = c("markdown", "inline", "html"),
   baseFileName = "tmp", ...)
 }
 \arguments{
-\item{model}{The \code{\link{mxModel}} which will be reduced.}
+\item{model}{The \code{\link[=mxModel]{mxModel()}} which will be reduced.}
 
 \item{report}{How to report the results. "html" = open in browser}
 
@@ -18,18 +18,17 @@ umxReduce(model, report = c("markdown", "inline", "html", "report"),
 }
 \description{
 Given a \code{umx} model (currently \code{umxACE} and \code{umxGxE} are supported - ask for more!)
-\code{umxReduce} will conduct a formalised reduction process.
+\code{umxReduce} will conduct a formalised reduction process. It will also report
+Akaike weights are also reported showing relative support across models.
 
-\strong{GxE model reduction}
-For \code{\link{umxGxE}} models, each form of moderation is tested
-on its own, and jointly.
-Also, C is removed, and moderation tested in this model.
+Specialized functions are called for different type of input:
+\enumerate{
+\item \strong{GxE model reduction} For \code{\link[=umxGxE]{umxGxE()}} models \code{\link[=umxReduceGxE]{umxReduceGxE()}} is called.
+\item \strong{ACE model reduction} For \code{\link[=umxACE]{umxACE()}} models,\code{\link[=umxReduceACE]{umxReduceACE()}} is called.
+}
 
-\strong{ACE model reduction}
-For \code{\link{umxACE}} models, A and then C are removed and tested.
-
-It reports the results in a table. Set the format of the table with
-\code{\link{umx_set_table_format}}()., or set \code{report} to "html" to open a
+\code{umxReduce} reports the results in a table. Set the format of the table with
+\code{\link[=umx_set_table_format]{umx_set_table_format()}}, or set \code{report= "html"} to open a
 table for pasting into a word processor.
 
 \code{umxReduce} is a work in progress, with more automatic reductions coming as demand emerges.
@@ -41,24 +40,34 @@ I am thinking for RAM models to drop NS paths, and report that test.
 }
 }
 \seealso{
-\code{\link{umxReduceGxE}}, \code{\link{umxReduceACE}}
+\code{\link[=umxReduceGxE]{umxReduceGxE()}}, \code{\link[=umxReduceACE]{umxReduceACE()}}
 
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
-  \code{\link{umxAPA}}, \code{\link{umxEval}},
-  \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxSummary}},
-  \code{\link{umxWeightedAIC}}, \code{\link{umx_APA_pval}},
-  \code{\link{umx_aggregate}}, \code{\link{umx_names}},
-  \code{\link{umx_parameters}}, \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{tmx_show}()}, \code{\link{umxAPA}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_names}()},
+  \code{\link{umx_print}()}, \code{\link{umx_time}()},
+  \code{\link{umx}}
 
-Other Twin Reporting Functions: \code{\link{umxPlotCPold}},
-  \code{\link{umxPlotCP}}, \code{\link{umxReduceACE}},
-  \code{\link{umxReduceGxE}},
-  \code{\link{umxSummarizeTwinData}}, \code{\link{umx}}
+Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
+  \code{\link{umxReduceACE}()},
+  \code{\link{umxReduceGxE}()},
+  \code{\link{umxSummarizeTwinData}()},
+  \code{\link{umxSummaryACEcov}()},
+  \code{\link{umxSummaryACEv}()},
+  \code{\link{umxSummaryACE}()},
+  \code{\link{umxSummaryCP}()},
+  \code{\link{umxSummaryGxEbiv}()},
+  \code{\link{umxSummaryGxE}()},
+  \code{\link{umxSummaryIP}()},
+  \code{\link{umxSummarySexLim}()},
+  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
 }
 \concept{Reporting Functions}
 \concept{Twin Reporting Functions}

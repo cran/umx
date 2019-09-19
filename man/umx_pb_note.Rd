@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.R
 \name{umx_pb_note}
 \alias{umx_pb_note}
-\title{umx_pb_note}
+\title{Use the pushbullet service to push a note}
 \usage{
 umx_pb_note(title = "test", body = "body", auth_key = c(NA, "GET"))
 }
@@ -19,10 +19,10 @@ service by providing your key one time
 }
 \details{
 If you supply auth_key, It will be written to "~/.pushbulletkey"
-\code{\link{umx_pb_note}}(auth_key="mykeystring")
+\code{umx_pb_note(auth_key="mykeystring")}
 once it exists there, you do not need to store it in code, so code is sharable.
 
-You can get your authorization key at \url{https://www.pushbullet.com} in 
+You can get your authorization key at \url{https://www.pushbullet.com} in
 the "account" section.
 
 \strong{Note}: You can show the existing stored key using "GET"
@@ -33,21 +33,26 @@ umx_pb_note("done!", umx_time(m1))
 }
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{umx_msg}}
+\itemize{
+\item \code{\link[=umx_msg]{umx_msg()}}
+}
 
-Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
-  \code{\link{qm}}, \code{\link{umxBrownie}},
-  \code{\link{umxFactor}}, \code{\link{umxVersion}},
-  \code{\link{umx_array_shift}},
-  \code{\link{umx_cell_is_on}},
-  \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_find_object}}, \code{\link{umx_make}},
-  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
-  \code{\link{umx_pad}}, \code{\link{umx_print}},
-  \code{\link{umx_scale}}, \code{\link{umx_score_scale}},
-  \code{\link{umx}}, \code{\link{xmu_check_variance}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
+  \code{\link{qm}()}, \code{\link{umxBrownie}()},
+  \code{\link{umxFactor}()}, \code{\link{umxLav2RAM}()},
+  \code{\link{umxVersion}()},
+  \code{\link{umx_array_shift}()},
+  \code{\link{umx_cont_2_quantiles}()},
+  \code{\link{umx_find_object}()},
+  \code{\link{umx_make}()}, \code{\link{umx_msg}()},
+  \code{\link{umx_open_CRAN_page}()},
+  \code{\link{umx_pad}()}, \code{\link{umx_print}()},
+  \code{\link{umx_score_scale}()}, \code{\link{umx}},
+  \code{\link{xmu_cell_is_on}()}
 }
 \concept{Miscellaneous Utility Functions}

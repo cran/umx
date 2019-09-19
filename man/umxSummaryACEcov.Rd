@@ -5,21 +5,15 @@
 \alias{umxSummary.MxModelACEcov}
 \title{Present results of a twin ACE-model with covariates in table and graphical forms.}
 \usage{
-umxSummaryACEcov(model, digits = 2, file = getOption("umx_auto_plot"),
-  returnStd = FALSE, extended = FALSE, showRg = FALSE, std = TRUE,
-  comparison = NULL, CIs = TRUE, zero.print = ".", report = c("1",
-  "2", "html"), ...)
+umxSummaryACEcov(model, digits = 2, showRg = FALSE, std = TRUE,
+  comparison = NULL, CIs = TRUE, zero.print = ".",
+  report = c("markdown", "html"), file = getOption("umx_auto_plot"),
+  returnStd = FALSE, extended = FALSE, show = c("std", "raw"), ...)
 }
 \arguments{
-\item{model}{a \code{\link{umxACEcov}} model to summarize}
+\item{model}{a \code{\link[=umxACEcov]{umxACEcov()}} model to summarize}
 
 \item{digits}{round to how many digits (default = 2)}
-
-\item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
-
-\item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
-
-\item{extended}{how much to report (FALSE)}
 
 \item{showRg}{= whether to show the genetic correlations (FALSE)}
 
@@ -33,13 +27,23 @@ umxSummaryACEcov(model, digits = 2, file = getOption("umx_auto_plot"),
 
 \item{report}{If "html", then open an html table of the results.}
 
+\item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
+
+\item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
+
+\item{extended}{how much to report (FALSE)}
+
+\item{show}{Here to support being called from generic xmu_safe_run_summary. User should ignore: can be c("std", "raw")}
+
 \item{...}{Other parameters to control model summary}
 }
 \value{
-- optional \code{\link{mxModel}}
+\itemize{
+\item optional \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
-Summarize a Cholesky model with covariates, as returned by \code{\link{umxACEcov}}
+Summarize a Cholesky model with covariates, as returned by \code{\link[=umxACEcov]{umxACEcov()}}
 }
 \examples{
 require(umx)
@@ -57,24 +61,26 @@ stdFit = umxSummaryACE(m1, returnStd = TRUE);
 }
 }
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-- \code{\link{umxACEcov}}
-
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}},
-  \code{\link{umxACEcov}}, \code{\link{umxACEold}},
-  \code{\link{umxACEv}}, \code{\link{umxACE}},
-  \code{\link{umxCPold}}, \code{\link{umxCP}},
-  \code{\link{umxGxE_window}}, \code{\link{umxGxEbiv}},
-  \code{\link{umxGxE}}, \code{\link{umxIPold}},
-  \code{\link{umxIP}}, \code{\link{umxSexLim}},
-  \code{\link{umxSimplex}}, \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}}, \code{\link{umxSummaryCP}},
-  \code{\link{umxSummaryGxEbiv}},
-  \code{\link{umxSummaryGxE}}, \code{\link{umxSummaryIP}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}}, \code{\link{umx}},
-  \code{\link{xmu_twin_check}}
+\itemize{
+\item \code{\link[=umxACEcov]{umxACEcov()}}
 }
-\concept{Twin Modeling Functions}
+
+Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
+  \code{\link{umxReduceACE}()},
+  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
+  \code{\link{umxSummarizeTwinData}()},
+  \code{\link{umxSummaryACEv}()},
+  \code{\link{umxSummaryACE}()},
+  \code{\link{umxSummaryCP}()},
+  \code{\link{umxSummaryGxEbiv}()},
+  \code{\link{umxSummaryGxE}()},
+  \code{\link{umxSummaryIP}()},
+  \code{\link{umxSummarySexLim}()},
+  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
+}
+\concept{Twin Reporting Functions}

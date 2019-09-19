@@ -14,7 +14,9 @@ umx_round(df, digits = getOption("digits"), coerce = FALSE)
 \item{coerce}{whether to make the column numeric if it is not (default = FALSE)}
 }
 \value{
-- \code{\link{mxModel}}
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
 A version of round() which works on dataframes that contain non-numeric data (or data that cannot be coerced to numeric)
@@ -26,14 +28,20 @@ head(umx_round(mtcars, coerce = TRUE))
 
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Miscellaneous Stats Helpers: \code{\link{reliability}},
-  \code{\link{umxCov2cor}}, \code{\link{umxHetCor}},
-  \code{\link{umx_apply}}, \code{\link{umx_cor}},
-  \code{\link{umx_fun_mean_sd}}, \code{\link{umx_means}},
-  \code{\link{umx_r_test}}, \code{\link{umx_var}},
+Other Miscellaneous Stats Helpers: \code{\link{SE_from_p}()},
+  \code{\link{oddsratio}()},
+  \code{\link{print.oddsratio}()},
+  \code{\link{print.reliability}()},
+  \code{\link{reliability}()}, \code{\link{umxCov2cor}()},
+  \code{\link{umxHetCor}()}, \code{\link{umx_apply}()},
+  \code{\link{umx_cor}()}, \code{\link{umx_fun_mean_sd}()},
+  \code{\link{umx_means}()}, \code{\link{umx_r_test}()},
+  \code{\link{umx_scale}()}, \code{\link{umx_var}()},
   \code{\link{umx}}
 }
 \concept{Miscellaneous Stats Helpers}

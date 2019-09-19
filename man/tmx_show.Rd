@@ -10,7 +10,7 @@ tmx_show(model, what = c("values", "free", "labels", "nonzero_or_free"),
   na.print = "", zero.print = ".")
 }
 \arguments{
-\item{model}{an \code{\link{mxModel}} from which to show parameters.}
+\item{model}{an \code{\link[=mxModel]{mxModel()}} from which to show parameters.}
 
 \item{what}{legal options are "values" (default), "free", or "labels").}
 
@@ -27,12 +27,12 @@ tmx_show(model, what = c("values", "free", "labels", "nonzero_or_free"),
 \item{zero.print}{How to display 0 values (default = ".")}
 }
 \value{
--
+None
 }
 \description{
-A great way to learn about models is to look at the matrix contents. `tmx_show` is designed to
-do this in a way that makes it easy to process for users: The matrix contents are formatted as tables, and can even 
-be displayed as tables in a web browser.
+A great way to learn about models is to look at the matrix contents. \code{tmx_show} is designed to
+do this in a way that makes it easy to process for users: The matrix contents are formatted as
+tables, and can even be displayed as tables in a web browser.
 }
 \details{
 The user can select which matrices to view, whether to show values, free, and/or labels, and the precision of rounding.
@@ -40,14 +40,12 @@ The user can select which matrices to view, whether to show values, free, and/or
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("g")
 manifests = names(demoOneFactor)
-m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
-	umxPath(latents, to = manifests),
+m1 = umxRAM("tmx_sh", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
-)
-
+	umxPath(var = "G", fixedAt = 1)
+)#'
 tmx_show(m1)
 tmx_show(m1, digits = 3)
 tmx_show(m1, matrices = "S")
@@ -56,19 +54,21 @@ tmx_show(m1, what = "labels")
 tmx_show(m1, what = "free", matrices = "A")
 }
 \references{
-- \url{https://tbates.github.io}
+\itemize{
+\item \url{https://tbates.github.io}
+}
 }
 \seealso{
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{umxAPA}},
-  \code{\link{umxEval}}, \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
-  \code{\link{umx_names}}, \code{\link{umx_parameters}},
-  \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{umxAPA}()}, \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_names}()},
+  \code{\link{umx_print}()}, \code{\link{umx_time}()},
+  \code{\link{umx}}
 }
 \concept{Reporting Functions}

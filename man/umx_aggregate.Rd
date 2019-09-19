@@ -4,14 +4,14 @@
 \alias{umx_aggregate}
 \title{Convenient formula-based cross-tabs & built-in summary functions}
 \usage{
-umx_aggregate(formula = DV ~ condition, data = NA,
+umx_aggregate(formula = DV ~ condition, data = df,
   what = c("mean_sd", "n"), digits = 2, report = c("markdown",
   "html", "txt"))
 }
 \arguments{
 \item{formula}{The aggregation formula. e.g., DV ~ condition.}
 
-\item{data}{frame to aggregate.}
+\item{data}{frame to aggregate (defaults to df for common case)}
 
 \item{what}{function to use. Default reports "mean (sd)".}
 
@@ -20,14 +20,16 @@ umx_aggregate(formula = DV ~ condition, data = NA,
 \item{report}{Format for the table: Default is markdown.}
 }
 \value{
-- table
+\itemize{
+\item table
+}
 }
 \description{
 A common task is preparing summary tables, aggregating over some grouping factor.
-Like mean and sd of age, by sex. R's \code{\link{aggregate}} function is useful and powerful, allowing
+Like mean and sd of age, by sex. R's \code{\link[=aggregate]{aggregate()}} function is useful and powerful, allowing
 xtabs based on a formula.
 
-umx_aggregate makes using it a bit easier. In particular, it has some common functions 
+umx_aggregate makes using it a bit easier. In particular, it has some common functions
 for summarizing data built-in, like "mean (sd)" (the default).
 
 \code{umx_aggregate(mpg ~ cyl, data = mtcars, what = "mean_sd")}
@@ -67,21 +69,25 @@ umx_aggregate(cbind(moodAvg, mood) ~ condition, data = study1)
 }
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{umx_apply}}, \code{\link{aggregate}}
+\itemize{
+\item \code{\link[=umx_apply]{umx_apply()}}, \code{\link[=aggregate]{aggregate()}}
+}
 
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
-  \code{\link{umxAPA}}, \code{\link{umxEval}},
-  \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_names}},
-  \code{\link{umx_parameters}}, \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{tmx_show}()}, \code{\link{umxAPA}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_APA_pval}()}, \code{\link{umx_names}()},
+  \code{\link{umx_print}()}, \code{\link{umx_time}()},
+  \code{\link{umx}}
 }
 \concept{Reporting Functions}

@@ -33,39 +33,40 @@ You can also test whether is has a means model or not and (in future) test if it
 \examples{
 require(umx)
 data(demoOneFactor)
-latents  = c("g")
 manifests = names(demoOneFactor)
-m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
-	umxPath(latents, to = manifests),
+m1 = umxRAM("check_model_ex", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
-)
-
+	umxPath(var = "G", fixedAt = 1)
+)#'
 umx_check_model(m1) # TRUE, this is a model
 umx_check_model(m1, type = "RAM") # equivalent to umx_is_RAM()
 umx_check_model(m1, hasData = TRUE)
+
+
 \dontrun{
 umx_check_model(m1, hasMeans = TRUE)
 umx_check_model(m1, beenRun = FALSE)
+# Model with no data
+m1 = umxRAM("x ~~ .3*y", autoRun = FALSE)
+umx_check_model(m1, hasData = TRUE)
 }
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+- <https://www.github.com/tbates/umx>
 }
 \seealso{
-Other Test: \code{\link{umx_check_OS}},
-  \code{\link{umx_check_names}},
-  \code{\link{umx_check_parallel}},
-  \code{\link{umx_check}}, \code{\link{umx_has_CIs}},
-  \code{\link{umx_has_been_run}},
-  \code{\link{umx_has_means}},
-  \code{\link{umx_has_square_brackets}},
-  \code{\link{umx_is_MxData}},
-  \code{\link{umx_is_MxMatrix}},
-  \code{\link{umx_is_MxModel}}, \code{\link{umx_is_RAM}},
-  \code{\link{umx_is_cov}},
-  \code{\link{umx_is_endogenous}},
-  \code{\link{umx_is_exogenous}},
-  \code{\link{umx_is_ordered}}
+Other Test: \code{\link{umx_check_OS}()},
+  \code{\link{umx_check_names}()},
+  \code{\link{umx_check_parallel}()},
+  \code{\link{umx_check}()}, \code{\link{umx_has_CIs}()},
+  \code{\link{umx_has_been_run}()},
+  \code{\link{umx_has_means}()},
+  \code{\link{umx_has_square_brackets}()},
+  \code{\link{umx_is_MxData}()},
+  \code{\link{umx_is_MxMatrix}()},
+  \code{\link{umx_is_MxModel}()},
+  \code{\link{umx_is_RAM}()}, \code{\link{umx_is_cov}()},
+  \code{\link{umx_is_ordered}()}
 }
 \concept{Test}

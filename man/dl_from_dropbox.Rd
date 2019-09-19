@@ -12,7 +12,7 @@ dl_from_dropbox(x, key = NULL)
 \item{key}{the code after s/ and before the file name in the dropbox url}
 }
 \value{
-- NULL
+None
 }
 \description{
 Download a file from Dropbox, given either the url, or the name and key
@@ -30,9 +30,9 @@ dl_from_dropbox("tinytwinData.rda", key = "7kauod48r9cfhwc")
 - \url{https://thebiobucket.blogspot.kr/2013/04/download-files-from-dropbox.html}
 }
 \seealso{
-Other File Functions: \code{\link{umx_make_sql_from_excel}},
-  \code{\link{umx_move_file}}, \code{\link{umx_open}},
-  \code{\link{umx_rename_file}},
-  \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
+Other File Functions: \code{\link{umx_make_sql_from_excel}()},
+  \code{\link{umx_move_file}()}, \code{\link{umx_open}()},
+  \code{\link{umx_rename_file}()},
+  \code{\link{umx_write_to_clipboard}()}, \code{\link{umx}}
 }
 \concept{File Functions}

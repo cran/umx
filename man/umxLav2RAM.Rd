@@ -2,35 +2,66 @@
 % Please edit documentation in R/lavanify2ram.R
 \name{umxLav2RAM}
 \alias{umxLav2RAM}
-\title{Convert a lavaan syntax string to a umxRAM model}
+\title{Convert lavaan string to a umxRAM model}
 \usage{
-umxLav2RAM(model = NA, data = "auto", name = NULL,
-  lavaanMode = "sem", printTab = TRUE, group = NULL)
+umxLav2RAM(model = NA, data = "auto", group = NULL,
+  group.equal = NULL, name = NA, lavaanMode = c("sem", "lavaan"),
+  std.lv = FALSE, suffix = "", comparison = TRUE, type = c("Auto",
+  "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+  allContinuousMethod = c("cumulants", "marginals"),
+  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
+  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  verbose = FALSE, optimizer = NULL, std = FALSE, printTab = TRUE)
 }
 \arguments{
 \item{model}{A lavaan syntax string, e.g. "A~~B"}
 
 \item{data}{Data to add to model (defaults to auto, which is just sketch mode)}
 
-\item{name}{Model name}
+\item{group}{= Column to use for multi-group (default = NULL)}
 
-\item{lavaanMode}{Automagical path settings (default = "sem")}
+\item{group.equal}{= what to equate across groups. Default (NULL) means no equates. See details for what we might implement in future.}
+
+\item{name}{Model name (can also add name in # commented first line)}
+
+\item{lavaanMode}{Auto-magical path settings for cfa/sem (default) or no-defaults ("lavaan")}
+
+\item{std.lv}{= FALSE Whether to set var of latents to 1 (default FALSE). nb. Toggles fix first.}
+
+\item{suffix}{String to append to each label (useful if model will be used in a multi-group model)}
+
+\item{comparison}{Compare the new model to the old (if updating an existing model: default = TRUE)}
+
+\item{type}{One of "Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"}
+
+\item{allContinuousMethod}{"cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.}
+
+\item{autoRun}{Whether to run the model (default), or just to create it and return without running.}
+
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
+
+\item{verbose}{Whether to tell the user what latents and manifests were created etc. (Default = FALSE)}
+
+\item{optimizer}{optionally set the optimizer (default NULL does nothing)}
+
+\item{std}{Whether to print estimates. Defaults to FALSE ("raw"), TRUE = "std", for no parameter table use NULL.}
 
 \item{printTab}{= TRUE (more for debugging)}
-
-\item{group}{= NULL TODO: define this}
 }
 \value{
 \itemize{
-\item list of \code{\link{umxPath}}s
+\item list of \code{\link[=umxPath]{umxPath()}}s
 }
 }
 \description{
-Use lavaan syntax to create umxRAM models. If data are provided, a \code{umxRAM} model is returned.
-If more than one group is found, a superModel is returned.
+Takes a lavaan syntax string and creates the matching one or more \code{\link[=umxRAM]{umxRAM()}} models.
+
+If data are provided, a \code{\link[=umxRAM]{umxRAM()}} model is returned.
+
+If more than one group is found, a \code{\link[=umxSuperModel]{umxSuperModel()}} is returned.
 
 This function is at the alpha quality stage, and \strong{should be expected to have bugs}.
-Several features are not yet supported. Let me know if you'd like them.
+Several features are not yet supported. Let me know if you would like them.
 }
 \details{
 Uses the defaults of \code{lavaan::sem}
@@ -44,34 +75,57 @@ Uses the defaults of \code{lavaan::sem}
 \item auto.th         = TRUE
 \item auto.delta      = TRUE
 \item auto.cov.y      = TRUE
-\item fixed.x         = FALSE (not standard in lavaan::sem, but needed for RAM)
+\item fixed.x         = FALSE (not standard in \code{lavaan::sem}, but needed for RAM)
 }
 
-Lavaan is fabulously well documented. For quick reference, some common symbols in lavaan strings are
+Lavaan is well documented. For quick reference, some common symbols in lavaan strings are:
 
 \tabular{rlll}{
 \tab "=~"   \tab lhs (Latent) is manifested by rhs\cr
 \tab "~"    \tab lhs "is regressed on" (<- ) rhs\cr
-\tab "~~"   \tab lhs covarys with rhs\cr
+\tab "~~"   \tab lhs covaries with rhs\cr
 \tab "~ 1"  \tab lhs has mean\cr
 \tab ":="   \tab lhs is defined by rhs (see \code{\link[OpenMx:mxAlgebra]{OpenMx::mxAlgebra()}})\cr
 \tab "=="   \tab lhs is constrained == to rhs (see \code{\link[OpenMx:mxConstraint]{OpenMx::mxConstraint()}} )
 }
+
+\strong{Naming of multiple groups}
+
+When multiple groups are found the groups are named "name_grouplevel"
+White space is replaced with "_" and illegal characters are replaced with "x"
+
+\emph{note}: Options for  group.equal. In future, we might implement (but have not as yet):
+\enumerate{
+\item c("loadings"
+\item "intercepts"
+\item "means"
+\item "regressions"
+\item "residuals"
+\item "covariances"
+}
 }
 \examples{
+
+\dontrun{
 # auto-data, print table, return umxRAM model
-m1 = umxLav2RAM("y ~ x")
+m1 = umxLav2RAM("y ~ x", printTab= TRUE)
 
 lav = "y ~ x1 + 2.4*x2 + x3"
 tmp = umxLav2RAM(lav, data = "auto", printTab= FALSE)
 
 # Add labels to parameters, e.g. "x3_loading" as a loading for x3->x1
 tmp = umxLav2RAM("x1 ~ x3_loading*x3")
+umx_print(tmp$A$labels)
+# |   |x1       |x3         |
+# |:--|:--------|:----------|
+# |x1 |x1_to_x1 |x3_loading |
+# |x3 |x1_to_x3 |x3_to_x3   |
 
 # Fix values, e.g. x2 -> y fixed at 2.4
 tmp = umxLav2RAM("y ~ x1 + 2.4*x2; s =~ 0*y11 + 1*y12 + 2*y13 + 3*y14")
 
 tmp = umxLav2RAM("L =~ X1 + X2; L ~ Y")
+plot(tmp, min=c("L", "Y"))
 
 # Factor model showing auto-addition of correlations among exogenous latents
 # and auto-residuals on manifests
@@ -85,11 +139,14 @@ HS = "spatial =~ visual   + cubes    + flags
       verbal  =~ paragrap + sentence + wordm
       speed   =~ addition + counting + straight"
 
-m1 = umxRAM2(HS, data = umx_scale(HS.ability.data))
+m1 = umxRAM(HS, data = umx_scale(HS.ability.data))
 
-# more complex:
+# Multiple groups
+m1 = umxRAM(HS, data = umx_scale(HS.ability.data), group = "school")
 
-lav = " # Model 14 PROCESS Hayes - moderated mediation
+# More examples
+
+lav = " # Moderated mediation
 gnt ~ a*cb
 INT ~ b1*gnt + b2*cn + b3*cngn + c*cb
 
@@ -100,14 +157,14 @@ ab3 := a * b3
 loCN := a * b1 + ab3 * -0.5
 hiCN := a * b1 + ab3 * 0.5
 "
-tmp = umxRAM2(lav)
+tmp = umxRAM(lav)
 # plot showing ability to influence layout with max min same groupings
-plot(tmp, max = c("cb", "cn", "cngn"), same = "gnt", min="INT")
+plot(tmp, max = c("cb", "cn", "cngn"), same = "gnt", min= "INT")
 
 # Algebra: e.g. b1^2
-m1 = umxRAM2("x1~b1*x2; B1_sq := b1^2", data = demoOneFactor)
+m1 = umxRAM("x1~b1*x2; B1_sq := b1^2", data = demoOneFactor)
 
-# Model with labeled parameters
+# Model with constraints and labeled parameters
 lav = "
 y ~ b1*x1 + b2*x2 + b3*x3
 # constraints
@@ -116,14 +173,30 @@ b1 > exp(b2 + b3)"
 
 tmp = umxLav2RAM(lav)
 
+namedStr = " 	# my name
+	y ~x"
+m1 = umxRAM(namedStr) 
+
+# Formative factor
+# lavaanify("f5 <~ z1 + z2 + z3 + z4")
+}
 }
 \seealso{
 \itemize{
-\item \code{\link{umxRAM}}
+\item \code{\link[=umxRAM]{umxRAM()}}
 }
 
-Other Super-easy helpers: \code{\link{umxEFA}},
-  \code{\link{umxRAM2}}, \code{\link{umxTwoStage}},
-  \code{\link{umx}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
+  \code{\link{qm}()}, \code{\link{umxBrownie}()},
+  \code{\link{umxFactor}()}, \code{\link{umxVersion}()},
+  \code{\link{umx_array_shift}()},
+  \code{\link{umx_cont_2_quantiles}()},
+  \code{\link{umx_find_object}()},
+  \code{\link{umx_make}()}, \code{\link{umx_msg}()},
+  \code{\link{umx_open_CRAN_page}()},
+  \code{\link{umx_pad}()}, \code{\link{umx_pb_note}()},
+  \code{\link{umx_print}()},
+  \code{\link{umx_score_scale}()}, \code{\link{umx}},
+  \code{\link{xmu_cell_is_on}()}
 }
-\concept{Super-easy helpers}
+\concept{Miscellaneous Utility Functions}

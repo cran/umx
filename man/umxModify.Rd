@@ -12,7 +12,7 @@ umxModify(lastFit, update = NULL, master = NULL, regex = FALSE,
   "mxTryHardWideSearch"))
 }
 \arguments{
-\item{lastFit}{The \code{\link{mxModel}} you wish to update and run.}
+\item{lastFit}{The \code{\link[=mxModel]{mxModel()}} you wish to update and run.}
 
 \item{update}{What to update before re-running. Can be a list of labels, a regular expression (set regex = TRUE) or an object such as mxCI etc.}
 
@@ -33,19 +33,21 @@ overrides the contents of update, and sets regex to TRUE.}
 
 \item{verbose}{How much feedback to give}
 
-\item{intervals}{Whether to run confidence intervals (see \code{\link{mxRun}})}
+\item{intervals}{Whether to run confidence intervals (see \code{\link[=mxRun]{mxRun()}})}
 
 \item{comparison}{Whether to run umxCompare() on the new and old models.}
 
-\item{autoRun}{Whether to run the model, and return that (default), or just to create it and return without running.}
+\item{autoRun}{Whether to run the model (default), or just to create it and return without running.}
 
 \item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
 }
 \value{
-- \code{\link{mxModel}}
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
-umxModify allows you to modify, re-run and summarize an \code{\link{mxModel}},
+umxModify allows you to modify, re-run and summarize an \code{\link[=mxModel]{mxModel()}},
 all in one line of script.
 }
 \details{
@@ -55,16 +57,15 @@ As an example, this one-liner drops a path labelled "Cs", and returns the update
 \code{fit2 = umxModify(fit1, update = "Cs", name = "newModelName", comparison = TRUE)}
 
 Regular expressions are a powerful feature: they let you drop collections of paths by matching patterns
-fit2 = umxModify(fit1, regex = "C[sr]", name = "drop_Cs_and_Cr", comparison = TRUE)
+for instance, this would match labels containing either "Cs" or "Cr":\preformatted{fit2 = umxModify(fit1, regex = "C\[sr\]", name = "drop_Cs_and_Cr", comparison = TRUE)
+}
 
-You may find it easier to be more explicit. Like this:
-
-fit2 = omxSetParameters(fit1, labels = "Cs", values = 0, free = FALSE, name = "newModelName")
+You may find it easier to be more explicit. Like this:\preformatted{fit2 = umxSetParameters(fit1, labels = c("Cs", "Cr"), values = 0, free = FALSE, name = "newName")
 fit2 = mxRun(fit2)
 summary(fit2)
+}
 
-
-\emph{Note}: A (minor) limitation is that you cannot simultaneously set value to 0 
+\emph{Note}: A (minor) limitation is that you cannot simultaneously set value to 0
 AND relabel cells (because the default value is 0, so it is ignored when using newlabels).
 }
 \examples{
@@ -73,13 +74,12 @@ require(umx)
 # First we'll just build a 1-factor model
 umx_set_optimizer("SLSQP")
 data(demoOneFactor)
-latents  = c("G")
 manifests = names(demoOneFactor)
 
-m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-	umxPath(latents, to = manifests),
+m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1)
+	umxPath(var = "G", fixedAt = 1)
 )
 
 # 1. Drop the path to x1 (also updating the name so it's
@@ -94,7 +94,7 @@ m3 = umxModify(m1, update = "G_to_x1", value = .35, name = "fix_G_x1_at_35", com
 m3 = umxModify(m1, umxPath("G", with = "x1"), name= "addedPath")
 
 # Use regular expression to drop multiple paths: e.g. G to x3, x4, x5
-m2 = umxModify(m1, regex = "^G_to_x[3-5]", name = "no_G_to_x3_5", comp = TRUE)
+m3 = umxModify(m1, regex = "^G_to_x[3-5]", name = "tried_hard", comp = TRUE, tryHard="yes")
 
 # Same, but don't autoRun
 m2 = umxModify(m1, regex  = "^G_to_x[3-5]", name = "no_G_to_x3_5", autoRun = FALSE) 
@@ -116,20 +116,22 @@ m2 = umxModify(m1, regex = searchString, newlabels= newLabel, name = "grep", com
 
 }
 \references{
-- \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-Other Core Modeling Functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxAlgebra}},
-  \code{\link{umxMatrix}}, \code{\link{umxPath}},
-  \code{\link{umxRAM}}, \code{\link{umxRun}},
-  \code{\link{umxSuperModel}}, \code{\link{umx}}
+Other Core Modeling Functions: \code{\link{umxAlgebra}()},
+  \code{\link{umxMatrix}()}, \code{\link{umxPath}()},
+  \code{\link{umxRAM}()}, \code{\link{umxRun}()},
+  \code{\link{umxSummary}()},
+  \code{\link{umxSuperModel}()}, \code{\link{umx}}
 
-Other Modify or Compare Models: \code{\link{umxAdd1}},
-  \code{\link{umxDrop1}}, \code{\link{umxEquate}},
-  \code{\link{umxFixAll}}, \code{\link{umxMI}},
-  \code{\link{umxSetParameters}},
-  \code{\link{umxUnexplainedCausalNexus}},
+Other Modify or Compare Models: \code{\link{umxAdd1}()},
+  \code{\link{umxDrop1}()}, \code{\link{umxEquate}()},
+  \code{\link{umxFixAll}()}, \code{\link{umxMI}()},
+  \code{\link{umxSetParameters}()},
+  \code{\link{umxUnexplainedCausalNexus}()},
   \code{\link{umx}}
 }
 \concept{Core Modeling Functions}

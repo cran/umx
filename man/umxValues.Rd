@@ -7,20 +7,22 @@
 umxValues(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE)
 }
 \arguments{
-\item{obj}{The RAM or matrix \code{\link{mxModel}}, or \code{\link{mxMatrix}} that you want to set start values for.}
+\item{obj}{The RAM or matrix \code{\link[=mxModel]{mxModel()}}, or \code{\link[=mxMatrix]{mxMatrix()}} that you want to set start values for.}
 
 \item{sd}{Optional Standard Deviation for start values}
 
 \item{n}{Optional Mean for start values}
 
-\item{onlyTouchZeros}{Don't alter parameters that appear to have already been started (useful for speeding \code{\link{umxModify}})}
+\item{onlyTouchZeros}{Don't alter parameters that appear to have already been started (useful for speeding \code{\link[=umxModify]{umxModify()}})}
 }
 \value{
-- \code{\link{mxModel}} with updated start values
+\itemize{
+\item \code{\link[=mxModel]{mxModel()}} with updated start values
+}
 }
 \description{
 For models to be estimated, it is essential that path values start at credible values. umxValues takes on that task for you.
-umxValues can set start values for the free parameters in both RAM and Matrix \code{\link{mxModel}}s. It can also take an mxMatrix as input.
+umxValues can set start values for the free parameters in both RAM and Matrix \code{\link[=mxModel]{mxModel()}}s. It can also take an mxMatrix as input.
 It tries to be smart in guessing starts from the values in your data and the model type.
 }
 \details{
@@ -31,17 +33,18 @@ require(umx)
 data(demoOneFactor)
 latents = c("G")
 manifests = names(demoOneFactor)
-# =========================================================================
-# = Make an base OpenMx model (which will lack start values and labels..) =
-# =========================================================================
+
+# ====================================================================
+# = Make an OpenMx model (which will lack start values and labels..) =
+# ====================================================================
 m1 = mxModel("One Factor", type = "RAM", 
 	manifestVars = manifests, latentVars = latents, 
-	mxPath(from = latents, to = manifests),
+	mxPath(from = latents  , to = manifests),
 	mxPath(from = manifests, arrows = 2),
-	mxPath(from = latents, arrows = 2, free = FALSE, values = 1.0),
-	mxData(cov(demoOneFactor), type = "cov", numObs = 500)
+	mxPath(from = latents  , arrows = 2, free = FALSE, values = 1.0),
+	mxData(cov(demoOneFactor), type = "cov", numObs=500)
 )
-mxEval(S, m1) # default variances are 0
+mxEval(S, m1) # default variances are jiggled away from near-zero
 # Add start values to the model
 m1 = umxValues(m1)
 mxEval(S, m1) # plausible variances
@@ -49,18 +52,21 @@ umx_print(mxEval(S,m1), 3, zero.print = ".") # plausible variances
 umxValues(14, sd = 1, n = 10) # Return vector of length 10, with mean 14 and sd 1
 }
 \references{
-- \url{https://www.github.com/tbates/umx}, \url{https://tbates.github.io}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}, \url{https://tbates.github.io}
+}
 }
 \seealso{
-- Core functions:
+\itemize{
+\item Core functions:
+}
 
-Other Advanced Model Building Functions: \code{\link{umxJiggle}},
-  \code{\link{umxLabel}}, \code{\link{umxLatent}},
-  \code{\link{umxRAM2Ordinal}},
-  \code{\link{umxThresholdMatrix}},
-  \code{\link{umx_fix_first_loadings}},
-  \code{\link{umx_fix_latents}},
-  \code{\link{umx_get_bracket_addresses}},
-  \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
+Other Advanced Model Building Functions: \code{\link{umxJiggle}()},
+  \code{\link{umxLabel}()}, \code{\link{umxRAM2Ordinal}()},
+  \code{\link{umxThresholdMatrix}()},
+  \code{\link{umx_fix_first_loadings}()},
+  \code{\link{umx_fix_latents}()},
+  \code{\link{umx_get_bracket_addresses}()},
+  \code{\link{umx_string_to_algebra}()}, \code{\link{umx}}
 }
 \concept{Advanced Model Building Functions}

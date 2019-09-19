@@ -7,8 +7,8 @@
 umx_residualize(var, covs = NULL, suffixes = NULL, data)
 }
 \arguments{
-\item{var}{The base name of the variable you want to residualize. Alternatively, a 
-regression \code{\link{formula}} containing var on the lhs, and covs on the rhs}
+\item{var}{The base name of the variable you want to residualize. Alternatively, a
+regression \code{\link[=formula]{formula()}} containing var on the lhs, and covs on the rhs}
 
 \item{covs}{Covariates to residualize on.}
 
@@ -18,7 +18,9 @@ Up to you to check all variables are present!}
 \item{data}{The dataframe containing all the variables}
 }
 \value{
-- dataframe with var residualized in place (i.e under its original column name)
+\itemize{
+\item dataframe with var residualized in place (i.e under its original column name)
+}
 }
 \description{
 Residualize one or more variables residualized against covariates, and return a
@@ -66,12 +68,15 @@ df2 = residuals(lm(hp ~ cyl + disp, data = tmp, na.action = na.exclude))
 all(df1$hp == df2)
 }
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-Other Twin Data functions: \code{\link{umx_long2wide}},
-  \code{\link{umx_make_TwinData}},
-  \code{\link{umx_scale_wide_twin_data}},
-  \code{\link{umx_wide2long}}, \code{\link{umx}}
+Other Twin Data functions: \code{\link{umx_long2wide}()},
+  \code{\link{umx_make_TwinData}()},
+  \code{\link{umx_nice_data}()},
+  \code{\link{umx_scale_wide_twin_data}()},
+  \code{\link{umx_wide2long}()}, \code{\link{umx}}
 }
 \concept{Twin Data functions}

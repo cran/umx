@@ -16,12 +16,14 @@ umx_APA_pval(p, min = 0.001, digits = 3, addComparison = NA)
 \item{addComparison}{Whether to add '=' '<' etc. (NA adds when needed)}
 }
 \value{
-- p-value formatted in APA style
+\itemize{
+\item p-value formatted in APA style
+}
 }
 \description{
-`umx_APA_pval` formats p-values, rounded in APA style. So you get '< .001' instead of .000000002 or 1.00E-09.
+\code{umx_APA_pval} formats p-values, rounded in APA style. So you get '< .001' instead of .000000002 or 1.00E-09.
 
-You probably would be better off using [umxAPA](umxAPA), which this, but handles many more object types.
+You probably would be better off using \code{\link[=umxAPA]{umxAPA()}}, which handles many more object types.
 
 You set the precision with digits. Optionally, you can add '=' '<' etc. The default for addComparison (NA) adds these when needed.
 }
@@ -33,18 +35,20 @@ umx_APA_pval(c(1.23E-3, .5))
 umx_APA_pval(c(1.23E-3, .5), addComparison = TRUE)
 }
 \seealso{
-- \code{\link{umxAPA}}, \code{\link{round}}
+\itemize{
+\item \code{\link[=umxAPA]{umxAPA()}}, \code{\link[=round]{round()}}
+}
 
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
-  \code{\link{umxAPA}}, \code{\link{umxEval}},
-  \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_aggregate}}, \code{\link{umx_names}},
-  \code{\link{umx_parameters}}, \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{tmx_show}()}, \code{\link{umxAPA}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_names}()},
+  \code{\link{umx_print}()}, \code{\link{umx_time}()},
+  \code{\link{umx}}
 }
 \concept{Reporting Functions}

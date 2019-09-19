@@ -13,7 +13,7 @@ umxCI_boot(model, rawData = NULL, type = c("par.expected",
 
 \item{rawData}{is the raw data matrix used to estimate model}
 
-\item{type}{is the kind of bootstrap you want to run. "par.expected" and "par.observed" 
+\item{type}{is the kind of bootstrap you want to run. "par.expected" and "par.observed"
 use parametric Monte Carlo bootstrapping based on your expected and observed covariance matrices, respectively.
 "empirical" uses empirical bootstrapping based on rawData.}
 
@@ -28,10 +28,12 @@ use parametric Monte Carlo bootstrapping based on your expected and observed cov
 \item{digits}{rounding precision}
 }
 \value{
-- expected covariance matrix
+\itemize{
+\item expected covariance matrix
+}
 }
 \description{
-Compute boot-strapped Confidence Intervals for parameters in an \code{\link{mxModel}}
+Compute boot-strapped Confidence Intervals for parameters in an \code{\link[=mxModel]{mxModel()}}
 The function creates a sampling distribution for parameters by repeatedly drawing samples
 with replacement from your data and then computing the statistic for each redrawn sample.
 }
@@ -39,37 +41,38 @@ with replacement from your data and then computing the statistic for each redraw
 \dontrun{
 require(umx)
 data(demoOneFactor)
-latents  = c("g")
 manifests = names(demoOneFactor)
+
 m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
-	umxPath(latents, to = manifests),
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
+	umxPath(var = "G", fixedAt = 1.0)
 )
 
 umxCI_boot(m1, type = "par.expected")
 }
 }
 \references{
-- \url{https://openmx.ssri.psu.edu/thread/2598}
+\itemize{
+\item \url{https://openmx.ssri.psu.edu/thread/2598}
 Original written by \url{https://openmx.ssri.psu.edu/users/bwiernik}
 }
+}
 \seealso{
-- \code{\link{umxExpMeans}}, \code{\link{umxExpCov}}
+\itemize{
+\item \code{\link[=umxExpMeans]{umxExpMeans()}}, \code{\link[=umxExpCov]{umxExpCov()}}
+}
 
-Other Reporting functions: \code{\link{RMSEA.MxModel}},
-  \code{\link{RMSEA.summary.mxmodel}}, \code{\link{RMSEA}},
-  \code{\link{extractAIC.MxModel}}, \code{\link{loadings}},
-  \code{\link{residuals.MxModel}}, \code{\link{umxCI}},
-  \code{\link{umxCompare}}, \code{\link{umxConfint}},
-  \code{\link{umxExpCov}}, \code{\link{umxExpMeans}},
-  \code{\link{umxFitIndices}}, \code{\link{umxPlotACEv}},
-  \code{\link{umxSummary.MxModel}},
-  \code{\link{umxSummaryACEv}},
-  \code{\link{umxSummaryACE}},
-  \code{\link{umxSummarySexLim}},
-  \code{\link{umxSummarySimplex}},
-  \code{\link{umx_drop_ok}},
-  \code{\link{umx_standardize_RAM}}
+Other Reporting functions: \code{\link{RMSEA.MxModel}()},
+  \code{\link{RMSEA.summary.mxmodel}()},
+  \code{\link{RMSEA}()},
+  \code{\link{extractAIC.MxModel}()},
+  \code{\link{loadings}()},
+  \code{\link{residuals.MxModel}()}, \code{\link{umxCI}()},
+  \code{\link{umxCompare}()}, \code{\link{umxConfint}()},
+  \code{\link{umxExpCov}()}, \code{\link{umxExpMeans}()},
+  \code{\link{umxFitIndices}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxRotate}()},
+  \code{\link{umxSummary.MxModel}()}
 }
 \concept{Reporting functions}

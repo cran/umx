@@ -7,7 +7,7 @@
 umxFixAll(model, name = "_fixed", run = FALSE, verbose = FALSE)
 }
 \arguments{
-\item{model}{an \code{\link{mxModel}} within which to fix free parameters}
+\item{model}{an \code{\link[=mxModel]{mxModel()}} within which to fix free parameters}
 
 \item{name}{optional new name for the model. if you begin with a _ it will be made a suffix}
 
@@ -16,7 +16,9 @@ umxFixAll(model, name = "_fixed", run = FALSE, verbose = FALSE)
 \item{verbose}{whether to mention how many paths were fixed (default is FALSE)}
 }
 \value{
-- the fixed \code{\link{mxModel}}
+\itemize{
+\item the fixed \code{\link[=mxModel]{mxModel()}}
+}
 }
 \description{
 Fix all free parameters in a model using omxGetParameters()
@@ -24,25 +26,27 @@ Fix all free parameters in a model using omxGetParameters()
 \examples{
 require(umx)
 data(demoOneFactor)
-latents = c("G")
 manifests = names(demoOneFactor)
-m1 <- umxRAM("OneFactor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-	umxPath(latents, to = manifests),
+
+m1 = umxRAM("OneFactor", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1)
+	umxPath(var = "G", fixedAt = 1)
 )
 m2 = umxFixAll(m1, run = TRUE, verbose = TRUE)
 mxCompare(m1, m2)
 }
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-Other Modify or Compare Models: \code{\link{umxAdd1}},
-  \code{\link{umxDrop1}}, \code{\link{umxEquate}},
-  \code{\link{umxMI}}, \code{\link{umxModify}},
-  \code{\link{umxSetParameters}},
-  \code{\link{umxUnexplainedCausalNexus}},
+Other Modify or Compare Models: \code{\link{umxAdd1}()},
+  \code{\link{umxDrop1}()}, \code{\link{umxEquate}()},
+  \code{\link{umxMI}()}, \code{\link{umxModify}()},
+  \code{\link{umxSetParameters}()},
+  \code{\link{umxUnexplainedCausalNexus}()},
   \code{\link{umx}}
 }
 \concept{Modify or Compare Models}

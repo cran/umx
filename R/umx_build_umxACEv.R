@@ -67,27 +67,30 @@
 #' @param dzData The DZ dataframe.
 #' @param mzData The MZ dataframe.
 #' @param sep The separator in twin var names, often "_T" in vars like "dep_T1". Simplifies selDVs.
+#' @param data If provided, dzData and mzData are treated as valid levels of zyg to select() data sets (default = NULL)
+#' @param zyg If data provided, this column is used to select rows by zygosity (Default = "zygosity")
 #' @param type Analysis method one of c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS").
-#' @param allContinuousMethod "cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.
 #' @param dzAr The DZ genetic correlation (defaults to .5, vary to examine assortative mating).
 #' @param dzCr The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).
-#' @param addStd Whether to add the algebras to compute a std model (defaults to TRUE).
-#' @param addCI Whether to add intervals to compute CIs (defaults to TRUE).
+#' @param allContinuousMethod "cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.
 #' @param numObsDZ = Number of DZ twins: Set this if you input covariance data.
 #' @param numObsMZ = Number of MZ twins: Set this if you input covariance data.
+#' @param addStd Whether to add the algebras to compute a std model (defaults to TRUE).
+#' @param addCI Whether to add intervals to compute CIs (defaults to TRUE).
 #' @param boundDiag = Numeric lbound for diagonal of the a, c, and e matrices. Default = NULL (no bound)
 #' @param weightVar = If provided, a vector objective will be used to weight the data. (default = NULL).
 #' @param equateMeans Whether to equate the means across twins (defaults to TRUE).
 #' @param bVector Whether to compute row-wise likelihoods (defaults to FALSE).
 #' @param covMethod How to treat covariates: "fixed" (default) or "random".
-#' @param autoRun Whether to run the model, and return that (default), or just to create it and return without running.
+#' @param autoRun Whether to run the model (default), or just to create it and return without running.
 #' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"
 #' @param optimizer Optionally set the optimizer (default NULL does nothing).
-#' @return - \code{\link{mxModel}} of subclass mxModel.ACE
+#' @return - [mxModel()] of subclass mxModel.ACE
 #' @export
 #' @family Twin Modeling Functions
 #' @references - Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches 
-#' to the analysis of human behaviour. Heredity, 41(3), 249-320. \url{https://www.nature.com/articles/hdy1978101.pdf}
+#' to the analysis of human behaviour. *Heredity*, **41**, 249-320. <https://www.nature.com/articles/hdy1978101.pdf>
+#' @md
 #' @examples
 #' 
 #' # ==============================
@@ -104,15 +107,16 @@
 #' #    Function generates: "wt" -> "wt1" "wt2"
 #' # 2. umxACEv picks the variables it needs from the data.
 #' 
-#' selDVs = "wt"
-#' mzData <- twinData[twinData$zygosity %in% "MZFF", ]
-#' dzData <- twinData[twinData$zygosity %in% "DZFF", ]
-#' m1 = umxACEv(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
+#' mzData = twinData[twinData$zygosity %in% "MZFF", ]
+#' dzData = twinData[twinData$zygosity %in% "DZFF", ]
+#' m1 = umxACEv(selDVs = "wt", sep = "", dzData = dzData, mzData = mzData)
 #' 
+#' # A short cut (which is even shorter for "_T" twin data with "MZ"/"DZ" data in zygosity column is:
+#' m1 = umxACEv(selDVs = "wt", sep = "", dzData = "MZFF", mzData = "DZFF", data = twinData)
 #' # ========================================================
 #' # = Evidence for dominance ? (DZ correlation set to .25) =
 #' # ========================================================
-#' m2 = umxACEv("ADE", selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData, dzCr = .25)
+#' m2 = umxACEv("ADE", selDVs = "wt", sep = "", dzData = dzData, mzData = mzData, dzCr = .25)
 #' # note: the underlying matrices are still called A, C, and E.
 #' # I catch this in the summary table, so columns are labeled A, D, and E.
 #' # However, currently, the plot will say A, C, E.
@@ -137,7 +141,7 @@
 #' twinData[,c("ht1", "ht2")]= twinData[,c("ht1", "ht2")]*100
 #' mzData <- twinData[twinData$zygosity %in% "MZFF", ]
 #' dzData <- twinData[twinData$zygosity %in% "DZFF", ]
-#' m1 = umxACEv(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
+#' m1 = umxACEv(selDVs = "ht", sep = "", dzData = dzData, mzData = mzData)
 #' umxSummary(m1, std = FALSE) # unstandardized
 #' # tip: with report = "html", umxSummary can print the table to your browser!
 #' plot(m1)
@@ -145,7 +149,7 @@
 #' # ========================================================
 #' # = Evidence for dominance ? (DZ correlation set to .25) =
 #' # ========================================================
-#' m2 = umxACEv("ADE", selDVs = selDVs, sep="", dzData = dzData, mzData = mzData, dzCr = .25)
+#' m2 = umxACEv("ADE", selDVs = "ht", sep="", dzData = dzData, mzData = mzData, dzCr = .25)
 #' umxCompare(m2, m1) # Is ADE better?
 #' umxSummary(m2, comparison = m1) # nb: though this is ADE, matrices are still called A,C,E
 #'
@@ -239,15 +243,25 @@
 #' m1 = umxACEv(selDVs = selDVs, sep= "", dzData = dz, mzData= mz, numObsDZ= 569, numObsMZ= 351)
 #' umxSummary(m1, std = FALSE)
 #' 
-umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, mzData, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants", "marginals"),
-	dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, 
-	boundDiag = NULL, weightVar = NULL, equateMeans = TRUE, bVector = FALSE,  covMethod = c("fixed", "random"), 
+umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, mzData, dzAr = .5, dzCr = 1, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants", "marginals"),
+	data = NULL, zyg = "zygosity", weightVar = NULL, numObsDZ = NULL, numObsMZ = NULL, addStd = TRUE, addCI = TRUE, 
+	boundDiag = NULL, equateMeans = TRUE, bVector = FALSE,  covMethod = c("fixed", "random"), 
 	autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), optimizer = NULL) {
-		nSib = 2 # number of siblings in a twin pair
-		covMethod  = match.arg(covMethod)
-		type = match.arg(type)
+		nSib                = 2 # number of siblings in a twin pair
+		type                = match.arg(type)
+		covMethod           = match.arg(covMethod)
 		allContinuousMethod = match.arg(allContinuousMethod)
-
+		if(!is.null(data)){
+			if(is.null(dzData)){
+				dzData = "DZ"
+				mzData = "MZ"
+			}
+			if(is.null(sep)){
+				sep="_T"
+			}
+			mzData = data[data[,zyg] %in% mzData, ]
+			dzData = data[data[,zyg] %in% dzData, ]
+		}
 		xmu_twin_check(selDVs= selDVs, sep = sep, dzData = dzData, mzData = mzData, enforceSep = TRUE, nSib = nSib, optimizer = optimizer)
 		
 		if(dzCr == .25 & name == "ACE"){
@@ -349,19 +363,19 @@ umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, m
 		model = xmu_safe_run_summary(model, autoRun = autoRun, tryHard = tryHard, summary = TRUE, comparison = FALSE)
 		return(model)
 	}
-} # end umxACEvv
+} # end umxACEv
 
 
 #' Shows a compact, publication-style, summary of a variance-based Cholesky ACE model.
 #'
-#' Summarize a fitted Cholesky model returned by \code{\link{umxACEv}}. Can control digits, report comparison model fits,
+#' Summarize a fitted Cholesky model returned by [umxACEv()]. Can control digits, report comparison model fits,
 #' optionally show the Rg (genetic and environmental correlations), and show confidence intervals. the report parameter allows
 #' drawing the tables to a web browser where they may readily be copied into non-markdown programs like Word.
 #'
-#' See documentation for other umx models here: \code{\link{umxSummary}}.
+#' See documentation for other umx models here: [umxSummary()].
 #' 
 #' @aliases umxSummary.MxModelACEv
-#' @param model an \code{\link{mxModel}} to summarize
+#' @param model an [mxModel()] to summarize
 #' @param digits round to how many digits (default = 2)
 #' @param file The name of the dot file to write: "name" = use the name of the model.
 #' Defaults to NA = no plot.
@@ -373,18 +387,19 @@ umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, m
 #' @param report If "html", then open an html table of the results
 #' @param extended how much to report (FALSE)
 #' @param zero.print How to show zeros (".")
+#' @param show Here to support being called from generic xmu_safe_run_summary. User should ignore: can be c("std", "raw")
 #' @param ... Other parameters to control model summary
-#' @return - optional \code{\link{mxModel}}
+#' @return - optional [mxModel()]
 #' @export
-#' @family Twin Modeling Functions
-#' @family Reporting functions
-#' @seealso - \code{\link{umxACEv}} 
-#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @family Twin Reporting Functions
+#' @seealso - [umxACEv()] 
+#' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
+#' @md
 #' @examples
 #' require(umx)
 #' data(twinData)
-#' mzData <- subset(twinData, zygosity == "MZFF")
-#' dzData <- subset(twinData, zygosity == "DZFF")
+#' mzData = subset(twinData, zygosity == "MZFF")
+#' dzData = subset(twinData, zygosity == "DZFF")
 #' m1 = umxACEv(selDVs = "bmi", sep = "", dzData = dzData, mzData = mzData)
 #' umxSummary(m1, std = FALSE)
 #' \dontrun{
@@ -392,8 +407,14 @@ umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, m
 #' umxSummary(m1, file = "name", std = TRUE)
 #' stdFit = umxSummary(m1, returnStd = TRUE)
 #' }
-umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
+umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", show = c("std", "raw"), ...) {
+	show = match.arg(show, c("std", "raw"))
+	if(show != "std"){
+		std = FALSE
+		# message("Polite message: in next version, show= will be replaced with std=TRUE/FALSE/NULL")
+	}
 	report = match.arg(report)
+	commaSep = paste0(umx_set_separator(silent=TRUE), " ")
 	# depends on R2HTML::HTML
 	if(typeof(model) == "list"){ # call self recursively
 		for(thisFit in model) {
@@ -402,7 +423,7 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 		}
 	} else {
 	umx_has_been_run(model, stop = TRUE)
-	umx_show_fit_or_comparison(model, comparison = comparison, digits = digits)
+	xmu_show_fit_or_comparison(model, comparison = comparison, digits = digits)
 	selDVs = dimnames(model$top.expCovMZ)[[1]]
 	nVar   = length(selDVs)/2;
 
@@ -495,7 +516,7 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 			# 4. for tables, that’s it: just print them out
 			# 5. for plots, tag labels with type+name of from- and to- vars
 			# 	* This requires some custom code for each model type.
-			# 6. Hence the umx_stash_CIs idea... if it would generalize.
+			# 6. Hence the xmu_CI_stash idea... if it would generalize.
 
 			message("Creating CI-based report!")
 			# CIs exist, get lower and upper CIs as a dataframe
@@ -538,7 +559,7 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 				thisMatrixRow  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\1", x = fullName))
 				thisMatrixCol  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\2", x = fullName))
 				CIparts        = round(CIlist[n, c("estimate", "lbound", "ubound")], digits)
-				thisString     = paste0(CIparts[1], " [",CIparts[2], ", ",CIparts[3], "]")
+				thisString     = paste0(CIparts[1], " [",CIparts[2], commaSep, CIparts[3], "]")
 
 				if(grepl("^A", thisMatrixName)) {
 					A_CI[thisMatrixRow, thisMatrixCol] = thisString
@@ -593,7 +614,7 @@ umxSummary.MxModelACEv <- umxSummaryACEv
 #' Plots an ACE model graphically, opening the result in the browser (or a graphviz application).
 #'
 #' @aliases plot.MxModelACEv
-#' @param x \code{\link{umxACEv}} model to plot.
+#' @param x [umxACEv()] model to plot.
 #' @param file The name of the dot file to write: Default ("name") = use the name of the model. NA = don't plot.
 #' @param digits How many decimals to include in path loadings (default = 2)
 #' @param means Whether to show means paths (default = FALSE)
@@ -604,7 +625,8 @@ umxSummary.MxModelACEv <- umxSummaryACEv
 #' @export
 #' @family Plotting functions
 #' @family Reporting functions
-#' @references - \url{https://www.github.com/tbates/umx}
+#' @references - <https://www.github.com/tbates/umx>
+#' @md
 #' @examples
 #' require(umx)
 #' data(twinData)
@@ -615,10 +637,10 @@ umxSummary.MxModelACEv <- umxSummaryACEv
 #' plot(m1, std = FALSE) # don't standardize
 umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, ...) {
 	# TODO umxPlotACEv: update to matrix version instead of label hunting
-	# TODO umxPlotACEv: use umx_dot_define_shapes etc.?
-	# preOut  = umx_dot_define_shapes(latents = out$latents, manifests = selDVs[1:varCount])
-	# top     = umx_dot_rank(out$latents, "^[ace]_cp", "min")
-	# bottom  = umx_dot_rank(out$latents, "^[ace]s[0-9]+$", "max")
+	# TODO umxPlotACEv: use xmu_dot_define_shapes etc.?
+	# preOut  = xmu_dot_define_shapes(latents = out$latents, manifests = selDVs[1:varCount])
+	# top     = xmu_dot_rank(out$latents, "^[ace]_cp", "min")
+	# bottom  = xmu_dot_rank(out$latents, "^[ace]s[0-9]+$", "max")
 	# digraph = paste0("digraph G {\nsplines=\"FALSE\";\n", preOut, top, bottom, out$str, "\n}");
 	if(!class(x) == "MxModelACEv"){
 		stop("The first parameter of umxPlotACE must be an ACEv model, you gave me a ", class(x))
@@ -694,14 +716,15 @@ plot.MxModelACEv <- umxPlotACEv
 
 #' Standardize an ACE variance components model (ACEv)
 #'
-#' umx_standardize_ACE allows umx_standardize to standardize an ACE variance components model.
+#' xmu_standardize_ACE allows umx_standardize to standardize an ACE variance components model.
 #'
-#' @param model An \code{\link{umxACEv}} model to standardize.
+#' @param model An [umxACEv()] model to standardize.
 #' @param ... Other parameters.
-#' @return - A standardized \code{\link{umxACEv}} model.
+#' @return - A standardized [umxACEv()] model.
 #' @export
-#' @family zAdvanced Helpers
-#' @references - \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+#' @family xmu internal not for end user
+#' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
+#' @md
 #' @examples
 #' require(umx)
 #' data(twinData)
@@ -710,7 +733,7 @@ plot.MxModelACEv <- umxPlotACEv
 #' dzData <- twinData[twinData$zygosity %in% "DZFF",][1:80,]
 #' m1  = umxACEv(selDVs = selDVs, sep="", dzData = dzData, mzData = mzData)
 #' std = umx_standardize(m1)
-umx_standardize_ACEv <- function(model, ...) {
+xmu_standardize_ACEv <- function(model, ...) {
 	# TODO umxSummaryACEv these already exist if a_std exists..
 	message("Standardized variance-based models may yield negative variances...")
 	if(typeof(model) == "list"){ # call self recursively
@@ -748,4 +771,4 @@ umx_standardize_ACEv <- function(model, ...) {
 	}
 }
 #' @export
-umx_standardize.MxModelACEv <- umx_standardize_ACEv
+umx_standardize.MxModelACEv <- xmu_standardize_ACEv

@@ -3,19 +3,21 @@
 \name{umxAPA}
 \alias{umxAPA}
 \alias{summaryAPA}
-\title{Creates nicely formatted journal style summaries of lm models, p-values, data-frames etc.}
+\title{Creates nicely formatted journal-style summaries of models, p-values, data-frames and much more.}
 \usage{
-umxAPA(obj = .Last.value, se = NULL, std = FALSE, digits = 2,
-  use = "complete", min = 0.001, addComparison = NA,
+umxAPA(obj = .Last.value, se = NULL, p = NULL, std = FALSE,
+  digits = 2, use = "complete", min = 0.001, addComparison = NA,
   report = c("markdown", "html"), lower = TRUE, test = c("Chisq",
   "LRT", "Rao", "F", "Cp"), SEs = TRUE, means = TRUE)
 }
 \arguments{
-\item{obj}{A model (e.g. \link{lm}, lme, glm, t-test), beta-value, or data.frame}
+\item{obj}{A model (e.g. \code{\link[=lm]{lm()}}, \code{\link[=lme]{lme()}}, \code{\link[=glm]{glm()}}, \code{\link[=t.test]{t.test()}}), beta-value, or \link{data.frame}}
 
-\item{se}{If obj is a beta, se treated as standard-error (returning a CI). 
-If obj is a model, used to select effect of interest (blank for all effects). 
+\item{se}{If obj is a beta, se treated as standard-error (returning a CI).
+If obj is a model, used to select effect of interest (blank for all effects).
 Finally, set se to the CI c(lower, upper), to back out the SE.}
+
+\item{p}{If obj is a beta, use p-value to compute SE (returning a CI).}
 
 \item{std}{Whether to report std betas (re-runs model on standardized data).}
 
@@ -38,33 +40,32 @@ Finally, set se to the CI c(lower, upper), to back out the SE.}
 \item{means}{Whether or not to show means in a correlation table (Default TRUE)}
 }
 \value{
-- string
+\itemize{
+\item string
+}
 }
 \description{
-umxAPA creates summaries from a range of inputs. Use it for reporting lm models, effects, and summarizing data.
-
-1. Given an lm, will return a formatted effect, including 95\% CI 
+\code{umxAPA} creates summaries from a range of inputs. Use it for reporting \code{lm} models, effects, and summarizing data.
+\enumerate{
+\item Given an \code{lm}, \code{umxAPA} will return a formatted effect, including 95\% CI
 in square brackets, for one of the effects (specified by name in se). e.g.:
-\code{\link{umxAPA}}(m1, "wt") yields:
-
-\eqn{\beta} = -5.344 [-6.486, -4.203], p< 0.001
-
-2. Given a dataframe, summaryAPA will return a table of correlations, with
-the mean and SD of each variable as the last row. So, 
-\code{umxAPA(mtcars[,c("cyl", "wt", "mpg", )])} yields a table of 
+\code{umxAPA(lm(mpg~wt, data=mtcars), "wt")} yields: \eqn{\beta} = -5.344 [-6.486, -4.203], p< 0.001
+\item This also works for \code{\link[=t.test]{t.test()}}, \code{\link[stats:glm]{stats::glm()}}, \code{\link[=cor.test]{cor.test()}}, and others as I come across them.
+\item get a CI from obj=beta and se=se : \code{umxAPA(-0.30, .03) # \eqn{\beta} = -0.3 [-0.36, -0.24]}
+\item Back out an SE from b and CI: \code{umxAPA(-0.030, c(-0.073, 0.013)) # \eqn{\beta} = -0.03, se =0.02}
+\item Given only a number as obj, will be treated as a p-value as returned in APA format.
+\item Given a dataframe, \code{umxAPA} will return a table of correlations, with
+the mean and SD of each variable as the last row. So,
+\verb{umxAPA(mtcars[,c("cyl", "wt", "mpg", )]} yields a table of
 correlations, means and SDs thus:
-
 \tabular{lccc}{
-        \tab cyl         \tab  wt          \tab mpg          \cr
+\tab cyl         \tab  wt          \tab mpg          \cr
 cyl     \tab 1           \tab  0.78        \tab -0.85        \cr
 wt      \tab 0.78        \tab  1           \tab -0.87        \cr
 mpg     \tab -0.85       \tab  -0.87       \tab 1            \cr
 mean_sd \tab 6.19 (1.79) \tab  3.22 (0.98) \tab 20.09 (6.03)
 }
-
-3. Given obj and se, umxAPA returns a CI based on 1.96 times the se.
-
-4. Given only a number as obj will be treated as a p-value as returned in APA format.
+}
 }
 \examples{
 
@@ -112,29 +113,36 @@ umxAPA(.000182613)
 umxAPA(.000182613,  addComparison=FALSE)
 
 # ========================
-# = report a correlation =
+# = Report a correlation =
 # ========================
 data(twinData)
-selDVs = c("wt1", "wt2")
-mzData <- subset(twinData, zygosity \%in\% c("MZFF", "MZMM"))
-x = cor.test(~ wt1 + wt2, data = mzData)
-umxAPA(x)
+tmp = subset(twinData, zygosity \%in\% c("MZFF", "MZMM"))
+m1 = cor.test(~ wt1 + wt2, data = tmp)
+umxAPA(m1)
 
+# ===================
+# = Report a t-test =
+# ===================
+m1 = t.test(extra ~ group, data = sleep)
+umxAPA(m1)
 }
 \references{
-- \url{https://github.com/tbates/umx}, \url{https://my.ilstu.edu/~jhkahn/apastats.html}
+\itemize{
+\item \url{https://github.com/tbates/umx}, \url{https://my.ilstu.edu/~jhkahn/apastats.html}
+}
 }
 \seealso{
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
-  \code{\link{umxEval}}, \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
-  \code{\link{umx_names}}, \code{\link{umx_parameters}},
-  \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx_time}}, \code{\link{umx}},
-  \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{tmx_show}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_names}()},
+  \code{\link{umx_print}()}, \code{\link{umx_time}()},
+  \code{\link{umx}}
 }
 \concept{Reporting Functions}

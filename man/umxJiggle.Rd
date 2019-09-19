@@ -7,7 +7,7 @@
 umxJiggle(matrixIn, mean = 0, sd = 0.1, dontTouch = 0)
 }
 \arguments{
-\item{matrixIn}{an \code{\link{mxMatrix}} to jiggle the values of}
+\item{matrixIn}{an \code{\link[=mxMatrix]{mxMatrix()}} to jiggle the values of}
 
 \item{mean}{the mean value to add to each value}
 
@@ -16,7 +16,9 @@ umxJiggle(matrixIn, mean = 0, sd = 0.1, dontTouch = 0)
 \item{dontTouch}{A value, which, if found, will be left as-is (defaults to 0)}
 }
 \value{
-- \code{\link{mxMatrix}}
+\itemize{
+\item \code{\link[=mxMatrix]{mxMatrix()}}
+}
 }
 \description{
 umxJiggle takes values in a matrix and jiggles them
@@ -27,16 +29,18 @@ mat1 = umxJiggle(mat1)
 }
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Advanced Model Building Functions: \code{\link{umxLabel}},
-  \code{\link{umxLatent}}, \code{\link{umxRAM2Ordinal}},
-  \code{\link{umxThresholdMatrix}},
-  \code{\link{umxValues}},
-  \code{\link{umx_fix_first_loadings}},
-  \code{\link{umx_fix_latents}},
-  \code{\link{umx_get_bracket_addresses}},
-  \code{\link{umx_string_to_algebra}}, \code{\link{umx}}
+Other Advanced Model Building Functions: \code{\link{umxLabel}()},
+  \code{\link{umxRAM2Ordinal}()},
+  \code{\link{umxThresholdMatrix}()},
+  \code{\link{umxValues}()},
+  \code{\link{umx_fix_first_loadings}()},
+  \code{\link{umx_fix_latents}()},
+  \code{\link{umx_get_bracket_addresses}()},
+  \code{\link{umx_string_to_algebra}()}, \code{\link{umx}}
 }
 \concept{Advanced Model Building Functions}

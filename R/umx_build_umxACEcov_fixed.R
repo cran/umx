@@ -16,9 +16,9 @@
 #' Run a Cholesky with covariates  ("fixed" / definition variables in the means style)
 #'
 #' Often, it is appropriate to include covariates in models.
-#' A simple method is to regress covariates from the data using \code{\link{lm}}.
+#' A simple method is to regress covariates from the data using [lm()].
 #' This is a 'fixed' effects approach.
-#' \code{\link{umx_residualize}} makes this easier, even on twin data, and with complex regression formulas.
+#' [umx_residualize()] makes this easier, even on twin data, and with complex regression formulas.
 #' 
 #' While these estimates are unbiased, modeling this regression in the means element of the twin model
 #' allows correct tests for significance. Also, if DVs are not continuous, the lm-based approach
@@ -35,7 +35,7 @@
 #' covariates must be non-NA, thus dropping any rows where one or more covariates are missing.
 #' This is wasteful of data, but often cannot be avoided (though see note below).
 #' 
-#' \emph{note}: An alternative is the \code{\link{umxACEcov}} 'random' option. This model adds covariates to
+#' \emph{note}: An alternative is the [umxACEcov()] 'random' option. This model adds covariates to
 #' the expected covariance matrix, thus allowing all data to be preserved.
 #' The (BIG) downside is that this method has a strong assumption of multivariate normality.
 #' Covariates like age, which are perfectly correlated in twins cannot be used.
@@ -56,14 +56,16 @@
 #' @param equateMeans Whether to equate the means across twins (defaults to TRUE).
 #' @param bVector Whether to compute row-wise likelihoods (defaults to FALSE).
 #' @param weightVar (optional) Variable containing the weights to apply to data.
-#' @param autoRun Whether to run the model, and return that (default), or just to create it and return without running.
+#' @param autoRun Whether to run the model (default), or just to create it and return without running.
 #' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"
 #' @param optimizer (optionally) set the optimizer. Default (NULL) does nothing.
-#' @return - \code{\link{mxModel}} of subclass mxModel.ACEcov
+#' @return - [mxModel()] of subclass mxModel.ACEcov
 #' @seealso umx_residualize umxACE
 #' @family Twin Modeling Functions
 #' @export
+#' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(twinData) # ?twinData from Australian twins.
 #' # Pick the variables
@@ -78,8 +80,8 @@
 #' # = lm-based equivalent =
 #' # =======================
 #' df_res = umx_residualize(ht ~ age, suffixes = c("1", "2"), data = twinData)
-#' mzData <- df_res[df_res$zygosity %in% "MZFF", ]
-#' dzData <- df_res[df_res$zygosity %in% "DZFF", ]
+#' mzData = df_res[df_res$zygosity %in% "MZFF", ]
+#' dzData = df_res[df_res$zygosity %in% "DZFF", ]
 #' m3 = umxACE("lm_based", selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
 #' # ===============================
 #' # = Example with two covariates =
@@ -92,6 +94,7 @@
 #' m1 = umxACE_cov_fixed(selDVs = selDVs, selCovs = selCovs, sep = "",
 #' 	     dzData = dzData, mzData = mzData)
 #' m1 = umxACE(selDVs = selDVs, sep = "", dzData = dzData, mzData = mzData)
+#' }
 umxACE_cov_fixed <- function(name = "ACEcov", selDVs, selCovs = NULL, dzData, mzData, sep = NULL, dzAr = .5, dzCr = 1, addStd = TRUE, addCI = TRUE, boundDiag = 0, weightVar = NULL, equateMeans = TRUE, bVector = FALSE, optimizer = NULL, autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")) {
 		tryHard = match.arg(tryHard)
 	if(tryHard == "yes"){

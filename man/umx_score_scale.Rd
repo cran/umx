@@ -23,7 +23,7 @@ umx_score_scale(base = NULL, pos = NULL, rev = NULL, min = 1,
 
 \item{score}{= Totals or Mean (default = "totals")}
 
-\item{name}{= name of the scale to be returned. Defaults to "<base>_score"}
+\item{name}{= name of the scale to be returned. Defaults to "base_score"}
 }
 \value{
 \itemize{
@@ -31,9 +31,9 @@ umx_score_scale(base = NULL, pos = NULL, rev = NULL, min = 1,
 }
 }
 \description{
-use this function to generate scores as the sum of the responses to the normal and reversed items in a scale.
+Use this function to generate scores as the appropriate sum of responses to the normal and reversed items in a scale.
 
-Items must be named on the pattern <base><n>. \code{base} is the string common to all item names (variable names).
+Items must be named on the pattern \<base\>\<n\>, where \code{base} is the string common to all item (column) names.
 \code{pos} and \code{rev} are vectors of the item numbers for the normal and reverse-scored item numbers.
 To reverse items, the function uses \code{itemMax} is the high score (to compute how to reverse items).
 \code{min} defaults to 1.
@@ -58,16 +58,17 @@ all(RevelleE == tmp[,"E"], na.rm = TRUE)
 
 }
 \seealso{
-Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}},
-  \code{\link{qm}}, \code{\link{umxBrownie}},
-  \code{\link{umxFactor}}, \code{\link{umxVersion}},
-  \code{\link{umx_array_shift}},
-  \code{\link{umx_cell_is_on}},
-  \code{\link{umx_cont_2_quantiles}},
-  \code{\link{umx_find_object}}, \code{\link{umx_make}},
-  \code{\link{umx_msg}}, \code{\link{umx_open_CRAN_page}},
-  \code{\link{umx_pad}}, \code{\link{umx_pb_note}},
-  \code{\link{umx_print}}, \code{\link{umx_scale}},
-  \code{\link{umx}}, \code{\link{xmu_check_variance}}
+Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
+  \code{\link{qm}()}, \code{\link{umxBrownie}()},
+  \code{\link{umxFactor}()}, \code{\link{umxLav2RAM}()},
+  \code{\link{umxVersion}()},
+  \code{\link{umx_array_shift}()},
+  \code{\link{umx_cont_2_quantiles}()},
+  \code{\link{umx_find_object}()},
+  \code{\link{umx_make}()}, \code{\link{umx_msg}()},
+  \code{\link{umx_open_CRAN_page}()},
+  \code{\link{umx_pad}()}, \code{\link{umx_pb_note}()},
+  \code{\link{umx_print}()}, \code{\link{umx}},
+  \code{\link{xmu_cell_is_on}()}
 }
 \concept{Miscellaneous Utility Functions}

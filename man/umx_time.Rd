@@ -8,7 +8,7 @@ umx_time(x = NA, formatStr = c("simple", "std",
   "custom \%H \%M \%OS3"), tz = "GMT", autoRun = TRUE)
 }
 \arguments{
-\item{x}{A \code{\link{mxModel}} or list of models for which to display elapsed time, or 'start' or 'stop'}
+\item{x}{A \code{\link[=mxModel]{mxModel()}} or list of models for which to display elapsed time, or 'start' or 'stop'}
 
 \item{formatStr}{A format string, defining how to show the time (defaults to human readable)}
 
@@ -17,7 +17,9 @@ umx_time(x = NA, formatStr = c("simple", "std",
 \item{autoRun}{If TRUE (default), run the model if it appears not to have been.}
 }
 \value{
-- invisible time string
+\itemize{
+\item invisible time string
+}
 }
 \description{
 A function to compactly report how long a model took to execute. Comes with some preset styles
@@ -36,36 +38,41 @@ If a model has not been run, umx_time will run it for you.
 }
 \examples{
 require(umx)
+umx_time('stop') # alert user stop called when not yet started... 
+umx_time('stop')
 umx_time('start')
 data(demoOneFactor)
 latents  = c("G")
 manifests = names(demoOneFactor)
-myData = mxData(cov(demoOneFactor), type = "cov", numObs = 500)
-m1 <- umxRAM("One Factor", data = myData,
+myData = mxData(cov(demoOneFactor), type = "cov", numObs=500)
+m1 = umxRAM("umx_time_example", data = myData,
 	umxPath(from = latents, to = manifests),
 	umxPath(var = manifests),
 	umxPath(var = latents, fixedAt = 1)
 )
-umx_time(m1)
+umx_time(m1) # report time from mxModel
 m2 = umxRun(m1)
-umx_time(c(m1, m2))
-umx_time('stop')
-# elapsed time: .3 seconds
+umx_time(c(m1, m2)) # print comparison table
+umx_time('stop') # report the time since timer last started, and restart
+umx_time('stop') # report the time since timer was restarted.
+
 }
 \references{
-- \url{https://www.github.com/tbates/umx}
+\itemize{
+\item \url{https://www.github.com/tbates/umx}
+}
 }
 \seealso{
-Other Reporting Functions: \code{\link{loadings.MxModel}},
-  \code{\link{tmx_is.identified}}, \code{\link{tmx_show}},
-  \code{\link{umxAPA}}, \code{\link{umxEval}},
-  \code{\link{umxFactorScores}},
-  \code{\link{umxGetParameters}}, \code{\link{umxReduce}},
-  \code{\link{umxSummary}}, \code{\link{umxWeightedAIC}},
-  \code{\link{umx_APA_pval}}, \code{\link{umx_aggregate}},
-  \code{\link{umx_names}}, \code{\link{umx_parameters}},
-  \code{\link{umx_print}},
-  \code{\link{umx_show_fit_or_comparison}},
-  \code{\link{umx}}, \code{\link{xmu_get_CI}}
+Other Reporting Functions: \code{\link{FishersMethod}()},
+  \code{\link{loadings.MxModel}()},
+  \code{\link{tmx_is.identified}()},
+  \code{\link{tmx_show}()}, \code{\link{umxAPA}()},
+  \code{\link{umxFactorScores}()},
+  \code{\link{umxGetParameters}()},
+  \code{\link{umxParameters}()}, \code{\link{umxReduce}()},
+  \code{\link{umxWeightedAIC}()},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_aggregate}()}, \code{\link{umx_names}()},
+  \code{\link{umx_print}()}, \code{\link{umx}}
 }
 \concept{Reporting Functions}

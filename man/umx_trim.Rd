@@ -9,7 +9,7 @@ umx_trim(string, removeThis = NULL)
 \arguments{
 \item{string}{to trim}
 
-\item{removeThis}{if not NULL then this string is removed wherever found in 'string'}
+\item{removeThis}{if not NULL then this regular expression is removed wherever found in 'string'}
 }
 \value{
 \itemize{
@@ -18,26 +18,28 @@ umx_trim(string, removeThis = NULL)
 }
 \description{
 Returns string without leading or trailing whitespace, like the php function.
-See also built-in \url{trimws} does the same.
+See also built-in \code{\link[base:trimws]{base::trimws()}} does the same.
 }
 \examples{
 umx_trim(" dog") # "dog"
+trimws(" dog ", "l") # added by R in v 3.3.0
 umx_trim("dog ") # "dog"
 umx_trim("\\t dog \\n") # "dog"
-umx_trim("xlsx dog.xlsx", "\\\\.xlsx$") # "dog"
+umx_trim("xlsx dog.xlsx", "\\\\.?xlsx ?") # "dog"
 }
 \references{
 \itemize{
-\item \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
-\url{trimws}
+\code{\link[base:trimws]{base::trimws()}}
 
-Other String Functions: \code{\link{umx_explode_twin_names}},
-  \code{\link{umx_explode}}, \code{\link{umx_grep}},
-  \code{\link{umx_names}}, \code{\link{umx_object_as_str}},
-  \code{\link{umx_paste_names}}, \code{\link{umx_rot}},
-  \code{\link{umx_write_to_clipboard}}, \code{\link{umx}}
+Other String Functions: \code{\link{umx_explode_twin_names}()},
+  \code{\link{umx_explode}()}, \code{\link{umx_grep}()},
+  \code{\link{umx_names}()},
+  \code{\link{umx_object_as_str}()},
+  \code{\link{umx_paste_names}()}, \code{\link{umx_rot}()},
+  \code{\link{umx_write_to_clipboard}()}, \code{\link{umx}}
 }
 \concept{String Functions}

@@ -9,7 +9,7 @@ umxPlotGxEbiv(x, xlab = NA, location = "topleft",
   separateGraphs = FALSE, ...)
 }
 \arguments{
-\item{x}{A fitted \code{\link{umxGxEbiv}} model to plot}
+\item{x}{A fitted \code{\link[=umxGxEbiv]{umxGxEbiv()}} model to plot}
 
 \item{xlab}{String to use for the x label (default = NA, which will use the variable name)}
 
@@ -21,7 +21,7 @@ see ?legend for alternatives like bottomright}
 \item{...}{Optional additional parameters}
 }
 \value{
--
+None
 }
 \description{
 Plot GxE results (univariate environmental moderation of ACE components).
@@ -45,19 +45,25 @@ umxPlotGxEbiv(m1, xlab = "wt", separateGraphs = TRUE, location = "topleft")
 }
 }
 \references{
-- \url{https://tbates.github.io}
+\itemize{
+\item \url{https://tbates.github.io}
+}
 }
 \seealso{
-- \code{\link{plot}()}, \code{\link{umxSummary}()} work for IP, CP, GxE, SAT, and ACE models.
+\itemize{
+\item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, and ACE models.
+}
 
-- \code{\link{umxGxEbiv}}
+\itemize{
+\item \code{\link[=umxGxEbiv]{umxGxEbiv()}}
+}
 
-Other Plotting functions: \code{\link{plot.MxLISRELModel}},
-  \code{\link{plot.MxModel}}, \code{\link{umxPlotACEcov}},
-  \code{\link{umxPlotACEv}}, \code{\link{umxPlotACE}},
-  \code{\link{umxPlotCPold}}, \code{\link{umxPlotCP}},
-  \code{\link{umxPlotGxE}}, \code{\link{umxPlotIP}},
-  \code{\link{umxPlotSexLim}},
-  \code{\link{umxPlotSimplex}}, \code{\link{umx}}
+Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
+  \code{\link{plot.MxModel}()},
+  \code{\link{umxPlotACEcov}()},
+  \code{\link{umxPlotACEv}()}, \code{\link{umxPlotACE}()},
+  \code{\link{umxPlotCP}()}, \code{\link{umxPlotGxE}()},
+  \code{\link{umxPlotIP}()}, \code{\link{umxPlotSexLim}()},
+  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
 }
 \concept{Plotting functions}

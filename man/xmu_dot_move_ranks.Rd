@@ -21,42 +21,75 @@ xmu_dot_move_ranks(min = NULL, same = NULL, max = NULL, old_min,
 \item{old_max}{vars to group at bottom of plot}
 }
 \value{
-- list(min=min, same=same, max=max)
+\itemize{
+\item list(min=min, same=same, max=max)
+}
 }
 \description{
-xmu_dot_move_ranks (not for end users)
+Variables will be moved from any existing rank to the new one. Setting a rank to "" will clear it.
+}
+\examples{
+old_min = c("min1", "min2")
+old_same = c("s1", "s2")
+old_max = paste0("x", 1:3)
+
+# Add L1 to min
+xmu_dot_move_ranks(min = "L1", old_min= old_min, old_same= old_same, old_max= old_max)
+
+# Move min1 to max
+xmu_dot_move_ranks(max = "min1", old_min= old_min, old_same= old_same, old_max= old_max)
+
+# Clear min
+xmu_dot_move_ranks(min = "", old_min= old_min, old_same= old_same, old_max= old_max)
 }
 \seealso{
-Other xmu internal not for end user: \code{\link{umxModel}},
-  \code{\link{umx}}, \code{\link{xmuHasSquareBrackets}},
-  \code{\link{xmuLabel_MATRIX_Model}},
-  \code{\link{xmuLabel_Matrix}},
-  \code{\link{xmuLabel_RAM_Model}}, \code{\link{xmuMI}},
-  \code{\link{xmuMakeDeviationThresholdsMatrices}},
-  \code{\link{xmuMakeOneHeadedPathsFromPathList}},
-  \code{\link{xmuMakeTwoHeadedPathsFromPathList}},
-  \code{\link{xmuMaxLevels}}, \code{\link{xmuMinLevels}},
-  \code{\link{xmuPropagateLabels}},
-  \code{\link{xmu_assemble_twin_supermodel}},
-  \code{\link{xmu_check_levels_identical}},
-  \code{\link{xmu_clean_label}},
-  \code{\link{xmu_dot_make_paths}},
-  \code{\link{xmu_dot_make_residuals}},
-  \code{\link{xmu_dot_maker}},
-  \code{\link{xmu_dot_rank_str}},
-  \code{\link{xmu_lavaan_process_group}},
-  \code{\link{xmu_make_mxData}},
-  \code{\link{xmu_make_top_twin}},
-  \code{\link{xmu_model_needs_means}},
-  \code{\link{xmu_safe_run_summary}},
-  \code{\link{xmu_set_sep_from_suffix}},
-  \code{\link{xmu_simplex_corner}},
-  \code{\link{xmu_start_value_list}},
-  \code{\link{xmu_starts}}
+Other xmu internal not for end user: \code{\link{umxModel}()},
+  \code{\link{umx_standardize}()}, \code{\link{umx}},
+  \code{\link{xmuHasSquareBrackets}()},
+  \code{\link{xmuLabel_MATRIX_Model}()},
+  \code{\link{xmuLabel_Matrix}()},
+  \code{\link{xmuLabel_RAM_Model}()},
+  \code{\link{xmuMI}()},
+  \code{\link{xmuMakeDeviationThresholdsMatrices}()},
+  \code{\link{xmuMakeOneHeadedPathsFromPathList}()},
+  \code{\link{xmuMakeTwoHeadedPathsFromPathList}()},
+  \code{\link{xmuMaxLevels}()},
+  \code{\link{xmuMinLevels}()},
+  \code{\link{xmuPropagateLabels}()},
+  \code{\link{xmu_CI_merge}()},
+  \code{\link{xmu_CI_stash}()},
+  \code{\link{xmu_DF_to_mxData_TypeCov}()},
+  \code{\link{xmu_PadAndPruneForDefVars}()},
+  \code{\link{xmu_assemble_twin_supermodel}()},
+  \code{\link{xmu_check_levels_identical}()},
+  \code{\link{xmu_check_needs_means}()},
+  \code{\link{xmu_check_variance}()},
+  \code{\link{xmu_clean_label}()},
+  \code{\link{xmu_describe_data_WLS}()},
+  \code{\link{xmu_dot_make_paths}()},
+  \code{\link{xmu_dot_make_residuals}()},
+  \code{\link{xmu_dot_maker}()},
+  \code{\link{xmu_dot_rank_str}()},
+  \code{\link{xmu_get_CI}()},
+  \code{\link{xmu_lavaan_process_group}()},
+  \code{\link{xmu_make_bin_cont_pair_data}()},
+  \code{\link{xmu_make_mxData}()},
+  \code{\link{xmu_make_top_twin}()},
+  \code{\link{xmu_name_from_lavaan_str}()},
+  \code{\link{xmu_safe_run_summary}()},
+  \code{\link{xmu_set_sep_from_suffix}()},
+  \code{\link{xmu_show_fit_or_comparison}()},
+  \code{\link{xmu_simplex_corner}()},
+  \code{\link{xmu_standardize_ACEcov}()},
+  \code{\link{xmu_standardize_ACEv}()},
+  \code{\link{xmu_standardize_ACE}()},
+  \code{\link{xmu_standardize_CP}()},
+  \code{\link{xmu_standardize_IP}()},
+  \code{\link{xmu_standardize_RAM}()},
+  \code{\link{xmu_standardize_SexLim}()},
+  \code{\link{xmu_standardize_Simplex}()},
+  \code{\link{xmu_start_value_list}()},
+  \code{\link{xmu_starts}()},
+  \code{\link{xmu_twin_check}()}
 }
-\concept{Graphviz
-# add L1 to min
-xmu_dot_move_ranks(min = "L1", old_min = c("min1", "min2"), old_same = c("s1", "s2"), old_max = paste0("x", 1:3))
-# move min1 to max
-xmu_dot_move_ranks(max = "min1", old_min = c("min1", "min2"), old_same = c("s1", "s2"), old_max = paste0("x", 1:3))}
 \concept{xmu internal not for end user}

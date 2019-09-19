@@ -21,45 +21,53 @@ A value of zero sets always to 'No' (i.e., do not checkpoint all models during o
 \item{model}{(optional) model to set options in (default = NULL)}
 }
 \value{
-- mxModel if provided
+\itemize{
+\item mxModel if provided
+}
 }
 \description{
 Set the checkpoint status for a model or global options
 }
 \examples{
+
+\dontrun{
 umx_set_checkpoint(interval = 1, "evaluations", dir = "~/Desktop/")
-# turn off checkpointing with interval = 0
+# Turn off checkpointing with interval = 0
 umx_set_checkpoint(interval = 0)
 umx_set_checkpoint(2, "evaluations", prefix="SNP_1")
 require(umx)
 data(demoOneFactor)
-latents  = c("G")
 manifests = names(demoOneFactor)
-m1 <- umxRAM("One Factor", data = mxData(cov(demoOneFactor), type = "cov", numObs = 500),
-	umxPath(latents, to = manifests),
+m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+	umxPath("G", to = manifests),
 	umxPath(var = manifests),
-	umxPath(var = latents, fixedAt = 1.0)
+	umxPath(var = "G", fixedAt = 1)
 )
 m1 = umx_set_checkpoint(model = m1)
 m1 = mxRun(m1)
 umx_checkpoint(0)
 }
+}
 \references{
-- \url{https://tbates.github.io}, \url{https://github.com/tbates/umx}, \url{https://openmx.ssri.psu.edu}
+\itemize{
+\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+}
 }
 \seealso{
-Other Get and set: \code{\link{umx_default_option}},
-  \code{\link{umx_get_checkpoint}},
-  \code{\link{umx_get_options}},
-  \code{\link{umx_set_auto_plot}},
-  \code{\link{umx_set_auto_run}},
-  \code{\link{umx_set_condensed_slots}},
-  \code{\link{umx_set_cores}},
-  \code{\link{umx_set_data_variance_check}},
-  \code{\link{umx_set_optimization_options}},
-  \code{\link{umx_set_optimizer}},
-  \code{\link{umx_set_plot_file_suffix}},
-  \code{\link{umx_set_plot_format}},
-  \code{\link{umx_set_table_format}}, \code{\link{umx}}
+Other Get and set: \code{\link{umx_get_checkpoint}()},
+  \code{\link{umx_get_options}()},
+  \code{\link{umx_set_auto_plot}()},
+  \code{\link{umx_set_auto_run}()},
+  \code{\link{umx_set_condensed_slots}()},
+  \code{\link{umx_set_cores}()},
+  \code{\link{umx_set_data_variance_check}()},
+  \code{\link{umx_set_mvn_optimization_options}()},
+  \code{\link{umx_set_optimizer}()},
+  \code{\link{umx_set_plot_file_suffix}()},
+  \code{\link{umx_set_plot_format}()},
+  \code{\link{umx_set_separator}()},
+  \code{\link{umx_set_silent}()},
+  \code{\link{umx_set_table_format}()}, \code{\link{umx}},
+  \code{\link{xmu_match.arg}()}
 }
 \concept{Get and set}

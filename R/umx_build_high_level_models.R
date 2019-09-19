@@ -21,7 +21,7 @@
 #'
 #' Perform full-information maximum-likelihood factor analysis on a data matrix.
 #' 
-#' As in \code{\link{factanal}}, you need only specify the number of factors and offer up
+#' As in [factanal()], you need only specify the number of factors and offer up
 #' some manifest data, e.g:
 #'                                                              
 #' \code{umxEFA(factors = 2, data = mtcars)}
@@ -43,46 +43,67 @@
 #' @details
 #' In an EFA, all items may load on all factors.
 #' 
-#' For identification we need m^2 degrees of freedom. We get m * (m+1)/2 from fixing factor variances to 1 and covariances to 0.
-#' We get another m(m-1)/2 degrees of freedom by fixing the upper-right hand corner of the factor loadings
-#' component of the A matrix. The manifest variances are also lbounded at 0.
+#' Should work with rotations provided in `library("GPArotation")` and `library("psych")`, e.g
+#' 
+#' **Orthogonal**: "varimax", "quartimax", "bentlerT", "equamax", "varimin", "geominT" and "bifactor"
+#' **Oblique**: "Promax", "promax", "oblimin", "simplimax", "bentlerQ", "geominQ", "biquartimin" and "cluster"
+#' 
+#' 
+# #' For identification we need \ifelse{html}{{m<sup>2</sup>}{\eqn{m^2}} degrees of freedom. 
+#' For identification we need \ifelse{html}{\out{m<sup>2</sup>}}{\eqn{m^2}} degrees of freedom. 
+#' We get m(m+1)/2 from fixing factor variances to 1 and covariances to 0.
+#' We get another m(m-1)/2 degrees of freedom by fixing the upper-right hand corner of
+#' the factor loadings component of the A matrix at 0.
+#' 
+#' To aid optimization, manifest residual variances are `lbounded` at 0.
 #' 
 #' EFA reports standardized loadings: to do this, we scale the data.
 #' 
-#' \emph{note}: Bear in mind that factor scores are indeterminate.
+#' *note*: Bear in mind that factor scores are indeterminate (can be rotated to an infinity of equivalent solutions).
 #' 
 #' Thanks to @ConorDolan for code implementing the rotation matrix and other suggestions!
 #' 
 #' 
 #' @aliases umxFactanal umxEFA
-#' @param x Either 1: data, 2: A formula (not implemented yet), 3: A vector of variable names, or 4: A name for the model.
+#' @param x Either 1: data, 2: Right-hand-side ~ formula , 3: Vector of variable names, or 4: Name for the model.
 #' @param factors Either number of factors to request or a vector of factor names.
-#' @param data A dataframe of manifest columns you are modeling
-#' @param n.obs Number of observations in covmat (if provided, default = NA)
+#' @param data A dataframe you are modeling.
 #' @param rotation A rotation to perform on the loadings (default  = "varimax" (orthogonal))
 #' @param scores Type of scores to produce, if any. The default is none, "Regression" gives Thompson's scores. Other options are 'ML', 'WeightedML', Partial matching allows these names to be abbreviated.
 #' @param minManifests The least number of variables required to return a score for a participant (Default = NA).
-#' @param name A name for your model
-#' @param digits rounding (default = 2)
 #' @param return by default, the resulting MxModel is returned. Say "loadings" to get a fact.anal object.
 #' @param report Report as markdown to the console, or open a table in browser ("html")
+#' @param summary  run [umxSummary()] on the underlying umxRAM model? (Default = FALSE)
+#' @param name A name for your model (default = efa)
+#' @param digits rounding (default = 2)
+#' @param n.obs Number of observations in if covmat provided (default = NA)
 #' @param covmat Covariance matrix of data you are modeling (not implemented)
-#' @return - EFA \code{\link{mxModel}}
+#' @return - EFA [mxModel()]
 #' @family Super-easy helpers
 #' @export
-#' @seealso - \code{\link{factanal}}, \code{\link{mxFactorScores}}
-#' @references - \url{https://github.com/tbates/umx}
+#' @md
+#' @seealso - [factanal()], [mxFactorScores()]
+#' @references - <https://github.com/tbates/umx>,
+#' 
+#' Hendrickson, A. E. and White, P. O. (1964). Promax: a quick method for rotation to orthogonal oblique structure. *British Journal of Statistical Psychology*, **17**, 65–70. doi: [10.1111/j.2044-8317.1964.tb00244.x](https://doi.org/10.1111/j.2044-8317.1964.tb00244.x).
+#' 
+#' Kaiser, H. F. (1958). The varimax criterion for analytic rotation in factor analysis. *Psychometrika*, **23**, 187–200. doi: [10.1007/BF02289233](https://doi.org/10.1007/BF02289233).
+#' 
+#'
 #' @examples
 #' \dontrun{
 #' myVars <- c("mpg", "disp", "hp", "wt", "qsec")
 #' m1 = umxEFA(mtcars[, myVars], factors =   2, rotation = "promax")
 #' loadings(m1)
 #' 
-#' # Formula interface in base-R factanal()
+#' # Formula interface in base-R factanal
 #' m2 = factanal(~ mpg + disp + hp + wt + qsec, factors = 2, rotation = "promax", data = mtcars)
 #' loadings(m2)
-#' plot(m2)
 #' 
+#' # Formula interface in umxEFA
+#' m2 = factanal(~ mpg + disp + hp + wt + qsec, factors = 2, rotation = "promax", data = mtcars)
+#' loadings(m2)
+#'
 #' # Return a loadings object
 #' x = umxEFA(mtcars[, myVars], factors = 2, return = "loadings")
 #' names(x)
@@ -92,11 +113,10 @@
 #' m1 = umxEFA(name = "by_number", factors = 2, rotation = "promax", data = mtcars[, myVars])
 #' x = umxEFA(name = "score", factors = "g", data = mtcars[, myVars], scores= "Regression")
 #' }
-umxEFA <- function(x = NULL, factors = NULL, data = NULL, n.obs = NULL, 
-	scores = c("none", 'ML', 'WeightedML', 'Regression'), minManifests = NA,
-	rotation = c("varimax", "promax", "none"), name = "efa", digits = 2, return = c("model", "loadings"), report = c("markdown", "html"), covmat = NULL){
+umxEFA <- function(x = NULL, factors = NULL, data = NULL, scores = c("none", 'ML', 'WeightedML', 'Regression'), minManifests = NA,
+	rotation = c("varimax", "promax", "none"), return = c("model", "loadings"), report = c("markdown", "html"), summary = FALSE, name = "efa", digits = 2, n.obs = NULL, covmat = NULL){
 	# TODO: umxEFA: Detect ordinal items and switch to DWLS?
-	rotation = umx_default_option(rotation, c("varimax", "promax", "none"), check = FALSE)
+	rotation = xmu_match.arg(rotation, c("varimax", "promax", "none"), check = FALSE)
 	scores   = match.arg(scores)
 	return   = match.arg(return)
 
@@ -108,7 +128,7 @@ umxEFA <- function(x = NULL, factors = NULL, data = NULL, n.obs = NULL,
 	if (!is.null(data)){
 		# x must be formula, or column list && covmat and n.obs must be NULL
 		if(!is.null(covmat) || !is.null(n.obs)){
-			stop("covmat and n.obs must be empty when using 'data =' ...")
+			stop("umxEFA: covmat and n.obs must be empty when using 'data =' ...")
 		}
 		if(!is.null(x)){
 			if (inherits(x,"formula")){
@@ -144,7 +164,7 @@ umxEFA <- function(x = NULL, factors = NULL, data = NULL, n.obs = NULL,
 				data = as.data.frame(x)
 			}
 		} else if(is.null(data)){
-			stop("You need to provide a data.frame to analyse: this can be in x, or data, or covmat")
+			stop("You need to provide a data.frame to analyze: This can be in x, or data, or covmat")
 		}
 		name = "EFA"
 	}
@@ -161,7 +181,7 @@ umxEFA <- function(x = NULL, factors = NULL, data = NULL, n.obs = NULL,
 	# TODO umxEFA: Adapt to input datatype, i.e., add cov handler
 	# umx_print(factors)
 	manifests <- names(data)
-	m1 <- umxRAM(model = name, data = data, autoRun = FALSE,
+	m1 = umxRAM(model = name, data = data, autoRun = FALSE,
 		umxPath(factors, to = manifests, connect = "unique.bivariate"),
 		umxPath(v.m. = manifests),
 		umxPath(v1m0 = factors)
@@ -175,36 +195,41 @@ umxEFA <- function(x = NULL, factors = NULL, data = NULL, n.obs = NULL,
 			m1$A$values[1:(i-1), factors[i]] = 0
 		}
 	}
-	# lbound the manifest diagonal to avoid mirror indeterminacy
+	# TODO: umxEFA lbound the lambda top-right corner of A @0 to avoid mirror indeterminacy
+	# Bound residual variance at 0
 	for(i in seq_along(manifests)) {
 	   thisManifest = manifests[i]
-	   m1$A$lbound[thisManifest, thisManifest] = 0
+	   m1$S$lbound[thisManifest, thisManifest] = 0
 	}
 	m1 = mxRun(m1)
 	if(rotation != "none" && nFac > 1){
 		x = loadings.MxModel(m1)
 		x = eval(parse(text = paste0(rotation, "(x)")))
-		print("Rotation results")
-		print(x) # print out the nice rotation result
-		rm = x$rotmat
-		print("Factor Correlation Matrix")
-		print(solve(t(rm) %*% rm))
-
+		if(!umx_set_silent(silent=TRUE)){
+			print("Rotation results")
+			print(x) # print out the nice rotation result
+			rm = x$rotmat
+			print("Factor Correlation Matrix")
+			print(solve(t(rm) %*% rm))
+		}
 		# stash the rotated result in the model A matrix
 		m1$A$values[manifests, factors] = x$loadings[1:nManifests, 1:nFac] 
-	} else {
+	} else if(!umx_set_silent(silent=TRUE)){
 		print("Results")
 		print(loadings(m1))
 	}
-	umxSummary(m1, digits = digits, report = report);
+
+	if(summary){
+		umxSummary(m1, digits = digits, report = report);
+	}
+	
 	if(scores != "none"){
 		x = umxFactorScores(m1, type = scores, minManifests = minManifests)
-	} else {
-		if(return == ""){
-			invisible(x)
-		} else {
-			invisible(m1)
-		}
+	}
+	if(return == "loadings"){
+		invisible(x)
+	}else if(return == "model"){
+		invisible(m1)
 	}
 }
 
@@ -223,8 +248,9 @@ umxFactanal <- umxEFA
 #' @return - dataframe of scores.
 #' @export
 #' @family Reporting Functions
-#' @seealso - \code{\link{mxFactorScores}}
-#' @references - \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+#' @seealso - [mxFactorScores()]
+#' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
+#' @md
 #' @examples
 #' m1 = umxEFA(mtcars, factors = 2)
 #' x = umxFactorScores(m1, type = c('Regression'), minManifests = 3)
@@ -250,66 +276,76 @@ umxFactorScores <- function(model, type = c('ML', 'WeightedML', 'Regression'), m
 }
 
 
-#' umxTwoStage
+#' Build a SEM implementing the equivalent of 2-stage least squares regression
 #'
-#' umxTwoStage implements 2-stage least squares regression in Structural Equation Modeling.
-#' For ease of learning, the function is modeled closely on the \code{\link[sem]{tsls}}.
+#' `umxTwoStage` implementing the Structural Equation Model equivalent of a 2SLS regression.
+#' For ease of learning, the function is modeled closely on the [sem::tsls()].
 #' 
-#' The example is a Mendelian Randomization \url{https://en.wikipedia.org/wiki/Mendelian_randomization} 
-#' analysis to show the utility of two-stage regression.
+#' The example is a [Mendelian Randomization](https://en.wikipedia.org/wiki/Mendelian_randomization)
+#' analysis showing the utility of SEM over two-stage regression.
+#' 
+#' The following figure shows how the ACE model appears as a path diagram:
+#' 
+#' \if{html}{\figure{TSLS.png}{options: width="50\%" alt="Figure: Mendelian Randomisation analysis.png"}}
+#' \if{latex}{\figure{TSLS.pdf}{options: width=7cm}}
+
 #'
-#' @param formula	The structural equation to be estimated; a regression constant is implied if not explicitly omitted.
-#' @param instruments	A one-sided formula specifying instrumental variables.
-#' @param data data.frame containing the variables in the model.
-#' @param subset [optional] vector specifying a subset of observations to be used in fitting the model.
-#' @param weights [optional] vector of weights to be used in the fitting process;
+#' @aliases umxTwoStage
+#' @param formula The structural equation to be estimated (default = Y ~ X). A constant is implied if not explicitly deleted.
+#' @param instruments A one-sided formula specifying instrumental variables (default = qtl).
+#' @param data Frame containing the variables in the model.
+#' @param subset (optional) vector specifying a subset of observations to be used in fitting the model.
+#' @param weights (optional) vector of weights to be used in the fitting process (not supported)
 #' If specified should be a non-negative numeric vector with one entry for each observation,
 #' to be used to compute weighted 2SLS estimates.
-#' @param contrasts	an optional list. See the contrasts.arg argument of model.matrix.default.
-#' @param name for the model (defaults to "tsls")
-#' @param ...	arguments to be passed down.
-#' @return - 
+#' @param contrasts	an optional list (not supported)
+#' @param name for the model (default = "tsls")
+#' @param ...	arguments to be passed along. (not supported)
+#' @return - [mxModel()]
 #' @export
 #' @family Super-easy helpers
-#' @seealso - \code{\link{umx_make_MR_data}}, \code{\link[sem]{tsls}}, \code{\link{umxRAM}}
-#' @references - Fox, J. (1979) Simultaneous equation models and two-stage least-squares.
-#' In Schuessler, K. F. (ed.) \emph{Sociological Methodology}, Jossey-Bass., 
-#' Greene, W. H. (1993) \emph{Econometric Analysis}, Second Edition, Macmillan.
+#' @seealso - [umx_make_MR_data()], [sem::tsls()], [umxRAM()]
+#' @references - * Fox, J. (1979) Simultaneous equation models and two-stage least-squares. In Schuessler, K. F. (ed.) *Sociological Methodology*, Jossey-Bass.
+#' * Greene, W. H. (1993) *Econometric Analysis*, Second Edition, Macmillan.
+#' @md
 #' @examples
 #' library(umx)
 #' 
 #' 
 #' # ====================================
-#' # = Mendelian randomization analysis =
+#' # = Mendelian Randomization analysis =
 #' # ====================================
 #' 
+#' \dontrun{
 #' # Note: in practice: many more subjects are desirable - this just to let example run fast
 #' df = umx_make_MR_data(1000) 
 #' m1 = umxTwoStage(Y ~ X, instruments = ~ qtl, data = df)
 #' parameters(m1)
-#' plot(m1)
+#' plot(m1, means = FALSE, min="") # help DiagrammaR layout the plot.
+#' m2 = umxModify(m1, "qtl_to_X", comparison=TRUE, tryHard="yes", name="QTL_affects_X") # yip
+#' m3 = umxModify(m1, "X_to_Y"  , comparison=TRUE, tryHard="yes", name="X_affects_Y") # nope
+#' plot(m3, means = FALSE)
 #' 
 #' # Errant analysis using ordinary least squares regression (WARNING this result is CONFOUNDED!!)
 #' m1 = lm(Y ~ X    , data = df); coef(m1) # incorrect .35 effect of X on Y
 #' m1 = lm(Y ~ X + U, data = df); coef(m1) # Controlling U reveals the true 0.1 beta weight
 #' #
 #' #
-#' \dontrun{
 #' df = umx_make_MR_data(1e5) 
-#' m1 = umxTwoStage(Y ~ X, instruments = ~ qtl, data = df)
+#' m1 = umxMendelianRandomization(Y ~ X, instruments = ~ qtl, data = df)
+#' coef(m1)
 #' 
 #' # ======================
 #' # = Now with sem::tsls =
 #' # ======================
-#' # library(sem) # will require you to install X11
+#' # library(sem) # may require you to install X11
 #' m2 = sem::tsls(formula = Y ~ X, instruments = ~ qtl, data = df)
-#' coef(m1)
 #' coef(m2)
 # # Try with missing value for one subject: A benefit of the FIML approach in OpenMx.
 #' m3 = tsls(formula = Y ~ X, instruments = ~ qtl, data = (df[1, "qtl"] = NA))
 #' }
-umxTwoStage <- function(formula, instruments, data, subset, weights, contrasts= NULL, name = "tsls", ...) {
-	umx_check(is.null(contrasts), "stop", "Contrasts not supported yet in umxTwoStage: email maintainer to prioritize")	
+umxMendelianRandomization <- function(formula= Y ~ X, instruments = ~qtl, data, subset, weights, contrasts= NULL, name = "tsls", ...) {
+	umx_check(is.null(contrasts), "stop", "Contrasts not supported yet in umxTwoStage: email maintainer('umx') to prioritize")	
 	# formula = Y ~ X; instruments ~ qtl; data = umx_make_MR_data(10000)
 	# m1 = sem::tsls(formula = Y ~ X, instruments = ~ qtl, data = df)
 	# summary(sem::tsls(Q ~ P + D, ~ D + F + A, data=Kmenta))
@@ -330,7 +366,7 @@ umxTwoStage <- function(formula, instruments, data, subset, weights, contrasts= 
 	latentErr <- paste0("e", allForm) # latentErr   <- c("eX", "eY")
 	umx_check_names(manifests, data = data, die = TRUE)
 
-	IVModel <- umxRAM("IV Model", data = data,
+	IVModel = umxRAM("IV Model", data = data,
 		# Causal and confounding paths
 		umxPath(inst , to = Xvars), # beta of SNP effect          :  X ~ b1 x inst
 		umxPath(Xvars, to = DV),    # Causal effect of Xvars on DV: DV ~ b2 x X
@@ -346,6 +382,5 @@ umxTwoStage <- function(formula, instruments, data, subset, weights, contrasts= 
 	return(IVModel)
 }
 
-# load(file = "~/Dropbox/shared folders/OpenMx_binaries/shared data/bad_CFI.Rda", verbose =T)
-# ref <- mxRefModels(IVModel, run=TRUE)
-# summary(IVModel, refModels=ref)
+#' @export
+umxTwoStage <- umxMendelianRandomization

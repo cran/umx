@@ -39,7 +39,7 @@ xmu_make_top_twin(mzData, dzData, selDVs, sep = NULL, type = c("Auto",
 }
 \value{
 \itemize{
-\item \code{\link{mxModel}}s for top, MZ and DZ.
+\item \code{\link[=mxModel]{mxModel()}}s for top, MZ and DZ.
 }
 }
 \description{
@@ -62,13 +62,13 @@ total variance (A+C+E) is fixed at 1. For ordinal variables, the first 2 thresho
 
 For raw and WLS data, \code{top} contains a means matrix (if needed). For summary data, the top model contains only a name.
 
-For ordinal data, \code{top} gains \code{top.threshMat} (from a call to \url{umxThresholdMatrix}]).
+For ordinal data, \code{top} gains \code{top.threshMat} (from a call to \code{\link[=umxThresholdMatrix]{umxThresholdMatrix()}}).
 
 \emph{MZ and DZ models}
 
 \code{MZ} and \code{DZ} contain the data, and an expectation referencing \code{top.expCovMZ} and \code{top.expMean}, and, \code{vector = bVector}.
-For continuous raw data, MZ and DZ contain \url{mxExpectationNormal}] and \url{mxFitFunctionML}].
-For WLS these the fit function is switched to \url{mxFitFunctionWLS}] with appropriate \code{type} and \code{allContinuousMethod}.
+For continuous raw data, MZ and DZ contain \code{\link[OpenMx:mxExpectationNormal]{OpenMx::mxExpectationNormal()}} and \code{\link[OpenMx:mxFitFunctionML]{OpenMx::mxFitFunctionML()}}.
+For WLS these the fit function is switched to \code{\link[OpenMx:mxFitFunctionWLS]{OpenMx::mxFitFunctionWLS()}} with appropriate \code{type} and \code{allContinuousMethod}.
 
 For binary, a constraint and algebras are included to constrain \code{Vtot} (A+C+E) to 1.
 
@@ -78,24 +78,25 @@ If \code{equateMeans} is \code{TRUE}, then the Twin-2 vars in the mean matrix ar
 
 \strong{Matrices created}
 
-If needed means matrices are added. Decent starts are guessed from the data.
-For continuous raw data, top contains a means matrix "expMean".
-For Models with ordinal, top adds an \url{umxThresholdMatrix}].
+Decent starts are guessed from the data.
+Where needed, e.g. continuous raw data, top adds a means matrix "expMean".
+For ordinal data, top adds a \code{\link[=umxThresholdMatrix]{umxThresholdMatrix()}}.
 
-If binary variables are present, matrices and a constraint to hold A+C+E ==1 are added to top.
+If binary variables are present, matrices and a constraint to hold \code{A+C+E == 1} are added to top.
 
 If a weight variable is offered up, an \code{mzWeightMatrix} will be added.
 
 \strong{Data handling}
 
-In terms of data handling, \code{xmu_make_top_twin} was primarily designed to take data.frames and process these into mxData.
+In terms of data handling, \code{xmu_make_top_twin} was primarily designed to take
+data.frames and process these into mxData.
 It can also, however, handle cov and mxData input.
 
 It can process data into all the types supported by \code{mxData}.
 
 Raw data input with a target of \code{cov} or \code{cor} type requires the \code{numObsMZ} and \code{numObsDZ} to be set.
 
-Type "WLS", "DWLS", or "ULS", data remain raw, but are handled as WLS in the \url{mxFitFunctionWLS}].
+Type "WLS", "DWLS", or "ULS", data remain raw, but are handled as WLS in the \code{\link[OpenMx:mxFitFunctionWLS]{OpenMx::mxFitFunctionWLS()}}.
 
 Unused columns are dropped.
 
@@ -177,31 +178,53 @@ names(bits$MZ$data$observed) == c("wt1", "wt2") # height columns dropped
 
 }
 \seealso{
-Other xmu internal not for end user: \code{\link{umxModel}},
-  \code{\link{umx}}, \code{\link{xmuHasSquareBrackets}},
-  \code{\link{xmuLabel_MATRIX_Model}},
-  \code{\link{xmuLabel_Matrix}},
-  \code{\link{xmuLabel_RAM_Model}}, \code{\link{xmuMI}},
-  \code{\link{xmuMakeDeviationThresholdsMatrices}},
-  \code{\link{xmuMakeOneHeadedPathsFromPathList}},
-  \code{\link{xmuMakeTwoHeadedPathsFromPathList}},
-  \code{\link{xmuMaxLevels}}, \code{\link{xmuMinLevels}},
-  \code{\link{xmuPropagateLabels}},
-  \code{\link{xmu_assemble_twin_supermodel}},
-  \code{\link{xmu_check_levels_identical}},
-  \code{\link{xmu_clean_label}},
-  \code{\link{xmu_dot_make_paths}},
-  \code{\link{xmu_dot_make_residuals}},
-  \code{\link{xmu_dot_maker}},
-  \code{\link{xmu_dot_move_ranks}},
-  \code{\link{xmu_dot_rank_str}},
-  \code{\link{xmu_lavaan_process_group}},
-  \code{\link{xmu_make_mxData}},
-  \code{\link{xmu_model_needs_means}},
-  \code{\link{xmu_safe_run_summary}},
-  \code{\link{xmu_set_sep_from_suffix}},
-  \code{\link{xmu_simplex_corner}},
-  \code{\link{xmu_start_value_list}},
-  \code{\link{xmu_starts}}
+Other xmu internal not for end user: \code{\link{umxModel}()},
+  \code{\link{umx_standardize}()}, \code{\link{umx}},
+  \code{\link{xmuHasSquareBrackets}()},
+  \code{\link{xmuLabel_MATRIX_Model}()},
+  \code{\link{xmuLabel_Matrix}()},
+  \code{\link{xmuLabel_RAM_Model}()},
+  \code{\link{xmuMI}()},
+  \code{\link{xmuMakeDeviationThresholdsMatrices}()},
+  \code{\link{xmuMakeOneHeadedPathsFromPathList}()},
+  \code{\link{xmuMakeTwoHeadedPathsFromPathList}()},
+  \code{\link{xmuMaxLevels}()},
+  \code{\link{xmuMinLevels}()},
+  \code{\link{xmuPropagateLabels}()},
+  \code{\link{xmu_CI_merge}()},
+  \code{\link{xmu_CI_stash}()},
+  \code{\link{xmu_DF_to_mxData_TypeCov}()},
+  \code{\link{xmu_PadAndPruneForDefVars}()},
+  \code{\link{xmu_assemble_twin_supermodel}()},
+  \code{\link{xmu_check_levels_identical}()},
+  \code{\link{xmu_check_needs_means}()},
+  \code{\link{xmu_check_variance}()},
+  \code{\link{xmu_clean_label}()},
+  \code{\link{xmu_describe_data_WLS}()},
+  \code{\link{xmu_dot_make_paths}()},
+  \code{\link{xmu_dot_make_residuals}()},
+  \code{\link{xmu_dot_maker}()},
+  \code{\link{xmu_dot_move_ranks}()},
+  \code{\link{xmu_dot_rank_str}()},
+  \code{\link{xmu_get_CI}()},
+  \code{\link{xmu_lavaan_process_group}()},
+  \code{\link{xmu_make_bin_cont_pair_data}()},
+  \code{\link{xmu_make_mxData}()},
+  \code{\link{xmu_name_from_lavaan_str}()},
+  \code{\link{xmu_safe_run_summary}()},
+  \code{\link{xmu_set_sep_from_suffix}()},
+  \code{\link{xmu_show_fit_or_comparison}()},
+  \code{\link{xmu_simplex_corner}()},
+  \code{\link{xmu_standardize_ACEcov}()},
+  \code{\link{xmu_standardize_ACEv}()},
+  \code{\link{xmu_standardize_ACE}()},
+  \code{\link{xmu_standardize_CP}()},
+  \code{\link{xmu_standardize_IP}()},
+  \code{\link{xmu_standardize_RAM}()},
+  \code{\link{xmu_standardize_SexLim}()},
+  \code{\link{xmu_standardize_Simplex}()},
+  \code{\link{xmu_start_value_list}()},
+  \code{\link{xmu_starts}()},
+  \code{\link{xmu_twin_check}()}
 }
 \concept{xmu internal not for end user}
