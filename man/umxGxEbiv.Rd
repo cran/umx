@@ -4,11 +4,20 @@
 \alias{umxGxEbiv}
 \title{Purcell (2002) Bivariate GxE model: Suitable when twins differ on the moderator.}
 \usage{
-umxGxEbiv(name = "GxEbiv", selDVs, selDefs, dzData, mzData, sep = NULL,
-  lboundACE = NA, lboundM = NA, dropMissingDef = FALSE,
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
-  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
-  optimizer = NULL)
+umxGxEbiv(
+  name = "GxEbiv",
+  selDVs,
+  selDefs,
+  dzData,
+  mzData,
+  sep = NULL,
+  lboundACE = NA,
+  lboundM = NA,
+  dropMissingDef = FALSE,
+  autoRun = getOption("umx_auto_run"),
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL
+)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "GxEbiv")}

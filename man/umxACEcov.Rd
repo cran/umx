@@ -4,14 +4,26 @@
 \alias{umxACEcov}
 \title{Run a Cholesky with covariates, either fixed (def var in the means) or random (in the expected covariance matrix)}
 \usage{
-umxACEcov(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NULL,
+umxACEcov(
+  name = "ACEcov",
+  selDVs,
+  selCovs,
+  dzData,
+  mzData,
+  sep = NULL,
   type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
-  allContinuousMethod = c("cumulants", "marginals"), dzAr = 0.5,
-  dzCr = 1, addStd = TRUE, addCI = TRUE, boundDiag = 0,
-  equateMeans = TRUE, bVector = FALSE,
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
-  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
-  optimizer = NULL)
+  allContinuousMethod = c("cumulants", "marginals"),
+  dzAr = 0.5,
+  dzCr = 1,
+  addStd = TRUE,
+  addCI = TRUE,
+  boundDiag = 0,
+  equateMeans = TRUE,
+  bVector = FALSE,
+  autoRun = getOption("umx_auto_run"),
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL
+)
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE").}

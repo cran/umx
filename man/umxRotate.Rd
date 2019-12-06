@@ -4,8 +4,13 @@
 \alias{umxRotate}
 \title{Generic SEM factor model loading rotation function}
 \usage{
-umxRotate(model, rotation = c("varimax", "promax"), tryHard = "yes",
-  freeLoadingsAfter = TRUE, verbose = TRUE)
+umxRotate(
+  model,
+  rotation = c("varimax", "promax"),
+  tryHard = "yes",
+  freeLoadingsAfter = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{model}{a model to rotate}

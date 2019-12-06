@@ -4,8 +4,7 @@
 \alias{RMSEA.summary.mxmodel}
 \title{RMSEA function for MxModels}
 \usage{
-\method{RMSEA}{summary.mxmodel}(x, ci.lower = 0.05, ci.upper = 0.95,
-  digits = 3)
+\method{RMSEA}{summary.mxmodel}(x, ci.lower = 0.05, ci.upper = 0.95, digits = 3)
 }
 \arguments{
 \item{x}{an \code{\link[=mxModel]{mxModel()}} summary from which to get RMSEA}

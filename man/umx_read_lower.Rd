@@ -4,8 +4,7 @@
 \alias{umx_read_lower}
 \title{Read lower-triangle of data matrix from console or file}
 \usage{
-umx_read_lower(file = "", diag = TRUE, names = NULL,
-  ensurePD = FALSE)
+umx_read_lower(file = "", diag = TRUE, names = NULL, ensurePD = FALSE)
 }
 \arguments{
 \item{file}{Path to a file to read (Default "" will read from user input)}

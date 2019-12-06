@@ -5,10 +5,21 @@
 \alias{umxSummary.MxModelACEcov}
 \title{Present results of a twin ACE-model with covariates in table and graphical forms.}
 \usage{
-umxSummaryACEcov(model, digits = 2, showRg = FALSE, std = TRUE,
-  comparison = NULL, CIs = TRUE, zero.print = ".",
-  report = c("markdown", "html"), file = getOption("umx_auto_plot"),
-  returnStd = FALSE, extended = FALSE, show = c("std", "raw"), ...)
+umxSummaryACEcov(
+  model,
+  digits = 2,
+  showRg = FALSE,
+  std = TRUE,
+  comparison = NULL,
+  CIs = TRUE,
+  zero.print = ".",
+  report = c("markdown", "html"),
+  file = getOption("umx_auto_plot"),
+  returnStd = FALSE,
+  extended = FALSE,
+  show = c("std", "raw"),
+  ...
+)
 }
 \arguments{
 \item{model}{a \code{\link[=umxACEcov]{umxACEcov()}} model to summarize}

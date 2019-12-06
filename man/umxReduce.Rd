@@ -4,8 +4,12 @@
 \alias{umxReduce}
 \title{Reduce models, and report the results.}
 \usage{
-umxReduce(model, report = c("markdown", "inline", "html"),
-  baseFileName = "tmp", ...)
+umxReduce(
+  model,
+  report = c("markdown", "inline", "html"),
+  baseFileName = "tmp",
+  ...
+)
 }
 \arguments{
 \item{model}{The \code{\link[=mxModel]{mxModel()}} which will be reduced.}

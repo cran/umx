@@ -5,9 +5,14 @@
 \alias{plot.MxModelGxE}
 \title{Plot the results of a GxE univariate test for moderation of ACE components.}
 \usage{
-umxPlotGxE(x, xlab = NA, location = "topleft",
-  separateGraphs = FALSE, acergb = c("red", "green", "blue", "black"),
-  ...)
+umxPlotGxE(
+  x,
+  xlab = NA,
+  location = "topleft",
+  separateGraphs = FALSE,
+  acergb = c("red", "green", "blue", "black"),
+  ...
+)
 }
 \arguments{
 \item{x}{A fitted \code{\link[=umxGxE]{umxGxE()}} model to plot}

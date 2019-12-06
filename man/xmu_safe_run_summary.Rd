@@ -4,10 +4,17 @@
 \alias{xmu_safe_run_summary}
 \title{Safely run and summarize a model}
 \usage{
-xmu_safe_run_summary(model1, model2 = NULL, autoRun = TRUE,
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal",
-  "mxTryHardWideSearch"), summary = !umx_set_silent(silent = TRUE),
-  std = FALSE, comparison = TRUE, digits = 3, show = "deprecated")
+xmu_safe_run_summary(
+  model1,
+  model2 = NULL,
+  autoRun = TRUE,
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  summary = !umx_set_silent(silent = TRUE),
+  std = FALSE,
+  comparison = TRUE,
+  digits = 3,
+  show = "deprecated"
+)
 }
 \arguments{
 \item{model1}{The model to attempt to run and summarize.}

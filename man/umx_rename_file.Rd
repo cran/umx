@@ -4,8 +4,14 @@
 \alias{umx_rename_file}
 \title{Rename files}
 \usage{
-umx_rename_file(findStr = NA, replaceStr = NA, baseFolder = "Finder",
-  listPattern = NA, test = TRUE, overwrite = FALSE)
+umx_rename_file(
+  findStr = NA,
+  replaceStr = NA,
+  baseFolder = "Finder",
+  listPattern = NA,
+  test = TRUE,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{findStr}{The (regex) string to find, i.e., "cat"}

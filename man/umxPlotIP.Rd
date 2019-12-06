@@ -5,9 +5,17 @@
 \alias{plot.MxModelIP}
 \title{Draw a graphical figure for a Independent Pathway model}
 \usage{
-umxPlotIP(x = NA, file = "name", digits = 2, means = FALSE,
-  std = TRUE, format = c("current", "graphviz", "DiagrammeR"),
-  SEstyle = FALSE, strip_zero = TRUE, ...)
+umxPlotIP(
+  x = NA,
+  file = "name",
+  digits = 2,
+  means = FALSE,
+  std = TRUE,
+  format = c("current", "graphviz", "DiagrammeR"),
+  SEstyle = FALSE,
+  strip_zero = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{The \code{\link[=umxIP]{umxIP()}} model to plot}

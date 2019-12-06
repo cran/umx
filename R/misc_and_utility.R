@@ -161,26 +161,22 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 		stop("You must set 'name' (the name for the new column")
 	}
 	if(is.null(max)){
-		stop("You must set 'max' (the highest possible score for an item) in umx_score_scale")
-	}
-	if(min != 1){
-		stop("umx_score_scale doesn't handle min !=1")
+		stop("You must set 'max' (the highest possible score for an item) in umx_score_scale (note: min defaults to 1)")
 	}
 
 	if(is.null(name)){
 		name = paste0(base, "_score")
 	}
 	if(!is.null(pos)){
-		pos_sum = rowSums(data[,paste0(base, pos)])
+		pos_sum = rowSums(data[,paste0(base, pos), drop = FALSE])
 	} else {
 		pos_sum = 0
 	}
 	if(is.null(rev)){
+		# no reverse items
 		data[,name] = pos_sum
-	} else if (length(rev)==1){
-		data[,name] = pos_sum + (max+1-rev)
 	}else{
-		neg_sum = ((max+1)*length(rev))- rowSums(data[,paste0(base, rev)])		
+		neg_sum = ((max+min)*length(rev))- rowSums(data[,paste0(base, rev), drop= FALSE])		
 		data[,name] = (pos_sum + neg_sum)
 	}
 	return(data)
@@ -1156,113 +1152,6 @@ umx_is_endogenous <- function(model, manifests_only = TRUE) {
 	return(endog)
 }
 
-# TODO: umx_fix_latents is deprecated - likely of no use.
-#' umx_fix_latents
-#'
-#' Fix the variance of all, or selected, exogenous latents at selected values. This function adds a variance 
-#' to the factor if it does not exist.
-#' @param model an [mxModel()] to set
-#' @param latents (If NULL then all latentVars)
-#' @param exogenous.only only touch exogenous latents (default = TRUE)
-#' @param at (Default = 1)
-#' @return - [mxModel()]
-#' @export
-#' @family Advanced Model Building Functions
-#' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
-#' @md
-#' @examples
-#' require(umx)
-#' data(demoOneFactor)
-#' manifests = names(demoOneFactor)
-#
-#' m1 = umxRAM("fix_latents", data = demoOneFactor, type = "cov",
-#' 	umxPath("G", to = manifests),
-#' 	umxPath(var = manifests),
-#' 	umxPath(var = "G", fixedAt = 1)
-#' )#'
-#' tmx_show(m1, what = "free", matrices = "S") # variance of g is not set
-#' m1 = umx_fix_latents(m1)
-#' tmx_show(m1, what = "free", matrices = "S") # variance of g is fixed at 1
-umx_fix_latents <- function(model, latents = NULL, exogenous.only = TRUE, at = 1) {
-	if(is.null(latents)){
-		latenVarList = model@latentVars
-	} else {
-		latenVarList = latents
-	}
-	exogenous_list = umx_is_exogenous(model, manifests_only = FALSE)
-	for (i in latenVarList) {
-		if(!exogenous.only | i %in% exogenous_list){
-			model$S@free[i, i]   = FALSE
-			model$S@values[i, i] = at
-		}
-	}
-	return(model)
-}
-
-#' umx_fix_first_loadings
-#'
-#' Fix the loading of the first path from each latent at selected value. Seldom used; might be useful to show students
-#' how to scale models with fixed latent or fixed first path...
-#' *Note*: latents with fixed variance are toggled by default (change made in 2019).
-#' @param model An [mxModel()] to set.
-#' @param latents Which latents to fix from (NULL = all).
-#' @param at The value to fix the first path at (Default = 1).
-#' @param freeFixedLatent Whether to free a latent if it is fixed (default = TRUE)
-#' @return - [mxModel()]
-#' @md
-#' @export
-#' @family Advanced Model Building Functions
-#' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
-#' @md
-#' @examples
-#' require(umx)
-#' data(demoOneFactor)
-#' manifests = names(demoOneFactor)
-#' m1 = umxRAM("fix_first", data = demoOneFactor, type = "cov",
-#' 	umxPath("g", to = manifests),
-#' 	umxPath(var = manifests),
-#' 	umxPath(var = "g", fixedAt = 1.0)
-#' )
-#'
-#' m1 = umx_fix_first_loadings(m1, latents = "g")
-#' tmx_show(m1, "free", matrices="A") # path from g to var1 fixed @ 1.
-#' # note, in practice, you would now need to free the variance of g
-umx_fix_first_loadings <- function(model, latents = NULL, at = 1, freeFixedLatent = TRUE) {
-	umx_check_model(model, type = "RAM")
-	if(is.null(latents)){
-		latentVarList = model@latentVars
-	} else {
-		latentVarList = latents
-	}
-	if(length(latentVarList)==0){
-		stop("You appear to have no latents in this model...")
-	}
-
-	for (thisLatent in latentVarList) {
-		# thisLatent = "ind60"
-		latentIsFree = model$A$free[thisLatent, thisLatent]
-		
-		if(!latentIsFree | freeFixedLatent){
-			firstFreeRow = which(model$A$free[, thisLatent])[1]
-			# check that there is not already a factor fixed prior to this one
-			if(firstFreeRow == 1){
-				# must be ok
-				model$A$free[thisLatent, thisLatent] = TRUE
-				model$A@free[firstFreeRow, thisLatent]   = FALSE
-				model$A@values[firstFreeRow, thisLatent] = at
-			} else {
-				if(any(model$matrices$A$values[1:(firstFreeRow-1), thisLatent] == at)){
-					message("I skipped factor '", thisLatent, "'. It looks like it already has a loading fixed at ", at)
-				} else {
-					model$A$free[thisLatent, thisLatent] = TRUE
-					model$A@free[firstFreeRow, thisLatent]   = FALSE
-					model$A@values[firstFreeRow, thisLatent] = at				
-				}
-			}
-		}
-	}
-	return(model)
-}
 
 # ====================
 # = Parallel Helpers =
@@ -2387,7 +2276,6 @@ oddsratio <- function(grp1= c(n=3, N=10), grp2= c(n=1, N=10), alpha = 0.05) {
 #' @param digits The rounding precision.
 #' @param ... further arguments passed to or from other methods.
 #' @return - invisible oddsratio object (x).
-#' @family Miscellaneous Stats Helpers
 #' @seealso - [print()], [umx::oddsratio()], 
 #' @md
 #' @method print oddsratio
@@ -2595,9 +2483,10 @@ specify_decimal <- function(x, k){
 #' @return None 
 #' @export
 #' @family Miscellaneous Stats Helpers
+#' @seealso - [umx::print.reliability()], 
 #' @references - \url{https://cran.r-project.org/package=Rcmdr}
 #' @examples
-#' # treat vehicle aspects as items of a test
+#' # treat car data as items of a test
 #' data(mtcars)
 #' reliability(cov(mtcars))
 reliability <-function (S){
@@ -2649,7 +2538,6 @@ reliability <-function (S){
 #' @param digits The rounding precision.
 #' @param ... further arguments passed to or from other methods
 #' @return - invisible reliability object (x)
-#' @family Miscellaneous Stats Helpers
 #' @seealso - [print()], [umx::reliability()], 
 #' @md
 #' @method print reliability
@@ -2774,6 +2662,8 @@ umx_make <- function(what = c("quick_install", "install_full", "spell", "run_exa
 	what = match.arg(what)
 	if(what == "install_full"){
 		devtools::document(pkg = pkg); devtools::install(pkg = pkg);
+		# system("sleep 5; open /Applications/R.app &")
+		
 	} else if(what == "quick_install"){
 		devtools::document(pkg = pkg); devtools::install(pkg = pkg, quick = TRUE, dependencies= FALSE, upgrade= FALSE, build_vignettes = FALSE);				
 	} else if(what == "run_examples"){
@@ -3304,113 +3194,7 @@ xmu_dot_mat2dot <- function(x, cells = c("diag", "lower", "lower_inc", "upper", 
 	p
 }
 
-#' Show matrices of RAM models in a easy-to-learn-from format. 
-#'
-#' A great way to learn about models is to look at the matrix contents. `tmx_show` is designed to
-#' do this in a way that makes it easy to process for users: The matrix contents are formatted as 
-#' tables, and can even be displayed as tables in a web browser.
-#' 
-#' The user can select which matrices to view, whether to show values, free, and/or labels, and the precision of rounding.
-#'
-#' @param model an [mxModel()] from which to show parameters.
-#' @param what legal options are "values" (default), "free", or "labels").
-#' @param show filter on what to show c("all", "free", "fixed").
-#' @param matrices to show  (default is c("S", "A")). "Thresholds" in beta.
-#' @param digits precision to report. Default = round to 2 decimal places.
-#' @param na.print How to display NAs (default = "")
-#' @param zero.print How to display 0 values (default = ".")
-#' @param report How to report the results. "html" = open in browser.
-#' @return None
-#' @export
-#' @family Reporting Functions
-#' @references - <https://tbates.github.io>
-#' @md
-#' @examples
-#' require(umx)
-#' data(demoOneFactor)
-#' manifests = names(demoOneFactor)
-#
-#' m1 = umxRAM("tmx_sh", data = demoOneFactor, type = "cov",
-#' 	umxPath("G", to = manifests),
-#' 	umxPath(var = manifests),
-#' 	umxPath(var = "G", fixedAt = 1)
-#' )#'
-#' tmx_show(m1)
-#' tmx_show(m1, digits = 3)
-#' tmx_show(m1, matrices = "S")
-#' tmx_show(m1, what = "free")
-#' tmx_show(m1, what = "labels")
-#' tmx_show(m1, what = "free", matrices = "A")
-tmx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_free"), show = c("free", "fixed", "all"), matrices = c("S", "A", "M"), digits = 2, report = c("markdown", "inline", "html", "report"), na.print = "", zero.print = ".") {
-	if(!umx_is_RAM(model)){
-		stop("I can only show the components of RAM models: You gave me an ", class(model)[[1]])
-	}
-	report = match.arg(report)
-	what = match.arg(what)
-	show = match.arg(show)
-	
-	if("thresholds" %in% matrices){
-		# TODO tmx_show: Threshold printing not yet finalized
-		if(!is.null(model$deviations_for_thresh)){
-			dev = TRUE
-			x = model$deviations_for_thresh
-		} else {
-			dev = FALSE
-			x = model$threshMat
-		}
-		if(what == "values"){
-			if(dev){
-				v = model$lowerOnes_for_thresh$values %*% x$values
-			} else {
-				v = x$values
-			}
-			if(show == "free"){
-				v[x$free == FALSE] = NA
-			} else if (show == "fixed") {
-				v[x$free == TRUE] = NA
-			}
-			umx_print(v, zero.print = zero.print, na.print = na.print, digits = digits)
-		}else if(what == "free"){
-			umx_print(data.frame(x$free) , zero.print = zero.print, na.print = na.print, digits = digits)
-		}else if(what == "labels"){
-			l = x$labels
-			if(show == "free"){
-				l[x$free == FALSE] = ""
-			} else if (show=="fixed") {
-				l[x$free == TRUE] = ""
-			}
-			umx_print(l, zero.print = ".", na.print = na.print, digits = digits)
-		}
-	} else {
-		for (w in matrices) {
-			if(report == "html"){ file = paste0(what, w, ".html") } else { file = NA}
-			if(what == "values"){
-				tmp = data.frame(model$matrices[[w]]$values)
-				message("\n", "Values of ", w, " matrix (0 shown as .):", appendLF = FALSE)
-			}else if(what == "free"){
-				tmp = model$matrices[[w]]$free
-				message("\n", "Free cells in ", w, " matrix (FALSE shown as .):", appendLF = FALSE)
-			}else if(what == "labels"){
-				x = model$matrices[[w]]$labels
-				if(show=="free"){
-					x[model$matrices[[w]]$free!=TRUE] = ""
-				} else if (show=="fixed") {
-					x[model$matrices[[w]]$free==TRUE] = ""
-				}
-				tmp = x
-				message("\n", show, " labels for ", w, " matrix:", appendLF = FALSE)
-			}else if(what == "nonzero_or_free"){
-				message("99 means parameter is fixed at a non-zero value")
-				values = model$matrices[[w]]$values
-				Free   = model$matrices[[w]]$free
-				values[!Free & values !=0] = 99
-				tmp = data.frame(values)
-				message("\n", what, " for ", w, " matrix (0 shown as '.', 99=fixed non-zero value):", appendLF = FALSE)
-			}
-			umx_print(tmp, zero.print = zero.print, na.print = na.print, digits = digits, file= file)
-		}
-	}
-}
+
 
 #' umx_time
 #'
@@ -3469,9 +3253,10 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 			stop(paste("In umx_time, pass models as a list, i.e., umx_time(c(m1, m2)), not umx_time(m1, m2)"))
 		}
 	}else if(is.character(x)){
-		umx_check(x %in% c('start', 'stop', "now"), "stop", "Valid time strings are 'start', 'stop', 'now', (or a model or list of models)")
+		umx_check(x %in% c('start', 'stop', "lap", "now"), "stop", "Valid time strings are 'start', 'stop', 'lap', (or a model or list of models). Leave blank for 'now'")
 	}else if(is.na(x)){
-		stop("You must set the first parameter (options are 'start', 'stop', 'now', a model, or a list of models)")
+		cat("Current time is ", format(Sys.time(), "%X, %a %d %b %Y"), "\nTry me with a list of models, or 'start', 'stop'")
+		return()
 	}else{
 		stop("You must set the first parameter to 'start', 'stop', 'now', a model, or a list of models.\nYou offered up a", class(x))
 	}
@@ -3490,7 +3275,7 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 			if(thisX == "start"){
 				options("umx_last_time" = proc.time())
 				return(invisible())
-			} else if (thisX == "stop") {
+			} else if (thisX == "stop" || thisX == "lap" ) {
 					tmp = getOption("umx_last_time")
 					if(is.null(tmp)){
 						message("Timer was not yet started: I started it now...")
@@ -3498,7 +3283,9 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 						return(invisible())
 					} else {
 						thisTime = (proc.time()["elapsed"] - getOption("umx_last_time")["elapsed"])
-						options("umx_last_time" = proc.time())
+						if(thisX =="stop"){
+							options("umx_last_time" = proc.time())
+						}
 					}
 			}else if(thisX =="now"){
 				return(format(Sys.time(), "%X, %a %d %b %Y"))				
@@ -3580,15 +3367,15 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 #' }
 umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print = "", zero.print = "0", justify = "none", file = c(NA, "tmp.html"), suppress = NULL, ...){
 	# depends on R2HTML::HTML and knitr::kable
-	file = xmu_match.arg(file, c(NA,"tmp.html"), check = FALSE)
-	if(class(x)=="character"){
+	file = xmu_match.arg(file, c(NA, "tmp.html"), check = FALSE)
+	if(class(x)[[1]] == "character"){
 		print(x)
-	}else if(class(x)!= "data.frame"){
-		if(class(x)=="matrix" |class(x)=="numeric"){
+	}else if(class(x)[[1]] != "data.frame"){
+		if(class(x)[[1]] == "matrix" | class(x)[[1]] == "numeric"){
 			x = data.frame(x)
 		} else {
 			message("Sorry, umx_print currently only prints data.frames, matrices, and vectors.\n
-			File a request to print '", class(x), "' objects\n or perhaps you want umx_msg?")
+			File a request to print '", class(x)[[1]], "' objects\n or perhaps you want umx_msg?")
 			return()
 		}
 	}
@@ -3970,18 +3757,23 @@ umx_is_MxData <- function(x) {
 #' tmp = mtcars
 #' tmp$cyl = ordered(mtcars$cyl) # ordered factor
 #' tmp$vs = ordered(mtcars$vs) # binary factor
-#' umx_is_ordered(tmp) # numeric indices
+#' umx_is_ordered(tmp) # true/false
+#' umx_is_ordered(tmp, strict=FALSE)
 #' umx_is_ordered(tmp, names = TRUE)
 #' umx_is_ordered(tmp, names = TRUE, binary.only = TRUE)
 #' umx_is_ordered(tmp, names = TRUE, ordinal.only = TRUE)
 #' umx_is_ordered(tmp, names = TRUE, continuous.only = TRUE)
 #' umx_is_ordered(tmp, continuous.only = TRUE)
 #' isContinuous = !umx_is_ordered(tmp)
-#' tmp$gear = factor(mtcars$gear) # unordered factor
-#' # nb: Factors are not necessarily ordered! By default unordered factors cause an message...
 #' \dontrun{
-#' tmp$cyl = factor(mtcars$cyl)
-#' umx_is_ordered(tmp, names=TRUE)
+#' # nb: By default, unordered factors cause a message...
+#' tmp$gear = factor(mtcars$gear) # UNordered factor
+#' umx_is_ordered(tmp)
+#' 
+#' # also: not designed to work on single variables...
+#' umx_is_ordered(tmp$cyl)
+#' # Do this instead...
+#' umx_is_ordered(tmp[, "cyl", drop=FALSE])
 #' }
 umx_is_ordered <- function(df, names = FALSE, strict = TRUE, binary.only = FALSE, ordinal.only = FALSE, continuous.only = FALSE) {
 	if(sum(c(binary.only, ordinal.only, continuous.only)) > 1){
@@ -3990,10 +3782,10 @@ umx_is_ordered <- function(df, names = FALSE, strict = TRUE, binary.only = FALSE
 	if(!is.data.frame(df)){
 		if(is.matrix(df)){
 			df = data.frame(df)
-			# stop("df argument to umx_is_ordered must be a dataframe. You gave me a matrix")
+			# stop("df argument to umx_is_ordered must be a data.frame. You gave me a matrix")
 		} else {
 			# df = data.frame(df)
-			stop("Argument df must be a dataframe. You gave me a ", class(df), ". Perhaps this is one column selected from a data frame without [r,c, drop=FALSE]? ")
+			stop("Argument df must be a data.frame. You gave me a ", class(df), ". Perhaps this is one column selected from a data frame without [r,c, drop=FALSE]? ")
 		}
 	}
 	nVar = ncol(df);
@@ -4001,8 +3793,8 @@ umx_is_ordered <- function(df, names = FALSE, strict = TRUE, binary.only = FALSE
 	isFactor  = rep(FALSE, nVar)
 	isOrdered = rep(FALSE, nVar)
 	for(n in 1:nVar) {
-		if(is.ordered(df[, n])) {
-			thisLevels  = length(levels(df[, n]))
+		if(is.ordered(df[, n, drop=TRUE])) {
+			thisLevels  = length(levels(df[, n, drop=TRUE]))
 			if(binary.only & (2 == thisLevels) ){
 				isOrdered[n] = TRUE
 			} else if(ordinal.only & (thisLevels > 2) ){
@@ -4011,8 +3803,8 @@ umx_is_ordered <- function(df, names = FALSE, strict = TRUE, binary.only = FALSE
 				isOrdered[n] = TRUE
 			}
 		}
-		if(is.factor(df[,n])) {
-			thisLevels = length(levels(df[,n]))
+		if(is.factor(df[,n, drop=TRUE])) {
+			thisLevels = length(levels(df[,n, drop=TRUE]))
 			if(binary.only & (2 == thisLevels) ){
 				isFactor[n] = TRUE
 			} else if(ordinal.only & (thisLevels > 2) ){
@@ -4067,7 +3859,8 @@ umx_is_ordered <- function(df, names = FALSE, strict = TRUE, binary.only = FALSE
 #' 	umxPath("G", to = manifests),
 #' 	umxPath(var = manifests),
 #' 	umxPath(var = "G", fixedAt = 1)
-#' )#'
+#' )
+#'
 #' if(umx_is_RAM(m1)){
 #' 	message("nice RAM model!")
 #' }
@@ -4077,11 +3870,11 @@ umx_is_ordered <- function(df, names = FALSE, strict = TRUE, binary.only = FALSE
 umx_is_RAM <- function(obj) {
 	# return((class(obj$objective)[1] == "MxRAMObjective" | class(obj$expectation)[1] == "MxExpectationRAM"))
 	if(!umx_is_MxModel(obj)){
-		return(F)
-	} else if(class(obj)[1] == "MxRAMModel"){
-		return(T)
+		return(FALSE)
+	} else if(class(obj)[[1]] == "MxRAMModel"){
+		return(TRUE)
 	} else {
-		return(class(obj$objective)[1] == "MxRAMObjective")
+		return(class(obj$objective)[[1]] == "MxRAMObjective")
 	}
 }
 
@@ -4371,6 +4164,7 @@ umx_check_model <- function(obj, type = NULL, hasData = NULL, beenRun = NULL, ha
 #'
 #' @param old a square matrix of correlation or covariances to reorder
 #' @param newOrder Variables you want in the order you wish to have
+#' @param force Just assume input is value (default = FALSE)
 #' @return - the re-ordered/resized matrix
 #' @export
 #' @family Data Functions
@@ -4380,13 +4174,13 @@ umx_check_model <- function(obj, type = NULL, hasData = NULL, beenRun = NULL, ha
 #' umx_reorder(oldMatrix, newOrder = c("mpg", "cyl", "disp")) # first 3
 #' umx_reorder(oldMatrix, newOrder = c("hp", "disp", "cyl")) # subset and reordered
 #' umx_reorder(oldMatrix, "hp") # edge-case of just 1-var
-umx_reorder <- function(old, newOrder) {
-	if(!umx_is_cov(old, boolean = TRUE)){
+umx_reorder <- function(old, newOrder, force=FALSE) {
+	if(!force && !umx_is_cov(old, boolean = TRUE)){
 		stop("You don't appear to have offered up a covariance matrix.")
 	}
 	dim_names = dimnames(old)[[1]]
 	if(!all(newOrder %in% dim_names)){
-		stop("All variable names must appear in the matrix being umx_reorder'd")
+		stop("All variable names must appear in the dimnames of the matrix you are umx_reorder-ing")
 	}
 	numVarsToRetain = length(newOrder)
 	new = old[1:numVarsToRetain, 1:numVarsToRetain, drop = FALSE]
@@ -4746,21 +4540,28 @@ umx_is_numeric <- function(df, all = TRUE){
 #' r1 = umx_residualize("mpg", c("cyl", "disp"), data = mtcars)
 #' r2 = residuals(lm(mpg ~ cyl + disp, data = mtcars, na.action = na.exclude))
 #' all(r1$mpg == r2)
-#' # =====================
-#' # = formula interface =
-#' # =====================
+#'
+#' # =============================
+#' # = Use the formula interface =
+#' # =============================
 #' r1 = umx_residualize(mpg ~ cyl + I(cyl^2) + disp, data = mtcars)
+#'
+#' # validate against using lm
 #' r2 = residuals(lm(mpg ~ cyl + I(cyl^2) + disp, data = mtcars, na.action = na.exclude))
 #' all(r1$mpg == r2)
 #' 
-#' # ========================================================================
-#' # = Demonstrate ability to residualize WIDE data (i.e. 1 family per row) =
-#' # ========================================================================
+#' # ===========================================================
+#' # = Residualize twin data (i.e. wide or "1 family per row") =
+#' # ===========================================================
+#' # Make some toy "twin" data to demonstrate with
 #' tmp = mtcars
 #' tmp$mpg_T1  = tmp$mpg_T2  = tmp$mpg
 #' tmp$cyl_T1  = tmp$cyl_T2  = tmp$cyl
 #' tmp$disp_T1 = tmp$disp_T2 = tmp$disp
-#' umx_residualize("mpg", c("cyl", "disp"), c("_T1", "_T2"), data = tmp)[1:5,12:17]
+#' 
+#' covs = c("cyl", "disp")
+#' tmp= umx_residualize(var="mpg", covs=covs, suffixes=c("_T1","_T2"), data = tmp)
+#' str(tmp[1:5, 12:17])
 #' 
 #' # ===================================
 #' # = Residualize several DVs at once =
@@ -5124,7 +4925,7 @@ umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE
 	if(fixed){
 		ignore.case = FALSE
 	}
-	if(class(df) %in%  c("summary.mxmodel", "data.frame")){
+	if(class(df)[[1]] %in%  c("summary.mxmodel", "data.frame")){
 		nameVector = names(df)
 	}else if(umx_is_MxData(df)) {
 			if(df$type == "raw"){
@@ -5137,15 +4938,15 @@ umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE
 			if(is.null(nameVector)){
 				stop("There's something wrong with the mxData - I couldn't get the variable names from it. Did you set type correctly?")
 			}
-	} else if(class(df) == "list"){
+	} else if(class(df)[[1]] == "list"){
 		# Assume it's a list of mxModels and we want the MODEL names (not parameters... see below)
 		nameVector = c()
 		for (i in df) {
 				nameVector = c(nameVector, i$name)
 		}
-	} else if(class(df) == "character"){
+	} else if(class(df)[[1]] == "character"){
 		nameVector = df
-	} else if(class(df) == "matrix"){
+	} else if(class(df)[[1]] == "matrix"){
 		nameVector = as.vector(df)
 	} else if(umx_is_MxModel(df)){
 		# Assume it's one model, and we want the parameter names

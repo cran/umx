@@ -4,9 +4,13 @@
 \alias{umx_aggregate}
 \title{Convenient formula-based cross-tabs & built-in summary functions}
 \usage{
-umx_aggregate(formula = DV ~ condition, data = df,
-  what = c("mean_sd", "n"), digits = 2, report = c("markdown",
-  "html", "txt"))
+umx_aggregate(
+  formula = DV ~ condition,
+  data = df,
+  what = c("mean_sd", "n"),
+  digits = 2,
+  report = c("markdown", "html", "txt")
+)
 }
 \arguments{
 \item{formula}{The aggregation formula. e.g., DV ~ condition.}

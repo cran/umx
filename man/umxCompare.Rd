@@ -4,9 +4,15 @@
 \alias{umxCompare}
 \title{Print a comparison table of one or more \code{\link[=mxModel]{mxModel()}}s, formatted nicely.}
 \usage{
-umxCompare(base = NULL, comparison = NULL, all = TRUE, digits = 3,
-  report = c("markdown", "inline", "html"), compareWeightedAIC = FALSE,
-  file = "tmp.html")
+umxCompare(
+  base = NULL,
+  comparison = NULL,
+  all = TRUE,
+  digits = 3,
+  report = c("markdown", "inline", "html"),
+  compareWeightedAIC = FALSE,
+  file = "tmp.html"
+)
 }
 \arguments{
 \item{base}{The base \code{\link[=mxModel]{mxModel()}} for comparison}

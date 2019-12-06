@@ -4,9 +4,18 @@
 \alias{umxPower}
 \title{Test power to detect specified path values in a model.}
 \usage{
-umxPower(trueModel, update = NULL, n = NULL, power = NULL,
-  sig.level = 0.05, value = 0, method = c("ncp", "empirical"),
-  explore = FALSE, digits = 2, silent = TRUE)
+umxPower(
+  trueModel,
+  update = NULL,
+  n = NULL,
+  power = NULL,
+  sig.level = 0.05,
+  value = 0,
+  method = c("ncp", "empirical"),
+  explore = FALSE,
+  digits = 2,
+  silent = TRUE
+)
 }
 \arguments{
 \item{trueModel}{The model with the parameters at values you expect in the population.}

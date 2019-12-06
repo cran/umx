@@ -4,8 +4,7 @@
 \alias{umx_set_data_variance_check}
 \title{umx_set_data_variance_check}
 \usage{
-umx_set_data_variance_check(minVar = NULL, maxVarRatio = NULL,
-  silent = FALSE)
+umx_set_data_variance_check(minVar = NULL, maxVarRatio = NULL, silent = FALSE)
 }
 \arguments{
 \item{minVar}{Set the threshold at which to warn user about variables with too-small variance. Else returns the current value of umx_minVar}

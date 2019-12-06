@@ -4,9 +4,13 @@
 \alias{umx_polytriowise}
 \title{FIML-based trio-based polychoric, polyserial, and Pearson correlations}
 \usage{
-umx_polytriowise(data, useDeviations = TRUE, printFit = FALSE,
-  use = "any", tryHard = c("no", "yes", "mxTryHard",
-  "mxTryHardOrdinal", "mxTryHardWideSearch"))
+umx_polytriowise(
+  data,
+  useDeviations = TRUE,
+  printFit = FALSE,
+  use = "any",
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
+)
 }
 \arguments{
 \item{data}{Dataframe}

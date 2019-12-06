@@ -4,8 +4,7 @@
 \alias{xmu_name_from_lavaan_str}
 \title{Find name for model}
 \usage{
-xmu_name_from_lavaan_str(lavaanString = NULL, name = NA,
-  default = "m1")
+xmu_name_from_lavaan_str(lavaanString = NULL, name = NA, default = "m1")
 }
 \arguments{
 \item{lavaanString}{A model string, possibly with # model name on line 1.}

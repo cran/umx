@@ -4,8 +4,14 @@
 \alias{umx_is_ordered}
 \title{Test if one or more variables in a dataframe are ordered}
 \usage{
-umx_is_ordered(df, names = FALSE, strict = TRUE, binary.only = FALSE,
-  ordinal.only = FALSE, continuous.only = FALSE)
+umx_is_ordered(
+  df,
+  names = FALSE,
+  strict = TRUE,
+  binary.only = FALSE,
+  ordinal.only = FALSE,
+  continuous.only = FALSE
+)
 }
 \arguments{
 \item{df}{A \code{\link[=data.frame]{data.frame()}} to look in for ordinal variables (if you offer a
@@ -33,18 +39,23 @@ Return the names of any ordinal variables in a dataframe
 tmp = mtcars
 tmp$cyl = ordered(mtcars$cyl) # ordered factor
 tmp$vs = ordered(mtcars$vs) # binary factor
-umx_is_ordered(tmp) # numeric indices
+umx_is_ordered(tmp) # true/false
+umx_is_ordered(tmp, strict=FALSE)
 umx_is_ordered(tmp, names = TRUE)
 umx_is_ordered(tmp, names = TRUE, binary.only = TRUE)
 umx_is_ordered(tmp, names = TRUE, ordinal.only = TRUE)
 umx_is_ordered(tmp, names = TRUE, continuous.only = TRUE)
 umx_is_ordered(tmp, continuous.only = TRUE)
 isContinuous = !umx_is_ordered(tmp)
-tmp$gear = factor(mtcars$gear) # unordered factor
-# nb: Factors are not necessarily ordered! By default unordered factors cause an message...
 \dontrun{
-tmp$cyl = factor(mtcars$cyl)
-umx_is_ordered(tmp, names=TRUE)
+# nb: By default, unordered factors cause a message...
+tmp$gear = factor(mtcars$gear) # UNordered factor
+umx_is_ordered(tmp)
+
+# also: not designed to work on single variables...
+umx_is_ordered(tmp$cyl)
+# Do this instead...
+umx_is_ordered(tmp[, "cyl", drop=FALSE])
 }
 }
 \references{

@@ -5,11 +5,21 @@
 \alias{umxFactanal}
 \title{FIML-based Exploratory Factor Analysis (EFA)}
 \usage{
-umxEFA(x = NULL, factors = NULL, data = NULL, scores = c("none",
-  "ML", "WeightedML", "Regression"), minManifests = NA,
-  rotation = c("varimax", "promax", "none"), return = c("model",
-  "loadings"), report = c("markdown", "html"), summary = FALSE,
-  name = "efa", digits = 2, n.obs = NULL, covmat = NULL)
+umxEFA(
+  x = NULL,
+  factors = NULL,
+  data = NULL,
+  scores = c("none", "ML", "WeightedML", "Regression"),
+  minManifests = NA,
+  rotation = c("varimax", "promax", "none"),
+  return = c("model", "loadings"),
+  report = c("markdown", "html"),
+  summary = FALSE,
+  name = "efa",
+  digits = 2,
+  n.obs = NULL,
+  covmat = NULL
+)
 }
 \arguments{
 \item{x}{Either 1: data, 2: Right-hand-side ~ formula , 3: Vector of variable names, or 4: Name for the model.}

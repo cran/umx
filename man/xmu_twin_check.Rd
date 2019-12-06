@@ -4,9 +4,17 @@
 \alias{xmu_twin_check}
 \title{Check basic aspects of input for twin models.}
 \usage{
-xmu_twin_check(selDVs, dzData = dzData, mzData = mzData, sep = NULL,
-  enforceSep = TRUE, nSib = 2, numObsMZ = NULL, numObsDZ = NULL,
-  optimizer = NULL)
+xmu_twin_check(
+  selDVs,
+  dzData = dzData,
+  mzData = mzData,
+  sep = NULL,
+  enforceSep = TRUE,
+  nSib = 2,
+  numObsMZ = NULL,
+  numObsDZ = NULL,
+  optimizer = NULL
+)
 }
 \arguments{
 \item{selDVs}{Variables used in the data.}

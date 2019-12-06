@@ -4,9 +4,16 @@
 \alias{umxCI_boot}
 \title{umxCI_boot}
 \usage{
-umxCI_boot(model, rawData = NULL, type = c("par.expected",
-  "par.observed", "empirical"), std = TRUE, rep = 1000, conf = 95,
-  dat = FALSE, digits = 3)
+umxCI_boot(
+  model,
+  rawData = NULL,
+  type = c("par.expected", "par.observed", "empirical"),
+  std = TRUE,
+  rep = 1000,
+  conf = 95,
+  dat = FALSE,
+  digits = 3
+)
 }
 \arguments{
 \item{model}{is an optimized mxModel}

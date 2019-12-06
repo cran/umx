@@ -5,9 +5,18 @@
 \alias{umxSummary.MxModelIP}
 \title{Present the results of an independent-pathway twin model in table and graphical form}
 \usage{
-umxSummaryIP(model, digits = 2, file = getOption("umx_auto_plot"),
-  returnStd = FALSE, std = TRUE, showRg = FALSE, comparison = NULL,
-  CIs = FALSE, show = NULL, ...)
+umxSummaryIP(
+  model,
+  digits = 2,
+  file = getOption("umx_auto_plot"),
+  returnStd = FALSE,
+  std = TRUE,
+  showRg = FALSE,
+  comparison = NULL,
+  CIs = FALSE,
+  show = NULL,
+  ...
+)
 }
 \arguments{
 \item{model}{A fitted \code{\link[=umxIP]{umxIP()}} model to summarize}

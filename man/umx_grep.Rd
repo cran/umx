@@ -4,8 +4,13 @@
 \alias{umx_grep}
 \title{Search for text}
 \usage{
-umx_grep(df, grepString, output = c("both", "label", "name"),
-  ignore.case = TRUE, useNames = FALSE)
+umx_grep(
+  df,
+  grepString,
+  output = c("both", "label", "name"),
+  ignore.case = TRUE,
+  useNames = FALSE
+)
 }
 \arguments{
 \item{df}{The \code{\link[=data.frame]{data.frame()}} or string to search.}

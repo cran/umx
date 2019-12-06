@@ -4,10 +4,21 @@
 \alias{umxSummarizeTwinData}
 \title{Summarize twin data}
 \usage{
-umxSummarizeTwinData(data = NULL, selVars = "wt", sep = "_T",
-  zyg = "zygosity", MZ = NULL, DZ = NULL, MZFF = "MZFF",
-  DZFF = "DZFF", MZMM = "MZMM", DZMM = "DZMM", DZOS = "DZOS",
-  digits = 2, report = c("markdown", "html"))
+umxSummarizeTwinData(
+  data = NULL,
+  selVars = "wt",
+  sep = "_T",
+  zyg = "zygosity",
+  MZ = NULL,
+  DZ = NULL,
+  MZFF = "MZFF",
+  DZFF = "DZFF",
+  MZMM = "MZMM",
+  DZMM = "DZMM",
+  DZOS = "DZOS",
+  digits = 2,
+  report = c("markdown", "html")
+)
 }
 \arguments{
 \item{data}{The twin data.}

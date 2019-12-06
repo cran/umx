@@ -4,8 +4,14 @@
 \alias{xmuLabel_RAM_Model}
 \title{xmuLabel_RAM_Model (not a user function)}
 \usage{
-xmuLabel_RAM_Model(model, suffix = "", labelFixedCells = TRUE,
-  overRideExisting = FALSE, verbose = FALSE, name = NULL)
+xmuLabel_RAM_Model(
+  model,
+  suffix = "",
+  labelFixedCells = TRUE,
+  overRideExisting = FALSE,
+  verbose = FALSE,
+  name = NULL
+)
 }
 \arguments{
 \item{model}{a RAM mxModel to label}

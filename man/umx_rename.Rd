@@ -4,8 +4,14 @@
 \alias{umx_rename}
 \title{umx_rename}
 \usage{
-umx_rename(data, old = NULL, replace = NULL, regex = NULL,
-  test = FALSE, grep = "deprecated")
+umx_rename(
+  data,
+  old = NULL,
+  replace = NULL,
+  regex = NULL,
+  test = FALSE,
+  grep = "deprecated"
+)
 }
 \arguments{
 \item{data}{The dataframe in which to rename variables}

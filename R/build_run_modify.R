@@ -375,10 +375,11 @@ umxModel <- function(...) {
 #' # ============================================
 #' # = 1. Here's a simple example with raw data =
 #' # ============================================
+#' mtcars$litres = mtcars$disp/61.02
 #' m1 = umxRAM("tim", data = mtcars,
-#' 	umxPath(c("wt", "disp"), to = "mpg"),
-#' 	umxPath("wt", with = "disp"),
-#' 	umxPath(v.m. = c("wt", "disp", "mpg"))
+#' 	umxPath(c("wt", "litres"), to = "mpg"),
+#' 	umxPath("wt", with = "litres"),
+#' 	umxPath(v.m. = c("wt", "litres", "mpg"))
 #' )
 #'
 #' # 2. Use parameters to see the parameter estimates and labels
@@ -406,6 +407,17 @@ umxModel <- function(...) {
 #' m1 = umxRAM(data = mtcars, "#modelName
 #'  mpg ~ wt + disp")
 #' 
+#'
+#' # =======================
+#' # = A multi-group model =
+#' # =======================
+#'
+#' m1 = umxRAM("tim", data = mtcars, group = "am",
+#' 	umxPath(c("wt", "litres"), to = "mpg"),
+#' 	umxPath("wt", with = "litres"),
+#' 	umxPath(v.m. = c("wt", "litres", "mpg"))
+#' )
+#' # In this model, all parameters are equated across the two groups.
 #'
 #' # ====================================
 #' # = A cov model, with steps laid out =
@@ -507,35 +519,39 @@ umxModel <- function(...) {
 umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.equal = NULL, suffix = "", comparison = TRUE, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants", "marginals"), autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), std = FALSE, refModels = NULL, remove_unused_manifests = TRUE, independent = NA, setValues = TRUE, optimizer = NULL, verbose = FALSE, std.lv = FALSE, lavaanMode = c("sem", "lavaan"), printTab = FALSE, show = c("deprecated", "raw", "std")) {
 	dot.items = list(...) # grab all the dot items: mxPaths, etc...
 	dot.items = unlist(dot.items) # In case any dot items are lists of mxPaths, etc...
-	type = match.arg(type)
-	tryHard = match.arg(tryHard)
-	show = match.arg(show)
-	allContinuousMethod = match.arg(allContinuousMethod)
+	type       = match.arg(type)
+	show       = match.arg(show)
+	tryHard    = match.arg(tryHard)
 	lavaanMode = match.arg(lavaanMode)
+	allContinuousMethod = match.arg(allContinuousMethod)
 	# =================
 	# = Set optimizer =
 	# =================
 	if(!is.null(optimizer)){
 		umx_set_optimizer(optimizer)
 	}
+	if(!is.null(group)){
+		if(class(data) != "data.frame"){
+			stop("Currently, for multiple groups, data must be a raw data.frame so I can subset it into multiple groups. You gave me a ", omxQuotes(class(data)))
+		}
+	}
 
 	# lavaan string style model
 	if (is.character(model) && grepl(model, pattern = "(<|~|=~|~~|:=)")){
 		# Process lavaanString: need to modify so that all the RAM options are processed: 
-		# suffix
-		# comparison
-		# show
-		# refModels = NULL
-		# remove_unused_manifests
 		# type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS")
+		# show
+		# suffix
+		# refModels = NULL
+		# comparison
 		# allContinuousMethod
+		# remove_unused_manifests
 		model = umxLav2RAM(model = model, data = data, group = group, group.equal = group.equal, std.lv = std.lv, name = name, 
 					lavaanMode = lavaanMode, autoRun = autoRun, tryHard = tryHard, printTab = printTab)
 		return(model)
 	}
 
 	umx_check(!is.null(data), "stop", "In umxRAM, you must set 'data = '. If you're building a model with no data, use mxModel")
-
 
 	# umxPath-based model
 	if(typeof(model) == "character"){
@@ -607,20 +623,28 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 	# Get names from data (forms pool of potential usedManifests)
 	manifestVars = unique(na.omit(umx_names(data)))
 
-	# Omit NAs from found names as empty to = can generate these spuriously
+	# Omit NAs from found names (empty "to =" can generate these spuriously)
 	foundNames = unique(na.omit(foundNames))
 	defnNames  = unique(na.omit(defnNames))
-	# Anything used as a path, but not found in the data (and not a key word like "one") must be a latent
+	
+	if(length(defnNames)>0){
+		# check'm if you've got'm
+		umx_check_names(defnNames, data = data, message = "note: used as definition variable, but not present in data")
+	}
+
+	# Anything else used as a path, but not found in the data (and not a key word like "one") must be a latent
 	latentVars = setdiff(foundNames, c(manifestVars, "one"))
 	nLatent = length(latentVars)
 	# Report which latents were created
-	if(nLatent == 0 && verbose){
-		# message("No latent variables were created.\n")
-		# latentVars = NA
-	} else if (nLatent == 1){
-		message("A latent variable '", latentVars[1], "' was created. ")
-	} else {
-		message(nLatent, " latent variables were created:", paste(latentVars, collapse = ", "), ". ")
+	if (!umx_set_silent(silent=TRUE)) {
+    	if(nLatent == 0){
+			# message("No latent variables were created.\n")
+			# latentVars = NA
+	    } else if (nLatent == 1){
+			message("A latent variable '", latentVars[1], "' was created. ")
+	    } else {
+      	  message(nLatent, " latent variables were created:", paste(latentVars, collapse = ", "), ". ")
+    	}
 	}
 
 	# ===========================================================
@@ -628,40 +652,19 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 	# ===========================================================
 	# This will be a model where things are not in the data and are not latent...
 	
-	# =================================
-	# = List up any un-used Manifests =
-	# =================================
-	if (class(data) == "character"){
-		# User is just running in sketch mode, with no data, but provided names.
-		unusedManifests = c()
-	}else{
-		unusedManifests = setdiff(manifestVars, foundNames)
-	}
+	# ======================================
+	# = List up used and un-used Manifests =
+	# ======================================
 	# Used = all data columns present in found and not reserved, e.g. "one"
-	usedManifests = setdiff(intersect(manifestVars, foundNames), "one")
+	unusedManifests = setdiff(manifestVars, c(foundNames, defnNames))
 
 	if(remove_unused_manifests & length(unusedManifests) > 0){
-		data = xmu_make_mxData(data = data, type = type, manifests = c(usedManifests, defnNames))
+		usedManifests = setdiff(intersect(manifestVars, foundNames), "one")
+		myData = xmu_make_mxData(data = data, type = type, manifests = c(usedManifests, defnNames), verbose = verbose)
 	} else {
 		# keep everything
-		data = xmu_make_mxData(data= data, type = type)
 		usedManifests = manifestVars
-	}
-	if(verbose){
-		msg_str = ""
-		if(length(unusedManifests) > 0){
-			if(length(unusedManifests) > 10){
-				varList = paste0("First 10 were: ", paste(unusedManifests[1:10], collapse = ", "))
-				msg_str = paste0(length(unusedManifests), " unused variables (", varList)
-			} else if(length(unusedManifests) > 1){
-				varList = paste(unusedManifests, collapse = ", ")
-				msg_str = paste0(length(unusedManifests), " unused variables (", varList)
-			} else {
-				varList = unusedManifests
-				msg_str = paste0(length(unusedManifests), " unused variable (", varList)
-			}
-		}
-		message("ManifestVars set to: ", paste(usedManifests, collapse = ", "), ". ", msg_str)
+		myData = xmu_make_mxData(data= data, type = type, verbose = verbose)
 	}
 	# ==================
 	# = Assemble model =
@@ -674,8 +677,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 	# ============
 	# = Add data =
 	# ============
-	if (class(data) == "character"){
-		# umx_msg(data)
+	if (class(myData) == "character"){
 		# User is just running a trial model, with no data, but provided names for sketch mode
 		newModel = umxLabel(newModel, suffix = suffix)
 		if(is.null(group)){
@@ -687,7 +689,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 			# will be added to a super model, but no data needed/available to subset
 		}
 	}else{
-		newModel = mxModel(newModel, data)
+		newModel = mxModel(newModel, myData)
 		# will be re-processed with the required data below...
 		# except should not do this if lavaan... i.e., subset here with level of group...
 	}
@@ -697,7 +699,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 	# ==========================
 	# Note: WLS data will be mxData(..., type = "raw") at this stage.
 	# Add means if data are raw and means not requested by user
-	needsMeans = xmu_check_needs_means(data = data, type = type, allContinuousMethod = allContinuousMethod)
+	needsMeans = xmu_check_needs_means(data = myData, type = type, allContinuousMethod = allContinuousMethod)
 	if(needsMeans && is.null(newModel$matrices$M)){
 		message("You have raw data, but no means model. I added\n",
 		"mxPath('one', to = manifestVars)")
@@ -708,8 +710,8 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 		newModel = umxValues(newModel, onlyTouchZeros = TRUE)
 	}
 
-	if(any(umx_is_ordered(data$observed))){
-		newModel = umxRAM2Ordinal(newModel, verbose = TRUE)
+	if(any(umx_is_ordered(myData$observed))){
+		newModel = xmuRAM2Ordinal(newModel, verbose = TRUE)
 	}
 
 	# ==============================
@@ -736,10 +738,19 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 		if(!is.null(group.equal)){
 			message("sorry, haven't implemented group.equal yet")
 		}
+		# already computed above
+		# unusedManifests = setdiff(manifestVars, foundNames)
+		# usedManifests   = setdiff(intersect(manifestVars, foundNames), "one")
+		# usedManifests = manifestVars
 		for (thisLevelOfGroup in levelsOfGroup) {
 			thisSubset = data[groupCol == thisLevelOfGroup, ]
-			newModel   = mxModel(newModel, name= paste0(name, "_", thisLevelOfGroup))
-			modelList  = c(modelList, newModel)
+			if(remove_unused_manifests & length(unusedManifests) > 0){
+				myData = xmu_make_mxData(data = thisSubset, type = type, manifests = c(usedManifests, defnNames), verbose = FALSE)
+			} else {
+				myData = xmu_make_mxData(data= thisSubset, type = type, verbose = FALSE)
+			}
+			thisModel = mxModel(newModel, myData, name= paste0(name, "_", thisLevelOfGroup))
+			modelList = c(modelList, thisModel)
 		}
 		newModel = umxSuperModel(name = name, modelList)
 	}
@@ -1240,22 +1251,21 @@ umxModify <- function(lastFit, update = NULL, master = NULL, regex = FALSE, free
 #' twinData= umx_scale_wide_twin_data(data=twinData,varsToScale=c("wt"),sep="")
 #' # Cut BMI column to form ordinal obesity variables
 #' obLevels = c('normal', 'overweight', 'obese')
-#' cuts <- quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
+#' cuts = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
 #' twinData$obese1=cut(twinData$bmi1, breaks=c(-Inf,cuts,Inf), labels=obLevels)
 #' twinData$obese2=cut(twinData$bmi2, breaks=c(-Inf,cuts,Inf), labels=obLevels)
 #' # Make the ordinal variables into umxFactors
 #' ordDVs = c("obese1", "obese2")
-#' twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obLevels)
+#' twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 #' mzData = twinData[twinData$zygosity %in% "MZFF", ]
 #' dzData = twinData[twinData$zygosity %in% "DZFF", ]
 #' mzData = mzData[1:80, ] # Just top 80 pairs to run fast
 #' dzData = dzData[1:80, ]
 #' str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
 #' 
-#' # Data-prep done - here's where the model starts:
-#' selDVs = c("obese")
-#' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
-#' umxSummary(m1)
+#' # Data-prep done - here's the model and summary!:
+#' m1 = umxACE(selDVs = "obese", dzData = dzData, mzData = mzData, sep = '')
+#' # umxSummary(m1)
 #'
 #' # ============================================
 #' # = Bivariate continuous and ordinal example =
@@ -1272,8 +1282,8 @@ umxModify <- function(lastFit, update = NULL, master = NULL, regex = FALSE, free
 #' twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 #' mzData = twinData[twinData$zygosity %in% "MZFF",] 
 #' dzData = twinData[twinData$zygosity %in% "DZFF",]
-#' mzData <- mzData[1:80,] # just top 80 so example runs in a couple of secs
-#' dzData <- dzData[1:80,]
+#' mzData = mzData[1:80,] # just top 80 so example runs in a couple of secs
+#' dzData = dzData[1:80,]
 #' m1 = umxACE(selDVs= c("wt","obese"), dzData= dzData, mzData= mzData, sep='')
 #' 
 #' # =======================================
@@ -2648,9 +2658,9 @@ umxRotate.MxModelCP <- function(model, rotation = c("varimax", "promax"),  tryHa
 # = Advanced Build and Modify helpers =
 # =====================================
 
-#' umxRAM2Ordinal 
+#' xmuRAM2Ordinal 
 #'
-#' umxRAM2Ordinal: Convert a RAM model whose data contain ordinal variables to a threshold-based model
+#' xmuRAM2Ordinal: Convert a RAM model whose data contain ordinal variables to a threshold-based model
 #'
 #' @param model An RAM model to add thresholds too.
 #' @param name = A new name for the modified model. Default (NULL) = leave it as is).
@@ -2681,9 +2691,9 @@ umxRotate.MxModelCP <- function(model, rotation = c("varimax", "promax"),  tryHa
 #' 	umxPath(v.m.= c("obese1", "obese2"))
 #' )
 #' }
-umxRAM2Ordinal <- function(model, verbose = TRUE, name = NULL) {
+xmuRAM2Ordinal <- function(model, verbose = TRUE, name = NULL) {
 	if(!umx_is_RAM(model)){
-		stop("umxRAM2Ordinal only works with RAM models, sorry.")
+		stop("xmuRAM2Ordinal only works with RAM models, sorry.")
 	}
 	if(!is.null(name)){
 		model = mxRename(model, name)
@@ -2769,10 +2779,16 @@ umxValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 			} else {
 				freePaths = (obj$matrices$S$free[lats, lats] == TRUE)			
 			}
+			# set free latent variances to 1
 			obj$S$values[lats, lats][freePaths] = 1
 			offDiag = !diag(length(latents))
 			newOffDiags = obj$matrices$S$values[lats, lats][offDiag & freePaths]/3
 			obj$S@values[lats, lats][offDiag & freePaths] = newOffDiags			
+		}
+		
+		if(nVar ==0){
+			# model with no manifests... nothing to set. Maybe it's a model with only defVars or something.
+			return(obj)
 		}
 		# =============
 		# = Set means =
@@ -3347,7 +3363,7 @@ umxEquate <- function(model, master, slave, free = c(TRUE, FALSE, NA), verbose =
 umxFixAll <- function(model, name = "_fixed", run = FALSE, verbose= FALSE){
 	if(!umx_is_MxModel(model)){
 		message("ERROR in umxFixAll: model must be a model, you gave me a ", class(model)[1])
-		message("A usage example is umxFixAll(model)")
+		message("A usage example is m1 = umxFixAll(m1)")
 		stop()
 	}
 	if(is.null(name)){
@@ -3366,161 +3382,7 @@ umxFixAll <- function(model, name = "_fixed", run = FALSE, verbose= FALSE){
 	return(model)
 }
 
-#' umxDrop1: Unfinished function to mimic drop1 in OpenMx
-#'
-#' Drops each free parameter (selected via regex), returning an [mxCompare()]
-#' table comparing the effects. A great way to quickly determine which of several 
-#' parameters can be dropped without excessive cost
-#'
-#' @param model An [mxModel()] to drop parameters from 
-#' @param regex A string to select parameters to drop. leave empty to try all.
-#' This is regular expression enabled. i.e., "^a_" will drop parameters beginning with "a_"
-#' @param maxP The threshold for returning values (defaults to p==1 - all values)
-#' @return a table of model comparisons
-#' @export
-#' @family Modify or Compare Models
-#' @references - <https://www.github.com/tbates/umx>
-#' @md
-#' @examples
-#' \dontrun{
-#' umxDrop1(fit3) # try dropping each free parameters (default)  
-#' # drop "a_r1c1" and "a_r1c2" and see which matters more.
-#' umxDrop1(model, regex="a_r1c1|a_r1c2")
-#' }
-umxDrop1 <- function(model, regex = NULL, maxP = 1) {
-	if(is.null(regex)) {
-		toDrop = umxGetParameters(model, free = TRUE)
-	} else if (length(regex) > 1) {
-		toDrop = regex
-	} else {
-		toDrop = grep(regex, umxGetParameters(model, free = TRUE), value = TRUE, ignore.case = TRUE)
-	}
-	message("Will drop each of ", length(toDrop), " parameters: ", paste(toDrop, collapse = ", "), ".\nThis might take some time...")
-	out = list(rep(NA, length(toDrop)))
-	for(i in seq_along(toDrop)){
-		tryCatch({
-			message("item ", i, " of ", length(toDrop))
-        	out[i] = umxModify(model, name = paste0("drop_", toDrop[i]), regex = toDrop[i])
-		}, warning = function(w) {
-			message("Warning incurred trying to drop ", toDrop[i])
-			message(w)
-		}, error = function(e) {
-			message("Error occurred trying to drop ", toDrop[i])
-			message(e)
-		})
-	}
-	out = data.frame(umxCompare(model, out))
-	out[out=="NA"] = NA
-	suppressWarnings({
-		out$p   = as.numeric(out$p) 
-		out$AIC = as.numeric(out$AIC)
-	})
-	n_row = dim(out)[1] # 2 9
-	sortedOrder = order(out$p[2:n_row])+1
-	out[2:n_row, ] <- out[sortedOrder, ]
-	good_rows = out$p < maxP
-	good_rows[1] = T
-	message(sum(good_rows)-1, "of ", length(out$p)-1, " items were beneath your p-threshold of ", maxP)
-	return(out[good_rows, ])
-}
 
-#' umxAdd1
-#'
-#' Add each of a set of paths you provide to the model, returning a table of their effects on fit.
-#'
-#' @param model an [mxModel()] to alter
-#' @param pathList1 a list of variables to generate a set of paths
-#' @param pathList2 an optional second list: IF set paths will be from pathList1 to members of this list
-#' @param arrows Make paths with one or two arrows
-#' @param maxP The threshold for returning values (defaults to p==1 - all values)
-#' @return a table of fit changes
-#' @export
-#' @family Modify or Compare Models
-#' @references - <https://www.github.com/tbates/umx>
-#' @md
-#' @examples
-#' \dontrun{
-#' model = umxAdd1(model)
-#' }
-umxAdd1 <- function(model, pathList1 = NULL, pathList2 = NULL, arrows = 2, maxP = 1) {
-	if ( is.null(model$output) ) stop("Provided model hasn't been run: use mxRun(model) first")
-	# stop if there is no output
-	if ( length(model$output) < 1 ) stop("Provided model has no output. use mxRun() first!")
-
-	if(arrows == 2){
-		if(!is.null(pathList2)){
-			a = xmuMakeTwoHeadedPathsFromPathList(pathList1)
-			b = xmuMakeTwoHeadedPathsFromPathList(pathList2)
-			a_to_b = xmuMakeTwoHeadedPathsFromPathList(c(pathList1, pathList2))
-			toAdd = a_to_b[!(a_to_b %in% c(a,b))]
-		}else{
-			if(is.null(pathList1)){
-				stop("best to set pathList1!")
-				# toAdd = umxGetParameters(model, free = FALSE)
-			} else {
-				toAdd = xmuMakeTwoHeadedPathsFromPathList(pathList1)
-			}
-		}
-	} else if(arrows == 1){
-		if(is.null(pathList2)){
-			stop("pathList2 must not be empty for arrows = 1: it forms the target of each path")
-		} else {
-			toAdd = xmuMakeOneHeadedPathsFromPathList(pathList1, pathList2)
-		}
-	}else{
-		stop("You idiot :-) : arrows must be either 1 or 2, you tried", arrows)
-	}
-	# TODO umxAdd1: fix count? or drop giving it?
-	message("You gave me ", length(pathList1), "source variables. I made ", length(toAdd), " paths from these.")
-
-	# Just keep the ones that are not already free... (if any)
-	toAdd2 = toAdd[toAdd %in% umxGetParameters(model, free = FALSE)]
-	if(length(toAdd2) == 0){
-		if(length(toAdd[toAdd %in% umxGetParameters(model, free = NA)] == 0)){
-			message("I couldn't find any of those paths in this model.",
-				"The most common cause of this error is submitting the wrong model")
-			message("You asked for: ", paste(toAdd, collapse=", "))
-		}else{
-			message("I found (at least some) of those paths in this model, but they were already free")
-			message("You asked for: ", paste(toAdd, collapse=", "))
-		}		
-		stop()
-	}else{
-		toAdd = toAdd2
-	}
-	message("Of these ", length(toAdd), " were currently fixed, and I will try adding them")
-	message(paste(toAdd, collapse = ", "))
-
-	message("This might take some time...")
-	flush.console()
-	# out = data.frame(Base = "test", ep = 1, AIC = 1.0, p = 1.0); 
-	row1Cols = c("Base", "ep", "AIC", "p")
-	out = data.frame(umxCompare(model)[1, row1Cols])
-	for(i in seq_along(toAdd)){
-		# model = fit1 ; toAdd = c("x2_with_x1"); i=1
-		message("item ", i, " of ", length(toAdd))
-		tmp = omxSetParameters(model, labels = toAdd[i], free = TRUE, values = .01, name = paste0("add_", toAdd[i]))
-		tmp = mxRun(tmp)
-		mxc = umxCompare(tmp, model)
-		newRow = mxc[2, row1Cols]
-		newRow$AIC = mxc[1, "AIC"]
-		out = rbind(out, newRow)
-	}
-
-	out[out=="NA"] = NA
-	out$p   = round(as.numeric(out$p), 3)
-	out$AIC = round(as.numeric(out$AIC), 3)
-	out <- out[order(out$p),]
-	if(maxP==1){
-		return(out)
-	} else {
-		good_rows = out$p < maxP
-		message(sum(good_rows, na.rm = TRUE), "of ", length(out$p), " items were beneath your p-threshold of ", maxP)
-		message(sum(is.na(good_rows)), " was/were NA")
-		good_rows[is.na(good_rows)] = T
-		return(out[good_rows, ])
-	}
-}
 
 # ===============
 # = RAM Helpers =
@@ -4072,7 +3934,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' @param forms Build a formative variable. 'from' variables form the latent.
 #' Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate between 'from' variables.
 #' @param Cholesky Treat \strong{Cholesky} variables as latent and \strong{to} as measured, and connect as in an ACE model.
-#' @param defn Makes a latent variable, var@0 mean fixed, set label to 'data.defVarName'
+#' @param defn Implements a definition variable as a latent with zero variance & mean and labeled 'data.defVar'
 #' @param connect as in mxPath - nb: from and to must also be set.
 #' @param arrows as in mxPath - nb: from and to must also be set.
 #' @param free whether the value is free to be optimised
@@ -4104,10 +3966,9 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' umxPath("A", to = "B") # One-headed path from A to B
 #' umxPath("A", to = "B", fixedAt = 1) # same, with value fixed @@1
 #' umxPath("A", to = c("B", "C"), fixedAt = 1:2) # same, with more than 1 value
-#' umxPath("A", to = LETTERS[2:4], firstAt = 1) # Fix only the first path, others free
+#' umxPath("A", to = c("B","C"), firstAt = 1) # Fix only the first path, others free
 #' umxPath(var = "A") # Give a variance to A
-#' umxPath(var = "A", fixedAt = 1) # Give a variance, fixed at 1
-#' umxPath(var = LETTERS[1:5], fixedAt = 1)
+#' umxPath(var = "A", fixedAt = 1) # Give A variance, fixed at 1
 #' umxPath(means = c("A","B")) # Create a means model for A: from = "one", to = "A"
 #' umxPath(v1m0 = "A") # Give "A" variance and a mean, fixed at 1 and 0 respectively
 #' umxPath(v.m. = "A") # Give "A" variance and a mean, leaving both free.
@@ -4116,11 +3977,19 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #' umxPath("A", with = "B", fixedAt = .5) # 2-head path fixed at .5
 #' umxPath("A", with = c("B", "C"), firstAt = 1) # first covariance fixed at 1
 #' umxPath(cov = c("A", "B"))  # Covariance A <-> B
-#' umxPath(unique.bivariate = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
-#' umxPath(fromEach = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
+#' umxPath(defn = "mpg") # create latent called def_mpg, with 0 mean * var, and label = "data.mpg"
+#' umxPath(fromEach = c('a','b'), to = c('c','d')) # a->c, a<->d, b<->c, b<->d
+#' umxPath(unique.bivariate = c('a','b','c')) # bivariate paths a<->b, a<->c, b<->c etc.
 #' umxPath(unique.pairs = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
 #' umxPath(Cholesky = c("A1","A2"), to = c("m1", "m2")) # Cholesky
-#'
+#' # ===============================
+#' # = Definition variable example =
+#' # ===============================
+#' m1 = umxRAM("manifest", data = mtcars,
+#'	umxPath(v.m. = "mpg"),
+#'	umxPath(defn = "mpg")
+#')
+
 #' # ====================
 #' # = Cholesky example =
 #' # ====================
@@ -4140,7 +4009,7 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 #'
 umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL, means = NULL, v1m0 = NULL, v.m. = NULL, v0m0 = NULL, v.m0 = NULL, fixedAt = NULL, freeAt = NULL, firstAt = NULL, unique.bivariate = NULL, unique.pairs = NULL, fromEach = NULL, forms = NULL, Cholesky = NULL, defn = NULL, connect = c("single", "all.pairs", "all.bivariate", "unique.pairs", "unique.bivariate"), arrows = 1, free = TRUE, values = NA, labels = NA, lbound = NA, ubound = NA, hasMeans = NULL) {
 	connect = match.arg(connect) # set to single if not overridden by user.
-	xmu_string2path(from)
+	# xmu_string2path(from)
 	n = 0
 	for (i in list(with, cov, var, forms, means, fromEach, unique.bivariate, unique.pairs, v.m. , v1m0, v0m0, v.m0, defn, Cholesky)) {
 		if(!is.null(i)){ n = n + 1}
@@ -4164,12 +4033,15 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 	}
 
 	if(!is.null(defn)){
-		if(is.na(labels)){
-			stop("You must provide the name of the data source for your definition variable in labels! e.g. \"age\"
-			I'll convert that into \"data.age\" ")
-		} else if(length(labels) > 1){
-			stop("Labels must consist of just one data variable (data source) name!")			
+		if(anyNA(labels)){
+			labels = paste0("data.", defn)
+			defn   = paste0("def_" , defn)
+			message(length(defn), " definition variables created: refer to them/it as: ", omxQuotes(defn))
+		} else if(length(labels) != length(defn)){
+			stop("Number of labels must match number of definition variables (data source)!\n",
+			"You can gave me ", omxQuotes(labels), "labels and ", omxQuotes(defn), " defn vars")
 		}else if (length(grep("data\\.", labels, value = FALSE))==0){
+			# if user hasn't prepended labels with "data." then add it for them
 			labels = paste0("data.", labels)
 		}
 		a = umxPath(var = defn, fixedAt = 0)
@@ -4421,7 +4293,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 		# = Handle fromEach =
 		# ===========================
 		if(!is.null(from)){
-			stop("To use fromEach, 'from=' should be empty.\n",
+			stop("To use fromEach, 'from=' must be empty (perhaps you were trying to set to= but didn't say that?).\n",
 			"Just say 'fromEach = c(\"X\",\"Y\").'\n",
 			"or 'fromEach = c(\"X\",\"Y\"), to = \"Z\"")
 		} else {

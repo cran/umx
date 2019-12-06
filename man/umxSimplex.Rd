@@ -4,11 +4,21 @@
 \alias{umxSimplex}
 \title{Build and run a simplex twin model (not ready for use!)}
 \usage{
-umxSimplex(name = "simplex", selDVs, dzData, mzData, sep = NULL,
-  equateMeans = TRUE, dzAr = 0.5, dzCr = 1, addStd = TRUE,
-  addCI = TRUE, autoRun = getOption("umx_auto_run"),
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal",
-  "mxTryHardWideSearch"), optimizer = NULL)
+umxSimplex(
+  name = "simplex",
+  selDVs,
+  dzData,
+  mzData,
+  sep = NULL,
+  equateMeans = TRUE,
+  dzAr = 0.5,
+  dzCr = 1,
+  addStd = TRUE,
+  addCI = TRUE,
+  autoRun = getOption("umx_auto_run"),
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL
+)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "simplex")}

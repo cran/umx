@@ -4,8 +4,11 @@
 \alias{umx_check}
 \title{umx_check}
 \usage{
-umx_check(boolean.test, action = c("stop", "warning", "message"),
-  message = "check failed")
+umx_check(
+  boolean.test,
+  action = c("stop", "warning", "message"),
+  message = "check failed"
+)
 }
 \arguments{
 \item{boolean.test}{test evaluating to TRUE or FALSE}

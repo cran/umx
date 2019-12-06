@@ -4,9 +4,16 @@
 \alias{umx_score_scale}
 \title{Score a psychometric scale by summing normal and reversed items}
 \usage{
-umx_score_scale(base = NULL, pos = NULL, rev = NULL, min = 1,
-  max = NULL, data = NULL, score = c("totals", "mean"),
-  name = NULL)
+umx_score_scale(
+  base = NULL,
+  pos = NULL,
+  rev = NULL,
+  min = 1,
+  max = NULL,
+  data = NULL,
+  score = c("totals", "mean"),
+  name = NULL
+)
 }
 \arguments{
 \item{base}{String common to all item names.}

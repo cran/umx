@@ -6,11 +6,22 @@
 \alias{umxPlot}
 \title{Create and display a graphical path diagram for a model.}
 \usage{
-\method{plot}{MxModel}(x = NA, std = FALSE, fixed = TRUE,
-  means = TRUE, digits = 2, file = "name", labels = c("none",
-  "labels", "both"), resid = c("circle", "line", "none"),
-  strip_zero = FALSE, splines = TRUE, min = NULL, same = NULL,
-  max = NULL, ...)
+\method{plot}{MxModel}(
+  x = NA,
+  std = FALSE,
+  fixed = TRUE,
+  means = TRUE,
+  digits = 2,
+  file = "name",
+  labels = c("none", "labels", "both"),
+  resid = c("circle", "line", "none"),
+  strip_zero = FALSE,
+  splines = TRUE,
+  min = NULL,
+  same = NULL,
+  max = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{An \code{\link[=mxModel]{mxModel()}} from which to make a path diagram}

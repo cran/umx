@@ -4,8 +4,15 @@
 \alias{umx_check_model}
 \title{Check for required features in an OpenMx.}
 \usage{
-umx_check_model(obj, type = NULL, hasData = NULL, beenRun = NULL,
-  hasMeans = NULL, checkSubmodels = FALSE, callingFn = "a function")
+umx_check_model(
+  obj,
+  type = NULL,
+  hasData = NULL,
+  beenRun = NULL,
+  hasMeans = NULL,
+  checkSubmodels = FALSE,
+  callingFn = "a function"
+)
 }
 \arguments{
 \item{obj}{an object to check}

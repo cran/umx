@@ -4,8 +4,11 @@
 \alias{xmu_check_needs_means}
 \title{Check data to see if model needs means.}
 \usage{
-xmu_check_needs_means(data, type = c("Auto", "FIML", "cov", "cor", "WLS",
-  "DWLS", "ULS"), allContinuousMethod = c("cumulants", "marginals"))
+xmu_check_needs_means(
+  data,
+  type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+  allContinuousMethod = c("cumulants", "marginals")
+)
 }
 \arguments{
 \item{data}{\code{\link[=mxData]{mxData()}} to check.}

@@ -4,9 +4,13 @@
 \alias{umx_polypairwise}
 \title{FIML-based Pairwise polychoric, polyserial, and Pearson correlations}
 \usage{
-umx_polypairwise(data, useDeviations = TRUE, printFit = FALSE,
-  use = "any", tryHard = c("no", "yes", "mxTryHard",
-  "mxTryHardOrdinal", "mxTryHardWideSearch"))
+umx_polypairwise(
+  data,
+  useDeviations = TRUE,
+  printFit = FALSE,
+  use = "any",
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
+)
 }
 \arguments{
 \item{data}{Dataframe}

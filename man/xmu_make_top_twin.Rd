@@ -4,11 +4,21 @@
 \alias{xmu_make_top_twin}
 \title{Helper to make a basic top, MZ, and DZ model.}
 \usage{
-xmu_make_top_twin(mzData, dzData, selDVs, sep = NULL, type = c("Auto",
-  "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
-  allContinuousMethod = c("cumulants", "marginals"), nSib = 2,
-  numObsMZ = NULL, numObsDZ = NULL, equateMeans = TRUE,
-  weightVar = NULL, bVector = FALSE, verbose = FALSE)
+xmu_make_top_twin(
+  mzData,
+  dzData,
+  selDVs,
+  sep = NULL,
+  type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+  allContinuousMethod = c("cumulants", "marginals"),
+  nSib = 2,
+  numObsMZ = NULL,
+  numObsDZ = NULL,
+  equateMeans = TRUE,
+  weightVar = NULL,
+  bVector = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{mzData}{Dataframe containing the MZ data}

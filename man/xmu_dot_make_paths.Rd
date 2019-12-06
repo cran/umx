@@ -4,9 +4,16 @@
 \alias{xmu_dot_make_paths}
 \title{xmu_dot_make_paths (not for end users)}
 \usage{
-xmu_dot_make_paths(mxMat, stringIn, heads = NULL, fixed = TRUE,
-  comment = "More paths", showResiduals = TRUE, labels = "labels",
-  digits = 2)
+xmu_dot_make_paths(
+  mxMat,
+  stringIn,
+  heads = NULL,
+  fixed = TRUE,
+  comment = "More paths",
+  showResiduals = TRUE,
+  labels = "labels",
+  digits = 2
+)
 }
 \arguments{
 \item{mxMat}{An mxMatrix}

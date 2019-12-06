@@ -5,8 +5,15 @@
 \alias{plot.MxModelACE}
 \title{Make a graphical display of an ACE model}
 \usage{
-umxPlotACE(x = NA, file = "name", digits = 2, means = FALSE,
-  std = TRUE, strip_zero = TRUE, ...)
+umxPlotACE(
+  x = NA,
+  file = "name",
+  digits = 2,
+  means = FALSE,
+  std = TRUE,
+  strip_zero = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{\code{\link[=mxModel]{mxModel()}} to plot (created by umxACE in order to inherit the MxModelACE class)}

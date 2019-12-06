@@ -5,8 +5,13 @@
 \alias{umx_checkpoint}
 \title{umx_set_checkpoint}
 \usage{
-umx_set_checkpoint(interval = 1, units = c("evaluations", "iterations",
-  "minutes"), prefix = "", directory = getwd(), model = NULL)
+umx_set_checkpoint(
+  interval = 1,
+  units = c("evaluations", "iterations", "minutes"),
+  prefix = "",
+  directory = getwd(),
+  model = NULL
+)
 }
 \arguments{
 \item{interval}{How many units between checkpoints: Default =  1.

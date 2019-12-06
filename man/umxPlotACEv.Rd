@@ -5,8 +5,15 @@
 \alias{plot.MxModelACEv}
 \title{Produce a graphical display of an ACE variance-components twin model}
 \usage{
-umxPlotACEv(x = NA, file = "name", digits = 2, means = FALSE,
-  std = TRUE, strip_zero = TRUE, ...)
+umxPlotACEv(
+  x = NA,
+  file = "name",
+  digits = 2,
+  means = FALSE,
+  std = TRUE,
+  strip_zero = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{\code{\link[=umxACEv]{umxACEv()}} model to plot.}

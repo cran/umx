@@ -4,8 +4,15 @@
 \alias{umx_long2wide}
 \title{Take a long twin-data file and make it wide (one family per row)}
 \usage{
-umx_long2wide(data, famID = NA, twinID = NA, zygosity = NA,
-  vars2keep = NA, passalong = NA, twinIDs2keep = NA)
+umx_long2wide(
+  data,
+  famID = NA,
+  twinID = NA,
+  zygosity = NA,
+  vars2keep = NA,
+  passalong = NA,
+  twinIDs2keep = NA
+)
 }
 \arguments{
 \item{data}{The original (long-format) data file}

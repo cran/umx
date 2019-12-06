@@ -4,10 +4,18 @@
 \alias{plot.MxLISRELModel}
 \title{Create and display a graphical path diagram for a LISREL model.}
 \usage{
-\method{plot}{MxLISRELModel}(x = NA, std = FALSE, fixed = TRUE,
-  means = TRUE, digits = 2, file = "name", labels = c("none",
-  "labels", "both"), resid = c("circle", "line", "none"),
-  strip_zero = TRUE, ...)
+\method{plot}{MxLISRELModel}(
+  x = NA,
+  std = FALSE,
+  fixed = TRUE,
+  means = TRUE,
+  digits = 2,
+  file = "name",
+  labels = c("none", "labels", "both"),
+  resid = c("circle", "line", "none"),
+  strip_zero = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{A LISREL \code{\link[=mxModel]{mxModel()}} from which to make a path diagram}

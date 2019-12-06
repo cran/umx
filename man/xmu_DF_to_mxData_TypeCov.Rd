@@ -4,8 +4,12 @@
 \alias{xmu_DF_to_mxData_TypeCov}
 \title{Convert a dataframe into a cov mxData object}
 \usage{
-xmu_DF_to_mxData_TypeCov(df, columns = NA, use = c("complete.obs",
-  "everything", "all.obs", "na.or.complete", "pairwise.complete.obs"))
+xmu_DF_to_mxData_TypeCov(
+  df,
+  columns = NA,
+  use = c("complete.obs", "everything", "all.obs", "na.or.complete",
+    "pairwise.complete.obs")
+)
 }
 \arguments{
 \item{df}{the dataframe to covert to an mxData type cov object.}

@@ -5,9 +5,18 @@
 \alias{plot.MxModelCP}
 \title{Draw and display a graphical figure of Common Pathway model}
 \usage{
-umxPlotCP(x = NA, means = FALSE, std = TRUE, digits = 2,
-  showFixed = TRUE, file = "name", format = c("current", "graphviz",
-  "DiagrammeR"), SEstyle = FALSE, strip_zero = TRUE, ...)
+umxPlotCP(
+  x = NA,
+  means = FALSE,
+  std = TRUE,
+  digits = 2,
+  showFixed = TRUE,
+  file = "name",
+  format = c("current", "graphviz", "DiagrammeR"),
+  SEstyle = FALSE,
+  strip_zero = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{The Common Pathway \code{\link[=mxModel]{mxModel()}} to display graphically}

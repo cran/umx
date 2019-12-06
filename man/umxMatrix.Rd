@@ -4,12 +4,25 @@
 \alias{umxMatrix}
 \title{Make a mxMatrix with automatic labels. Also takes name as the first parameter for more readable code.}
 \usage{
-umxMatrix(name = NA, type = "Full", nrow = NA, ncol = NA,
-  free = FALSE, values = NA, labels = TRUE, lbound = NA,
-  ubound = NA, byrow = getOption("mxByrow"), baseName = NA,
-  dimnames = NA, condenseSlots = getOption("mxCondenseMatrixSlots"),
-  ..., joinKey = as.character(NA), joinModel = as.character(NA),
-  jiggle = NA)
+umxMatrix(
+  name = NA,
+  type = "Full",
+  nrow = NA,
+  ncol = NA,
+  free = FALSE,
+  values = NA,
+  labels = TRUE,
+  lbound = NA,
+  ubound = NA,
+  byrow = getOption("mxByrow"),
+  baseName = NA,
+  dimnames = NA,
+  condenseSlots = getOption("mxCondenseMatrixSlots"),
+  ...,
+  joinKey = as.character(NA),
+  joinModel = as.character(NA),
+  jiggle = NA
+)
 }
 \arguments{
 \item{name}{The name of the matrix (Default = NA). Note the different order compared to mxMatrix!}

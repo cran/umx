@@ -5,10 +5,21 @@
 \alias{umxSummary.MxModelACEv}
 \title{Shows a compact, publication-style, summary of a variance-based Cholesky ACE model.}
 \usage{
-umxSummaryACEv(model, digits = 2, file = getOption("umx_auto_plot"),
-  comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE,
-  report = c("markdown", "html"), returnStd = FALSE,
-  extended = FALSE, zero.print = ".", show = c("std", "raw"), ...)
+umxSummaryACEv(
+  model,
+  digits = 2,
+  file = getOption("umx_auto_plot"),
+  comparison = NULL,
+  std = TRUE,
+  showRg = FALSE,
+  CIs = TRUE,
+  report = c("markdown", "html"),
+  returnStd = FALSE,
+  extended = FALSE,
+  zero.print = ".",
+  show = c("std", "raw"),
+  ...
+)
 }
 \arguments{
 \item{model}{an \code{\link[=mxModel]{mxModel()}} to summarize}

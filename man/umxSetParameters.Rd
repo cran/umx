@@ -4,9 +4,20 @@
 \alias{umxSetParameters}
 \title{Change or fix parameters (e.g. their values, labels, bounds, ..) in a model.}
 \usage{
-umxSetParameters(model, labels, free = NULL, values = NULL,
-  newlabels = NULL, lbound = NULL, ubound = NULL, indep = FALSE,
-  strict = TRUE, name = NULL, regex = FALSE, test = FALSE)
+umxSetParameters(
+  model,
+  labels,
+  free = NULL,
+  values = NULL,
+  newlabels = NULL,
+  lbound = NULL,
+  ubound = NULL,
+  indep = FALSE,
+  strict = TRUE,
+  name = NULL,
+  regex = FALSE,
+  test = FALSE
+)
 }
 \arguments{
 \item{model}{an \code{\link[=mxModel]{mxModel()}} to WITH}
@@ -85,8 +96,7 @@ parameters(m2)
 \item \code{\link[=umxModify]{umxModify()}}, \code{\link[=umxLabel]{umxLabel()}}
 }
 
-Other Modify or Compare Models: \code{\link{umxAdd1}()},
-  \code{\link{umxDrop1}()}, \code{\link{umxEquate}()},
+Other Modify or Compare Models: \code{\link{umxEquate}()},
   \code{\link{umxFixAll}()}, \code{\link{umxMI}()},
   \code{\link{umxModify}()},
   \code{\link{umxUnexplainedCausalNexus}()},

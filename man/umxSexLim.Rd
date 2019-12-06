@@ -4,12 +4,23 @@
 \alias{umxSexLim}
 \title{Multivariate sex limitation twin model}
 \usage{
-umxSexLim(name = "sexlim", selDVs, mzmData, dzmData, mzfData, dzfData,
-  dzoData, sep = NA, A_or_C = c("A", "C"), sexlim = c("Nonscalar",
-  "Scalar", "Homogeneity"), dzAr = 0.5, dzCr = 1,
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
-  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
-  optimizer = NULL)
+umxSexLim(
+  name = "sexlim",
+  selDVs,
+  mzmData,
+  dzmData,
+  mzfData,
+  dzfData,
+  dzoData,
+  sep = NA,
+  A_or_C = c("A", "C"),
+  sexlim = c("Nonscalar", "Scalar", "Homogeneity"),
+  dzAr = 0.5,
+  dzCr = 1,
+  autoRun = getOption("umx_auto_run"),
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL
+)
 }
 \arguments{
 \item{name}{The name of the model (Default = "sexlim")}

@@ -4,10 +4,18 @@
 \alias{umxGxE_window}
 \title{Implement the moving-window form of GxE analysis.}
 \usage{
-umxGxE_window(selDVs = NULL, moderator = NULL, mzData = mzData,
-  dzData = dzData, sep = NA, weightCov = FALSE, target = NULL,
-  width = 1, plotWindow = FALSE, return = c("estimates",
-  "last_model"))
+umxGxE_window(
+  selDVs = NULL,
+  moderator = NULL,
+  mzData = mzData,
+  dzData = dzData,
+  sep = NA,
+  weightCov = FALSE,
+  target = NULL,
+  width = 1,
+  plotWindow = FALSE,
+  return = c("estimates", "last_model")
+)
 }
 \arguments{
 \item{selDVs}{The dependent variables for T1 and T2, e.g. c("bmi_T1", "bmi_T2")}

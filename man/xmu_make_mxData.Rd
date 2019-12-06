@@ -4,8 +4,12 @@
 \alias{xmu_make_mxData}
 \title{Upgrade a dataframe to an mxData type.}
 \usage{
-xmu_make_mxData(data = NULL, type = c("Auto", "FIML", "cov", "cor",
-  "WLS", "DWLS", "ULS"), manifests = NULL, verbose = FALSE)
+xmu_make_mxData(
+  data = NULL,
+  type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+  manifests = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{data}{A \code{\link[=data.frame]{data.frame()}} or \code{\link[=mxData]{mxData()}}}

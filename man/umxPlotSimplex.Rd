@@ -5,9 +5,16 @@
 \alias{plot.MxModelSimplex}
 \title{Draw and display a graphical figure of a simplex model}
 \usage{
-umxPlotSimplex(x = NA, file = "name", digits = 2, means = FALSE,
-  std = TRUE, format = c("current", "graphviz", "DiagrammeR"),
-  strip_zero = TRUE, ...)
+umxPlotSimplex(
+  x = NA,
+  file = "name",
+  digits = 2,
+  means = FALSE,
+  std = TRUE,
+  format = c("current", "graphviz", "DiagrammeR"),
+  strip_zero = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{The \code{\link[=umxSimplex]{umxSimplex()}} model to display graphically}

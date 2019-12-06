@@ -4,16 +4,32 @@
 \alias{umxACEv}
 \title{Build and run 2-group uni- or multi-variate ACE models based on VARIANCE (not paths).}
 \usage{
-umxACEv(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData,
-  mzData, dzAr = 0.5, dzCr = 1, type = c("Auto", "FIML", "cov",
-  "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants",
-  "marginals"), data = NULL, zyg = "zygosity", weightVar = NULL,
-  numObsDZ = NULL, numObsMZ = NULL, addStd = TRUE, addCI = TRUE,
-  boundDiag = NULL, equateMeans = TRUE, bVector = FALSE,
+umxACEv(
+  name = "ACEv",
+  selDVs,
+  selCovs = NULL,
+  sep = NULL,
+  dzData,
+  mzData,
+  dzAr = 0.5,
+  dzCr = 1,
+  type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+  allContinuousMethod = c("cumulants", "marginals"),
+  data = NULL,
+  zyg = "zygosity",
+  weightVar = NULL,
+  numObsDZ = NULL,
+  numObsMZ = NULL,
+  addStd = TRUE,
+  addCI = TRUE,
+  boundDiag = NULL,
+  equateMeans = TRUE,
+  bVector = FALSE,
   covMethod = c("fixed", "random"),
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
-  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
-  optimizer = NULL)
+  autoRun = getOption("umx_auto_run"),
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL
+)
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE").}

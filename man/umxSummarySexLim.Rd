@@ -5,10 +5,21 @@
 \alias{umxSummary.MxModelSexLim}
 \title{Shows a compact, publication-style, summary of a umx Sex Limitation model}
 \usage{
-umxSummarySexLim(model, digits = 2, file = getOption("umx_auto_plot"),
-  comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE,
-  report = c("markdown", "html"), extended = FALSE, zero.print = ".",
-  show = c("std", "raw"), returnStd = FALSE, ...)
+umxSummarySexLim(
+  model,
+  digits = 2,
+  file = getOption("umx_auto_plot"),
+  comparison = NULL,
+  std = TRUE,
+  showRg = FALSE,
+  CIs = TRUE,
+  report = c("markdown", "html"),
+  extended = FALSE,
+  zero.print = ".",
+  show = c("std", "raw"),
+  returnStd = FALSE,
+  ...
+)
 }
 \arguments{
 \item{model}{a \code{\link[=umxSexLim]{umxSexLim()}} model to summarize}

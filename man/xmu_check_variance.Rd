@@ -4,9 +4,11 @@
 \alias{xmu_check_variance}
 \title{Check the minimum variance in data frame}
 \usage{
-xmu_check_variance(data, minVar = umx_set_data_variance_check(silent =
-  T)$minVar, maxVarRatio = umx_set_data_variance_check(silent =
-  T)$maxVarRatio)
+xmu_check_variance(
+  data,
+  minVar = umx_set_data_variance_check(silent = T)$minVar,
+  maxVarRatio = umx_set_data_variance_check(silent = T)$maxVarRatio
+)
 }
 \arguments{
 \item{data}{the data frame to check}

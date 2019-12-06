@@ -4,8 +4,12 @@
 \alias{umx_time}
 \title{umx_time}
 \usage{
-umx_time(x = NA, formatStr = c("simple", "std",
-  "custom \%H \%M \%OS3"), tz = "GMT", autoRun = TRUE)
+umx_time(
+  x = NA,
+  formatStr = c("simple", "std", "custom \%H \%M \%OS3"),
+  tz = "GMT",
+  autoRun = TRUE
+)
 }
 \arguments{
 \item{x}{A \code{\link[=mxModel]{mxModel()}} or list of models for which to display elapsed time, or 'start' or 'stop'}

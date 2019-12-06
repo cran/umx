@@ -4,16 +4,31 @@
 \alias{umxRAM}
 \title{Easier path-based SEM modeling.}
 \usage{
-umxRAM(model = NA, ..., data = NULL, name = NA, group = NULL,
-  group.equal = NULL, suffix = "", comparison = TRUE,
+umxRAM(
+  model = NA,
+  ...,
+  data = NULL,
+  name = NA,
+  group = NULL,
+  group.equal = NULL,
+  suffix = "",
+  comparison = TRUE,
   type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
   allContinuousMethod = c("cumulants", "marginals"),
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
-  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), std = FALSE,
-  refModels = NULL, remove_unused_manifests = TRUE, independent = NA,
-  setValues = TRUE, optimizer = NULL, verbose = FALSE,
-  std.lv = FALSE, lavaanMode = c("sem", "lavaan"), printTab = FALSE,
-  show = c("deprecated", "raw", "std"))
+  autoRun = getOption("umx_auto_run"),
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  std = FALSE,
+  refModels = NULL,
+  remove_unused_manifests = TRUE,
+  independent = NA,
+  setValues = TRUE,
+  optimizer = NULL,
+  verbose = FALSE,
+  std.lv = FALSE,
+  lavaanMode = c("sem", "lavaan"),
+  printTab = FALSE,
+  show = c("deprecated", "raw", "std")
+)
 }
 \arguments{
 \item{model}{A model to update (or set to string to use as name for new model)}
@@ -73,12 +88,12 @@ supports \code{\link[=umxPath]{umxPath()}} but also lavaan-style string specific
 lingua franca for SEM books, so supporting across apps makes a lot of sense.
 
 Here's a path example that models miles per gallon (mpg) as a function of weight (wt) and engine displacement (disp)
-using the widely used \code{mtcars} data set.\preformatted{m1 = umxRAM("tim", data = mtcars,
+using the widely used \code{mtcars} data set.\if{html}{\out{<div class="Rsplus">}}\preformatted{m1 = umxRAM("tim", data = mtcars,
 	umxPath(c("wt", "disp"), to = "mpg"),
 	umxPath("wt", with = "disp"),
 	umxPath(v.m. = c("wt", "disp", "mpg"))
 )
-}
+}\if{html}{\out{</div>}}
 
 As you can see, most of the work is done by \code{\link[=umxPath]{umxPath()}}. \code{umxRAM} just wraps these paths up, takes the \verb{data =} input, and
 then internally sets up all the labels and start values for the model, runs it, displays a summary, and a plot!
@@ -92,16 +107,16 @@ saying \code{lm(y ~ x + df)} instead of \code{lm(y ~ x, data = dd)}.
 
 \strong{String Syntax}
 
-Here's the same example using lavaan syntax (for more examples, see \code{\link[=umxLav2RAM]{umxLav2RAM()}})\preformatted{m1 = umxRAM("mpg ~ wt + disp", data = mtcars)
-}
+Here's the same example using lavaan syntax (for more examples, see \code{\link[=umxLav2RAM]{umxLav2RAM()}})\if{html}{\out{<div class="Rsplus">}}\preformatted{m1 = umxRAM("mpg ~ wt + disp", data = mtcars)
+}\if{html}{\out{</div>}}
 
 \emph{note}: If you are at the "sketching" stage of theory consideration, \code{umxRAM} supports
-a simple vector of manifest names to work with.\preformatted{m1 = umxRAM("sketch", data = c("A", "B", "C"),
+a simple vector of manifest names to work with.\if{html}{\out{<div class="Rsplus">}}\preformatted{m1 = umxRAM("sketch", data = c("A", "B", "C"),
 	umxPath("A", to = "B"),
 	umxPath("B", with = "C"),
 	umxPath(v.m. = c("A", "B", "C"))
 )
-}
+}\if{html}{\out{</div>}}
 
 Will create this figure:
 
@@ -145,10 +160,11 @@ and \code{fix = "firstLoadings"}. If you want this, I'd say use \code{umxRAM} wi
 # ============================================
 # = 1. Here's a simple example with raw data =
 # ============================================
+mtcars$litres = mtcars$disp/61.02
 m1 = umxRAM("tim", data = mtcars,
-	umxPath(c("wt", "disp"), to = "mpg"),
-	umxPath("wt", with = "disp"),
-	umxPath(v.m. = c("wt", "disp", "mpg"))
+	umxPath(c("wt", "litres"), to = "mpg"),
+	umxPath("wt", with = "litres"),
+	umxPath(v.m. = c("wt", "litres", "mpg"))
 )
 
 # 2. Use parameters to see the parameter estimates and labels
@@ -176,6 +192,17 @@ plot(m1, std = TRUE, means=FALSE, strip= TRUE, resid = "line")
 m1 = umxRAM(data = mtcars, "#modelName
  mpg ~ wt + disp")
 
+
+# =======================
+# = A multi-group model =
+# =======================
+
+m1 = umxRAM("tim", data = mtcars, group = "am",
+	umxPath(c("wt", "litres"), to = "mpg"),
+	umxPath("wt", with = "litres"),
+	umxPath(v.m. = c("wt", "litres", "mpg"))
+)
+# In this model, all parameters are equated across the two groups.
 
 # ====================================
 # = A cov model, with steps laid out =

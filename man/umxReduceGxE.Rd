@@ -4,9 +4,13 @@
 \alias{umxReduceGxE}
 \title{Reduce a GxE model.}
 \usage{
-umxReduceGxE(model, report = c("markdown", "inline", "html", "report"),
-  baseFileName = "tmp_gxe", tryHard = c("no", "yes", "mxTryHard",
-  "mxTryHardOrdinal", "mxTryHardWideSearch"), ...)
+umxReduceGxE(
+  model,
+  report = c("markdown", "inline", "html", "report"),
+  baseFileName = "tmp_gxe",
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  ...
+)
 }
 \arguments{
 \item{model}{An \code{\link[=mxModel]{mxModel()}} to reduce.}

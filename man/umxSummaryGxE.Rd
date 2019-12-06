@@ -5,11 +5,21 @@
 \alias{umxSummary.MxModelGxE}
 \title{Summarize a GxE model}
 \usage{
-umxSummaryGxE(model = NULL, digits = 2, xlab = NA,
-  location = "topleft", separateGraphs = FALSE,
-  file = getOption("umx_auto_plot"), returnStd = NULL, std = NULL,
-  reduce = FALSE, CIs = NULL, report = c("markdown", "html"),
-  show = NULL, ...)
+umxSummaryGxE(
+  model = NULL,
+  digits = 2,
+  xlab = NA,
+  location = "topleft",
+  separateGraphs = FALSE,
+  file = getOption("umx_auto_plot"),
+  returnStd = NULL,
+  std = NULL,
+  reduce = FALSE,
+  CIs = NULL,
+  report = c("markdown", "html"),
+  show = NULL,
+  ...
+)
 }
 \arguments{
 \item{model}{A fitted \code{\link[=umxGxE]{umxGxE()}} model to summarize}

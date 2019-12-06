@@ -4,10 +4,17 @@
 \alias{umxEquate}
 \title{umxEquate: Equate two or more paths}
 \usage{
-umxEquate(model, master, slave, free = c(TRUE, FALSE, NA),
-  verbose = FALSE, name = NULL, autoRun = FALSE, tryHard = c("no",
-  "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
-  comparison = TRUE)
+umxEquate(
+  model,
+  master,
+  slave,
+  free = c(TRUE, FALSE, NA),
+  verbose = FALSE,
+  name = NULL,
+  autoRun = FALSE,
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  comparison = TRUE
+)
 }
 \arguments{
 \item{model}{An \code{\link[=mxModel]{mxModel()}} within which to equate parameters}
@@ -76,8 +83,7 @@ m2 = umxEquate(m1, autoRun = TRUE, comparison = TRUE, name = "Eq x1 x2",
 \seealso{
 \code{\link[=umxModify]{umxModify()}}, \code{\link[=umxCompare]{umxCompare()}}
 
-Other Modify or Compare Models: \code{\link{umxAdd1}()},
-  \code{\link{umxDrop1}()}, \code{\link{umxFixAll}()},
+Other Modify or Compare Models: \code{\link{umxFixAll}()},
   \code{\link{umxMI}()}, \code{\link{umxModify}()},
   \code{\link{umxSetParameters}()},
   \code{\link{umxUnexplainedCausalNexus}()},

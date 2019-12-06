@@ -4,8 +4,7 @@
 \alias{tmx_genotypic_effect}
 \title{Graphical display of genotypic effects.}
 \usage{
-tmx_genotypic_effect(p = 0.75, q = (1 - p), a = 0.5, d = 0,
-  m = 0, show = TRUE)
+tmx_genotypic_effect(p = 0.75, q = (1 - p), a = 0.5, d = 0, m = 0, show = TRUE)
 }
 \arguments{
 \item{p}{The frequency of the B allele (Default .5)}
@@ -28,7 +27,7 @@ tmx_genotypic_effect(p = 0.75, q = (1 - p), a = 0.5, d = 0,
 \description{
 \code{tmx_genotypic_effect} allows you to explore the concept of genotypic effect at a locus. With it,
 you can interactively explore the effects of allele frequency, additive variance, and
-dominance.
+\href{https://en.wikipedia.org/wiki/Dominance_(genetics)}{dominance}.
 
 This function lets you explore the simplest two–allele system (\code{B} and \code{b}), with three possible
 genotypes, \code{BB}, \code{Bb}, and \code{bb}.

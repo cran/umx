@@ -4,16 +4,32 @@
 \alias{umxACE}
 \title{Build and run a 2-group Cholesky twin model (uni-variate or multi-variate)}
 \usage{
-umxACE(name = "ACE", selDVs, selCovs = NULL, dzData = NULL,
-  mzData = NULL, sep = NULL, data = NULL, zyg = "zygosity",
+umxACE(
+  name = "ACE",
+  selDVs,
+  selCovs = NULL,
+  dzData = NULL,
+  mzData = NULL,
+  sep = NULL,
+  data = NULL,
+  zyg = "zygosity",
   type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
-  numObsDZ = NULL, numObsMZ = NULL, boundDiag = 0,
+  numObsDZ = NULL,
+  numObsMZ = NULL,
+  boundDiag = 0,
   allContinuousMethod = c("cumulants", "marginals"),
-  autoRun = getOption("umx_auto_run"), intervals = FALSE,
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal",
-  "mxTryHardWideSearch"), optimizer = NULL, covMethod = c("fixed",
-  "random"), dzAr = 0.5, dzCr = 1, weightVar = NULL,
-  equateMeans = TRUE, addStd = TRUE, addCI = TRUE)
+  autoRun = getOption("umx_auto_run"),
+  intervals = FALSE,
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL,
+  covMethod = c("fixed", "random"),
+  dzAr = 0.5,
+  dzCr = 1,
+  weightVar = NULL,
+  equateMeans = TRUE,
+  addStd = TRUE,
+  addCI = TRUE
+)
 }
 \arguments{
 \item{name}{The name of the model (defaults to"ACE").}
@@ -259,22 +275,21 @@ data(twinData)
 twinData= umx_scale_wide_twin_data(data=twinData,varsToScale=c("wt"),sep="")
 # Cut BMI column to form ordinal obesity variables
 obLevels = c('normal', 'overweight', 'obese')
-cuts <- quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
+cuts = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
 twinData$obese1=cut(twinData$bmi1, breaks=c(-Inf,cuts,Inf), labels=obLevels)
 twinData$obese2=cut(twinData$bmi2, breaks=c(-Inf,cuts,Inf), labels=obLevels)
 # Make the ordinal variables into umxFactors
 ordDVs = c("obese1", "obese2")
-twinData[, ordDVs] <- mxFactor(twinData[, ordDVs], levels = obLevels)
+twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
 mzData = mzData[1:80, ] # Just top 80 pairs to run fast
 dzData = dzData[1:80, ]
 str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
 
-# Data-prep done - here's where the model starts:
-selDVs = c("obese")
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
-umxSummary(m1)
+# Data-prep done - here's the model and summary!:
+m1 = umxACE(selDVs = "obese", dzData = dzData, mzData = mzData, sep = '')
+# umxSummary(m1)
 
 # ============================================
 # = Bivariate continuous and ordinal example =
@@ -291,8 +306,8 @@ ordDVs = c("obese1", "obese2")
 twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 mzData = twinData[twinData$zygosity \%in\% "MZFF",] 
 dzData = twinData[twinData$zygosity \%in\% "DZFF",]
-mzData <- mzData[1:80,] # just top 80 so example runs in a couple of secs
-dzData <- dzData[1:80,]
+mzData = mzData[1:80,] # just top 80 so example runs in a couple of secs
+dzData = dzData[1:80,]
 m1 = umxACE(selDVs= c("wt","obese"), dzData= dzData, mzData= mzData, sep='')
 
 # =======================================

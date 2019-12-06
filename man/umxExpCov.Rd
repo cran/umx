@@ -5,8 +5,7 @@
 \alias{vcov.MxModel}
 \title{Get the expected vcov matrix}
 \usage{
-umxExpCov(object, latents = FALSE, manifests = TRUE, digits = NULL,
-  ...)
+umxExpCov(object, latents = FALSE, manifests = TRUE, digits = NULL, ...)
 }
 \arguments{
 \item{object}{an \code{\link[=mxModel]{mxModel()}} to get the covariance matrix from}

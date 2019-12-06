@@ -4,14 +4,25 @@
 \alias{umxLav2RAM}
 \title{Convert lavaan string to a umxRAM model}
 \usage{
-umxLav2RAM(model = NA, data = "auto", group = NULL,
-  group.equal = NULL, name = NA, lavaanMode = c("sem", "lavaan"),
-  std.lv = FALSE, suffix = "", comparison = TRUE, type = c("Auto",
-  "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+umxLav2RAM(
+  model = NA,
+  data = "auto",
+  group = NULL,
+  group.equal = NULL,
+  name = NA,
+  lavaanMode = c("sem", "lavaan"),
+  std.lv = FALSE,
+  suffix = "",
+  comparison = TRUE,
+  type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
   allContinuousMethod = c("cumulants", "marginals"),
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
-  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
-  verbose = FALSE, optimizer = NULL, std = FALSE, printTab = TRUE)
+  autoRun = getOption("umx_auto_run"),
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  verbose = FALSE,
+  optimizer = NULL,
+  std = FALSE,
+  printTab = TRUE
+)
 }
 \arguments{
 \item{model}{A lavaan syntax string, e.g. "A~~B"}
@@ -163,6 +174,7 @@ plot(tmp, max = c("cb", "cn", "cngn"), same = "gnt", min= "INT")
 
 # Algebra: e.g. b1^2
 m1 = umxRAM("x1~b1*x2; B1_sq := b1^2", data = demoOneFactor)
+m1$B1_sq$result # = 0.47
 
 # Model with constraints and labeled parameters
 lav = "
@@ -180,6 +192,7 @@ m1 = umxRAM(namedStr)
 # Formative factor
 # lavaanify("f5 <~ z1 + z2 + z3 + z4")
 }
+
 }
 \seealso{
 \itemize{

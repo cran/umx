@@ -4,17 +4,35 @@
 \alias{umxCP}
 \title{umxCP: Build and run a Common pathway twin model}
 \usage{
-umxCP(name = "CP", selDVs, dzData = NULL, mzData = NULL,
-  sep = NULL, nFac = 1, type = c("Auto", "FIML", "cov", "cor", "WLS",
-  "DWLS", "ULS"), data = NULL, zyg = "zygosity",
+umxCP(
+  name = "CP",
+  selDVs,
+  dzData = NULL,
+  mzData = NULL,
+  sep = NULL,
+  nFac = 1,
+  type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+  data = NULL,
+  zyg = "zygosity",
   allContinuousMethod = c("cumulants", "marginals"),
-  correlatedA = FALSE, dzAr = 0.5, dzCr = 1,
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
-  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
-  optimizer = NULL, equateMeans = TRUE, weightVar = NULL,
-  bVector = FALSE, boundDiag = 0, addStd = TRUE, addCI = TRUE,
-  numObsDZ = NULL, numObsMZ = NULL, freeLowerA = FALSE,
-  freeLowerC = FALSE, freeLowerE = FALSE)
+  correlatedA = FALSE,
+  dzAr = 0.5,
+  dzCr = 1,
+  autoRun = getOption("umx_auto_run"),
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL,
+  equateMeans = TRUE,
+  weightVar = NULL,
+  bVector = FALSE,
+  boundDiag = 0,
+  addStd = TRUE,
+  addCI = TRUE,
+  numObsDZ = NULL,
+  numObsMZ = NULL,
+  freeLowerA = FALSE,
+  freeLowerC = FALSE,
+  freeLowerE = FALSE
+)
 }
 \arguments{
 \item{name}{The name of the model (defaults to "CP").}

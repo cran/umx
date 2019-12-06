@@ -4,9 +4,17 @@
 \alias{umx_make_fake_data}
 \title{umx_make_fake_data}
 \usage{
-umx_make_fake_data(dataset, digits = 2, n = NA, use.names = TRUE,
-  use.levels = TRUE, use.miss = TRUE, mvt.method = "eigen",
-  het.ML = FALSE, het.suppress = TRUE)
+umx_make_fake_data(
+  dataset,
+  digits = 2,
+  n = NA,
+  use.names = TRUE,
+  use.levels = TRUE,
+  use.miss = TRUE,
+  mvt.method = "eigen",
+  het.ML = FALSE,
+  het.suppress = TRUE
+)
 }
 \arguments{
 \item{dataset}{The original dataset of which to make a simulacrum}

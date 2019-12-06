@@ -5,8 +5,13 @@
 \alias{tvars}
 \title{Concatenate base variable names with suffixes to create wide-format variable names (i.e twin-format)}
 \usage{
-umx_paste_names(varNames, sep = "", suffixes = 1:2, covNames = NULL,
-  prefix = NULL)
+umx_paste_names(
+  varNames,
+  sep = "",
+  suffixes = 1:2,
+  covNames = NULL,
+  prefix = NULL
+)
 }
 \arguments{
 \item{varNames}{a list of \emph{base} names, e.g c("bmi", "IQ")}

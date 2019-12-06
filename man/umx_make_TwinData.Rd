@@ -4,11 +4,27 @@
 \alias{umx_make_TwinData}
 \title{Simulate twin data with control over A, C, and E parameters, as well as moderation of A.}
 \usage{
-umx_make_TwinData(nMZpairs, nDZpairs = nMZpairs, AA = NULL,
-  CC = NULL, EE = NULL, DD = NULL, varNames = "var", MZr = NULL,
-  DZr = MZr, scale = FALSE, mean = 0, sd = 1, nThresh = NULL,
-  sum2one = TRUE, bivAmod = NULL, bivCmod = NULL, bivEmod = NULL,
-  seed = NULL, empirical = FALSE)
+umx_make_TwinData(
+  nMZpairs,
+  nDZpairs = nMZpairs,
+  AA = NULL,
+  CC = NULL,
+  EE = NULL,
+  DD = NULL,
+  varNames = "var",
+  MZr = NULL,
+  DZr = MZr,
+  scale = FALSE,
+  mean = 0,
+  sd = 1,
+  nThresh = NULL,
+  sum2one = TRUE,
+  bivAmod = NULL,
+  bivCmod = NULL,
+  bivEmod = NULL,
+  seed = NULL,
+  empirical = FALSE
+)
 }
 \arguments{
 \item{nMZpairs}{Number of MZ pairs to simulate}

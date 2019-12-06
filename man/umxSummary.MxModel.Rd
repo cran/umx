@@ -5,10 +5,19 @@
 \alias{umxSummary.MxRAMModel}
 \title{Shows a compact, publication-style, summary of a RAM model}
 \usage{
-\method{umxSummary}{MxModel}(model, refModels = NULL, std = FALSE,
-  digits = 2, report = c("markdown", "html"), filter = c("ALL", "NS",
-  "SIG"), SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE,
-  show = c("deprecated", "raw", "std", "none"), ...)
+\method{umxSummary}{MxModel}(
+  model,
+  refModels = NULL,
+  std = FALSE,
+  digits = 2,
+  report = c("markdown", "html"),
+  filter = c("ALL", "NS", "SIG"),
+  SE = TRUE,
+  RMSEA_CI = FALSE,
+  matrixAddresses = FALSE,
+  show = c("deprecated", "raw", "std", "none"),
+  ...
+)
 }
 \arguments{
 \item{model}{The [mxModel()] whose fit will be reported}

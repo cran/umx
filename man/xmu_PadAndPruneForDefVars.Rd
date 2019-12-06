@@ -4,8 +4,14 @@
 \alias{xmu_PadAndPruneForDefVars}
 \title{Where all data are missing for a twin, add default values for definition variables, allowing the row to be kept}
 \usage{
-xmu_PadAndPruneForDefVars(df, varNames, defNames, suffixes,
-  highDefValue = 99, rm = c("drop_missing_def", "pad_with_mean"))
+xmu_PadAndPruneForDefVars(
+  df,
+  varNames,
+  defNames,
+  suffixes,
+  highDefValue = 99,
+  rm = c("drop_missing_def", "pad_with_mean")
+)
 }
 \arguments{
 \item{df}{The dataframe to process}

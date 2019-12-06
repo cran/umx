@@ -4,8 +4,15 @@
 \alias{xmu_get_CI}
 \title{Look up and report CIs for free parameters}
 \usage{
-xmu_get_CI(model, label, prefix = "top.", suffix = "_std",
-  digits = 2, SEstyle = FALSE, verbose = FALSE)
+xmu_get_CI(
+  model,
+  label,
+  prefix = "top.",
+  suffix = "_std",
+  digits = 2,
+  SEstyle = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{model}{an \code{\link[=mxModel]{mxModel()}} to get CIs from}

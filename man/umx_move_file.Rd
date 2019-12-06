@@ -4,8 +4,14 @@
 \alias{umx_move_file}
 \title{Move files}
 \usage{
-umx_move_file(baseFolder = NA, regex = NULL, fileNameList = NA,
-  destFolder = NA, test = TRUE, overwrite = FALSE)
+umx_move_file(
+  baseFolder = NA,
+  regex = NULL,
+  fileNameList = NA,
+  destFolder = NA,
+  test = TRUE,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{baseFolder}{The folder to search in. If set to "Finder" (and you are on OS X) it will use the current front-most Finder window. If it is blank, a choose folder dialog will be thrown.}

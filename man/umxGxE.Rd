@@ -4,12 +4,23 @@
 \alias{umxGxE}
 \title{umxGxE: Implements ACE models with moderation of paths, e.g. by SES.}
 \usage{
-umxGxE(name = "G_by_E", selDVs, selDefs, dzData, mzData, sep = NULL,
-  data = NULL, zyg = "zygosity", digits = 3, lboundACE = NA,
-  lboundM = NA, dropMissingDef = TRUE,
-  autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes",
-  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
-  optimizer = NULL)
+umxGxE(
+  name = "G_by_E",
+  selDVs,
+  selDefs,
+  dzData,
+  mzData,
+  sep = NULL,
+  data = NULL,
+  zyg = "zygosity",
+  digits = 3,
+  lboundACE = NA,
+  lboundM = NA,
+  dropMissingDef = TRUE,
+  autoRun = getOption("umx_auto_run"),
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  optimizer = NULL
+)
 }
 \arguments{
 \item{name}{The name of the model (default= "G_by_E")}

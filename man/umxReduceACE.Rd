@@ -4,8 +4,13 @@
 \alias{umxReduceACE}
 \title{Reduce an ACE model.}
 \usage{
-umxReduceACE(model, report = c("markdown", "inline", "html", "report"),
-  baseFileName = "tmp", intervals = TRUE, ...)
+umxReduceACE(
+  model,
+  report = c("markdown", "inline", "html", "report"),
+  baseFileName = "tmp",
+  intervals = TRUE,
+  ...
+)
 }
 \arguments{
 \item{model}{an ACE or ADE \code{\link[=mxModel]{mxModel()}} to reduce}

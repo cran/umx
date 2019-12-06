@@ -4,14 +4,36 @@
 \alias{umxPath}
 \title{Easier (and powerful) specification of paths in SEM.}
 \usage{
-umxPath(from = NULL, to = NULL, with = NULL, var = NULL,
-  cov = NULL, means = NULL, v1m0 = NULL, v.m. = NULL,
-  v0m0 = NULL, v.m0 = NULL, fixedAt = NULL, freeAt = NULL,
-  firstAt = NULL, unique.bivariate = NULL, unique.pairs = NULL,
-  fromEach = NULL, forms = NULL, Cholesky = NULL, defn = NULL,
+umxPath(
+  from = NULL,
+  to = NULL,
+  with = NULL,
+  var = NULL,
+  cov = NULL,
+  means = NULL,
+  v1m0 = NULL,
+  v.m. = NULL,
+  v0m0 = NULL,
+  v.m0 = NULL,
+  fixedAt = NULL,
+  freeAt = NULL,
+  firstAt = NULL,
+  unique.bivariate = NULL,
+  unique.pairs = NULL,
+  fromEach = NULL,
+  forms = NULL,
+  Cholesky = NULL,
+  defn = NULL,
   connect = c("single", "all.pairs", "all.bivariate", "unique.pairs",
-  "unique.bivariate"), arrows = 1, free = TRUE, values = NA,
-  labels = NA, lbound = NA, ubound = NA, hasMeans = NULL)
+    "unique.bivariate"),
+  arrows = 1,
+  free = TRUE,
+  values = NA,
+  labels = NA,
+  lbound = NA,
+  ubound = NA,
+  hasMeans = NULL
+)
 }
 \arguments{
 \item{from}{One or more source variables e.g "A" or c("A","B")}
@@ -52,7 +74,7 @@ Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate
 
 \item{Cholesky}{Treat \strong{Cholesky} variables as latent and \strong{to} as measured, and connect as in an ACE model.}
 
-\item{defn}{Makes a latent variable, var@0 mean fixed, set label to 'data.defVarName'}
+\item{defn}{Implements a definition variable as a latent with zero variance & mean and labeled 'data.defVar'}
 
 \item{connect}{as in mxPath - nb: from and to must also be set.}
 
@@ -157,10 +179,9 @@ require(umx)
 umxPath("A", to = "B") # One-headed path from A to B
 umxPath("A", to = "B", fixedAt = 1) # same, with value fixed @1
 umxPath("A", to = c("B", "C"), fixedAt = 1:2) # same, with more than 1 value
-umxPath("A", to = LETTERS[2:4], firstAt = 1) # Fix only the first path, others free
+umxPath("A", to = c("B","C"), firstAt = 1) # Fix only the first path, others free
 umxPath(var = "A") # Give a variance to A
-umxPath(var = "A", fixedAt = 1) # Give a variance, fixed at 1
-umxPath(var = LETTERS[1:5], fixedAt = 1)
+umxPath(var = "A", fixedAt = 1) # Give A variance, fixed at 1
 umxPath(means = c("A","B")) # Create a means model for A: from = "one", to = "A"
 umxPath(v1m0 = "A") # Give "A" variance and a mean, fixed at 1 and 0 respectively
 umxPath(v.m. = "A") # Give "A" variance and a mean, leaving both free.
@@ -169,11 +190,18 @@ umxPath("A", with = "B") # using with: same as "to = B, arrows = 2"
 umxPath("A", with = "B", fixedAt = .5) # 2-head path fixed at .5
 umxPath("A", with = c("B", "C"), firstAt = 1) # first covariance fixed at 1
 umxPath(cov = c("A", "B"))  # Covariance A <-> B
-umxPath(unique.bivariate = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
-umxPath(fromEach = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
+umxPath(defn = "mpg") # create latent called def_mpg, with 0 mean * var, and label = "data.mpg"
+umxPath(fromEach = c('a','b'), to = c('c','d')) # a->c, a<->d, b<->c, b<->d
+umxPath(unique.bivariate = c('a','b','c')) # bivariate paths a<->b, a<->c, b<->c etc.
 umxPath(unique.pairs = letters[1:4]) # bivariate paths a<->b, a<->c, a<->d, b<->c etc.
 umxPath(Cholesky = c("A1","A2"), to = c("m1", "m2")) # Cholesky
-
+# ===============================
+# = Definition variable example =
+# ===============================
+m1 = umxRAM("manifest", data = mtcars,
+umxPath(v.m. = "mpg"),
+umxPath(defn = "mpg")
+)
 # ====================
 # = Cholesky example =
 # ====================

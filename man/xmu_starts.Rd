@@ -4,9 +4,17 @@
 \alias{xmu_starts}
 \title{Helper providing twin models with boilerplate means and variance start values}
 \usage{
-xmu_starts(mzData, dzData, selVars = selVars, sep = NULL,
-  equateMeans = NULL, nSib = 2, varForm = c("Cholesky"), SD = TRUE,
-  divideBy = 3)
+xmu_starts(
+  mzData,
+  dzData,
+  selVars = selVars,
+  sep = NULL,
+  equateMeans = NULL,
+  nSib = 2,
+  varForm = c("Cholesky"),
+  SD = TRUE,
+  divideBy = 3
+)
 }
 \arguments{
 \item{mzData}{Data for MZ pairs.}

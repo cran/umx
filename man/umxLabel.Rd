@@ -4,9 +4,19 @@
 \alias{umxLabel}
 \title{umxLabel: Add labels to a RAM model, matrix, or path}
 \usage{
-umxLabel(obj, suffix = "", baseName = NA, setfree = FALSE,
-  drop = 0, labelFixedCells = TRUE, jiggle = NA, boundDiag = NA,
-  verbose = FALSE, overRideExisting = FALSE, name = NULL)
+umxLabel(
+  obj,
+  suffix = "",
+  baseName = NA,
+  setfree = FALSE,
+  drop = 0,
+  labelFixedCells = TRUE,
+  jiggle = NA,
+  boundDiag = NA,
+  verbose = FALSE,
+  overRideExisting = FALSE,
+  name = NULL
+)
 }
 \arguments{
 \item{obj}{An \code{\link[=mxModel]{mxModel()}} (RAM or matrix based), \code{\link[=mxPath]{mxPath()}}, or \code{\link[=mxMatrix]{mxMatrix()}}}
@@ -87,12 +97,10 @@ umxLabel(a, verbose = TRUE, overRideExisting = TRUE)
 }
 \seealso{
 Other Advanced Model Building Functions: \code{\link{umxJiggle}()},
-  \code{\link{umxRAM2Ordinal}()},
   \code{\link{umxThresholdMatrix}()},
   \code{\link{umxValues}()},
-  \code{\link{umx_fix_first_loadings}()},
-  \code{\link{umx_fix_latents}()},
   \code{\link{umx_get_bracket_addresses}()},
-  \code{\link{umx_string_to_algebra}()}, \code{\link{umx}}
+  \code{\link{umx_string_to_algebra}()}, \code{\link{umx}},
+  \code{\link{xmuRAM2Ordinal}()}
 }
 \concept{Advanced Model Building Functions}

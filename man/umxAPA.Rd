@@ -5,10 +5,21 @@
 \alias{summaryAPA}
 \title{Creates nicely formatted journal-style summaries of models, p-values, data-frames and much more.}
 \usage{
-umxAPA(obj = .Last.value, se = NULL, p = NULL, std = FALSE,
-  digits = 2, use = "complete", min = 0.001, addComparison = NA,
-  report = c("markdown", "html"), lower = TRUE, test = c("Chisq",
-  "LRT", "Rao", "F", "Cp"), SEs = TRUE, means = TRUE)
+umxAPA(
+  obj = .Last.value,
+  se = NULL,
+  p = NULL,
+  std = FALSE,
+  digits = 2,
+  use = "complete",
+  min = 0.001,
+  addComparison = NA,
+  report = c("markdown", "html"),
+  lower = TRUE,
+  test = c("Chisq", "LRT", "Rao", "F", "Cp"),
+  SEs = TRUE,
+  means = TRUE
+)
 }
 \arguments{
 \item{obj}{A model (e.g. \code{\link[=lm]{lm()}}, \code{\link[=lme]{lme()}}, \code{\link[=glm]{glm()}}, \code{\link[=t.test]{t.test()}}), beta-value, or \link{data.frame}}

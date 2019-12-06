@@ -5,11 +5,22 @@
 \alias{umxSummary.MxModelGxEbiv}
 \title{Summarize a bivariate GxE twin model}
 \usage{
-umxSummaryGxEbiv(model = NULL, digits = 2, xlab = NA,
-  location = "topleft", separateGraphs = FALSE,
-  file = getOption("umx_auto_plot"), comparison = FALSE, std = NULL,
-  reduce = FALSE, CIs = NULL, report = c("markdown", "html"),
-  returnStd = NULL, show = c("std", "raw"), ...)
+umxSummaryGxEbiv(
+  model = NULL,
+  digits = 2,
+  xlab = NA,
+  location = "topleft",
+  separateGraphs = FALSE,
+  file = getOption("umx_auto_plot"),
+  comparison = FALSE,
+  std = NULL,
+  reduce = FALSE,
+  CIs = NULL,
+  report = c("markdown", "html"),
+  returnStd = NULL,
+  show = c("std", "raw"),
+  ...
+)
 }
 \arguments{
 \item{model}{A fitted \code{\link[=umxGxEbiv]{umxGxEbiv()}} model to summarize}

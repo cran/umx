@@ -5,9 +5,12 @@
 \alias{umx_update_OpenMx}
 \title{Install OpenMx, with choice of builds}
 \usage{
-install.OpenMx(loc = c("NPSOL", "travis", "CRAN",
-  "open travis build page", "UVa"), url = NULL, lib,
-  repos = getOption("repos"))
+install.OpenMx(
+  loc = c("NPSOL", "travis", "CRAN", "open travis build page", "UVa"),
+  url = NULL,
+  lib,
+  repos = getOption("repos")
+)
 }
 \arguments{
 \item{loc}{Version to get default is "NPSOL". "travis" (latest build),CRAN, list of builds.}

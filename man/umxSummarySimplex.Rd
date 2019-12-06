@@ -5,10 +5,21 @@
 \alias{umxSummary.MxModelSimplex}
 \title{Shows a compact, publication-style, summary of a Simplex model.}
 \usage{
-umxSummarySimplex(model, digits = 2, file = getOption("umx_auto_plot"),
-  comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE,
-  report = c("markdown", "html"), returnStd = FALSE,
-  extended = FALSE, zero.print = ".", show = c("std", "raw"), ...)
+umxSummarySimplex(
+  model,
+  digits = 2,
+  file = getOption("umx_auto_plot"),
+  comparison = NULL,
+  std = TRUE,
+  showRg = FALSE,
+  CIs = TRUE,
+  report = c("markdown", "html"),
+  returnStd = FALSE,
+  extended = FALSE,
+  zero.print = ".",
+  show = c("std", "raw"),
+  ...
+)
 }
 \arguments{
 \item{model}{an \code{\link[=mxModel]{mxModel()}} to summarize}

@@ -5,8 +5,13 @@
 \alias{umx2ord}
 \title{umx_cont_2_quantiles}
 \usage{
-umx_cont_2_quantiles(x, nlevels = NULL, type = c("mxFactor", "ordered",
-  "unordered"), verbose = FALSE, returnCutpoints = FALSE)
+umx_cont_2_quantiles(
+  x,
+  nlevels = NULL,
+  type = c("mxFactor", "ordered", "unordered"),
+  verbose = FALSE,
+  returnCutpoints = FALSE
+)
 }
 \arguments{
 \item{x}{a variable to recode as ordinal (email maintainer("umx") if you'd like this upgraded to handle df input)}

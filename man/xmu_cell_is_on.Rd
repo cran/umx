@@ -4,8 +4,12 @@
 \alias{xmu_cell_is_on}
 \title{Return whether a cell is in a set location of a matrix}
 \usage{
-xmu_cell_is_on(r, c, where = c("diag", "lower", "lower_inc", "upper",
-  "upper_inc", "any", "left"), mat = NULL)
+xmu_cell_is_on(
+  r,
+  c,
+  where = c("diag", "lower", "lower_inc", "upper", "upper_inc", "any", "left"),
+  mat = NULL
+)
 }
 \arguments{
 \item{r}{which row the cell is on.}

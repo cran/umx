@@ -4,8 +4,7 @@
 \alias{umx_lower2full}
 \title{Convert lower-only matrix data to full (or enforce symmetry on a full matrix)}
 \usage{
-umx_lower2full(lower.data, diag = NULL, byrow = TRUE,
-  dimnames = NULL)
+umx_lower2full(lower.data, diag = NULL, byrow = TRUE, dimnames = NULL)
 }
 \arguments{
 \item{lower.data}{An [mxMatrix()]}

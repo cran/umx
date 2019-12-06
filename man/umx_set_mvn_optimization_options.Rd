@@ -4,8 +4,12 @@
 \alias{umx_set_mvn_optimization_options}
 \title{Set options that affect optimization in OpenMx}
 \usage{
-umx_set_mvn_optimization_options(opt = c("mvnRelEps", "mvnMaxPointsA"),
-  value = NULL, model = NULL, silent = FALSE)
+umx_set_mvn_optimization_options(
+  opt = c("mvnRelEps", "mvnMaxPointsA"),
+  value = NULL,
+  model = NULL,
+  silent = FALSE
+)
 }
 \arguments{
 \item{opt}{default returns current values of the options listed. Currently

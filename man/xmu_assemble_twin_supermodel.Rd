@@ -4,8 +4,14 @@
 \alias{xmu_assemble_twin_supermodel}
 \title{Assemble top, MZ and DZ into a supermodel}
 \usage{
-xmu_assemble_twin_supermodel(name, MZ, DZ, top, mzWeightMatrix = NULL,
-  dzWeightMatrix = NULL)
+xmu_assemble_twin_supermodel(
+  name,
+  MZ,
+  DZ,
+  top,
+  mzWeightMatrix = NULL,
+  dzWeightMatrix = NULL
+)
 }
 \arguments{
 \item{name}{the name of the supermodel}

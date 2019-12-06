@@ -4,8 +4,14 @@
 \alias{xmu_dot_move_ranks}
 \title{xmu_dot_move_ranks (not for end users)}
 \usage{
-xmu_dot_move_ranks(min = NULL, same = NULL, max = NULL, old_min,
-  old_same, old_max)
+xmu_dot_move_ranks(
+  min = NULL,
+  same = NULL,
+  max = NULL,
+  old_min,
+  old_same,
+  old_max
+)
 }
 \arguments{
 \item{min}{vars to group at top of plot}

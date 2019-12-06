@@ -4,9 +4,18 @@
 \alias{xmuLabel_Matrix}
 \title{xmuLabel_Matrix (not a user function)}
 \usage{
-xmuLabel_Matrix(mx_matrix = NA, baseName = NA, setfree = FALSE,
-  drop = 0, jiggle = NA, boundDiag = NA, suffix = "",
-  verbose = TRUE, labelFixedCells = FALSE, overRideExisting = FALSE)
+xmuLabel_Matrix(
+  mx_matrix = NA,
+  baseName = NA,
+  setfree = FALSE,
+  drop = 0,
+  jiggle = NA,
+  boundDiag = NA,
+  suffix = "",
+  verbose = TRUE,
+  labelFixedCells = FALSE,
+  overRideExisting = FALSE
+)
 }
 \arguments{
 \item{mx_matrix}{an mxMatrix}

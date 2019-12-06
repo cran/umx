@@ -4,8 +4,11 @@
 \alias{umx_polychoric}
 \title{FIML-based polychoric, polyserial, and Pearson correlations}
 \usage{
-umx_polychoric(data, useDeviations = TRUE, tryHard = c("no", "yes",
-  "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"))
+umx_polychoric(
+  data,
+  useDeviations = TRUE,
+  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
+)
 }
 \arguments{
 \item{data}{Dataframe}

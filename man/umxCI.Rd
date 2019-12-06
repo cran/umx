@@ -4,10 +4,15 @@
 \alias{umxCI}
 \title{Add (and, optionally, run) confidence intervals to a structural model.}
 \usage{
-umxCI(model = NULL, which = c("ALL", NA, "list of your making"),
-  remove = FALSE, run = c("no", "yes", "if necessary", "show"),
-  interval = 0.95, type = c("both", "lower", "upper"),
-  showErrorCodes = TRUE)
+umxCI(
+  model = NULL,
+  which = c("ALL", NA, "list of your making"),
+  remove = FALSE,
+  run = c("no", "yes", "if necessary", "show"),
+  interval = 0.95,
+  type = c("both", "lower", "upper"),
+  showErrorCodes = TRUE
+)
 }
 \arguments{
 \item{model}{The \code{\link[=mxModel]{mxModel()}} you wish to report \code{\link[=mxCI]{mxCI()}}s on}

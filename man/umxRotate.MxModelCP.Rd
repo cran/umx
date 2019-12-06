@@ -4,8 +4,13 @@
 \alias{umxRotate.MxModelCP}
 \title{Rotate a CP solution}
 \usage{
-\method{umxRotate}{MxModelCP}(model, rotation = c("varimax", "promax"),
-  tryHard = "yes", freeLoadingsAfter = TRUE, verbose = TRUE)
+\method{umxRotate}{MxModelCP}(
+  model,
+  rotation = c("varimax", "promax"),
+  tryHard = "yes",
+  freeLoadingsAfter = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{model}{a \code{\link[=umxCP]{umxCP()}} model to rotate.}
