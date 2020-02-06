@@ -127,58 +127,85 @@ xmu_describe_data_WLS <- function(data, allContinuousMethod = c("cumulants", "ma
 #' @param min Min possible score (default = 1). Not implemented for values other than 1 so far...
 #' @param max Max possible score for an item (to compute how to reverse items).
 #' @param data The data frame
-#' @param score = Totals or Mean (default = "totals")
+#' @param score Whether to compute the score totals, mean, or max (default = "totals")
 #' @param name = name of the scale to be returned. Defaults to "base_score"
+#' @param na.rm Whether to delete NAs when computing scores (Default = TRUE) Note: Choice affects mean!
 #' @return - scores
 #' @export
 #' @family Miscellaneous Utility Functions
 #' @md
 #' @examples
 #' library(psych)
+#' 
+#' # ==============================
+#' # = Score Agreeableness totals =
+#' # ==============================
+#' 
 #' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A")
-#' tmp = umx_score_scale("E", pos = c(3,4,5), rev = c(1,2), max = 6, data= tmp, name = "E")
+#' tmp[1, namez(tmp, "A",ignore.case=FALSE)]
+#' #  A1 A2 A3 A4 A5  A
+#' #  2  4  3  4  4  20
+#' 
+#' # Handscore subject 1
+#' # A2 + A3 + A4 + A5 + A1(Reversed)
+#' # 4  + 3  + 4  + 4 + (6+1)-2 = 20
+#' 
+#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A", score="mean")
+#' tmp$A[1] # subject 1 mean = 4
+#' 
+#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A", score="max")
+#' tmp$A[1] # subject 1 max = 5 (the reversed item 1)
+#' 
+#' tmp = umx_score_scale("E", pos = c(3,4,5), rev = c(1,2), max = 6, data= tmp)
+#' tmp$E_score[1] # default scale name
 #' 
 #' # Using @BillRevelle's psych package: More diagnostics, including alpha
 #' scores= psych::scoreItems(items = bfi, min = 1, max = 6, keys = list(
-#'		E = c("-E1","-E2", "E3",  "E4", "E5"),
-#'		A = c( "-A1", "A2", "A3", "A4", "A5"))
-#' )
+#'		E = c("-E1","-E2", "E3", "E4", "E5"),
+#'		A = c("-A1", "A2", "A3", "A4", "A5")
+#' ))
 #' summary(scores)
-#' print(scores)
+#' scores$scores[1,]
+#' #  E   A 
+#' # 3.8 4.0 
 #' 
 #' # Compare output
 #' # (note, by default psych::scoreItems replaces NAs with the sample median...)
 #' RevelleE = as.numeric(scores$scores[,"E"]) * 5
-#' all(RevelleE == tmp[,"E"], na.rm = TRUE)
+#' all(RevelleE == tmp[,"E_score"], na.rm = TRUE)
 #'
-umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL,  score = c("totals", "mean"), name = NULL) {
+umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL, score = c("totals", "mean", "max"), name = NULL, na.rm=FALSE) {
 	score = match.arg(score)
 	
-	if(score!="totals"){
-		stop("Tim hasn't implemented means as a score yet... sorry :-(")
-	}
-	if(is.null(name)){
-		stop("You must set 'name' (the name for the new column")
-	}
-	if(is.null(max)){
-		stop("You must set 'max' (the highest possible score for an item) in umx_score_scale (note: min defaults to 1)")
-	}
-
 	if(is.null(name)){
 		name = paste0(base, "_score")
 	}
-	if(!is.null(pos)){
-		pos_sum = rowSums(data[,paste0(base, pos), drop = FALSE])
-	} else {
-		pos_sum = 0
+	if(!is.null(rev) && is.null(max)){
+		stop("If there are reverse items, you must set 'max' (the highest possible score for an item) in umx_score_scale (note: min defaults to 1)")
 	}
-	if(is.null(rev)){
-		# no reverse items
-		data[,name] = pos_sum
+
+	# ==================================
+	# = Reverse any items needing this =
+	# ==================================
+	if(!is.null(rev)){
+		revItems = data[,paste0(base, rev), drop= FALSE]
+		revItems = (max+min) - revItems
+		data[,paste0(base, rev)] = revItems
+	}
+	allColNames = paste0(base, c(pos, rev))
+	if(score=="max"){
+		df = data[ , allColNames, drop = FALSE]
+		score = rep(NA, nrow(df))
+		for (i in 1:nrow(df)) {
+			score[i] = max(df[i,])
+		}
+	}else if(score=="totals"){
+		score = rowSums(data[ , allColNames, drop = FALSE], na.rm = na.rm)
 	}else{
-		neg_sum = ((max+min)*length(rev))- rowSums(data[,paste0(base, rev), drop= FALSE])		
-		data[,name] = (pos_sum + neg_sum)
+		# score = means
+		score = rowMeans(data[ , allColNames, drop = FALSE], na.rm = na.rm)
 	}
+	data[, name] = score
 	return(data)
 }
 
@@ -194,7 +221,7 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 #' @param mat (optionally) provide matrix to check dimensions against r and c.
 #' @return - [mxModel()]
 #' @export
-#' @family Miscellaneous Utility Functions
+#' @family xmu internal not for end user
 #' @seealso - [umxLabel()]
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
@@ -1230,8 +1257,8 @@ umx_explode_twin_names <- function(df, sep = "_T") {
 #' will try and ensure factor levels same across all twins.
 #' @return - [mxFactor()]
 #' @export
-#' @family Miscellaneous Utility Functions
-#' @seealso - [umxFactanal()]
+#' @family Data Functions
+#' @seealso - [umxFactanal()], [mxFactor()]
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
@@ -1551,7 +1578,7 @@ umx_as_numeric <- function(df, which = NULL, force = FALSE) {
 
 #' umx_find_object
 #'
-#' Find objects a certain class, whose name matches a search string.
+#' Find objects of a given class, whose name matches a search string.
 #' The string (pattern) is grep-enabled, so you can match wild-cards
 #'
 #' @param pattern the pattern that matching objects must contain
@@ -1878,58 +1905,6 @@ dl_from_dropbox <- function(x, key=NULL){
 	message(noquote(paste(x, "read into", getwd())))
 }
 
-#' Use the pushbullet service to push a note
-#'
-#' Use the pushbullet service to push a note. You can also initialise this
-#' service by providing your key one time
-#'
-#' If you supply auth_key, It will be written to "~/.pushbulletkey"
-#' `umx_pb_note(auth_key="mykeystring")`
-#' once it exists there, you do not need to store it in code, so code is sharable.
-#' 
-#' You can get your authorization key at \url{https://www.pushbullet.com} in 
-#' the "account" section.
-#' 
-#' \strong{Note}: You can show the existing stored key using "GET"
-#'
-#' @param title of the note
-#' @param body of the note
-#' @param auth_key optional authkey (default = NA, set to value of your key to store key.
-#' @export
-#' @family Miscellaneous Utility Functions
-#' @seealso - [umx_msg()]
-#' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
-#' @md
-#' @examples
-#' \dontrun{
-#' umx_pb_note("done!", umx_time(m1))
-#' }
-umx_pb_note <- function(title = "test", body = "body", auth_key = c(NA, "GET")) {
-	auth_key = match.arg(auth_key)
-	auth_key_file = "~/.pushbulletkey"
-	helpMsg = "auth_key not found. You need to call umx_pb_note one time with auth_key set. See ?umx_pb_note"
-	if(is.na(auth_key)){
-		umx_check(file.exists(auth_key_file), "message", helpMsg)
-		auth_key = read.table(auth_key_file, stringsAsFactors=FALSE)[1,1]
-	} else if(auth_key == "GET"){
-		umx_check(file.exists(auth_key_file), "message", helpMsg)
-		return(read.table(auth_key_file, stringsAsFactors=FALSE)[1,1])
-	}else {
-		fileConn <- file(auth_key_file)
-		writeLines(auth_key, fileConn)
-		close(fileConn)
-		if(title=="test" && body=="default body"){
-			title = "successfully setup umx_pb_note!"
-			body = paste0("auth key is in ", omxQuotes(auth_key_file))
-		}
-	}
-	cmd = paste0("curl -s --header 'Authorization: Bearer ", auth_key, "'", 
-	" -X POST https://api.pushbullet.com/v2/pushes ",
-	"--header 'Content-Type: application/json' ",
-    "--data-binary '{\"type\": \"note\", \"title\": \"",title, "\", \"body\": \"", body, "\"}'"
-	)
-	invisible(system(cmd, intern=TRUE))
-}
 
 #' Move files
 #'
@@ -2181,7 +2156,6 @@ umx_make_sql_from_excel <- function(theFile = "Finder") {
 #' @param x something to put on the clipboard
 #' @return None 
 #' @export
-#' @family String Functions
 #' @family File Functions
 #' @examples
 #' \dontrun{
@@ -2645,7 +2619,7 @@ umx_update_OpenMx <- install.OpenMx
 #' @param spelling Whether to check spelling before release (default = "en_US": set NULL to not check).
 #' @return None
 #' @export
-#' @family Miscellaneous Utility Functions
+#' @family xmu internal not for end user
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
@@ -3357,7 +3331,6 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 #' @export
 #' @seealso [umx_msg()], [umx_set_table_format()] 
 #' @family Miscellaneous Utility Functions
-#' @family Reporting Functions
 #' @md
 #' @examples
 #' umx_print(mtcars[1:10,], digits = 2, zero.print = ".", justify = "left")
@@ -3939,7 +3912,7 @@ umx_is_MxMatrix <- function(obj) {
 
 #' umx_is_cov
 #'
-#' test if a data frame or matrix is cov or cor data, or is likely to be raw...
+#' test if a data frame, matrix or mxData is type cov or cor, or is likely to be raw...
 #' @param data dataframe to test
 #' @param boolean whether to return the type ("cov") or a boolean (default = string)
 #' @param verbose How much feedback to give (default = FALSE)
@@ -3952,6 +3925,7 @@ umx_is_MxMatrix <- function(obj) {
 #' umx_is_cov(df)
 #' df = cor(mtcars)
 #' umx_is_cov(df)
+#' umx_is_cov(mxData(df[1:3,1:3], type= "cov", numObs = 200))
 #' umx_is_cov(df, boolean = TRUE)
 #' umx_is_cov(mtcars, boolean = TRUE)
 umx_is_cov <- function(data = NULL, boolean = FALSE, verbose = FALSE) {
@@ -3959,7 +3933,12 @@ umx_is_cov <- function(data = NULL, boolean = FALSE, verbose = FALSE) {
 		stop("Error in umx_is_cov: You have to provide the data = that you want to check...\n",
 		"Or as Jack Nicholson says in The Departed: 'No ticky... no laundry' ") 
 	}
-	if( nrow(data) == ncol(data)) {
+	if(umx_is_MxData(data)){
+		isCov = data$type
+		if(verbose){
+			message("mxData type = ", isCov)
+		}
+	} else	if( nrow(data) == ncol(data)) {
 		if(all(data[lower.tri(data)] == t(data)[lower.tri(t(data))])){
 			if(all(diag(data) == 1)){
 				isCov = "cor"
@@ -4211,7 +4190,7 @@ umx_reorder <- function(old, newOrder, force=FALSE) {
 #' @param returnCutpoints just return the cutpoints, for use directly
 #' @return - recoded variable as an [mxFactor()]
 #' @export
-#' @family Miscellaneous Utility Functions
+#' @family Data Functions
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
@@ -4321,7 +4300,7 @@ umx_has_square_brackets <- function (input) {
 #' @param dimnames of the returned algebra
 #' @return - [mxAlgebra()]
 #' @export
-#' @family Advanced Model Building Functions
+#' @family xmu internal not for end user
 #' @references - <https://www.github.com/tbates/umx>
 #' @md
 #' @examples
@@ -4694,7 +4673,7 @@ umx_scale_wide_twin_data <- function(varsToScale, sep, data, twins = 1:2) {
 #' @param check Whether to check that single items are in the list. Set false to accept abbreviations (defaults to TRUE) 
 #' @return - one validated option
 #' @export
-#' @family Get and set
+#' @family xmu internal not for end user
 #' @seealso - [match.arg()]
 #' @references - <https://www.github.com/tbates/umx>
 #' @md
@@ -5051,6 +5030,14 @@ umx_rot <- function(vec){
 #' 
 #' *Note*: Not all data sets have an order column, but it is essential to rank subjects correctly.
 #' 
+#' You might start off with a TWID which is a concatenation of a familyID and a 2 digit twinID
+#' 
+#' **Generating famID and twinID as used by this function**
+#' 
+#' You can capture the last 2 digits with the `mod` function: `twinID = df$TWID %% 100`
+#' 
+#' You can *drop* the last 2 digits with integer div: `famID = df$TWID %/% 100`
+#' 
 #' *Note*: The functions assumes that if zygosity or any passalong variables are NA in the first
 #' family member, they are NA everywhere. i.e., it does not hunt for values that
 #' are present elsewhere to try and self-heal missing data.
@@ -5172,6 +5159,11 @@ umx_long2wide <- function(data, famID = NA, twinID = NA, zygosity = NA, vars2kee
 #' @description
 #' Just detects the data columns for twin 1, and twin 2, then returns them stacked
 #' on top of each other (rbind) with the non-twin specific columns copied for each as well.
+#' 
+#' *Note*, zygosity codings differ among labs. One scheme uses 1 = MZFF, 2 = MZMM, 3 = DZFF, 4 = DZMM, 
+#' 5 = DZOS or DZFM, 6 = DZMF, with 9 = unknown, and then 50, 51,... for siblings.
+#' 
+#' Typically, OS twins are ordered Female/Male.
 #'
 #' @param data a dataframe containing twin data.
 #' @param sep the string between the var name and twin suffix, i.e., var_T1 = _T
@@ -6525,7 +6517,7 @@ xmu_PadAndPruneForDefVars <- function(df, varNames, defNames, suffixes, highDefV
 #' @param newName = NA
 #' @return - a list of bracket style labels
 #' @export
-#' @family Advanced Model Building Functions
+#' @family xmu internal not for end user
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
 #' @examples

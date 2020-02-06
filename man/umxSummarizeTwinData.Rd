@@ -74,12 +74,13 @@ umxSummarizeTwinData(twinData, sep = "", selVars = c("wt", "ht"), MZ = MZs, DZ =
 }
 
 Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
-  \code{\link{umxReduceACE}()},
+  \code{\link{umxPlotDoC}()}, \code{\link{umxReduceACE}()},
   \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
   \code{\link{umxSummaryACEcov}()},
   \code{\link{umxSummaryACEv}()},
   \code{\link{umxSummaryACE}()},
   \code{\link{umxSummaryCP}()},
+  \code{\link{umxSummaryDoC}()},
   \code{\link{umxSummaryGxEbiv}()},
   \code{\link{umxSummaryGxE}()},
   \code{\link{umxSummaryIP}()},

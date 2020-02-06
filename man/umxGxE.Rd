@@ -17,8 +17,10 @@ umxGxE(
   lboundACE = NA,
   lboundM = NA,
   dropMissingDef = TRUE,
+  dzAr = 0.5,
+  dzCr = 1,
   autoRun = getOption("umx_auto_run"),
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  tryHard = c("no", "yes", "ordinal", "search"),
   optimizer = NULL
 )
 }
@@ -47,9 +49,13 @@ umxGxE(
 
 \item{dropMissingDef}{Whether to automatically drop missing def var rows for the user (default = TRUE). You get a polite note.}
 
+\item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating).}
+
+\item{dzCr}{The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).}
+
 \item{autoRun}{Optionally run the model (default), or just to create it and return without running.}
 
-\item{tryHard}{Optionally tryHard to get the model to converge (Default = 'no'). "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch".}
+\item{tryHard}{Optionally tryHard to get the model to converge (Default = 'no'). "yes" uses mxTryHard. Other options: "ordinal", "search".}
 
 \item{optimizer}{Optionally set the optimizer (default NULL does nothing)}
 }
@@ -77,11 +83,9 @@ umx_set_optimizer("SLSQP")
 twinData$age1 = twinData$age2 = twinData$age
 selDVs  = "bmi"
 selDefs = "age"
-mzData  = subset(twinData, zygosity == "MZFF")[100,]
-dzData  = subset(twinData, zygosity == "DZFF")[100,]
-umx_time("start")
+mzData  = subset(twinData, zygosity == "MZFF")[1:100,]
+dzData  = subset(twinData, zygosity == "DZFF")[1:100,]
 m1 = umxGxE(selDVs= "bmi", selDefs= "age", sep= "", dzData= dzData, mzData= mzData, tryHard= "yes")
-umx_time("stop")
 
 \dontrun{
 # Select the data on the fly with data= and zygosity levels
@@ -91,7 +95,7 @@ umxSummaryGxE(m1)
 umxSummary(m1, location = "topright")
 umxSummary(m1, separateGraphs = TRUE)
 
-m2 = umxModify(m1, regex = "am_.*", comparison = TRUE, tryHard = "mxTryHard")
+m2 = umxModify(m1, regex = "am_.*", comparison = TRUE, tryHard = "yes")
 
 # umxReduce knows how to test all relevant hypotheses for GxE models,
 # reporting these in a nice table.
@@ -113,8 +117,8 @@ Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
   \code{\link{umxACE_cov_fixed}()},
   \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
   \code{\link{umxACE}()}, \code{\link{umxCP}()},
-  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
-  \code{\link{umxIP}()},
+  \code{\link{umxDoC}()}, \code{\link{umxGxE_window}()},
+  \code{\link{umxGxEbiv}()}, \code{\link{umxIP}()},
   \code{\link{umxRotate.MxModelCP}()},
   \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
   \code{\link{umx}}

@@ -81,7 +81,7 @@ umxDiagnose <- function(model, tryHard = FALSE, diagonalizeExpCov = FALSE){
 #' @param digits (default 2)
 #' @return - Best model
 #' @export
-#' @family Reporting Functions
+#' @family Miscellaneous Stats Helpers
 #' @seealso - [AIC()]
 #' @references - Wagenmakers E.J., Farrell S. (2004), 192-196. AIC model selection using Akaike weights. *Psychonomic Bulletin and Review*. **11**, 192-196. \url{https://www.ncbi.nlm.nih.gov/pubmed/15117008}
 #' @md
@@ -174,7 +174,7 @@ umxReduce.default <- function(model, ...){
 #' @param model An [mxModel()] to reduce.
 #' @param report How to report the results. "html" = open in browser.
 #' @param baseFileName (optional) custom filename for html output (defaults to "tmp").
-#' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"
+#' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"
 
 #' @param ... Other parameters to control model summary.
 #' @return best model
@@ -188,7 +188,7 @@ umxReduce.default <- function(model, ...){
 #' \dontrun{
 #' model = umxReduce(model)
 #' }
-umxReduceGxE <- function(model, report = c("markdown", "inline", "html", "report"), baseFileName = "tmp_gxe", tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"), ...) {
+umxReduceGxE <- function(model, report = c("markdown", "inline", "html", "report"), baseFileName = "tmp_gxe", tryHard = c("no", "yes", "ordinal", "search"), ...) {
 	report = match.arg(report)
 	umx_is_MxModel(model)
 	if(class(model) == "MxModelGxE"){		
@@ -466,7 +466,6 @@ loadings.MxModel <- function(x, ...) {
 #' @param wipeExistingRequests Whether to remove existing CIs when adding new ones (ignored if parm = 'existing').
 #' @param optimizer For difficult CIs, trying other optimizers can help!
 #' @param showErrorCodes (default = FALSE)
-#' @param ... Additional argument(s) for umxConfint.
 #' @export
 #' @return - [mxModel()]
 #' @family Reporting functions
@@ -892,16 +891,17 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 
 	report = match.arg(report)
 	filter = match.arg(filter)
-	# show = xmu_match.arg(show, c("raw", "std", "none"), check = FALSE)
 	
 	message("?umxSummary std=T|F', digits, report= 'html', filter= 'NS' & more")
 	
 	# If the filter is not default, user must want something: Assume it's what would have been the default...
 	if( filter != "ALL" & is.null(std) ) {
 		std = FALSE
-	}else if(std && SE == FALSE){
-		# message("SE must be TRUE to show std, overriding to set SE = TRUE")
-		SE = TRUE
+	}else if(!is.null(std)){
+		 if(SE == FALSE){
+			 # message("SE must be TRUE to show std, overriding to set SE = TRUE")
+			 SE = TRUE
+		 }
 	}
 	umx_has_been_run(model, stop = TRUE)
 	if(is.null(refModels)) {
@@ -3685,7 +3685,7 @@ RMSEA.summary.mxmodel <- function(x, ci.lower = .05, ci.upper = .95, digits = 3)
 #' @param pvalues A vector of p-values, e.g. c(.041, .183)
 #' @return - A meta-analytic p-value
 #' @export
-#' @family Reporting Functions
+#' @family Miscellaneous Stats Helpers
 #' @references - Fisher, R.A. (1925). *Statistical Methods for Research Workers*. Oliver and Boyd (Edinburgh). ISBN 0-05-002170-2.
 #' Fisher, R. A (1948). "Questions and answers #14". *The American Statistician*. **2**: 30–31. doi:10.2307/2681650. JSTOR 2681650.
 #' See also Stouffer's method for combining Z scores, which allow weighting.
@@ -3702,17 +3702,15 @@ FishersMethod <- function(pvalues){
 #' Miscellaneous functions that are handy in summary and other tasks where you might otherwise have
 #' to craft a custom nameless functions. e.g.
 #' 
-#' \itemize{
-#'   \item [umx_fun_mean_sd()]: returns "mean (SD)" of x.
-#'   \item Second item
-#' }
-#' note: if a factor is given, then the mode is returned instead of the mean and SD.
+#' * [umx_fun_mean_sd()]: returns "mean (SD)" of x.
+#'
+#' *note*: if a factor is given, then the mode is returned instead of the mean and SD.
 #' @param x input
 #' @param na.rm How to handle missing (default = TRUE = remove)
 #' @param digits Rounding (default = 2)
 #' @return - function result
 #' @export
-#' @family Miscellaneous Stats Helpers
+#' @family xmu internal not for end user
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
@@ -3846,7 +3844,7 @@ umx_aggregate <- function(formula = DV ~ condition, data = df, what = c("mean_sd
 #' @param min Values below min will be reported as "< min"
 #' @param digits Number of decimals to which to round (default = 3)
 #' @param addComparison Whether to add '=' '<' etc. (NA adds when needed)
-#' @family Reporting Functions
+#' @family xmu internal not for end user
 #' @return - p-value formatted in APA style
 #' @export
 #' @seealso - [umxAPA()], [round()]

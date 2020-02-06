@@ -72,8 +72,10 @@ umx_names(tmp, "^d") # all names beginning with a d
 \seealso{
 \link{namez} to filter (and replace) names, Also \link{umx_check_names} to check for existence of names in a dataframe.
 
-Other Data Functions: \code{\link{umxHetCor}()},
+Other Data Functions: \code{\link{umxFactor}()},
+  \code{\link{umxHetCor}()},
   \code{\link{umx_as_numeric}()},
+  \code{\link{umx_cont_2_quantiles}()},
   \code{\link{umx_lower2full}()},
   \code{\link{umx_make_MR_data}()},
   \code{\link{umx_make_TwinData}()},

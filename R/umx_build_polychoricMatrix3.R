@@ -18,11 +18,8 @@
 #' x$polychorics
 #' cor(mtcars[, c("am", "vs")])
 #' 
-umx_polychoric <- function(data, useDeviations = TRUE, tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")) {
-	tryHard = match.arg(tryHard)
-	if(tryHard == "yes"){
-		tryHard = "mxTryHard"
-	}
+umx_polychoric <- function(data, useDeviations = TRUE, tryHard = c("no", "yes", "ordinal", "search")) {
+	tryHard      = match.arg(tryHard)
 	nVar         = ncol(data)
 	nameList     = names(data)
 	nThresh      = vector(mode = "integer", nVar)
@@ -163,17 +160,19 @@ umx_polychoric <- function(data, useDeviations = TRUE, tryHard = c("no", "yes", 
 
 	# Run the job
 	if(tryHard == "no"){
-		model = mxRun(model)
-	} else if (tryHard == "mxTryHard"){
+		# model = mxRun(model)
+	} else if (tryHard == "yes"){
 		model = mxTryHard(model)
-		model = mxRun(model)
-	} else if (tryHard == "mxTryHardOrdinal"){
+		# model = mxRun(model)
+	} else if (tryHard == "ordinal"){
 		model = mxTryHardOrdinal(model)
-		model = mxRun(model)
-	} else if (tryHard == "mxTryHardWideSearch"){
+		# model = mxRun(model)
+	} else if (tryHard == "search"){
 		model = mxTryHardWideSearch(model)
-		model = mxRun(model)
+	}else{
+		stop("tryHard = ", omxQuotes(tryHard), " not known: use no, yes, ordinal, or search")
 	}
+	model = mxRun(model)
 
 	# Populate seMatrix for return
 	seMatrix = matrix(NA, nVar, nVar)
@@ -225,7 +224,7 @@ umx_polychoric <- function(data, useDeviations = TRUE, tryHard = c("no", "yes", 
 #' x$R
 #' cov2cor(x$R)
 #' cor(mtcars[, c("hp", "mpg", "am", "vs")])
-umx_polypairwise <- function (data, useDeviations= TRUE, printFit= FALSE, use= "any", tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")) {
+umx_polypairwise <- function (data, useDeviations= TRUE, printFit= FALSE, use= "any", tryHard = c("no", "yes", "ordinal", "search")) {
 	tryHard = match.arg(tryHard)
 
     nVar = dim(data)[[2]]
@@ -297,7 +296,7 @@ umx_polypairwise <- function (data, useDeviations= TRUE, printFit= FALSE, use= "
 #' x$R
 #' cor(mtcars[, c("hp", "mpg", "am", "vs")])
 #'
-umx_polytriowise <- function (data, useDeviations = TRUE, printFit = FALSE, use = "any", tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")) {
+umx_polytriowise <- function (data, useDeviations = TRUE, printFit = FALSE, use = "any", tryHard = c("no", "yes", "ordinal", "search")) {
 	tryHard = match.arg(tryHard)
 	nVar = dim(data)[[2]]
 	if(nVar < 3) {

@@ -55,8 +55,10 @@ cov(tmp)
 \item \code{\link[=cov2cor]{cov2cor()}}, \code{\link[MASS:mvrnorm]{MASS::mvrnorm()}}
 }
 
-Other Data Functions: \code{\link{umxHetCor}()},
+Other Data Functions: \code{\link{umxFactor}()},
+  \code{\link{umxHetCor}()},
   \code{\link{umx_as_numeric}()},
+  \code{\link{umx_cont_2_quantiles}()},
   \code{\link{umx_lower2full}()},
   \code{\link{umx_make_MR_data}()},
   \code{\link{umx_make_TwinData}()},

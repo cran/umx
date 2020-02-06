@@ -7,7 +7,7 @@
 umx_polychoric(
   data,
   useDeviations = TRUE,
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch")
+  tryHard = c("no", "yes", "ordinal", "search")
 )
 }
 \arguments{
@@ -37,8 +37,10 @@ cor(mtcars[, c("am", "vs")])
 - \url{https://doi.org/10.3389/fpsyg.2016.00528}
 }
 \seealso{
-Other Data Functions: \code{\link{umxHetCor}()},
+Other Data Functions: \code{\link{umxFactor}()},
+  \code{\link{umxHetCor}()},
   \code{\link{umx_as_numeric}()},
+  \code{\link{umx_cont_2_quantiles}()},
   \code{\link{umx_lower2full}()},
   \code{\link{umx_make_MR_data}()},
   \code{\link{umx_make_TwinData}()},

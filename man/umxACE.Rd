@@ -20,7 +20,7 @@ umxACE(
   allContinuousMethod = c("cumulants", "marginals"),
   autoRun = getOption("umx_auto_run"),
   intervals = FALSE,
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  tryHard = c("no", "yes", "ordinal", "search"),
   optimizer = NULL,
   covMethod = c("fixed", "random"),
   dzAr = 0.5,
@@ -62,7 +62,7 @@ umxACE(
 
 \item{intervals}{Whether to run mxCI confidence intervals (default = FALSE)}
 
-\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"}
 
 \item{optimizer}{Optionally set the optimizer (default NULL does nothing).}
 
@@ -208,9 +208,9 @@ umxSummary(m2, comparison = m1)
 # nb: Although summary is smart enough to print d, the underlying 
 #     matrices are still called a, c & e.
 
-# ================
-# = WLS analysis =
-# ================
+# ===================================================
+# = WLS example using diagonal weight least squares =
+# ===================================================
 m3 = umxACE(selDVs = "ht", sep = "", dzData = dzData, mzData = mzData, 
 	type = "DWLS", allContinuousMethod='marginals'
 )
@@ -247,25 +247,22 @@ m1 = umxACE(selDVs = "wt", sep = "", data = twinData,
 m2 = umxModify(m1, update = "c_r1c1", name = "no_C", comparison = TRUE)
 # nb: You can see names of free parameters with parameters(m2)
 
+# =========================================================
+# = Well done! Now you can make modify twin models in umx =
+# =========================================================
+
 # =====================================
 # = Bivariate height and weight model =
 # =====================================
 data(twinData)
-selDVs = c("ht", "wt") # umx will add sep (in this case "") + "1" or '2'
+# We'll scale height (ht1 and ht2) and weight
 twinData = umx_scale_wide_twin_data(data = twinData, varsToScale = c("ht", "wt"), sep = "")
 mzData = twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"),]
 dzData = twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
 mzData = mzData[1:80,] # quicker run to keep CRAN happy
 dzData = dzData[1:80,]
-m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
-m2 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '',
-	type = "DWLS", allContinuousMethod='marginals')
+m1 = umxACE(selDVs = c("ht", "wt"), sep = '', dzData = dzData, mzData = mzData)
 umxSummary(m1)
-
-# =========================================================
-# = Well done! Now you can make modify twin models in umx =
-# =========================================================
-
 
 # ===================
 # = Ordinal example =
@@ -362,9 +359,9 @@ to the analysis of human behaviour. \emph{Heredity}, \strong{41}, 249-320. \url{
 Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
   \code{\link{umxACE_cov_fixed}()},
   \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
-  \code{\link{umxCP}()}, \code{\link{umxGxE_window}()},
-  \code{\link{umxGxEbiv}()}, \code{\link{umxGxE}()},
-  \code{\link{umxIP}()},
+  \code{\link{umxCP}()}, \code{\link{umxDoC}()},
+  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
+  \code{\link{umxGxE}()}, \code{\link{umxIP}()},
   \code{\link{umxRotate.MxModelCP}()},
   \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
   \code{\link{umx}}

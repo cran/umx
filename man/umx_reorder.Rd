@@ -29,8 +29,10 @@ umx_reorder(oldMatrix, "hp") # edge-case of just 1-var
 - <https://www.github.com/tbates/umx>
 }
 \seealso{
-Other Data Functions: \code{\link{umxHetCor}()},
+Other Data Functions: \code{\link{umxFactor}()},
+  \code{\link{umxHetCor}()},
   \code{\link{umx_as_numeric}()},
+  \code{\link{umx_cont_2_quantiles}()},
   \code{\link{umx_lower2full}()},
   \code{\link{umx_make_MR_data}()},
   \code{\link{umx_make_TwinData}()},

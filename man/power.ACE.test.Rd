@@ -16,7 +16,7 @@ power.ACE.test(
   power = 0.8,
   method = c("ncp", "empirical"),
   search = FALSE,
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  tryHard = c("yes", "no", "ordinal", "search"),
   optimizer = NULL,
   nSim = 4000
 )
@@ -91,15 +91,15 @@ power.ACE.test(AA= .5, CC= 0, update = "a", search = TRUE)
 # Salutary note: You need well fitting models with correct betas in the data
 # for power to be valid.
 # tryHard helps ensure this, as does the default nSim= 4000 pair data.
-# Power is important to get right, so I recommend using tryHard = "yes"
-power.ACE.test(AA= .5, CC= 0, update = "a", tryHard= "yes")
+# Power is important to get right, so I recommend using tryHard = "yes" (the default)
+power.ACE.test(AA= .5, CC= 0, update = "a")
 
 # =====================
 # = Power to detect C =
 # =====================
 
 # 102 of each of MZ and DZ pairs for 80\% power.
-power.ACE.test(AA= .5, CC= .3, update = "c", tryHard= "yes")
+power.ACE.test(AA= .5, CC= .3, update = "c")
 
 # ========================================
 # = Set 'a' to a fixed, but non-zero value =
@@ -154,7 +154,7 @@ power.ACE.test(update= "a", AA= .5, CC= 0, method = "ncp")
 # ====================
 # 1. tryHard
 
-power.ACE.test(update = "a", AA= .5, CC= 0, tryHard= "yes")
+power.ACE.test(update = "a", AA= .5, CC= 0, tryHard= "no")
 
 # 2. toggle optimizer
 power.ACE.test(update= "a", AA= .5, CC= 0, optimizer= "SLSQP")
@@ -187,8 +187,9 @@ Power failure: why small sample size undermines the reliability of neuroscience.
 Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}()},
   \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
   \code{\link{umxACE}()}, \code{\link{umxCP}()},
-  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
-  \code{\link{umxGxE}()}, \code{\link{umxIP}()},
+  \code{\link{umxDoC}()}, \code{\link{umxGxE_window}()},
+  \code{\link{umxGxEbiv}()}, \code{\link{umxGxE}()},
+  \code{\link{umxIP}()},
   \code{\link{umxRotate.MxModelCP}()},
   \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
   \code{\link{umx}}

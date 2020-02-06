@@ -8,9 +8,9 @@ xmu_safe_run_summary(
   model1,
   model2 = NULL,
   autoRun = TRUE,
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  tryHard = c("no", "yes", "ordinal", "search"),
   summary = !umx_set_silent(silent = TRUE),
-  std = FALSE,
+  std = "default",
   comparison = TRUE,
   digits = 3,
   show = "deprecated"
@@ -23,11 +23,11 @@ xmu_safe_run_summary(
 
 \item{autoRun}{Whether to run or not (default = TRUE) Options are FALSE and "if needed".}
 
-\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"}
 
 \item{summary}{Whether to print model summary (default = autoRun).}
 
-\item{std}{What to print in summary (default FALSE) means raw, TRUE = standardize, null = omit parameter table.}
+\item{std}{What to print in summary. "default" = the object's summary default. FALSE = raw, TRUE = standardize, NULL = omit parameter table.}
 
 \item{comparison}{Toggle to allow not making comparison, even if second model is provided (more flexible in programming).}
 
@@ -76,7 +76,12 @@ xmu_safe_run_summary(m1, m2, autoRun = TRUE, summary = TRUE, std = TRUE, compari
 }
 
 Other xmu internal not for end user: \code{\link{umxModel}()},
-  \code{\link{umx_standardize}()}, \code{\link{umx}},
+  \code{\link{umx_APA_pval}()},
+  \code{\link{umx_fun_mean_sd}()},
+  \code{\link{umx_get_bracket_addresses}()},
+  \code{\link{umx_make}()},
+  \code{\link{umx_standardize}()},
+  \code{\link{umx_string_to_algebra}()}, \code{\link{umx}},
   \code{\link{xmuHasSquareBrackets}()},
   \code{\link{xmuLabel_MATRIX_Model}()},
   \code{\link{xmuLabel_Matrix}()},
@@ -88,11 +93,13 @@ Other xmu internal not for end user: \code{\link{umxModel}()},
   \code{\link{xmuMaxLevels}()},
   \code{\link{xmuMinLevels}()},
   \code{\link{xmuPropagateLabels}()},
+  \code{\link{xmuRAM2Ordinal}()},
   \code{\link{xmu_CI_merge}()},
   \code{\link{xmu_CI_stash}()},
   \code{\link{xmu_DF_to_mxData_TypeCov}()},
   \code{\link{xmu_PadAndPruneForDefVars}()},
   \code{\link{xmu_assemble_twin_supermodel}()},
+  \code{\link{xmu_cell_is_on}()},
   \code{\link{xmu_check_levels_identical}()},
   \code{\link{xmu_check_needs_means}()},
   \code{\link{xmu_check_variance}()},
@@ -108,6 +115,7 @@ Other xmu internal not for end user: \code{\link{umxModel}()},
   \code{\link{xmu_make_bin_cont_pair_data}()},
   \code{\link{xmu_make_mxData}()},
   \code{\link{xmu_make_top_twin}()},
+  \code{\link{xmu_match.arg}()},
   \code{\link{xmu_name_from_lavaan_str}()},
   \code{\link{xmu_set_sep_from_suffix}()},
   \code{\link{xmu_show_fit_or_comparison}()},

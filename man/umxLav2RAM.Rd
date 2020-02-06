@@ -17,7 +17,7 @@ umxLav2RAM(
   type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
   allContinuousMethod = c("cumulants", "marginals"),
   autoRun = getOption("umx_auto_run"),
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  tryHard = c("no", "yes", "ordinal", "search"),
   verbose = FALSE,
   optimizer = NULL,
   std = FALSE,
@@ -49,7 +49,7 @@ umxLav2RAM(
 
 \item{autoRun}{Whether to run the model (default), or just to create it and return without running.}
 
-\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"}
 
 \item{verbose}{Whether to tell the user what latents and manifests were created etc. (Default = FALSE)}
 
@@ -102,7 +102,7 @@ Lavaan is well documented. For quick reference, some common symbols in lavaan st
 
 \strong{Naming of multiple groups}
 
-When multiple groups are found the groups are named "name_grouplevel"
+When multiple groups are found the groups are named \code{name_grouplevel}
 White space is replaced with "_" and illegal characters are replaced with "x"
 
 \emph{note}: Options for  group.equal. In future, we might implement (but have not as yet):
@@ -201,15 +201,11 @@ m1 = umxRAM(namedStr)
 
 Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
   \code{\link{qm}()}, \code{\link{umxBrownie}()},
-  \code{\link{umxFactor}()}, \code{\link{umxVersion}()},
+  \code{\link{umxRAM2Lav}()}, \code{\link{umxVersion}()},
   \code{\link{umx_array_shift}()},
-  \code{\link{umx_cont_2_quantiles}()},
-  \code{\link{umx_find_object}()},
-  \code{\link{umx_make}()}, \code{\link{umx_msg}()},
+  \code{\link{umx_find_object}()}, \code{\link{umx_msg}()},
   \code{\link{umx_open_CRAN_page}()},
-  \code{\link{umx_pad}()}, \code{\link{umx_pb_note}()},
-  \code{\link{umx_print}()},
-  \code{\link{umx_score_scale}()}, \code{\link{umx}},
-  \code{\link{xmu_cell_is_on}()}
+  \code{\link{umx_pad}()}, \code{\link{umx_print}()},
+  \code{\link{umx_score_scale}()}, \code{\link{umx}}
 }
 \concept{Miscellaneous Utility Functions}

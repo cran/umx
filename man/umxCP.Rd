@@ -19,7 +19,7 @@ umxCP(
   dzAr = 0.5,
   dzCr = 1,
   autoRun = getOption("umx_auto_run"),
-  tryHard = c("no", "yes", "mxTryHard", "mxTryHardOrdinal", "mxTryHardWideSearch"),
+  tryHard = c("no", "yes", "ordinal", "search"),
   optimizer = NULL,
   equateMeans = TRUE,
   weightVar = NULL,
@@ -64,7 +64,7 @@ omit sep in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2").}
 
 \item{autoRun}{Whether to run the model (default), or just to create it and return without running.}
 
-\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "mxTryHardOrdinal", "mxTryHardWideSearch"}
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"}
 
 \item{optimizer}{optionally set the optimizer (default NULL does nothing).}
 
@@ -255,9 +255,9 @@ m1 = umxCP("new", selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData,
 Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
   \code{\link{umxACE_cov_fixed}()},
   \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
-  \code{\link{umxACE}()}, \code{\link{umxGxE_window}()},
-  \code{\link{umxGxEbiv}()}, \code{\link{umxGxE}()},
-  \code{\link{umxIP}()},
+  \code{\link{umxACE}()}, \code{\link{umxDoC}()},
+  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
+  \code{\link{umxGxE}()}, \code{\link{umxIP}()},
   \code{\link{umxRotate.MxModelCP}()},
   \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
   \code{\link{umx}}
