@@ -7,15 +7,18 @@
 umx_check(
   boolean.test,
   action = c("stop", "warning", "message"),
-  message = "check failed"
+  message = "check failed",
+  ...
 )
 }
 \arguments{
-\item{boolean.test}{test evaluating to TRUE or FALSE}
+\item{boolean.test}{test evaluating to TRUE or FALSE.}
 
-\item{action}{One of "stop" (the default), "warning", or "message"}
+\item{action}{One of "stop" (the default), "warning", or "message".}
 
-\item{message}{what to tell the user when boolean.test is FALSE}
+\item{message}{what to tell the user when boolean.test is FALSE.}
+
+\item{...}{extra text will be pasted after the messages.}
 }
 \value{
 - boolean
@@ -24,24 +27,23 @@ umx_check(
 Check that a test evaluates to TRUE. If not, stop, warn, or message the user
 }
 \examples{
-umx_check(length(1:3)==3, "stop", "item must have length == 3")
-}
-\references{
-- <https://www.github.com/tbates/umx>
+umx_check(length(1:3)==3, "message", "item must have length == 3", "another comment", "and another")
+umx_check(1==2, "message", "one must be 2", ". Another comment", "and another")
 }
 \seealso{
-Other Test: \code{\link{umx_check_OS}()},
-  \code{\link{umx_check_model}()},
-  \code{\link{umx_check_names}()},
-  \code{\link{umx_check_parallel}()},
-  \code{\link{umx_has_CIs}()},
-  \code{\link{umx_has_been_run}()},
-  \code{\link{umx_has_means}()},
-  \code{\link{umx_has_square_brackets}()},
-  \code{\link{umx_is_MxData}()},
-  \code{\link{umx_is_MxMatrix}()},
-  \code{\link{umx_is_MxModel}()},
-  \code{\link{umx_is_RAM}()}, \code{\link{umx_is_cov}()},
-  \code{\link{umx_is_ordered}()}
+Other Test: 
+\code{\link{umx_check_OS}()},
+\code{\link{umx_check_model}()},
+\code{\link{umx_check_names}()},
+\code{\link{umx_check_parallel}()},
+\code{\link{umx_has_CIs}()},
+\code{\link{umx_has_been_run}()},
+\code{\link{umx_has_means}()},
+\code{\link{umx_has_square_brackets}()},
+\code{\link{umx_is_MxData}()},
+\code{\link{umx_is_MxMatrix}()},
+\code{\link{umx_is_MxModel}()},
+\code{\link{umx_is_RAM}()},
+\code{\link{umx_is_cov}()}
 }
 \concept{Test}

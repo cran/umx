@@ -14,25 +14,34 @@ umx_print(
   justify = "none",
   file = c(NA, "tmp.html"),
   suppress = NULL,
+  append = FALSE,
+  sortableDF = TRUE,
+  both = TRUE,
   ...
 )
 }
 \arguments{
 \item{x}{A data.frame to print (matrices will be coerced to data.frame)}
 
-\item{digits}{The number of decimal places to print (defaults to getOption("digits")}
+\item{digits}{The number of decimal places to print (getOption("digits"))}
 
-\item{quote}{Parameter passed to print (defaults to FALSE)}
+\item{quote}{Parameter passed to print (FALSE)}
 
-\item{na.print}{String to replace NA with (default to blank "")}
+\item{na.print}{String to replace NA with ("")}
 
-\item{zero.print}{String to replace 0.000 with  (defaults to "0")}
+\item{zero.print}{String to replace 0.000 with  ("0")}
 
 \item{justify}{Parameter passed to print (defaults to "none")}
 
 \item{file}{whether to write to a file (defaults to NA (no file). Use "tmp.html" to open table in browser.}
 
-\item{suppress}{minimum numeric value to print (default =  NULL, print all values, no matter how small)}
+\item{suppress}{minimum numeric value to print (NULL = print all values, no matter how small)}
+
+\item{append}{If html, is this appended to file? (FALSE)}
+
+\item{sortableDF}{If html, is table sortable? (TRUE)}
+
+\item{both}{If html, is table also printed as markdown? (TRUE)}
 
 \item{...}{Optional parameters for print}
 }
@@ -50,20 +59,26 @@ By default, Zeros have the decimals suppressed, and NAs are suppressed altogethe
 umx_print(mtcars[1:10,], digits = 2, zero.print = ".", justify = "left")
 umx_print(mtcars[1,1:2], digits = 2, zero.print = "")
 \dontrun{
+umx_print(mtcars[1:10,], file = "html")
 umx_print(mtcars[1:10,], file = "tmp.html")
 }
 }
 \seealso{
 \code{\link[=umx_msg]{umx_msg()}}, \code{\link[=umx_set_table_format]{umx_set_table_format()}}
 
-Other Miscellaneous Utility Functions: \code{\link{install.OpenMx}()},
-  \code{\link{qm}()}, \code{\link{umxBrownie}()},
-  \code{\link{umxLav2RAM}()}, \code{\link{umxRAM2Lav}()},
-  \code{\link{umxVersion}()},
-  \code{\link{umx_array_shift}()},
-  \code{\link{umx_find_object}()}, \code{\link{umx_msg}()},
-  \code{\link{umx_open_CRAN_page}()},
-  \code{\link{umx_pad}()}, \code{\link{umx_score_scale}()},
-  \code{\link{umx}}
+Other Miscellaneous Utility Functions: 
+\code{\link{install.OpenMx}()},
+\code{\link{qm}()},
+\code{\link{umxBrownie}()},
+\code{\link{umxLav2RAM}()},
+\code{\link{umxRAM2Lav}()},
+\code{\link{umxVersion}()},
+\code{\link{umx_array_shift}()},
+\code{\link{umx_find_object}()},
+\code{\link{umx_msg}()},
+\code{\link{umx_open_CRAN_page}()},
+\code{\link{umx_pad}()},
+\code{\link{umx_score_scale}()},
+\code{\link{umx}}
 }
 \concept{Miscellaneous Utility Functions}

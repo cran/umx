@@ -260,7 +260,7 @@ umxLav2RAM <- function(model = NA, data = "auto", group = NULL, group.equal= NUL
 	tryHard             = match.arg(tryHard)
 	allContinuousMethod = match.arg(allContinuousMethod)
 	lavaanMode          = match.arg(lavaanMode)
-	
+	umx_check(is.character(model), "stop", "model should be a lavaan model string. You gave me a ", omxQuotes(class(model)))
 	# =~  =  L  -> A
 	# ~   =  y <-  x
 	# ~~  =  A <-> B
@@ -405,7 +405,7 @@ umxLav2RAM <- function(model = NA, data = "auto", group = NULL, group.equal= NUL
 	tmp   = xmu_lavaan_process_group(algebraRows, groupNum = 0)
 	model = mxModel(model, tmp$plist)
 
-	if (class(data) == "character"){
+	if (class(data)[[1]] == "character"){
 		# User is just running a trial model, with no data, but provided names for sketch mode
 		autoPlot = umx_set_auto_plot(silent = TRUE)
 		if(autoRun && autoPlot){

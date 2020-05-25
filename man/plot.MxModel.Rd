@@ -83,6 +83,10 @@ m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
 plot(m1)
 plot(m1, std = TRUE, resid = "line", digits = 3, strip_zero = FALSE)
 
+# ============================================================
+# = With a growth model, demonstrate splines= false to force =
+# = straight lines, and move "rank" of intercept object      =
+# ============================================================
 
 m1 = umxRAM("grow", data = myGrowthMixtureData,
 	umxPath(var = manifests, free = TRUE), 
@@ -107,15 +111,21 @@ plot(m1, means=FALSE, std=TRUE, strip=TRUE, splines="FALSE", max="intercept")
 \item \code{\link[=umx_set_plot_format]{umx_set_plot_format()}}, \code{\link[=plot.MxModel]{plot.MxModel()}}, \code{\link[=umxPlotACE]{umxPlotACE()}}, \code{\link[=umxPlotCP]{umxPlotCP()}}, \code{\link[=umxPlotIP]{umxPlotIP()}}, \code{\link[=umxPlotGxE]{umxPlotGxE()}}
 }
 
-Other umx S3 functions: \code{\link{plot.MxLISRELModel}()}
+Other umx S3 functions: 
+\code{\link{plot.MxLISRELModel}()}
 
-Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
-  \code{\link{umxPlotACEcov}()},
-  \code{\link{umxPlotACEv}()}, \code{\link{umxPlotACE}()},
-  \code{\link{umxPlotCP}()}, \code{\link{umxPlotGxEbiv}()},
-  \code{\link{umxPlotGxE}()}, \code{\link{umxPlotIP}()},
-  \code{\link{umxPlotSexLim}()},
-  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
+Other Plotting functions: 
+\code{\link{plot.MxLISRELModel}()},
+\code{\link{umxPlotACEcov}()},
+\code{\link{umxPlotACEv}()},
+\code{\link{umxPlotACE}()},
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotGxEbiv}()},
+\code{\link{umxPlotGxE}()},
+\code{\link{umxPlotIP}()},
+\code{\link{umxPlotSexLim}()},
+\code{\link{umxPlotSimplex}()},
+\code{\link{umx}}
 }
 \concept{Plotting functions}
 \concept{umx S3 functions}

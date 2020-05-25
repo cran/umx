@@ -208,13 +208,13 @@ umxCompare(m1, c(m1a, m1b, m1c, m1d))
 # Variables for Analysis
 selDVs = c('ssc','sil','caf','tri','bic')
 selDVs = c('ssc','tri','bic')
-m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", tryHard = "mxTryHard",
+m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", tryHard = "yes",
 mzmData = mzmData, dzmData = dzmData, 
  mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
 )
 
 m2 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", sexlim = "Nonscalar",
-	tryHard = "mxTryHard",
+	tryHard = "yes",
 mzmData = mzmData, dzmData = dzmData, 
  mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
 )
@@ -233,14 +233,21 @@ Multivariate genetic analysis of sex-lim and GxE interaction. \emph{Twin Researc
 \seealso{
 \code{\link[=umxSummarySexLim]{umxSummarySexLim()}}, \code{\link[=umxPlotSexLim]{umxPlotSexLim()}}
 
-Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
-  \code{\link{umxACE_cov_fixed}()},
-  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
-  \code{\link{umxACE}()}, \code{\link{umxCP}()},
-  \code{\link{umxDoC}()}, \code{\link{umxGxE_window}()},
-  \code{\link{umxGxEbiv}()}, \code{\link{umxGxE}()},
-  \code{\link{umxIP}()},
-  \code{\link{umxRotate.MxModelCP}()},
-  \code{\link{umxSimplex}()}, \code{\link{umx}}
+Other Twin Modeling Functions: 
+\code{\link{plot.MxModelTwinMaker}()},
+\code{\link{power.ACE.test}()},
+\code{\link{umxACEcov}()},
+\code{\link{umxACEv}()},
+\code{\link{umxACE}()},
+\code{\link{umxCP}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxDoC}()},
+\code{\link{umxGxE_window}()},
+\code{\link{umxGxEbiv}()},
+\code{\link{umxGxE}()},
+\code{\link{umxIP}()},
+\code{\link{umxRotate.MxModelCP}()},
+\code{\link{umxSimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

@@ -95,6 +95,8 @@ m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
 # 1. Drop the path to x1 (also updating the name so it's
 #    self-explanatory, and get a fit comparison
 m2 = umxModify(m1, update = "G_to_x1", name = "drop_X1", comparison = TRUE)
+
+\dontrun{
 # 2. Add the path back (setting free = TRUE)
 m2 = umxModify(m1, update = "G_to_x1", free= TRUE, name = "addback_X1", comparison = TRUE)
 # 3. Fix a value at a non-zero value
@@ -123,6 +125,7 @@ m2 = umxModify(m1, update = labsToUpdate, newlabels= newLabel, name = "equated",
 searchString = "G_to_x([0-9])"
 newLabel = "loading_for_path\\\\1" # use value in regex group 1
 m2 = umxModify(m1, regex = searchString, newlabels= newLabel, name = "grep", comparison = TRUE)
+}
 
 }
 \references{
@@ -131,17 +134,23 @@ m2 = umxModify(m1, regex = searchString, newlabels= newLabel, name = "grep", com
 }
 }
 \seealso{
-Other Core Modeling Functions: \code{\link{umxAlgebra}()},
-  \code{\link{umxMatrix}()}, \code{\link{umxPath}()},
-  \code{\link{umxRAM}()}, \code{\link{umxRun}()},
-  \code{\link{umxSummary}()},
-  \code{\link{umxSuperModel}()}, \code{\link{umx}}
+Other Core Modeling Functions: 
+\code{\link{umxAlgebra}()},
+\code{\link{umxMatrix}()},
+\code{\link{umxPath}()},
+\code{\link{umxRAM}()},
+\code{\link{umxRun}()},
+\code{\link{umxSummary}()},
+\code{\link{umxSuperModel}()},
+\code{\link{umx}}
 
-Other Modify or Compare Models: \code{\link{umxEquate}()},
-  \code{\link{umxFixAll}()}, \code{\link{umxMI}()},
-  \code{\link{umxSetParameters}()},
-  \code{\link{umxUnexplainedCausalNexus}()},
-  \code{\link{umx}}
+Other Modify or Compare Models: 
+\code{\link{umxEquate}()},
+\code{\link{umxFixAll}()},
+\code{\link{umxMI}()},
+\code{\link{umxSetParameters}()},
+\code{\link{umxUnexplainedCausalNexus}()},
+\code{\link{umx}}
 }
 \concept{Core Modeling Functions}
 \concept{Modify or Compare Models}

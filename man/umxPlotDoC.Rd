@@ -5,16 +5,43 @@
 \alias{plot.MxModelDoC}
 \title{Plot a Direction of Causation Model.}
 \usage{
-umxPlotDoC(x, ...)
+umxPlotDoC(
+  x = NA,
+  means = FALSE,
+  std = TRUE,
+  digits = 2,
+  showFixed = TRUE,
+  file = "name",
+  format = c("current", "graphviz", "DiagrammeR"),
+  SEstyle = FALSE,
+  strip_zero = FALSE,
+  ...
+)
 }
 \arguments{
-\item{x}{a \code{\link[=umxDoC]{umxDoC()}} model to summarize.}
+\item{x}{a \code{\link[=umxDoC]{umxDoC()}} model to display graphically}
+
+\item{means}{Whether to show means paths (defaults to FALSE)}
+
+\item{std}{Whether to standardize the model (defaults to TRUE)}
+
+\item{digits}{How many decimals to include in path loadings (defaults to 2)}
+
+\item{showFixed}{Whether to graph paths that are fixed but != 0 (default = TRUE)}
+
+\item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
+
+\item{format}{= c("current", "graphviz", "DiagrammeR")}
+
+\item{SEstyle}{report "b (se)" instead of "b [lower, upper]" when CIs are found (Default FALSE)}
+
+\item{strip_zero}{Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)}
 
 \item{...}{Other parameters to control model summary.}
 }
 \value{
 \itemize{
-\item optional \code{\link[=mxModel]{mxModel()}}
+\item Optionally return the dot code
 }
 }
 \description{
@@ -26,26 +53,61 @@ drawing the tables to a web browser where they may readily be pasted into, e.g. 
 See documentation for other umx models here: \code{\link[=umxSummary]{umxSummary()}}.
 }
 \examples{
-#
+
+\dontrun{
+# ================
+# = 1. Load Data =
+# ================
+data(docData)
+mzData = subset(docData, zygosity \%in\% c("MZFF", "MZMM"))
+dzData = subset(docData, zygosity \%in\% c("DZFF", "DZMM"))
+
+# =======================================
+# = 2. Define manifests for var 1 and 2 =
+# =======================================
+var1 = paste0("varA", 1:3)
+var2 = paste0("varB", 1:3)
+
+# =======================================================
+# = 2. Make the non-causal (Cholesky) and causal models =
+# =======================================================
+Chol= umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= FALSE)
+DoC = umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= TRUE)
+
+# ================================================
+# = Make the directional models by modifying DoC =
+# ================================================
+a2b = umxModify(DoC, "a2b", free = TRUE, name = "A2B")
+plot(a2b)
+
+}
+}
+\references{
+\itemize{
+\item \url{https://tbates.github.io}
+}
 }
 \seealso{
 \itemize{
 \item \code{\link[=umxDoC]{umxDoC()}}, \code{\link[=umxSummary.MxModelDoC]{umxSummary.MxModelDoC()}}, \code{\link[=umxModify]{umxModify()}}
 }
 
-Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
-  \code{\link{umxReduceACE}()},
-  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
-  \code{\link{umxSummarizeTwinData}()},
-  \code{\link{umxSummaryACEcov}()},
-  \code{\link{umxSummaryACEv}()},
-  \code{\link{umxSummaryACE}()},
-  \code{\link{umxSummaryCP}()},
-  \code{\link{umxSummaryDoC}()},
-  \code{\link{umxSummaryGxEbiv}()},
-  \code{\link{umxSummaryGxE}()},
-  \code{\link{umxSummaryIP}()},
-  \code{\link{umxSummarySexLim}()},
-  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
+Other Twin Reporting Functions: 
+\code{\link{umxPlotCP}()},
+\code{\link{umxReduceACE}()},
+\code{\link{umxReduceGxE}()},
+\code{\link{umxReduce}()},
+\code{\link{umxSummarizeTwinData}()},
+\code{\link{umxSummaryACEcov}()},
+\code{\link{umxSummaryACEv}()},
+\code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryCP}()},
+\code{\link{umxSummaryDoC}()},
+\code{\link{umxSummaryGxEbiv}()},
+\code{\link{umxSummaryGxE}()},
+\code{\link{umxSummaryIP}()},
+\code{\link{umxSummarySexLim}()},
+\code{\link{umxSummarySimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Reporting Functions}

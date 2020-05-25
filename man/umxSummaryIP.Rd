@@ -9,12 +9,12 @@ umxSummaryIP(
   model,
   digits = 2,
   file = getOption("umx_auto_plot"),
-  returnStd = FALSE,
   std = TRUE,
   showRg = FALSE,
   comparison = NULL,
   CIs = FALSE,
-  show = NULL,
+  returnStd = FALSE,
+  report = c("markdown", "html"),
   ...
 )
 }
@@ -25,8 +25,6 @@ umxSummaryIP(
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
-\item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
-
 \item{std}{= Whether to show the standardized model (TRUE)}
 
 \item{showRg}{= whether to show the genetic correlations (FALSE)}
@@ -35,7 +33,9 @@ umxSummaryIP(
 
 \item{CIs}{Confidence intervals (F)}
 
-\item{show}{parameter used in all summary functions. currently ignored here.}
+\item{returnStd}{Whether to return the standardized form of the model (default = FALSE)}
+
+\item{report}{how to display the results ("html" will open in browser as table)}
 
 \item{...}{Optional additional parameters}
 }
@@ -70,18 +70,22 @@ umxSummaryIP(m1, digits = 2, file = "Figure3", showRg = FALSE, CIs = TRUE);
 \item \code{\link{umxIP}()}, \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, and ACE models.
 }
 
-Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
-  \code{\link{umxPlotDoC}()}, \code{\link{umxReduceACE}()},
-  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
-  \code{\link{umxSummarizeTwinData}()},
-  \code{\link{umxSummaryACEcov}()},
-  \code{\link{umxSummaryACEv}()},
-  \code{\link{umxSummaryACE}()},
-  \code{\link{umxSummaryCP}()},
-  \code{\link{umxSummaryDoC}()},
-  \code{\link{umxSummaryGxEbiv}()},
-  \code{\link{umxSummaryGxE}()},
-  \code{\link{umxSummarySexLim}()},
-  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
+Other Twin Reporting Functions: 
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotDoC}()},
+\code{\link{umxReduceACE}()},
+\code{\link{umxReduceGxE}()},
+\code{\link{umxReduce}()},
+\code{\link{umxSummarizeTwinData}()},
+\code{\link{umxSummaryACEcov}()},
+\code{\link{umxSummaryACEv}()},
+\code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryCP}()},
+\code{\link{umxSummaryDoC}()},
+\code{\link{umxSummaryGxEbiv}()},
+\code{\link{umxSummaryGxE}()},
+\code{\link{umxSummarySexLim}()},
+\code{\link{umxSummarySimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Reporting Functions}

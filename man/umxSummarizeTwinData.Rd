@@ -6,7 +6,7 @@
 \usage{
 umxSummarizeTwinData(
   data = NULL,
-  selVars = "wt",
+  selVars = NULL,
   sep = "_T",
   zyg = "zygosity",
   MZ = NULL,
@@ -25,23 +25,23 @@ umxSummarizeTwinData(
 
 \item{selVars}{Collection of variables to report on, e.g. c("wt", "ht").}
 
-\item{sep}{The separator string that will turn a variable name into a twin variable name, e.g. "_T" for wt_T1 and wt_T2.}
+\item{sep}{The separator string that will turn a variable name into a twin variable name, default= "_T" for wt_T1 and wt_T2.}
 
-\item{zyg}{The zygosity variable in the dataset, e.g. "zygosity".}
+\item{zyg}{The zygosity variable in the dataset, default = "zygosity".}
 
 \item{MZ}{Set level in zyg corresponding to MZ for two group case (defaults to using 5-group case).}
 
 \item{DZ}{Set level in zyg corresponding to DZ for two group case (defaults to using 5-group case).}
 
-\item{MZFF}{The level in zyg corresponding to MZ FF pairs: e.g., "MZFF".}
+\item{MZFF}{The level of zyg corresponding to MZ FF pairs: default= "MZFF".}
 
-\item{DZFF}{The level in zyg corresponding to DZ FF pairs: e.g., "DZFF".}
+\item{DZFF}{The level of zyg corresponding to DZ FF pairs: default= "DZFF".}
 
-\item{MZMM}{The level in zyg corresponding to MZ MM pairs: e.g., "MZMM".}
+\item{MZMM}{The level of zyg corresponding to MZ MM pairs: default= "MZMM".}
 
-\item{DZMM}{The level in zyg corresponding to DZ MM pairs: e.g., "DZMM".}
+\item{DZMM}{The level of zyg corresponding to DZ MM pairs: default= "DZMM".}
 
-\item{DZOS}{The level in zyg corresponding to DZ OS pairs: e.g., "DZOS".}
+\item{DZOS}{The level of zyg corresponding to DZ OS pairs: default= "DZOS".}
 
 \item{digits}{Rounding precision of the report (default 2).}
 
@@ -73,18 +73,22 @@ umxSummarizeTwinData(twinData, sep = "", selVars = c("wt", "ht"), MZ = MZs, DZ =
 \item \code{\link[=umxAPA]{umxAPA()}}
 }
 
-Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
-  \code{\link{umxPlotDoC}()}, \code{\link{umxReduceACE}()},
-  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
-  \code{\link{umxSummaryACEcov}()},
-  \code{\link{umxSummaryACEv}()},
-  \code{\link{umxSummaryACE}()},
-  \code{\link{umxSummaryCP}()},
-  \code{\link{umxSummaryDoC}()},
-  \code{\link{umxSummaryGxEbiv}()},
-  \code{\link{umxSummaryGxE}()},
-  \code{\link{umxSummaryIP}()},
-  \code{\link{umxSummarySexLim}()},
-  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
+Other Twin Reporting Functions: 
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotDoC}()},
+\code{\link{umxReduceACE}()},
+\code{\link{umxReduceGxE}()},
+\code{\link{umxReduce}()},
+\code{\link{umxSummaryACEcov}()},
+\code{\link{umxSummaryACEv}()},
+\code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryCP}()},
+\code{\link{umxSummaryDoC}()},
+\code{\link{umxSummaryGxEbiv}()},
+\code{\link{umxSummaryGxE}()},
+\code{\link{umxSummaryIP}()},
+\code{\link{umxSummarySexLim}()},
+\code{\link{umxSummarySimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Reporting Functions}

@@ -5,14 +5,14 @@
 \title{Check if OpenMx is using OpenMP, test cores, and get timings}
 \usage{
 umx_check_parallel(
-  nCores = c(1, parallel::detectCores()/2),
+  nCores = c(1, imxGetNumThreads()),
   testScript = NULL,
   rowwiseParallel = TRUE,
   nSubjects = 1000
 )
 }
 \arguments{
-\item{nCores}{How many cores to run (defaults to c(1, max/2). -1 = all available.}
+\item{nCores}{How many cores to run (defaults to c(1, max). -1 = all available.}
 
 \item{testScript}{A user-provided script to run (NULL)}
 
@@ -60,17 +60,19 @@ umx_check_parallel()
 }
 }
 \seealso{
-Other Test: \code{\link{umx_check_OS}()},
-  \code{\link{umx_check_model}()},
-  \code{\link{umx_check_names}()},
-  \code{\link{umx_check}()}, \code{\link{umx_has_CIs}()},
-  \code{\link{umx_has_been_run}()},
-  \code{\link{umx_has_means}()},
-  \code{\link{umx_has_square_brackets}()},
-  \code{\link{umx_is_MxData}()},
-  \code{\link{umx_is_MxMatrix}()},
-  \code{\link{umx_is_MxModel}()},
-  \code{\link{umx_is_RAM}()}, \code{\link{umx_is_cov}()},
-  \code{\link{umx_is_ordered}()}
+Other Test: 
+\code{\link{umx_check_OS}()},
+\code{\link{umx_check_model}()},
+\code{\link{umx_check_names}()},
+\code{\link{umx_check}()},
+\code{\link{umx_has_CIs}()},
+\code{\link{umx_has_been_run}()},
+\code{\link{umx_has_means}()},
+\code{\link{umx_has_square_brackets}()},
+\code{\link{umx_is_MxData}()},
+\code{\link{umx_is_MxMatrix}()},
+\code{\link{umx_is_MxModel}()},
+\code{\link{umx_is_RAM}()},
+\code{\link{umx_is_cov}()}
 }
 \concept{Test}

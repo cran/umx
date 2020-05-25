@@ -17,6 +17,7 @@ power.ACE.test(
   method = c("ncp", "empirical"),
   search = FALSE,
   tryHard = c("yes", "no", "ordinal", "search"),
+  digits = 2,
   optimizer = NULL,
   nSim = 4000
 )
@@ -26,7 +27,7 @@ power.ACE.test(
 
 \item{CC}{Shared environment variance (Default 0)}
 
-\item{EE}{Unique environment variance. Leave NULL to compute an amount summing to 1}
+\item{EE}{Unique environment variance. Leave NULL (default) to compute an amount summing to 1}
 
 \item{update}{Component to drop (Default "a", i.e., drop a)}
 
@@ -44,14 +45,16 @@ power.ACE.test(
 
 \item{search}{Whether to return a search across power or just a point estimate (Default FALSE = point)}
 
-\item{tryHard}{Whether to tryHard to find a solution (default = "no", alternatives are "yes"...)}
+\item{tryHard}{Whether to tryHard to find a solution (default = "yes", alternatives are "no"...)}
+
+\item{digits}{Rounding for reporting parameters (default 2)}
 
 \item{optimizer}{If set, will switch the optimizer.}
 
 \item{nSim}{Total number of pairs to simulate in the models (default = 4000)}
 }
 \value{
-\code{\link[OpenMx:mxPower]{OpenMx::mxPower()}} or \code{\link[OpenMx:mxPowerSearch]{OpenMx::mxPowerSearch()}} object
+\code{\link[OpenMx:mxPower]{OpenMx::mxPower()}} object
 }
 \description{
 \code{power.ACE.test} simulates a univariate ACE model (with nMZpairs= 2000 and MZ_DZ_ratio*nMZpairs DZ twins. It
@@ -83,6 +86,7 @@ Illustration of  \eqn{\alpha}, \eqn{\beta}, and power (1-\eqn{\beta}):
 power.ACE.test(AA = .5, CC = 0, update = "a") 
 # Suggests n = 84 MZ and 94 DZ pairs.
 
+\dontrun{
 # ================================
 # = Show power across range of N =
 # ================================
@@ -101,12 +105,11 @@ power.ACE.test(AA= .5, CC= 0, update = "a")
 # 102 of each of MZ and DZ pairs for 80\% power.
 power.ACE.test(AA= .5, CC= .3, update = "c")
 
-# ========================================
+# ==========================================
 # = Set 'a' to a fixed, but non-zero value =
-# ========================================
+# ==========================================
 
 power.ACE.test(update= "a", value= sqrt(.2), AA= .5, CC= 0)
-# TODO get power.ACE.test to print the value of A in the null model.
 
 # ========================================
 # = Drop More than one parameter (A & C) =
@@ -137,7 +140,6 @@ power.ACE.test(update = "c", AA= .3, CC= .5)
 power.ACE.test(MZ_DZ_ratio= 2/1, update= "a", AA= .3, CC= 0, method="ncp", tryHard="yes")
 power.ACE.test(MZ_DZ_ratio= 1/2, update= "a", AA= .3, CC= 0, method="ncp", tryHard="yes")
 
-\dontrun{
 
 # =====================================
 # = Compare ncp and empirical methods =
@@ -168,9 +170,6 @@ power.ACE.test(update = "a", AA= .5, CC= 0, nSim= 20)
 }
 \references{
 \itemize{
-\item 
-}
-\itemize{
 \item Visscher, P.M., Gordon, S., Neale, M.C. (2008). Power of the classical twin design
 revisited: II detection of common environmental variance. \emph{Twin Res Hum Genet}, \strong{11}: 48-54.
 doi: \href{https://doi.org/10.1375/twin.11.1.48}{10.1375/twin.11.1.48}
@@ -184,14 +183,21 @@ Power failure: why small sample size undermines the reliability of neuroscience.
 \item \code{\link[OpenMx:mxPower]{OpenMx::mxPower()}}
 }
 
-Other Twin Modeling Functions: \code{\link{umxACE_cov_fixed}()},
-  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
-  \code{\link{umxACE}()}, \code{\link{umxCP}()},
-  \code{\link{umxDoC}()}, \code{\link{umxGxE_window}()},
-  \code{\link{umxGxEbiv}()}, \code{\link{umxGxE}()},
-  \code{\link{umxIP}()},
-  \code{\link{umxRotate.MxModelCP}()},
-  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
-  \code{\link{umx}}
+Other Twin Modeling Functions: 
+\code{\link{plot.MxModelTwinMaker}()},
+\code{\link{umxACEcov}()},
+\code{\link{umxACEv}()},
+\code{\link{umxACE}()},
+\code{\link{umxCP}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxDoC}()},
+\code{\link{umxGxE_window}()},
+\code{\link{umxGxEbiv}()},
+\code{\link{umxGxE}()},
+\code{\link{umxIP}()},
+\code{\link{umxRotate.MxModelCP}()},
+\code{\link{umxSexLim}()},
+\code{\link{umxSimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

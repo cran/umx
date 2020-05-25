@@ -65,6 +65,7 @@
 #' @examples
 #' library(umx);
 #' 
+#' \donttest{
 #' # =========================
 #' # = Pure additivity: d= 0 =
 #' # =========================
@@ -83,6 +84,8 @@
 #' p = tmx_genotypic_effect(p = .5, q = .5, a = 1, d = .5, m = 0, show = TRUE); 
 #' # p + ggplot2::geom_point() + ggplot2::geom_text(hjust = 0, nudge_x = 0.05)
 #' # ggsave(paste0(base, "c03_genotypic_effect_by_gene_dose.pdf"), width = 4.6, height = 4.6)
+#' }
+#' 
 tmx_genotypic_effect <- function(p = .75, q = (1-p), a = .5, d = 0, m = 0, show = TRUE){
 	# TODO Print this, with marginal sum? put tables and plot on one page in browser?
 	# high blood pressure will be defined as >=130/80 millimeters of mercury (previous guideline = 140/90)
@@ -275,14 +278,17 @@ tmx_is.identified <- function(nVariables, nFactors){
 #' 	umxPath("G", to = manifests),
 #' 	umxPath(var = manifests),
 #' 	umxPath(var = "G", fixedAt = 1)
-#' )#'
+#' )
+#'
 #' tmx_show(m1)
 #' tmx_show(m1, digits = 3)
 #' tmx_show(m1, matrices = "S")
 #' tmx_show(m1, what = "free")
 #' tmx_show(m1, what = "labels")
 #' tmx_show(m1, what = "free", matrices = "A")
-tmx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_free"), show = c("free", "fixed", "all"), matrices = c("S", "A", "M", "thresholds"), digits = 2, report = c("markdown", "inline", "html", "report"), na.print = "", zero.print = ".") {
+#' # tmx_show(m1, what = "free", matrices = "thresholds")
+#'
+tmx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_free"), show = c("free", "fixed", "all"), matrices = c("S", "A", "M"), digits = 2, report = c("markdown", "inline", "html", "report"), na.print = "", zero.print = ".") {
 	if(!umx_is_RAM(model)){
 		stop("I can only show the components of RAM models: You gave me an ", class(model)[[1]])
 	}
@@ -327,16 +333,16 @@ tmx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_fre
 			if(report == "html"){ file = paste0(what, w, ".html") } else { file = NA}
 			if(what == "values"){
 				tmp = data.frame(model$matrices[[w]]$values)
-				message("\n", "Values of ", w, " matrix (0 shown as .):", appendLF = FALSE)
+				message("\n", "Values of ", omxQuotes(w), " matrix (0 shown as .):", appendLF = FALSE)
 			}else if(what == "free"){
 				tmp = model$matrices[[w]]$free
 				message("\n", "Free cells in ", w, " matrix (FALSE shown as .):", appendLF = FALSE)
 			}else if(what == "labels"){
 				x = model$matrices[[w]]$labels
-				if(show=="free"){
-					x[model$matrices[[w]]$free!=TRUE] = ""
-				} else if (show=="fixed") {
-					x[model$matrices[[w]]$free==TRUE] = ""
+				if(show == "free"){
+					x[model$matrices[[w]]$free != TRUE] = ""
+				} else if (show == "fixed") {
+					x[model$matrices[[w]]$free == TRUE] = ""
 				}
 				tmp = x
 				message("\n", show, " labels for ", w, " matrix:", appendLF = FALSE)

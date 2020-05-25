@@ -65,6 +65,7 @@ See BGBook issue 23
 \examples{
 library(umx);
 
+\donttest{
 # =========================
 # = Pure additivity: d= 0 =
 # =========================
@@ -84,6 +85,8 @@ p = tmx_genotypic_effect(p = .5, q = .5, a = 1, d = .5, m = 0, show = TRUE);
 # p + ggplot2::geom_point() + ggplot2::geom_text(hjust = 0, nudge_x = 0.05)
 # ggsave(paste0(base, "c03_genotypic_effect_by_gene_dose.pdf"), width = 4.6, height = 4.6)
 }
+
+}
 \references{
 \itemize{
 \item Neale, M. C. (2005). Quantitative Genetics. In Encyclopedia of Life Sciences. New York: John Wiley & Sons, Ltd.
@@ -91,7 +94,8 @@ p = tmx_genotypic_effect(p = .5, q = .5, a = 1, d = .5, m = 0, show = TRUE);
 }
 }
 \seealso{
-Other Teaching and testing Functions: \code{\link{tmx_is.identified}()},
-  \code{\link{umx}}
+Other Teaching and testing Functions: 
+\code{\link{tmx_is.identified}()},
+\code{\link{umx}}
 }
 \concept{Teaching and testing Functions}

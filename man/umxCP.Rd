@@ -7,6 +7,7 @@
 umxCP(
   name = "CP",
   selDVs,
+  selCovs = NULL,
   dzData = NULL,
   mzData = NULL,
   sep = NULL,
@@ -39,6 +40,8 @@ umxCP(
 
 \item{selDVs}{The variables to include.
 omit sep in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2").}
+
+\item{selCovs}{basenames for covariates}
 
 \item{dzData}{The DZ dataframe.}
 
@@ -97,8 +100,7 @@ omit sep in selDVs, i.e., just "dep" not c("dep_T1", "dep_T2").}
 }
 \description{
 Make a 2-group Common Pathway twin model (Common-factor common-pathway multivariate model).
-}
-\details{
+
 The common-pathway model provides a powerful tool for theory-based decomposition of genetic
 and environmental differences.
 
@@ -115,9 +117,10 @@ As can be seen, each phenotype also by default has A, C, and E influences specif
 
 Features include the ability to include more than one common pathway, to use ordinal data.
 
-\strong{note}: The function \code{umx_set_mvn_optimization_options}() allow users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
-It defaults to .001. You might find that '0.01' works better for ordinal models.
-
+\strong{note}: The function \code{\link[=umx_set_mvn_optimization_options]{umx_set_mvn_optimization_options()}} allows users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
+mvnRelEps defaults to .005. For ordinal models, you might find that '0.01' works better.
+}
+\details{
 Like the \code{\link[=umxACE]{umxACE()}} model, the CP model decomposes phenotypic variance
 into Additive genetic, unique environmental (E) and, optionally, either
 common or shared-environment (C) or
@@ -168,6 +171,8 @@ Less commonly-modified matrices are the mean matrix \code{expMean}. This has 1 r
 So, in a model where the means for twin 1 and twin 2 had been equated (set = to T1), you could make them independent again with this line:
 
 \code{m1$top$expMean$labels[1,4:6] = c("expMean_r1c4", "expMean_r1c5", "expMean_r1c6")}
+
+For a deep-dive, see \code{\link[=xmu_make_TwinSuperModel]{xmu_make_TwinSuperModel()}}
 }
 \examples{
 \dontrun{
@@ -175,12 +180,13 @@ So, in a model where the means for twin 1 and twin 2 had been equated (set = to 
 # = Run a 3-factor Common pathway twin model of 6 traits =
 # ========================================================
 require(umx)
+umx_set_optimizer("SLSQP")
 data(GFF)
 mzData = subset(GFF, zyg_2grp == "MZ")
 dzData = subset(GFF, zyg_2grp == "DZ")
 selDVs = c("gff", "fc", "qol", "hap", "sat", "AD") 
-m1 = umxCP("new", selDVs = selDVs, sep = "_T", nFac = 3, optimizer = "SLSQP",
-		dzData = dzData, mzData = mzData, tryHard = "mxTryHardOrdinal")
+m1 = umxCP("new", selDVs = selDVs, sep = "_T", nFac = 3,
+		dzData = dzData, mzData = mzData, tryHard = "yes")
 
 # Shortcut using "data ="
 selDVs = c("gff", "fc", "qol", "hap", "sat", "AD") 
@@ -190,8 +196,8 @@ m1 = umxCP(selDVs = selDVs, nFac = 3, data=GFF, zyg="zyg_2grp")
 # = Do it using WLS =
 # ===================
 m2 = umxCP("new", selDVs = selDVs, sep = "_T", nFac = 3, optimizer = "SLSQP",
-		dzData = dzData, mzData = mzData,
-		tryHard = "mxTryHardOrdinal", type= "DWLS", allContinuousMethod='marginals'
+		dzData = dzData, mzData = mzData, tryHard = "ordinal", 
+	type= "DWLS", allContinuousMethod='marginals'
 )
 
 # =================================================
@@ -227,7 +233,7 @@ m2 = umxModify(m1, regex = "(cs_r[3-5]|c_cp_r[12])", name = "dropC", comp= TRUE)
 
 # Do it using WLS
 m3 = umxCP(selDVs = selDVs, sep = "_T", nFac = 3, dzData = dzData, mzData = mzData,
-		tryHard = "mxTryHardOrdinal", type= "DWLS")
+		tryHard = "ordinal", type= "DWLS")
 # TODO umxCPL fix WLS here
 # label at row 1 and column 1 of matrix 'top.binLabels'' in model 'CP3fac' : object 'Vtot'
 
@@ -237,7 +243,7 @@ mzData = subset(GFF, zyg_2grp == "MZ")
 dzData = subset(GFF, zyg_2grp == "DZ")
 selDVs = c("gff", "fc", "qol", "hap", "sat", "AD")
 m1 = umxCP("new", selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData, 
-	nFac = 3, correlatedA = TRUE, tryHard = "mxTryHard")
+	nFac = 3, correlatedA = TRUE, tryHard = "yes")
 }
 
 }
@@ -248,18 +254,25 @@ m1 = umxCP("new", selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData,
 }
 \seealso{
 \itemize{
-\item \code{\link[=umxSummaryCP]{umxSummaryCP()}}, \code{\link[=umxPlotCP]{umxPlotCP()}}. See \code{\link[=umxACE]{umxACE()}} for more examples of twin modeling.
-\code{\link[=plot]{plot()}} and \code{\link[=umxSummary]{umxSummary()}} work for all twin models, e.g., \code{\link[=umxIP]{umxIP()}}, \code{\link[=umxCP]{umxCP()}}, \code{\link[=umxGxE]{umxGxE()}}, and \code{\link[=umxACE]{umxACE()}}. For a deep-dive, see \code{\link[=xmu_make_top_twin]{xmu_make_top_twin()}}
+\item \code{\link[=umxSummaryCP]{umxSummaryCP()}}, \code{\link[=umxPlotCP]{umxPlotCP()}}. See \code{\link[=umxRotate.MxModelCP]{umxRotate.MxModelCP()}} to rotate the factor loadings of a \code{\link[=umxCP]{umxCP()}} model. See \code{\link[=umxACE]{umxACE()}} for more examples of twin modeling.
+\code{\link[=plot]{plot()}} and \code{\link[=umxSummary]{umxSummary()}} work for all twin models, e.g., \code{\link[=umxIP]{umxIP()}}, \code{\link[=umxCP]{umxCP()}}, \code{\link[=umxGxE]{umxGxE()}}, and \code{\link[=umxACE]{umxACE()}}.
 }
 
-Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
-  \code{\link{umxACE_cov_fixed}()},
-  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
-  \code{\link{umxACE}()}, \code{\link{umxDoC}()},
-  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
-  \code{\link{umxGxE}()}, \code{\link{umxIP}()},
-  \code{\link{umxRotate.MxModelCP}()},
-  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
-  \code{\link{umx}}
+Other Twin Modeling Functions: 
+\code{\link{plot.MxModelTwinMaker}()},
+\code{\link{power.ACE.test}()},
+\code{\link{umxACEcov}()},
+\code{\link{umxACEv}()},
+\code{\link{umxACE}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxDoC}()},
+\code{\link{umxGxE_window}()},
+\code{\link{umxGxEbiv}()},
+\code{\link{umxGxE}()},
+\code{\link{umxIP}()},
+\code{\link{umxRotate.MxModelCP}()},
+\code{\link{umxSexLim}()},
+\code{\link{umxSimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

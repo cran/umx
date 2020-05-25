@@ -179,13 +179,13 @@
 #' # Variables for Analysis
 #' selDVs = c('ssc','sil','caf','tri','bic')
 #' selDVs = c('ssc','tri','bic')
-#' m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", tryHard = "mxTryHard",
+#' m1 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", tryHard = "yes",
 #'	mzmData = mzmData, dzmData = dzmData, 
 #'  mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
 #')
 #'
 #' m2 = umxSexLim(selDVs = selDVs, sep = "_T", A_or_C = "A", sexlim = "Nonscalar",
-#' 	tryHard = "mxTryHard",
+#' 	tryHard = "yes",
 #'	mzmData = mzmData, dzmData = dzmData, 
 #'  mzfData = mzfData, dzfData = dzfData, dzoData = dzoData
 #')
@@ -589,12 +589,8 @@ umxSummarySexLim <- function(model, digits = 2, file = getOption("umx_auto_plot"
 		treo = c("a", "c", "e")
 	}
 	names(Estimates) = c(paste0(rep(treo, each = 2), rep(c("m", "f"), times = 3)), "Rao", "Rco")
-
-	Estimates = umx_print(Estimates, digits = digits, zero.print = zero.print)
-	if(report == "html"){
-		R2HTML::HTML(Estimates, file = "tmp.html", Border = 0, append = FALSE, sortableDF = TRUE); 
-		umx_open("tmp.html")
-	}
+	umx_print(Estimates, digits = digits, zero.print = zero.print, file=report,  append = FALSE, sortableDF = TRUE)
+	xmu_twin_print_means(model, digits = digits, report = report)
 	
 	if(extended == TRUE) {
 		opposite = !std

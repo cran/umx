@@ -41,10 +41,9 @@ Plots an ACE model graphically, opening the result in the browser (or a graphviz
 \examples{
 require(umx)
 data(twinData)
-selDVs = "bmi"
 mzData <- subset(twinData, zygosity == "MZFF")
 dzData <- subset(twinData, zygosity == "DZFF")
-m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
+m1 = umxACEv(selDVs = "bmi", dzData = dzData, mzData = mzData, sep = "")
 plot(m1, std = FALSE) # don't standardize
 }
 \references{
@@ -53,26 +52,35 @@ plot(m1, std = FALSE) # don't standardize
 }
 }
 \seealso{
-Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
-  \code{\link{plot.MxModel}()},
-  \code{\link{umxPlotACEcov}()},
-  \code{\link{umxPlotACE}()}, \code{\link{umxPlotCP}()},
-  \code{\link{umxPlotGxEbiv}()},
-  \code{\link{umxPlotGxE}()}, \code{\link{umxPlotIP}()},
-  \code{\link{umxPlotSexLim}()},
-  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
+Other Plotting functions: 
+\code{\link{plot.MxLISRELModel}()},
+\code{\link{plot.MxModel}()},
+\code{\link{umxPlotACEcov}()},
+\code{\link{umxPlotACE}()},
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotGxEbiv}()},
+\code{\link{umxPlotGxE}()},
+\code{\link{umxPlotIP}()},
+\code{\link{umxPlotSexLim}()},
+\code{\link{umxPlotSimplex}()},
+\code{\link{umx}}
 
-Other Reporting functions: \code{\link{RMSEA.MxModel}()},
-  \code{\link{RMSEA.summary.mxmodel}()},
-  \code{\link{RMSEA}()},
-  \code{\link{extractAIC.MxModel}()},
-  \code{\link{loadings}()},
-  \code{\link{residuals.MxModel}()},
-  \code{\link{umxCI_boot}()}, \code{\link{umxCI}()},
-  \code{\link{umxCompare}()}, \code{\link{umxConfint}()},
-  \code{\link{umxExpCov}()}, \code{\link{umxExpMeans}()},
-  \code{\link{umxFitIndices}()}, \code{\link{umxRotate}()},
-  \code{\link{umxSummary.MxModel}()}
+Other Reporting functions: 
+\code{\link{RMSEA.MxModel}()},
+\code{\link{RMSEA.summary.mxmodel}()},
+\code{\link{RMSEA}()},
+\code{\link{extractAIC.MxModel}()},
+\code{\link{loadings}()},
+\code{\link{residuals.MxModel}()},
+\code{\link{umxCI_boot}()},
+\code{\link{umxCI}()},
+\code{\link{umxCompare}()},
+\code{\link{umxConfint}()},
+\code{\link{umxExpCov}()},
+\code{\link{umxExpMeans}()},
+\code{\link{umxFitIndices}()},
+\code{\link{umxRotate}()},
+\code{\link{umxSummary.MxModel}()}
 }
 \concept{Plotting functions}
 \concept{Reporting functions}

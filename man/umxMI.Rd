@@ -48,7 +48,8 @@ m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
 	umxPath("G", to = manifests),
 	umxPath(var = manifests),
 	umxPath(var = "G", fixedAt = 1)
-)#' umxMI(m1, full=FALSE)
+)
+# umxMI(m1, full=FALSE)
 }
 \references{
 \itemize{
@@ -60,10 +61,12 @@ m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
 \item \code{\link[=mxMI]{mxMI()}}
 }
 
-Other Modify or Compare Models: \code{\link{umxEquate}()},
-  \code{\link{umxFixAll}()}, \code{\link{umxModify}()},
-  \code{\link{umxSetParameters}()},
-  \code{\link{umxUnexplainedCausalNexus}()},
-  \code{\link{umx}}
+Other Modify or Compare Models: 
+\code{\link{umxEquate}()},
+\code{\link{umxFixAll}()},
+\code{\link{umxModify}()},
+\code{\link{umxSetParameters}()},
+\code{\link{umxUnexplainedCausalNexus}()},
+\code{\link{umx}}
 }
 \concept{Modify or Compare Models}

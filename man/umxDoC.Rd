@@ -5,12 +5,12 @@
 \title{Build and run a 2-group Direction of Causation twin models.}
 \usage{
 umxDoC(
-  name = "DOC",
+  name = "DoC",
   var1Indicators,
   var2Indicators,
   mzData = NULL,
   dzData = NULL,
-  sep = NULL,
+  sep = "_T",
   causal = TRUE,
   autoRun = getOption("umx_auto_run"),
   intervals = FALSE,
@@ -25,11 +25,11 @@ umxDoC(
 
 \item{var2Indicators}{variables defining latent trait 2}
 
-\item{mzData}{The MZ dataframe.}
+\item{mzData}{The MZ dataframe}
 
-\item{dzData}{The DZ dataframe.}
+\item{dzData}{The DZ dataframe}
 
-\item{sep}{The separator in twin variable names, often "_T", e.g. "dep_T1". Simplifies selDVs.}
+\item{sep}{The separator in twin variable names, default = "_T", e.g. "dep_T1".}
 
 \item{causal}{whether to add the causal paths (default TRUE)}
 
@@ -43,7 +43,7 @@ umxDoC(
 }
 \value{
 \itemize{
-\item \code{\link[=mxModel]{mxModel()}} of subclass mxModel.DOC
+\item \code{\link[=mxModel]{mxModel()}} of subclass MxModelDoC
 }
 }
 \description{
@@ -69,40 +69,49 @@ To be added.
 # = Does Rain cause Mud? =
 # ========================
 
-# ================
-# = Prepare Data =
-# ================
-mzData = read.csv("~/Desktop/DOC/MZdata.csv")
-dzData = read.csv("~/Desktop/DOC/DZdata.csv")
-varNames = paste0(rep(c("a", "b"), each= 3), c(1:3))
+# =======================================
+# = 2. Define manifests for var 1 and 2 =
+# =======================================
+var1 = paste0("varA", 1:3)
+var2 = paste0("varB", 1:3)
 
-names(mzData) = c("X", paste0(varNames, "_T1"), paste0(varNames, "_T2"), "sex_T1", "sex_T2")
-names(dzData) = c("X", paste0(varNames, "_T1"), paste0(varNames, "_T2"), "sex_T1", "sex_T2")
+# ================
+# = 1. Load Data =
+# ================
+data(docData)
+docData = umx_scale_wide_twin_data(c(var1, var2), docData, sep= "_T")
+mzData  = subset(docData, zygosity \%in\% c("MZFF", "MZMM"))
+dzData  = subset(docData, zygosity \%in\% c("DZFF", "DZMM"))
 
-Chol  = umxDoC(var1= paste0("a", 1:3), var2 = paste0("b", 1:3), 
-			mzData= mzData, dzData= dzData, sep = "_T", causal= FALSE)
-DoC   = umxDoC(var1= paste0("a", 1:3), var2 = paste0("b", 1:3),
-		mzData= mzData, dzData= dzData, sep = "_T", causal= TRUE)
-A2B   = umxModify(DoC, "a2b", free = TRUE, name = "A2B"); summary(A2B)
-B2A   = umxModify(DoC, "b2a", free = TRUE, name = "B2A"); summary(B2A)
+# =======================================================
+# = 2. Make the non-causal (Cholesky) and causal models =
+# =======================================================
+Chol = umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= FALSE)
+DoC  = umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= TRUE)
+
+# ================================================
+# = Make the directional models by modifying DoC =
+# ================================================
+a2b   = umxModify(DoC, "a2b", free = TRUE, name = "a2b"); summary(a2b)
+b2a   = umxModify(DoC, "b2a", free = TRUE, name = "b2a"); summary(b2a)
 Recip = umxModify(DoC, c("a2b", "b2a"), free = TRUE, name = "Recip"); summary(Recip)
 
-Chol = umxDoC(var1= paste0("SOS", 1:8), var2= paste0("Vocab", 1:10),mzData= mzData, dzData= dzData, 
-			sep = "_T", causal= FALSE, auto=FALSE); Chol = mxRun(Chol)
-DoC = umxDoC(var1= paste0("SOS", 1:8), var2= paste0("Vocab", 1:10), mzData= mzData, dzData= dzData,
-			sep = "_T", causal= TRUE, auto=FALSE); DoC = mxRun(DoC)
-A2B   = umxModify(DoC, "a2b", free = TRUE, name = "A2B", auto=F); A2B = mxRun(A2B)
-B2A   = umxModify(DoC, "b2a", free = TRUE, name = "B2A", auto=F); B2A = mxRun(B2A)
-Recip = umxModify(DoC, c("a2b", "b2a"), free = TRUE, name = "Recip", auto=F); Recip = mxRun(Recip)
+var1 = paste0("SOS", 1:8)
+var2 = paste0("Vocab", 1:10)
+Chol = umxDoC(var1= var1, var2= var2,mzData= mzData, dzData= dzData, causal= FALSE)
+DoC  = umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= TRUE)
+a2b  = umxModify(DoC, "a2b", free = TRUE, name = "a2b")
+b2a  = umxModify(DoC, "b2a", free = TRUE, name = "b2a")
+Recip= umxModify(DoC, c("a2b", "b2a"), free = TRUE, name = "Recip")
+umxCompare(Chol, c(a2b, b2a, Recip))
 
-umxCompare(Chol, c(A2B, B2A, Recip))
 }
 
 }
 \references{
 \itemize{
-\item N.A. Gillespie and N.G. Marting (2005). Direction of Causation Models.
-In \emph{Encyclopedia of Statistics in Behavioral Science}, Volume 1 pp. 496–499. Eds. Brian S. Everitt & David C. Howell
+\item N.A. Gillespie and N.G. Martin (2005). Direction of Causation Models.
+In \emph{Encyclopedia of Statistics in Behavioral Science}, \strong{1}. 496–499. Eds. Brian S. Everitt & David C. Howell.
 }
 }
 \seealso{
@@ -110,14 +119,21 @@ In \emph{Encyclopedia of Statistics in Behavioral Science}, Volume 1 pp. 496–4
 \item \code{\link[=plot.MxModelDoC]{plot.MxModelDoC()}}, \code{\link[=umxSummary.MxModelDoC]{umxSummary.MxModelDoC()}}, \code{\link[=umxModify]{umxModify()}}
 }
 
-Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
-  \code{\link{umxACE_cov_fixed}()},
-  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
-  \code{\link{umxACE}()}, \code{\link{umxCP}()},
-  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
-  \code{\link{umxGxE}()}, \code{\link{umxIP}()},
-  \code{\link{umxRotate.MxModelCP}()},
-  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
-  \code{\link{umx}}
+Other Twin Modeling Functions: 
+\code{\link{plot.MxModelTwinMaker}()},
+\code{\link{power.ACE.test}()},
+\code{\link{umxACEcov}()},
+\code{\link{umxACEv}()},
+\code{\link{umxACE}()},
+\code{\link{umxCP}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxGxE_window}()},
+\code{\link{umxGxEbiv}()},
+\code{\link{umxGxE}()},
+\code{\link{umxIP}()},
+\code{\link{umxRotate.MxModelCP}()},
+\code{\link{umxSexLim}()},
+\code{\link{umxSimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

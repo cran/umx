@@ -1,6 +1,6 @@
 # system("mdimport ~/bin/umx/R")
 #
-#   Copyright 2007-2019 Timothy C. Bates
+#   Copyright 2007-2020 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@
 #' 	umxPath(var = "G", fixedAt = 1)
 #' )
 #' m1 = mxRun(m1)
-#' umxSummary(m1, show = "std")
+#' umxSummary(m1, std = TRUE)
 #' umxDiagnose(m1)
 umxDiagnose <- function(model, tryHard = FALSE, diagonalizeExpCov = FALSE){
 	# 1. First thing to check is whether the covariance matrix is positive definite.
@@ -101,7 +101,6 @@ umxWeightedAIC <- function(models, digits= 2) {
 	bestModel = models[[whichBest]]
 	aic.weights = round(MuMIn::Weights(AIClist), 2)
 	if(isS4(models[[1]]) & is(models[[1]], "MxModel")){
-		# TODO: this should work with  umx_is_MxModel(models[[1]])
 		message("The ", omxQuotes(bestModel$name), " model is the best fitting model according to AIC.")
 		# Probabilities according to AIC Weights (Wagenmakers et al https://www.ncbi.nlm.nih.gov/pubmed/15117008 )
 		message("AIC weight-based conditional probabilities {Wagenmakers, 2004, 192-196} of being the best model for ", 
@@ -205,22 +204,21 @@ umxReduceGxE <- function(model, report = c("markdown", "inline", "html", "report
 		no_c_no_cem = umxModify(no_c_no_cm , update = "em_r1c1", name = "No_c_no_ce_mod"    , tryHard= tryHard)
 		no_c_no_mod = umxModify(no_c_no_cem, update = "am_r1c1", name = "No_c_no_moderation", tryHard= tryHard)
 
-		no_lin_mean = umxModify(noACEmod, update = "lin11"  , name = "No_mod_no_lin_mean" , tryHard= tryHard)
-		no_sq_mean  = umxModify(noACEmod, update = "quad11" , name = "No_mod_no_quad_mean", tryHard= tryHard)
-		nomeans     = umxModify(noACEmod, regex = "lin|quad", name = "No_mod_no_means_mod", tryHard= tryHard)
-
-		# comparisons = c(
-		# 	noAmod, noCmod, noEmod, noACEmod,
-		# 	no_a_no_am, no_c_no_cm, no_c_no_cem,
-		# 	no_c_no_mod,
-		# 	no_lin_mean, no_sq_mean, nomeans
-		# )
+		# if("testFor quad11 in parameters"){
+		# 	no_sq_mean  = umxModify(noACEmod, update = "quad11" , name = "No_mod_no_quad_mean", tryHard= tryHard)
+		# 	no_lin_mean = umxModify(noACEmod, update = "lin11"  , name = "No_mod_no_lin_mean" , tryHard= tryHard)
+		# 	nomeans     = umxModify(noACEmod, regex = "lin|quad", name = "No_mod_no_means_mod", tryHard= tryHard)
+		# } else {
+		# 	# likely has non-equal moderators don't bother trying to drop
+		# 	# betaSelf and betaCoTwin they are almost certainly necessary
+		# }
 
 		comparisons = c(
 			noAmod, noCmod, noEmod, noACEmod,
 			no_a_no_am, no_c_no_cm, no_c_no_cem,
 			no_c_no_mod
 		)
+
 		# ====================
 		# = everything table =
 		# ====================
@@ -273,6 +271,7 @@ umxReduce.MxModelGxE <- umxReduceGxE
 #' @references - Wagenmakers, E.J., & Farrell, S. (2004). AIC model selection using Akaike weights. *Psychonomic Bulletin and Review*, **11**, 192-196. [doi:](https://doi.org/10.3758/BF03206482)
 #' @md
 #' @examples
+#' \dontrun{
 #' data(twinData)
 #' mzData <- subset(twinData, zygosity == "MZFF")
 #' dzData <- subset(twinData, zygosity == "DZFF")
@@ -281,6 +280,8 @@ umxReduce.MxModelGxE <- umxReduceGxE
 #' umxSummary(m2)
 #' m1 = umxACE(selDVs = "bmi", dzData = dzData, mzData = mzData, sep = "", dzCr = .25)
 #' m2 = umxReduce(m1)
+#' 
+#' }
 umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report"), baseFileName = "tmp", intervals = TRUE, ...) {
 	report = match.arg(report)
 	oldAutoPlot = umx_set_auto_plot(FALSE, silent = TRUE)
@@ -485,11 +486,12 @@ loadings.MxModel <- function(x, ...) {
 #' 
 #' m1 = umxConfint(m1, run = TRUE) # There are no existing CI requests...
 #' 
+#' \dontrun{
 #' # Add a CI request for "G_to_x1", run, and report. Save with this CI computed
 #' m2 = umxConfint(m1, parm = "G_to_x1", run = TRUE) 
 #' 
 #' # Just print out any existing CIs
-#' umxConfint(m2) 
+#' umxConfint(m2)
 #' 
 #' # CI requests added for free matrix parameters. User prompted to set run = TRUE
 #' m3 = umxConfint(m1, "all")
@@ -504,22 +506,21 @@ loadings.MxModel <- function(x, ...) {
 #' # Wipe existing CIs, add G_to_x1
 #' tmp = umxConfint(m1, parm = "G_to_x1", run = TRUE, wipeExistingRequests = TRUE) 
 #' 
-#' \dontrun{
-#' # For some twin models, "all" uses a "smart" mode
+#' # For some twin models, a "smart" mode is implemented
 #' # note: only implemented for umxCP so far
-#' m2 =  umxConfint(m1, "all")
+#' m2 =  umxConfint(m1, "smart")
 #' }
 #'
 umxConfint <- function(object, parm = c("existing", "all", "or one or more labels", "smart"), wipeExistingRequests = TRUE, level = 0.95, run = FALSE, showErrorCodes = FALSE, optimizer= c("SLSQP", "NPSOL", "CSOLNP", "current")) {
-	# optimizer is sent to omxRunCI
 	optimizer = match.arg(optimizer)
 	if(optimizer == "current"){
+		# optimizer is sent to omxRunCI so set "current" to the actual name
 		optimizer = umx_set_optimizer(silent = TRUE)
 	}
 	parm = xmu_match.arg(parm, c("existing", "all", "or one or more labels", "smart"), check = FALSE)
 
 	# Upgrade "all" to "smart" for CP
-	if(class(object) == "MxModelCP" && parm == "all"){
+	if(class(object)[[1]] == "MxModelCP" && parm == "all"){
 		parm = "smart"
 	}
 
@@ -540,7 +541,7 @@ umxConfint <- function(object, parm = c("existing", "all", "or one or more label
 		CIs_to_set = names(omxGetParameters(object, free = TRUE))
 		object = mxModel(object, mxCI(CIs_to_set, interval = level))
 	} else if (parm == "smart"){
-		if(class(object) == "MxModelCP"){
+		if(class(object)[[1]] == "MxModelCP"){
 			# Add individual smart (only free cell) mxCI requests
 			# For CP model, these are the free cells in
 			# 	top.as_std, top.cs_std, top.es_std
@@ -582,7 +583,7 @@ umxConfint <- function(object, parm = c("existing", "all", "or one or more label
 	if(run) {
 		# Check there are some in existence
 		if(!umx_has_CIs(object, "intervals")) {
-			message("This model has no CIs yet. Perhaps you wanted to use parm = 'all' for CIs on all free parameters? Or to a list of labels?")
+			message("Polite note: This model has no CIs yet. Perhaps you wanted to use parm = 'all' to request CIs on all free parameters? Or list some path labels?")
 		}else{
 			# object = mxRun(object, intervals = TRUE)
 			object = omxRunCI(object, optimizer = optimizer)
@@ -591,13 +592,13 @@ umxConfint <- function(object, parm = c("existing", "all", "or one or more label
 	# 4. Report CIs
 	if(!umx_has_CIs(object, "both")) {
 		if(run == FALSE){
-			message("Some CIs have been requested, but have not yet been run. Add ", omxQuotes("run = TRUE"), " to your umxConfint() call to run them.\n",
-			"To store the model run capture it from umxConfint like this:\n",
+			message("Polite note: Some CIs have been requested but not run. Add ", omxQuotes("run = TRUE"), " to your umxConfint() call to run them.\n",
+			"To store the model capture it from umxConfint like this:\n",
 			"m1 = umxConfint(m1, run = TRUE)")
 		} else if(length(object$intervals)==0){
 			message("No CIs requested...")
 		} else{
-			message("hmmm... you wanted it run, but I don't see any computed CIs despite there being ", length(object$intervals), " requested...",
+			message("Polite note: hmmm... You wanted it run, but I don't see any computed CIs despite there being ", length(object$intervals), " requested...",
 			"\nThat's a bug. Please report it to timothy.c.bates@gmail.com")
 		}
 	} else {
@@ -615,7 +616,7 @@ umxConfint <- function(object, parm = c("existing", "all", "or one or more label
 
 		CIs = model_summary$CI
 		CIs$parameter = row.names(CIs)
-		row.names(CIs) <- NULL
+		row.names(CIs) = NULL
 		CIs = CIs[, c("parameter", "estimate", "lbound", "ubound", "note")]
 		intersect(names(CIdetail), names(CIs))
 		tmp = merge(CIs, CIdetail[CIdetail$side == "lower", ], by = "parameter", all.x = TRUE)
@@ -801,7 +802,7 @@ umxSummary.default <- function(model, ...){
 
 #' Shows a compact, publication-style, summary of a RAM model
 #'
-#' Report the fit of a model in a compact form suitable for a journal. Emits a "warning" 
+#' Report the fit of a model in a compact form suitable for a journal. Alerts you
 #' when model fit is worse than accepted criterion (TLI >= .95 and RMSEA <= .06; (Hu & Bentler, 1999; Yu, 2002).
 #' 
 #' Note: For some (multi-group) models, you will need to fall back on [summary()]
@@ -810,7 +811,7 @@ umxSummary.default <- function(model, ...){
 #' This function uses the standard errors reported by OpenMx to produce the CIs you see in umxSummary
 #' These are used to derive confidence intervals based on the formula 95%CI = estimate +/- 1.96*SE)
 #' 
-#' Sometimes they appear NA. This often indicates a model which is not identified (see\url{http://davidakenny.net/cm/identify.htm}).
+#' Sometimes they appear NA. This often indicates a model which is not identified (see <http://davidakenny.net/cm/identify.htm>).
 #' This can include empirical under-identification - for instance two factors
 #' that are essentially identical in structure. use [mxCheckIdentification()] to check identification.
 #' 
@@ -824,32 +825,31 @@ umxSummary.default <- function(model, ...){
 #'
 #' @aliases umxSummary.MxModel umxSummary.MxRAMModel
 #' @param model The [mxModel()] whose fit will be reported
-#' @param refModels Saturated models if needed for fit indices (see example below:
-#' 	If NULL will be competed on demand. If FALSE will not be computed. Only needed for raw data.
-#' @param show What estimates to show. By default, the raw estimates are shown 
-#' (Options = c("raw", "std", "none").
-#' @param digits How many decimal places to report (default = 2)
+#' @param std If TRUE, model is standardized (Default FALSE, NULL means "don't show").
+#' @param digits How many decimal places to report (Default 2)
 #' @param report If "html", then show results in browser (alternative = "markdown")
 #' @param filter whether to show significant paths (SIG) or NS paths (NS) or all paths (ALL)
 #' @param SE Whether to compute SEs... defaults to TRUE. In rare cases, you might need to turn off to avoid errors.
 #' @param RMSEA_CI Whether to compute the CI on RMSEA (Defaults to FALSE)
-#' @param matrixAddresses Whether to show "matrix address" columns (Default = FALSE)
-#' @param std deprecated: use show = "std" instead!
+#' @param refModels Saturated models if needed for fit indices (see example below:
+#' 	If NULL will be competed on demand. If FALSE will not be computed. Only needed for raw data.
 #' @param ... Other parameters to control model summary
+#' @param matrixAddresses Whether to show "matrix address" columns (Default = FALSE)
 #' @family Reporting functions
 #' @seealso - [umxRun()]
 #' @references - Hu, L., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance 
-#'  structure analysis: Conventional criteria versus new alternatives. Structural Equation Modeling, 6, 1-55. 
+#'  structure analysis: Conventional criteria versus new alternatives. *Structural Equation Modeling*, **6**, 1-55. 
 #'
 #'  - Yu, C.Y. (2002). Evaluating cutoff criteria of model fit indices for latent variable models
 #'  with binary and continuous outcomes. University of California, Los Angeles, Los Angeles.
-#'  Retrieved from \url{https://www.statmodel.com/download/Yudissertation.pdf}
+#'  Retrieved from <https://www.statmodel.com/download/Yudissertation.pdf>
 #' 
 #' <https://tbates.github.io>
 #' 
 #' @export
 #' @import OpenMx
 #' @return - parameterTable returned invisibly, if estimates requested
+#' @md
 #' @examples
 #' require(umx)
 #' data(demoOneFactor)
@@ -874,20 +874,9 @@ umxSummary.default <- function(model, ...){
 #' 	umxPath(v1m0 = "G")
 #' )
 #' umxSummary(m1, std = TRUE, filter = "NS")
-umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2, report = c("markdown", "html"), filter = c("ALL", "NS", "SIG"), SE = TRUE, RMSEA_CI = FALSE, matrixAddresses = FALSE, show = c("deprecated", "raw", "std", "none"), ...){
+umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2, report = c("markdown", "html"), filter = c("ALL", "NS", "SIG"), SE = TRUE, RMSEA_CI = FALSE, ..., matrixAddresses = FALSE){
 	# TODO make table take lists of models...
-	commaSep = paste0(umx_set_separator(silent=TRUE), " ")
-	show   = match.arg(show)
-	if(show != "deprecated"){
-		message("Polite note: In umx 3, all functions will use std=T|F|NULL) in place of  show = 'raw|std|none")
-		if(show == "std"){
-			std = TRUE
-		} else if (show == "raw"){
-			std = FALSE
-		}else{
-			std = NULL
-		}
-	}
+	commaSep = paste0(umx_set_separator(silent = TRUE), " ")
 
 	report = match.arg(report)
 	filter = match.arg(filter)
@@ -904,6 +893,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 		 }
 	}
 	umx_has_been_run(model, stop = TRUE)
+
 	if(is.null(refModels)) {
 		# SaturatedModels not passed in from outside, so get them from the model
 		# TODO umxSummary Improve efficiency: Compute summary only once by detecting when SaturatedLikelihood is missing
@@ -920,11 +910,12 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 	} else if (refModels == FALSE){
 		modelSummary = summary(model) # Don't use or generate refModels		
 	}else{
-		modelSummary = summary(model, refModels = refModels) # Use user-supplied refModels		
+		modelSummary = summary(model, refModels = refModels) # Using refModels supplied by user
 	}
 
 	# DisplayColumns show
 	if(!is.null(std)){
+		# nb: mxStandardizeRAMpaths returns the raw paths as well, so two birds, one stone.
 		parameterTable = mxStandardizeRAMpaths(model, SE = SE) # Compute standard errors
 		nSubModels = length(model$submodels)
 		if(nSubModels > 0){
@@ -933,6 +924,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 			if(nSubModels > 1){
 				for (i in 2:nSubModels) {
 					parameterTable = rbind(parameterTable, tmp[[i]])
+					# TODO: vertical merge, or show only model 1?
 				}			
 			}
 		}
@@ -998,46 +990,47 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 		} else {
 			if(TLI > .95) {
 				TLI_OK = "OK"
-				} else {
-					TLI_OK = "bad"
-				}
-			}
-			if(!is.finite(RMSEA)) {
-				RMSEA_OK = "OK"
 			} else {
-				if(RMSEA < .06){
-				RMSEA_OK = "OK"
-				} else {
-					RMSEA_OK = "bad"
-				}
+				TLI_OK = "bad"
 			}
-			if(report == "table"){
-				x = data.frame(cbind(model$name, round(Chi,2), formatC(p, format="g"), round(CFI,3), round(TLI,3), round(RMSEA, 3)))
-				names(x) = c("model","\u03C7","p","CFI", "TLI","RMSEA") # \u03A7 is unicode for chi
-				print(x)
+		}
+		if(!is.finite(RMSEA)) {
+			RMSEA_OK = "OK"
+		} else {
+			if(RMSEA < .06){
+			RMSEA_OK = "OK"
 			} else {
-				if(RMSEA_CI){
-					RMSEA_CI = RMSEA(modelSummary)$txt
-				} else {
-					RMSEA_CI = paste0("RMSEA = ", round(RMSEA, 3))
-				}
-				x = paste0(
-					"\u03C7\u00B2(", ChiDoF, ") = ", round(Chi, 2), # was A7
-					", p "      , umx_APA_pval(p, .001, 3, addComparison = TRUE),
-					"; CFI = "  , round(CFI, 3),
-					"; TLI = "  , round(TLI, 3),
-					"; ", RMSEA_CI
-					)
-				print(x)
-				if(TLI_OK != "OK"){
-					message("TLI is worse than desired")
-				}
-				if(RMSEA_OK != "OK"){
-					message("RMSEA is worse than desired")
-				}
+				RMSEA_OK = "bad"
 			}
+		}
+		if(report == "table"){
+			x = data.frame(cbind(model$name, round(Chi,2), formatC(p, format="g"), round(CFI,3), round(TLI,3), round(RMSEA, 3)))
+			names(x) = c("model","\u03C7","p","CFI", "TLI","RMSEA") # \u03A7 is unicode for chi
+			print(x)
+		} else {
+			if(RMSEA_CI){
+				RMSEA_CI = RMSEA(modelSummary)$txt
+			} else {
+				RMSEA_CI = paste0("RMSEA = ", round(RMSEA, 3))
+			}
+			x = paste0(
+				"\u03C7\u00B2(", ChiDoF, ") = ", round(Chi, 2), # was A7
+				# "Chi2(", ChiDoF, ") = ", round(Chi, 2), # was A7
+				", p "      , umx_APA_pval(p, .001, 3, addComparison = TRUE),
+				"; CFI = "  , round(CFI, 3),
+				"; TLI = "  , round(TLI, 3),
+				"; ", RMSEA_CI
+				)
+			print(x)
+			if(TLI_OK != "OK"){
+				message("TLI is worse than desired")
+			}
+			if(RMSEA_OK != "OK"){
+				message("RMSEA is worse than desired")
+			}
+		}
 	})
-	
+	# TODO: umxSummary.MxRAMModel integrate interval printing into summary table
 	if(!is.null(model$output$confidenceIntervals)){
 		print(model$output$confidenceIntervals)
 	}
@@ -1110,8 +1103,9 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 	} else {
 		umx_has_been_run(model, stop = TRUE)
 		xmu_show_fit_or_comparison(model, comparison = comparison, digits = digits)
-		selDVs = dimnames(model$top.expCovMZ)[[1]]
-		nVar <- length(selDVs)/2;
+		selDVs = xmu_twin_get_var_names(model, trim= TRUE, twinOneOnly= TRUE)
+		nVar   = length(selDVs)
+
 		# TODO umxSummaryACE these already exist if a_std exists..
 		# TODO replace all this with xmu_standardizeACE
 		# Calculate standardized variance components
@@ -1124,15 +1118,15 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 
 		if(std){
 			message("Standardized solution")
-			Vtot = A + C + E;         # Total variance
-			I  <- diag(nVar);         # nVar Identity matrix
+			Vtot = A + C + E; # Total variance
+			I  <- diag(nVar); # nVar Identity matrix
 			SD <- solve(sqrt(I * Vtot)) # Inverse of diagonal matrix of standard deviations
 			# (same as "(\sqrt(I.Vtot))~"
 
 			# Standardized _path_ coefficients ready to be stacked together
-			a_std <- SD %*% a; # Standardized path coefficients
-			c_std <- SD %*% c;
-			e_std <- SD %*% e;
+			a_std  = SD %*% a; # Standardized path coefficients
+			c_std  = SD %*% c;
+			e_std  = SD %*% e;
 			aClean = a_std
 			cClean = c_std
 			eClean = e_std
@@ -1146,8 +1140,7 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 		aClean[upper.tri(aClean)] = NA
 		cClean[upper.tri(cClean)] = NA
 		eClean[upper.tri(eClean)] = NA
-		rowNames = sub("(_T)?1$", "", selDVs[1:nVar])
-		Estimates = data.frame(cbind(aClean, cClean, eClean), row.names = rowNames, stringsAsFactors = FALSE);
+		Estimates = data.frame(cbind(aClean, cClean, eClean), row.names = selDVs, stringsAsFactors = FALSE);
 
 		if(model$top$dzCr$values == .25){
 			colNames = c("a", "d", "e")
@@ -1158,10 +1151,12 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 		Estimates = umx_print(Estimates, digits = digits, zero.print = zero.print)
 		if(report == "html"){
 			# depends on R2HTML::HTML
-			R2HTML::HTML(Estimates, file = "tmp.html", Border = 0, append = F, sortableDF = T); 
+			R2HTML::HTML(Estimates, file = "tmp.html", Border = 0, append = FALSE, sortableDF = TRUE); 
 			umx_open("tmp.html")
 		}
-	
+
+		xmu_twin_print_means(model = model, report= report)
+
 		if(extended == TRUE) {
 			message("Unstandardized path coefficients")
 			aClean = a
@@ -1170,106 +1165,107 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 			aClean[upper.tri(aClean)] = NA
 			cClean[upper.tri(cClean)] = NA
 			eClean[upper.tri(eClean)] = NA
-			unStandardizedEstimates = data.frame(cbind(aClean, cClean, eClean), row.names = rowNames);
+			unStandardizedEstimates = data.frame(cbind(aClean, cClean, eClean), row.names = selDVs);
 			names(unStandardizedEstimates) = paste0(rep(colNames, each = nVar), rep(1:nVar));
 			umx_print(unStandardizedEstimates, digits = digits, zero.print = zero.print)
 		}
 
-	# Pre & post multiply covariance matrix by inverse of standard deviations
-	if(showRg) {
-		message("Genetic correlations")
-		NAmatrix <- matrix(NA, nVar, nVar);
-		rA = tryCatch(solve(sqrt(I*A)) %*% A %*% solve(sqrt(I*A)), error = function(err) return(NAmatrix)); # genetic correlations
-		rC = tryCatch(solve(sqrt(I*C)) %*% C %*% solve(sqrt(I*C)), error = function(err) return(NAmatrix)); # C correlations
-		rE = tryCatch(solve(sqrt(I*E)) %*% E %*% solve(sqrt(I*E)), error = function(err) return(NAmatrix)); # E correlations
-		rAClean = rA
-		rCClean = rC
-		rEClean = rE
-		rAClean[upper.tri(rAClean)] = NA
-		rCClean[upper.tri(rCClean)] = NA
-		rEClean[upper.tri(rEClean)] = NA
-		genetic_correlations = data.frame(cbind(rAClean, rCClean, rEClean), row.names = rowNames);
-		names(genetic_correlations) <- rowNames
-	 	# Make a nice table.
-		names(genetic_correlations) = paste0(rep(c("rA", "rC", "rE"), each = nVar), rep(1:nVar));
-		umx_print(genetic_correlations, digits = digits, zero.print = zero.print)
-	}
-	hasCIs = umx_has_CIs(model)
-	if(hasCIs & CIs) {
-		# TODO umxACE CI code: Need to refactor into some function calls...
-		# TODO and then add to umxSummaryIP and CP
-		message("Creating CI-based report!")
-		# CIs exist, get lower and upper CIs as a dataframe
-		CIlist = data.frame(model$output$confidenceIntervals)
-		# Drop rows fixed to zero
-		CIlist = CIlist[(CIlist$lbound != 0 & CIlist$ubound != 0),]
-		# Discard rows named NA
-		CIlist = CIlist[!grepl("^NA", row.names(CIlist)), ]
-		# TODO fix for singleton CIs
-		# THIS IS NOT NEEDED: confidenceIntervals come with estimate in the middle now...
-		# These can be names ("top.a_std[1,1]") or labels ("a_r1c1")
-		# imxEvalByName finds them both
-		# outList = c();
-		# for(aName in row.names(CIlist)) {
-		# 	outList <- append(outList, imxEvalByName(aName, model))
-		# }
-		# # Add estimates into the CIlist
-		# CIlist$estimate = outList
-		# reorder to match summary
-		# CIlist <- CIlist[, c("lbound", "estimate", "ubound")]
-		CIlist$fullName = row.names(CIlist)
-		# Initialise empty matrices for the CI results
-		rows = dim(model$top$matrices$a$labels)[1]
-		cols = dim(model$top$matrices$a$labels)[2]
-		a_CI = c_CI = e_CI = matrix(NA, rows, cols)
-
-		# iterate over each CI
-		labelList = imxGenerateLabels(model)	
-		rowCount = dim(CIlist)[1]
-		# return(CIlist)
-		for(n in 1:rowCount) { # n = 1
-			thisName = row.names(CIlist)[n] # thisName = "a11"
-				# convert labels to [bracket] style
-				if(!umx_has_square_brackets(thisName)) {
-				nameParts = labelList[which(row.names(labelList) == thisName),]
-				CIlist$fullName[n] = paste(nameParts$model, ".", nameParts$matrix, "[", nameParts$row, ",", nameParts$col, "]", sep = "")
-			}
-			fullName = CIlist$fullName[n]
-
-			thisMatrixName = sub(".*\\.([^\\.]*)\\[.*", replacement = "\\1", x = fullName) # .matrix[
-			thisMatrixRow  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\1", x = fullName))
-			thisMatrixCol  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\2", x = fullName))
-			CIparts    = round(CIlist[n, c("estimate", "lbound", "ubound")], digits)
-			thisString = paste0(CIparts[1], " [",CIparts[2], commaSep, CIparts[3], "]")
-
-			if(grepl("^a", thisMatrixName)) {
-				a_CI[thisMatrixRow, thisMatrixCol] = thisString
-			} else if(grepl("^c", thisMatrixName)){
-				c_CI[thisMatrixRow, thisMatrixCol] = thisString
-			} else if(grepl("^e", thisMatrixName)){
-				e_CI[thisMatrixRow, thisMatrixCol] = thisString
-			} else{
-				stop(paste("Illegal matrix name: must begin with a, c, or e. You sent: ", thisMatrixName))
-			}
+		if(showRg) {
+			# Pre & post multiply covariance matrix by inverse of standard deviations
+			message("Genetic correlations")
+			NAmatrix <- matrix(NA, nVar, nVar);
+			rA = tryCatch(solve(sqrt(I*A)) %*% A %*% solve(sqrt(I*A)), error = function(err) return(NAmatrix)); # genetic correlations
+			rC = tryCatch(solve(sqrt(I*C)) %*% C %*% solve(sqrt(I*C)), error = function(err) return(NAmatrix)); # C correlations
+			rE = tryCatch(solve(sqrt(I*E)) %*% E %*% solve(sqrt(I*E)), error = function(err) return(NAmatrix)); # E correlations
+			rAClean = rA
+			rCClean = rC
+			rEClean = rE
+			rAClean[upper.tri(rAClean)] = NA
+			rCClean[upper.tri(rCClean)] = NA
+			rEClean[upper.tri(rEClean)] = NA
+			genetic_correlations = data.frame(cbind(rAClean, rCClean, rEClean), row.names = selDVs);
+			names(genetic_correlations) <- selDVs
+		 	# Make a nice table.
+			names(genetic_correlations) = paste0(rep(c("rA", "rC", "rE"), each = nVar), rep(1:nVar));
+			umx_print(genetic_correlations, digits = digits, zero.print = zero.print)
 		}
-		# TODO Check the merge of a_, c_ and e_CI INTO the output table works with more than one variable
-		# TODO umxSummaryACE: Add option to use mxSE
-		# print(a_CI)
-		# print(c_CI)
-		# print(e_CI)
-		Estimates = data.frame(cbind(a_CI, c_CI, e_CI), row.names = rowNames, stringsAsFactors = FALSE)
-		names(Estimates) = paste0(rep(colNames, each = nVar), rep(1:nVar));
-		Estimates = umx_print(Estimates, digits = digits, zero.print = zero.print)
-		if(report == "html"){
-			# depends on R2HTML::HTML
-			R2HTML::HTML(Estimates, file = "tmpCI.html", Border = 0, append = F, sortableDF = T); 
-			umx_open("tmpCI.html")
-		}
-		CI_Fit = model
-		CI_Fit$top$a$values = a_CI
-		CI_Fit$top$c$values = c_CI
-		CI_Fit$top$e$values = e_CI
-	} # end Use CIs
+		hasCIs = umx_has_CIs(model)
+		if(hasCIs & CIs) {
+			# TODO umxACE CI code: Need to refactor into some function calls...
+			# TODO and then add to umxSummaryIP and CP
+			message("Creating CI-based report!")
+			# CIs exist, get lower and upper CIs as a dataframe
+			CIlist = data.frame(model$output$confidenceIntervals)
+			# Drop rows fixed to zero
+			CIlist = CIlist[(CIlist$lbound != 0 & CIlist$ubound != 0),]
+			# Discard rows named NA
+			CIlist = CIlist[!grepl("^NA", row.names(CIlist)), ]
+			# TODO fix for singleton CIs
+			# THIS IS NOT NEEDED: confidenceIntervals come with estimate in the middle now...
+			# These can be names ("top.a_std[1,1]") or labels ("a_r1c1")
+			# imxEvalByName finds them both
+			# outList = c();
+			# for(aName in row.names(CIlist)) {
+			# 	outList <- append(outList, imxEvalByName(aName, model))
+			# }
+			# # Add estimates into the CIlist
+			# CIlist$estimate = outList
+			# reorder to match summary
+			# CIlist <- CIlist[, c("lbound", "estimate", "ubound")]
+			CIlist$fullName = row.names(CIlist)
+			# Initialise empty matrices for the CI results
+			rows = dim(model$top$matrices$a$labels)[1]
+			cols = dim(model$top$matrices$a$labels)[2]
+			a_CI = c_CI = e_CI = matrix(NA, rows, cols)
+
+			# iterate over each CI
+			labelList = imxGenerateLabels(model)	
+			rowCount = dim(CIlist)[1]
+			# return(CIlist)
+			for(n in 1:rowCount) { # n = 1
+				thisName = row.names(CIlist)[n] # thisName = "a11"
+					# convert labels to [bracket] style
+					if(!umx_has_square_brackets(thisName)) {
+					nameParts = labelList[which(row.names(labelList) == thisName),]
+					CIlist$fullName[n] = paste(nameParts$model, ".", nameParts$matrix, "[", nameParts$row, ",", nameParts$col, "]", sep = "")
+				}
+				fullName = CIlist$fullName[n]
+
+				thisMatrixName = sub(".*\\.([^\\.]*)\\[.*", replacement = "\\1", x = fullName) # .matrix[
+				thisMatrixRow  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\1", x = fullName))
+				thisMatrixCol  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\2", x = fullName))
+				CIparts    = round(CIlist[n, c("estimate", "lbound", "ubound")], digits)
+				thisString = paste0(CIparts[1], " [",CIparts[2], commaSep, CIparts[3], "]")
+
+				if(grepl("^a", thisMatrixName)) {
+					a_CI[thisMatrixRow, thisMatrixCol] = thisString
+				} else if(grepl("^c", thisMatrixName)){
+					c_CI[thisMatrixRow, thisMatrixCol] = thisString
+				} else if(grepl("^e", thisMatrixName)){
+					e_CI[thisMatrixRow, thisMatrixCol] = thisString
+				} else{
+					stop(paste("Illegal matrix name: must begin with a, c, or e. You sent: ", thisMatrixName))
+				}
+			}
+			# TODO Check the merge of a_, c_ and e_CI INTO the output table works with more than one variable
+			# TODO umxSummaryACE: Add option to use mxSE
+			# print(a_CI)
+			# print(c_CI)
+			# print(e_CI)
+			Estimates = data.frame(cbind(a_CI, c_CI, e_CI), row.names = selDVs, stringsAsFactors = FALSE)
+			names(Estimates) = paste0(rep(colNames, each = nVar), rep(1:nVar));
+			Estimates = umx_print(Estimates, digits = digits, zero.print = zero.print)
+			if(report == "html"){
+				# depends on R2HTML::HTML
+				R2HTML::HTML(Estimates, file = "tmpCI.html", Border = 0, append = F, sortableDF = T); 
+				umx_open("tmpCI.html")
+			}
+			xmu_twin_print_means(model, digits = digits, report = report)
+			CI_Fit = model
+			CI_Fit$top$a$values = a_CI
+			CI_Fit$top$c$values = c_CI
+			CI_Fit$top$e$values = e_CI
+		} # end Use CIs
 	} # end list catcher?
 	
 	
@@ -1308,7 +1304,6 @@ umxSummary.MxModelACE <- umxSummaryACE
 #' @param CIs Whether to show Confidence intervals if they exist (TRUE)
 #' @param zero.print How to show zeros (".")
 #' @param report If "html", then open an html table of the results.
-#' @param show Here to support being called from generic xmu_safe_run_summary. User should ignore: can be c("std", "raw")
 #' @param ... Other parameters to control model summary
 #' @return - optional [mxModel()]
 #' @export
@@ -1320,171 +1315,164 @@ umxSummary.MxModelACE <- umxSummaryACE
 #' require(umx)
 #' data(twinData)
 #' selDVs = c("bmi1", "bmi2")
-#' mzData <- subset(twinData, zygosity == "MZFF")
-#' dzData <- subset(twinData, zygosity == "DZFF")
+#' mzData = subset(twinData, zygosity == "MZFF")
+#' dzData = subset(twinData, zygosity == "DZFF")
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-#' m1 = umxRun(m1)
-#' umxSummaryACE(m1)
 #' \dontrun{
-#' umxSummaryACE(m1, file = NA);
+#' umxSummaryACE(m1, file = NA)
 #' umxSummaryACE(m1, file = "name", std = TRUE)
-#' stdFit = umxSummaryACE(m1, returnStd = TRUE);
+#' stdFit = umxSummaryACE(m1, returnStd = TRUE)
 #' }
-umxSummaryACEcov <- function(model, digits = 2, showRg = FALSE, std = TRUE, comparison = NULL, CIs = TRUE, zero.print = ".", report = c("markdown", "html"), file = getOption("umx_auto_plot"), returnStd = FALSE, extended = FALSE, show = c("std", "raw"), ...) {
-	show = match.arg(show)
-	if(show != "std"){
-		std = FALSE
-		# message("Polite message: in next version, show= will be replaced with std=TRUE/FALSE/NULL  or vice versa...")
-	}
-	report = match.arg(report)
+umxSummaryACEcov <- function(model, digits = 2, showRg = FALSE, std = TRUE, comparison = NULL, CIs = TRUE, zero.print = ".", report = c("markdown", "html"), file = getOption("umx_auto_plot"), returnStd = FALSE, extended = FALSE, ...) {
+	report   = match.arg(report)
 	commaSep = paste0(umx_set_separator(silent=TRUE), " ")
 	
-	# depends on R2HTML::HTML
+	# Depends on R2HTML::HTML
 	if(typeof(model) == "list"){ # call self recursively
 		for(thisFit in model) {
 			message("Output for Model: ", thisFit$name)
 			umxSummaryACEcov(thisFit, digits = digits, file = file, returnStd = returnStd, extended = extended, showRg = showRg, std = std, comparison = comparison, CIs = CIs, zero.print = zero.print, report = report)
 		}
 	} else {
-	umx_has_been_run(model, stop = TRUE)
-	xmu_show_fit_or_comparison(model, comparison = comparison, digits = digits)
-	selDVs = dimnames(model$top$a)[[1]]
-	# selDVs = dimnames(model$top.expCovMZ)[[1]]
-	nDV <- length(selDVs);
-	# Calculate standardized variance components
-	a  <- mxEval(top.a, model); # Path coefficients
-	c  <- mxEval(top.c, model);
-	e  <- mxEval(top.e, model);
+		umx_has_been_run(model, stop = TRUE)
+		xmu_show_fit_or_comparison(model, comparison = comparison, digits = digits)
+		selDVs = xmu_twin_get_var_names(model, source = "expCovMZ", trim = TRUE, twinOneOnly = TRUE)
+		nDV    = length(selDVs)
 
-	A  <- mxEval(top.A, model); # Variances
-	C  <- mxEval(top.C, model);
-	E  <- mxEval(top.E, model);
-	Vtot = A + C + E; # Total variance
-	Iden  <- diag(nDV);  # nDV Identity matrix
-	SD <- solve(sqrt(Iden * Vtot)) # Inverse of diagonal matrix of standard deviations
-	# (same as "(\sqrt(Iden.Vtot))~"
+		# Calculate standardized variance components
+		a    = mxEval(top.a, model); # Path coefficients
+		c    = mxEval(top.c, model);
+		e    = mxEval(top.e, model);
+		A    = mxEval(top.A, model); # Variances
+		C    = mxEval(top.C, model);
+		E    = mxEval(top.E, model);
+		Vtot = A + C + E; # Total variance
+		Iden = diag(nDV); # nDV Identity matrix
+		SD   = solve(sqrt(Iden * Vtot)) # Inverse of diagonal matrix of standard deviations
+		# (same as "(\sqrt(Iden.Vtot))~"
 
-	# Standardized _path_ coefficients ready to be stacked together
-	a_std <- SD %*% a; # Standardized path coefficients
-	c_std <- SD %*% c;
-	e_std <- SD %*% e;
+		# Standardized _path_ coefficients ready to be stacked together
+		a_std = SD %*% a; # Standardized path coefficients
+		c_std = SD %*% c;
+		e_std = SD %*% e;
 
-	if(std){
-		message("Standardized solution")
-		aClean = a_std
-		cClean = c_std
-		eClean = e_std
-	} else {
-		message("Raw solution")
-		aClean = a
-		cClean = c
-		eClean = e
-	}
+		if(std){
+			message("Standardized solution")
+			aClean = a_std
+			cClean = c_std
+			eClean = e_std
+		} else {
+			message("Raw solution")
+			aClean = a
+			cClean = c
+			eClean = e
+		}
 
-	aClean[upper.tri(aClean)] = NA
-	cClean[upper.tri(cClean)] = NA
-	eClean[upper.tri(eClean)] = NA
-	rowNames = sub("(_T)?1$", "", selDVs[1:nDV])
-	Estimates = data.frame(cbind(aClean, cClean, eClean), row.names = rowNames);
-
-	names(Estimates) = paste0(rep(c("a", "c", "e"), each = nDV), rep(1:nDV));
-
-	Estimates = umx_print(Estimates, digits = digits, zero.print = zero.print)
-	if(report == "html"){
-		# depends on R2HTML::HTML
-		R2HTML::HTML(Estimates, file = "tmp.html", Border = 0, append = F, sortableDF = T); 
-		umx_open("tmp.html")
-	}
-
-	if(extended == TRUE) {
-		message("Unstandardized path coefficients")
-		aClean = a
-		cClean = c
-		eClean = e
 		aClean[upper.tri(aClean)] = NA
 		cClean[upper.tri(cClean)] = NA
 		eClean[upper.tri(eClean)] = NA
-		unStandardizedEstimates = data.frame(cbind(aClean, cClean, eClean), row.names = rowNames);
-		names(unStandardizedEstimates) = paste0(rep(c("a", "c", "e"), each = nDV), rep(1:nDV));
-		umx_print(unStandardizedEstimates, digits = digits, zero.print = zero.print)
-	}
+		rowNames = sub("(_T)?1$", "", selDVs)
+		Estimates = data.frame(cbind(aClean, cClean, eClean), row.names = rowNames);
 
-	# Pre & post multiply covariance matrix by inverse of standard deviations
-	if(showRg) {
-		message("Genetic correlations")
-		NAmatrix <- matrix(NA, nDV, nDV);
-		rA = tryCatch(solve(sqrt(Iden * A)) %*% A %*% solve(sqrt(Iden * A)), error = function(err) return(NAmatrix)); # genetic correlations
-		rC = tryCatch(solve(sqrt(Iden * C)) %*% C %*% solve(sqrt(Iden * C)), error = function(err) return(NAmatrix)); # C correlations
-		rE = tryCatch(solve(sqrt(Iden * E)) %*% E %*% solve(sqrt(Iden * E)), error = function(err) return(NAmatrix)); # E correlations
-		rAClean = rA
-		rCClean = rC
-		rEClean = rE
-		rAClean[upper.tri(rAClean)] = NA
-		rCClean[upper.tri(rCClean)] = NA
-		rEClean[upper.tri(rEClean)] = NA
-		genetic_correlations = data.frame(cbind(rAClean, rCClean, rEClean), row.names = rowNames);
-		names(genetic_correlations) <- rowNames
-	 	# Make a nice-ish table
-		names(genetic_correlations) = paste0(rep(c("rA", "rC", "rE"), each=nDV), rep(1:nDV));
-		umx_print(genetic_correlations, digits=digits, zero.print = zero.print)
-	}
-	stdFit = model
-	hasCIs = umx_has_CIs(model)
-	if(hasCIs & CIs) {
-		# TODO Need to refactor this into some function calls...
-		# TODO and then add to umxSummaryIP and CP
-		message("Creating CI-based report!")
-		# CIs exist, get the lower and uppper CIs as a dataframe
-		CIlist = data.frame(model$output$confidenceIntervals)
-		# Drop rows fixed to zero
-		CIlist = CIlist[(CIlist$lbound != 0 & CIlist$ubound != 0),]
-		# discard rows named NA
-		CIlist = CIlist[!grepl("^NA", row.names(CIlist)), ]
+		names(Estimates) = paste0(rep(c("a", "c", "e"), each = nDV), rep(1:nDV));
 
-		# # Add estimates into the CIlist
-		# CIlist$estimate = outList
-		# reorder to match summary
-		CIlist <- CIlist[, c("lbound", "estimate", "ubound")] 
-		CIlist$fullName = row.names(CIlist)
-		# Initialise empty matrices for the standardized results
-		rows = dim(model$top$matrices$a$labels)[1]
-		cols = dim(model$top$matrices$a$labels)[2]
-		a_std = c_std = e_std = matrix(NA, rows, cols)
-
-		# iterate over each CI
-		labelList = imxGenerateLabels(model)			
-		rowCount = dim(CIlist)[1]
-		# return(CIlist)
-		for(n in 1:rowCount) { # n = 1
-			thisName = row.names(CIlist)[n] # thisName = "a11"
-			# convert labels to [bracket] style
-				if(!umx_has_square_brackets(thisName)) {
-				nameParts = labelList[which(row.names(labelList) == thisName),]
-				CIlist$fullName[n] = paste(nameParts$model, ".", nameParts$matrix, "[", nameParts$row, ",", nameParts$col, "]", sep = "")
-			}
-			fullName = CIlist$fullName[n]
-
-			thisMatrixName = sub(".*\\.([^\\.]*)\\[.*", replacement = "\\1", x = fullName) # .matrix[
-			thisMatrixRow  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\1", x = fullName))
-			thisMatrixCol  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\2", x = fullName))
-			CIparts = round(CIlist[n, c("estimate", "lbound", "ubound")], 2)
-			thisString = paste(CIparts[1], " [",CIparts[2], commaSep, CIparts[3], "]", sep="")
-			# print(list(CIlist, labelList, rowCount, fullName, thisMatrixName))
-
-			if(grepl("^a", thisMatrixName)) {
-				a_std[thisMatrixRow, thisMatrixCol] = thisString
-			} else if(grepl("^c", thisMatrixName)){
-				c_std[thisMatrixRow, thisMatrixCol] = thisString
-			} else if(grepl("^e", thisMatrixName)){
-				e_std[thisMatrixRow, thisMatrixCol] = thisString
-			} else{
-				stop(paste("Illegal matrix name: must begin with a, c, or e. You sent: ", thisMatrixName))
-			}
+		Estimates = umx_print(Estimates, digits = digits, zero.print = zero.print)
+		if(report == "html"){
+			# depends on R2HTML::HTML
+			R2HTML::HTML(Estimates, file = "tmp.html", Border = 0, append = FALSE, sortableDF = TRUE);
+			umx_open("tmp.html")
 		}
-		print(a_std)
-		print(c_std)
-		print(e_std)
-	}
+		xmu_twin_print_means(model, digits = digits, report = report)
+		
+		if(extended == TRUE) {
+			message("Unstandardized path coefficients")
+			aClean = a
+			cClean = c
+			eClean = e
+			aClean[upper.tri(aClean)] = NA
+			cClean[upper.tri(cClean)] = NA
+			eClean[upper.tri(eClean)] = NA
+			unStandardizedEstimates = data.frame(cbind(aClean, cClean, eClean), row.names = rowNames);
+			names(unStandardizedEstimates) = paste0(rep(c("a", "c", "e"), each = nDV), rep(1:nDV));
+			umx_print(unStandardizedEstimates, digits = digits, zero.print = zero.print)
+		}
+
+		# Pre & post multiply covariance matrix by inverse of standard deviations
+		if(showRg) {
+			message("Genetic correlations")
+			NAmatrix <- matrix(NA, nDV, nDV);
+			rA = tryCatch(solve(sqrt(Iden * A)) %*% A %*% solve(sqrt(Iden * A)), error = function(err) return(NAmatrix)); # genetic correlations
+			rC = tryCatch(solve(sqrt(Iden * C)) %*% C %*% solve(sqrt(Iden * C)), error = function(err) return(NAmatrix)); # C correlations
+			rE = tryCatch(solve(sqrt(Iden * E)) %*% E %*% solve(sqrt(Iden * E)), error = function(err) return(NAmatrix)); # E correlations
+			rAClean = rA
+			rCClean = rC
+			rEClean = rE
+			rAClean[upper.tri(rAClean)] = NA
+			rCClean[upper.tri(rCClean)] = NA
+			rEClean[upper.tri(rEClean)] = NA
+			genetic_correlations = data.frame(cbind(rAClean, rCClean, rEClean), row.names = rowNames)
+			names(genetic_correlations) <- rowNames
+		 	# Make a nice-ish table
+			names(genetic_correlations) = paste0(rep(c("rA", "rC", "rE"), each= nDV), rep(1:nDV))
+			umx_print(genetic_correlations, digits=digits, zero.print = zero.print)
+		}
+		stdFit = model
+		hasCIs = umx_has_CIs(model)
+		if(hasCIs & CIs) {
+			# TODO Need to refactor this into some function calls...
+			# TODO and then add to umxSummaryIP and CP
+			message("Creating CI-based report!")
+			# CIs exist, get the lower and upper CIs as a dataframe
+			CIlist = data.frame(model$output$confidenceIntervals)
+			# Drop rows fixed to zero
+			CIlist = CIlist[(CIlist$lbound != 0 & CIlist$ubound != 0), ]
+			# discard rows named NA
+			CIlist = CIlist[!grepl("^NA", row.names(CIlist)), ]
+
+			# # Add estimates into the CIlist
+			# CIlist$estimate = outList
+			# reorder to match summary
+			CIlist <- CIlist[, c("lbound", "estimate", "ubound")] 
+			CIlist$fullName = row.names(CIlist)
+			# Initialise empty matrices for the standardized results
+			rows = dim(model$top$matrices$a$labels)[1]
+			cols = dim(model$top$matrices$a$labels)[2]
+			a_std = c_std = e_std = matrix(NA, rows, cols)
+
+			# iterate over each CI
+			labelList = imxGenerateLabels(model)			
+			rowCount = dim(CIlist)[1]
+			# return(CIlist)
+			for(n in 1:rowCount) { # n = 1
+				thisName = row.names(CIlist)[n] # thisName = "a11"
+				# convert labels to [bracket] style
+					if(!umx_has_square_brackets(thisName)) {
+					nameParts = labelList[which(row.names(labelList) == thisName),]
+					CIlist$fullName[n] = paste(nameParts$model, ".", nameParts$matrix, "[", nameParts$row, ",", nameParts$col, "]", sep = "")
+				}
+				fullName = CIlist$fullName[n]
+
+				thisMatrixName = sub(".*\\.([^\\.]*)\\[.*", replacement = "\\1", x = fullName) # .matrix[
+				thisMatrixRow  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\1", x = fullName))
+				thisMatrixCol  = as.numeric(sub(".*\\[(.*),(.*)\\]", replacement = "\\2", x = fullName))
+				CIparts = round(CIlist[n, c("estimate", "lbound", "ubound")], 2)
+				thisString = paste(CIparts[1], " [",CIparts[2], commaSep, CIparts[3], "]", sep="")
+				# print(list(CIlist, labelList, rowCount, fullName, thisMatrixName))
+
+				if(grepl("^a", thisMatrixName)) {
+					a_std[thisMatrixRow, thisMatrixCol] = thisString
+				} else if(grepl("^c", thisMatrixName)){
+					c_std[thisMatrixRow, thisMatrixCol] = thisString
+				} else if(grepl("^e", thisMatrixName)){
+					e_std[thisMatrixRow, thisMatrixCol] = thisString
+				} else{
+					stop(paste("Illegal matrix name: must begin with a, c, or e. You sent: ", thisMatrixName))
+				}
+			}
+			print(a_std)
+			print(c_std)
+			print(e_std)
+		}
 	} # Use CIs
 	stdFit$top$a$values = a_std
 	stdFit$top$c$values = c_std
@@ -1518,7 +1506,6 @@ umxSummary.MxModelACEcov <- umxSummaryACEcov
 #' @param report Print tables to the console (as 'markdown'), or open in browser ('html')
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param returnStd Whether to return the standardized form of the model (default = FALSE)
-#' @param show parameter used in all summary functions. Not sure which of show and std will be supported long term: sing out if you have an opinion.
 #' @param ... Optional additional parameters
 #' @return - optional [mxModel()]
 #' @export
@@ -1535,8 +1522,8 @@ umxSummary.MxModelACEcov <- umxSummaryACEcov
 #' twinData$wt1 = twinData$wt1/10
 #' twinData$wt2 = twinData$wt2/10
 #' selDVs = c("ht", "wt")
-#' mzData <- subset(twinData, zygosity == "MZFF")
-#' dzData <- subset(twinData, zygosity == "DZFF")
+#' mzData = subset(twinData, zygosity == "MZFF")
+#' dzData = subset(twinData, zygosity == "DZFF")
 #' umx_set_auto_plot(FALSE) # turn off autoplotting for CRAN
 #' m1 = umxCP(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "", optimizer = "SLSQP")
 #' umxSummaryCP(m1, file = NA) # Suppress plot creation with file
@@ -1544,10 +1531,12 @@ umxSummary.MxModelACEcov <- umxSummaryACEcov
 #' stdFit = umxSummaryCP(m1, digits = 2, std = TRUE, file = NA, returnStd = TRUE);
 #' umxSummary(m1, std = FALSE, showRg = TRUE, file = NA);
 #' umxSummary(m1, std = FALSE, file = NA)
+#'
 #' # =================
 #' # = Print example =
 #' # =================
 #' umxSummary(m1, file = "Figure 3", std = TRUE)
+#'
 #' # =================
 #' # = Confint example =
 #' # =================
@@ -1556,16 +1545,9 @@ umxSummary.MxModelACEcov <- umxSummaryACEcov
 #' umxSummary(m1, CIs = TRUE, file = NA);
 #' }
 #'
-umxSummaryCP <- function(model, digits = 2, std = TRUE, CIs = FALSE, showRg = FALSE, comparison = NULL, report = c("markdown", "html"), file = getOption("umx_auto_plot"), returnStd = FALSE, show = NULL, ...) {
+umxSummaryCP <- function(model, digits = 2, std = TRUE, CIs = FALSE, showRg = FALSE, comparison = NULL, report = c("markdown", "html"), file = getOption("umx_auto_plot"), returnStd = FALSE, ...) {
 	# TODO: Detect value of DZ covariance, and if .25 set "C" to "D" in tables
 	report = match.arg(report)
-	if(!is.null(show)){
-		if(show == "std"){
-			std = TRUE
-		} else {
-			std = FALSE
-		}
-	}
 
 	if(typeof(model) == "list"){ # call self recursively
 		for(thisFit in model) {
@@ -1575,8 +1557,8 @@ umxSummaryCP <- function(model, digits = 2, std = TRUE, CIs = FALSE, showRg = FA
 	} else {
 		umx_check_model(model, "MxModelCP", beenRun = TRUE, callingFn = "umxSummaryCP")
 		xmu_show_fit_or_comparison(model, comparison = comparison, digits = digits)
-		selDVs = dimnames(model$top.expCovMZ)[[1]]
-		nVar   = length(selDVs)/2
+		selDVs = xmu_twin_get_var_names(model, source = "expCovMZ", trim = TRUE, twinOneOnly = TRUE)
+		nVar   = length(selDVs)
 		nFac   = dim(model$top$matrices$a_cp)[[1]]	
 
 		if(CIs){
@@ -1609,9 +1591,8 @@ umxSummaryCP <- function(model, digits = 2, std = TRUE, CIs = FALSE, showRg = FA
 		
 		message("## Loading of each trait on the Common Factors")
 		# Get standardized loadings on Common factors
-		rowNames = sub("(_T)?1$", "", selDVs[1:nVar]) # Clean up names
 		cp_loadings = model$top$cp_loadings$values # nVar * nFac matrix
-		cp_loadings = data.frame(cp_loadings, row.names = rowNames, stringsAsFactors = FALSE);
+		cp_loadings = data.frame(cp_loadings, row.names = selDVs, stringsAsFactors = FALSE);
 		names(cp_loadings) = paste0("CP", 1:length(names(cp_loadings)))
 		if(report == "html"){
 			umx_print(cp_loadings, digits = digits, zero.print = ".", file = "std_common.html");
@@ -1630,14 +1611,15 @@ umxSummaryCP <- function(model, digits = 2, std = TRUE, CIs = FALSE, showRg = FA
 				  diag(cs),
 				  diag(es))
 		)
-		names(specifics) = rowNames;
+		names(specifics) = selDVs;
 
 		if(report == "html"){
 			umx_print(specifics, digits = digits, zero.print = ".", file = "std_spec.html")
 		} else {
 			umx_print(specifics, digits = digits, zero.print = ".")
 		}
-		
+		xmu_twin_print_means(model, digits = digits, report = report)
+
 		if(showRg) {
 			message("Genetic Correlations")
 			# Pre & post multiply covariance matrix by inverse of standard deviations
@@ -1651,7 +1633,7 @@ umxSummaryCP <- function(model, digits = 2, std = TRUE, CIs = FALSE, showRg = FA
 			rA = tryCatch(solve(sqrt(nVarIden * A)) %*% A %*% solve(sqrt(nVarIden * A)), error = function(err) return(NAmatrix)); # genetic correlations
 			rC = tryCatch(solve(sqrt(nVarIden * C)) %*% C %*% solve(sqrt(nVarIden * C)), error = function(err) return(NAmatrix)); # C correlations
 			rE = tryCatch(solve(sqrt(nVarIden * E)) %*% E %*% solve(sqrt(nVarIden * E)), error = function(err) return(NAmatrix)); # E correlations
-			genetic_correlations = data.frame(cbind(rA, rC, rE), row.names = rowNames);
+			genetic_correlations = data.frame(cbind(rA, rC, rE), row.names = selDVs);
 			# Make a table
 			names(genetic_correlations) = paste0(rep(c("rA", "rC", "rE"), each = nVar), rep(1:nVar));
 			if(report == "html"){
@@ -1680,13 +1662,13 @@ umxSummary.MxModelCP <- umxSummaryCP
 #' @aliases umxSummary.MxModelIP
 #' @param model A fitted [umxIP()] model to summarize
 #' @param digits round to how many digits (default = 2)
-#' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
-#' @param returnStd Whether to return the standardized form of the model (default = FALSE)
-#' @param showRg = whether to show the genetic correlations (FALSE)
 #' @param std = Whether to show the standardized model (TRUE)
+#' @param showRg = whether to show the genetic correlations (FALSE)
 #' @param comparison Whether to run mxCompare on a comparison model (NULL)
 #' @param CIs Confidence intervals (F)
-#' @param show parameter used in all summary functions. currently ignored here.
+#' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
+#' @param report how to display the results ("html" will open in browser as table)
+#' @param returnStd Whether to return the standardized form of the model (default = FALSE)
 #' @param ... Optional additional parameters
 #' @return - optional [mxModel()]
 #' @family Twin Reporting Functions
@@ -1706,7 +1688,7 @@ umxSummary.MxModelCP <- umxSummaryCP
 #' \dontrun{
 #' umxSummaryIP(m1, digits = 2, file = "Figure3", showRg = FALSE, CIs = TRUE);
 #' }
-umxSummaryIP <- function(model, digits = 2, file = getOption("umx_auto_plot"), returnStd = FALSE, std = TRUE, showRg = FALSE, comparison = NULL, CIs = FALSE, show = NULL, ...) {
+umxSummaryIP <- function(model, digits = 2, file = getOption("umx_auto_plot"), std = TRUE, showRg = FALSE, comparison = NULL, CIs = FALSE, returnStd = FALSE, report = c("markdown", "html"), ...) {
 	umx_check_model(model, "MxModelIP", beenRun = TRUE, callingFn = "umxSummaryIP")
 	xmu_show_fit_or_comparison(model, comparison = comparison, digits = digits)
 
@@ -1743,9 +1725,9 @@ umxSummaryIP <- function(model, digits = 2, file = getOption("umx_auto_plot"), r
 	rowNames = sub("(_T)?1$", "", selDVs[1:nVar])
 	std_Estimates = data.frame(cbind(ai_std, ci_std, ei_std), row.names = rowNames, stringsAsFactors = FALSE);
 	message("## General IP path loadings")
-	x = sapply(FUN=seq_len, nFac)
+	x = sapply(FUN = seq_len, nFac)
 	names(std_Estimates) = c(paste0("ai", 1:nFac["a"]), paste0("ci", 1:nFac["c"]), paste0("ei", 1:nFac["e"]))
-	umx_print(std_Estimates, digits = digits, zero.print = ".")
+	umx_print(std_Estimates, digits = digits, zero.print = ".", report = report)
 
 	# Standard specific path coefficients ready to be stacked together
 	as_std = SD %*% as; # Standardized path coefficients (nVar specific factors matrices)
@@ -1764,8 +1746,10 @@ umxSummaryIP <- function(model, digits = 2, file = getOption("umx_auto_plot"), r
 		)
 	)
 	names(std_Specifics) = rowNames;
-	umx_print(round(std_Specifics, digits), digits = digits, zero.print = ".")
+	umx_print(round(std_Specifics, digits), digits = digits, zero.print = ".", report = report)
 
+	xmu_twin_print_means(model, digits = digits, report = report)
+	
 	if(showRg) {
 		# Pre & post multiply covariance matrix by inverse of standard deviations
 		NAmatrix <- matrix(NA, nVar, nVar);  
@@ -1775,7 +1759,7 @@ umxSummaryIP <- function(model, digits = 2, file = getOption("umx_auto_plot"), r
 		genetic_correlations = data.frame(cbind(rA, rC, rE), row.names = rowNames);
 		# Make a table
 		names(genetic_correlations) = paste0(rep(c("rA", "rC", "rE"), each = nVar), rep(1:nVar));
-		umx_print(genetic_correlations, digits = digits, zero.print = ".")
+		umx_print(genetic_correlations, digits = digits, zero.print = ".", report = report)
 	}
 	if(CIs){
 		message("Showing CIs in output not implemented yet. In the mean time, use summary(model) to view them.")
@@ -1962,45 +1946,49 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 	# | twinSat | <NA>          | 13 | 333.0781 | 149 | 35.07809 | NA       | NA     | NA   |
 	# | twinSat | betaSetToZero | 10 | 351.6486 | 152 | 47.64858 | 18.57049 | 3      | 0.01 |
 	tablePub = tableOut[, c("comparison", "ep", "diffLL"      , "diffdf"    , "p", "AIC", "base")]
-	# names(tablePub)   <- c("Model"     , "EP", "&Delta; -2LL", "&Delta; df", "p", "AIC", "Compare with Model")
-	names(tablePub)     <- c("Model"     , "EP", "\u2206 -2LL", "\u2206 df", "p", "AIC", "Compare with Model")
+	tablePub$deltaAIC = tablePub[, "AIC"] - tablePub[1, "AIC"]
+	# rearrange
+	tablePub = tablePub[,c("comparison", "ep", "diffLL", "diffdf", "p", "AIC", "deltaAIC", "base")]
+
+	# c("1: Comparison", "2: Base", "3: EP", "4: AIC", "5: &Delta; -2LL", "6: &Delta; df", "7: p")
 	# U+2206 = math delta
 	# Fix problem where base model has compare set to its own name, and name set to NA
 	nRows = dim(tablePub)[1]
 	for (i in 1:nRows) {
-		if(is.na(tablePub[i, "Model"])){
-			tablePub[i, "Model"] = tablePub[i, "Compare with Model"] 
-			tablePub[i, "Compare with Model"] = NA
+		if(is.na(tablePub[i, "comparison"])){
+			tablePub[i, "comparison"] = tablePub[i, "base"] 
+			tablePub[i, "base"] = NA
 		}
-		# TODO umxCompare: Could delete lines where model is compared to itself
 	}
 	tablePub[,"p"] = umx_APA_pval(tablePub[, "p"], min = (1/ 10^3), digits = digits, addComparison = NA)
-	# c("1: Comparison", "2: Base", "3: EP", "4: AIC", "5: &Delta; -2LL", "6: &Delta; df", "7: p")
 	if(report == "inline"){
 		n_rows = dim(tablePub)[1]
 		for (i in 1:n_rows) {
-			thisPValue = tableOut[i, 9]
+			thisPValue = tableOut[i,"p"]
 			if(!is.na(thisPValue) && !is.nan(thisPValue)){
-				if(tableOut[i, 9] < .05){
-					did_didnot = ". This caused a significant loss of fit "
+				if(tableOut[i, "p"] < .05){
+					this = ". This caused a significant loss of fit "
 				} else {
-					did_didnot = ". This did not lower fit significantly "
+					this = ". This did not lower fit significantly "
 				}
 				message(
-				"The hypothesis that ", tablePub[i,"Model"], 
-				" was tested by dropping ", tablePub[i,"Model"],
-				" from ", tablePub[i,"Compare with Model"], 
-				did_didnot, 
-				"(\u03C7\u00B2(", tablePub[i, 4], ") = ", round(tablePub[i, 3], 2), # \u03A7 = Chi \u00B2 = superscript 2
-				", p = ", tablePub[i,"p"], ": AIC = ", round(tablePub[i,"AIC"], digits), ")."
+				"The hypothesis that ", omxQuotes(tablePub[i,"comparison"]), 
+				" was tested by dropping ", tablePub[i,"comparison"],
+				" from ", omxQuotes(tablePub[i, "base"]), 
+				this, "(\u03C7\u00B2(", tablePub[i, "diffdf"], ") = ", round(tablePub[i, "diffLL"], 2), # \u03A7 = Chi \u00B2 = superscript 2
+				", p = ", tablePub[i,"p"], ": AIC = ", round(tablePub[i,"AIC"], digits), " change in AIC = ", round(tablePub[i,"deltaAIC"], digits), ")."
 				)
 			}
 		}
 	}
+
+	# rename for printing to console
+	names(tablePub) = c("Model", "EP", "\u0394 -2LL" , "\u0394 df" , "p", "AIC", "\u0394 AIC", "Compare with Model")
+	htmlNames       = c("Model", "EP", "&Delta; -2LL", "&Delta; df", "p", "AIC", "&Delta AIC", "Compare with Model")
 	
 	if(report == "html"){
 		tableHTML = tablePub
-		names(tableHTML) <- c("Model", "EP", "&Delta; -2LL", "&Delta; df", "p", "AIC", "Compare with Model")
+		names(tableHTML) = htmlNames
 		print(xtable::xtable(tableHTML), type = "HTML", file = file, sanitize.text.function = function(x){x})
 		# digitList         =  c(0       , 0   , 3             ,  3          , 3  ,  3    , 0)
 		# nsmallList        =  c(0       , 0   , 3             ,  3          , 3  ,  3    , 0)
@@ -2232,10 +2220,10 @@ plot.MxLISRELModel <- function(x = NA, std = FALSE, fixed = TRUE, means = TRUE, 
 #' plot(m1)
 #' plot(m1, std = TRUE, resid = "line", digits = 3, strip_zero = FALSE)
 #' 
-# ============================================================
-# = With a growth model, demonstrate splines= false to force =
-# = straight lines, and move "rank" of intercept object      =
-# ============================================================
+#' # ============================================================
+#' # = With a growth model, demonstrate splines= false to force =
+#' # = straight lines, and move "rank" of intercept object      =
+#' # ============================================================
 #' 
 #' m1 = umxRAM("grow", data = myGrowthMixtureData,
 #'		umxPath(var = manifests, free = TRUE), 
@@ -2412,38 +2400,31 @@ plot.MxRAMModel <- plot.MxModel
 #' @examples
 #' require(umx)
 #' data(twinData)
-#' selDVs = "bmi"
-#' mzData <- subset(twinData, zygosity == "MZFF")
-#' dzData <- subset(twinData, zygosity == "DZFF")
-#' m1 = umxACE("plotACEexample", selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
+#' mzData = subset(twinData, zygosity == "MZFF")
+#' dzData = subset(twinData, zygosity == "DZFF")
+#' m1 = umxACE("plotACE example", selDVs = "bmi", dzData = dzData, mzData = mzData, sep = "")
 #' plot(m1, std = FALSE) # don't standardize
 umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, ...) {
-	if(!class(x) == "MxModelACE"){
-		stop("The first parameter of umxPlotACE must be an ACE model, you gave me a ", class(x))
-	}
-	model = x # just to be clear that x is a model
-	if(std){
-		model = xmu_standardize_ACE(model)
-	}
-	out = "";
-	latents = c();
-	if(model$MZ$data$type == "raw"){
-		selDVs = names(model$MZ$data$observed)
-	}else{
-		selDVs = dimnames(model$MZ$data$observed)[[1]]
-	}
-	varCount = length(selDVs)/2;
-	parameterKeyList = omxGetParameters(model);
 	# TODO: umxPlotACE Replace label-parsing with code that walks across the known matrices...
-	# would obviate problems with arbitrary names.
-	# 1. Could add dimnames() to A, C, E?
+	# Obviates problems with arbitrary names.
+
+	model = x # just to be clear that x is a model
+	if(std){model = xmu_standardize_ACE(model)}
+
+	# selDVs = xmu_twin_get_var_names(model)
+	selDVs = xmu_twin_get_var_names(model)
+	nVar   = length(selDVs);
+	# selDVs = selDVs[1:(nVar)]
+
+	out     = "" ;
+	latents = c();
+	parameterKeyList = omxGetParameters(model);
 	
 	for(thisParam in names(parameterKeyList) ) {
 		value = parameterKeyList[thisParam]
 		if(class(value) == "numeric") {
 			value = round(value, digits)
 		}
-		# omxLocateParameters(model=model, labels=thisParam)
 
 		if (grepl("^[ace]_r[0-9]+c[0-9]+", thisParam)) { # a c e
 			from    = sub('([ace])_r([0-9]+)c([0-9]+)'           , '\\1\\3', thisParam, perl = TRUE);  # a c or e
@@ -2471,15 +2452,28 @@ umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, std = T
 	}
 
 	preOut = paste0(preOut, "\n\t# Manifests\n")
-	for(var in selDVs[1:varCount]) {
+	for(var in selDVs) {
 	   preOut = paste0(preOut, "\t", var, " [shape = square];\n")
 	}
 
-	rankVariables = paste("\t{rank = same; ", paste(selDVs[1:varCount], collapse = "; "), "};\n") # {rank = same; v1T1; v2T1;}
+	rankVariables = paste("\t{rank = same; ", paste(selDVs, collapse = "; "), "};\n") # {rank = same; v1T1; v2T1;}
 	# grep('a', latents, value=T)
 	rankA   = paste("\t{rank = min; ", paste(grep('a'   , latents, value=T), collapse="; "), "};\n") # {rank=min; a1; a2}
 	rankCE  = paste("\t{rank = max; ", paste(grep('[ce]', latents, value=T), collapse="; "), "};\n") # {rank=min; c1; e1}
-	digraph = paste0("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, rankVariables, rankA, rankCE, "\n}"); 
+	label = model$name
+	splines = "FALSE"
+	digraph = paste0(
+		"digraph G {\n\t",
+		'label="', label, '";\n\t',
+		"splines = \"", splines, "\";\n",
+		preOut,
+		out,
+		rankVariables,
+		rankA, 
+		rankCE, "\n}"
+	)
+
+	print("?umxPlotACE options: std, means, digits, strip_zero, file=, min=, max =")
 	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 } # end umxPlotACE
 
@@ -2510,6 +2504,7 @@ plot.MxModelACE <- umxPlotACE
 #' # BMI ?twinData from Australian twins. 
 #' # Cohort 1 Zygosity 1 == MZ females 3 == DZ females
 #' data(twinData)
+#' 
 #' # Pick the variables. We will use base names (i.e., "bmi") and set suffix.
 #' selDVs  = c("bmi")
 #' selCovs = c("ht")
@@ -2517,27 +2512,30 @@ plot.MxModelACE <- umxPlotACE
 #' # Just top few pairs so example runs quickly
 #' mzData = subset(twinData, zygosity == "MZFF", selVars)[1:100, ]
 #' dzData = subset(twinData, zygosity == "DZFF", selVars)[1:100, ]
-#' m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs, dzData = dzData, mzData = mzData, 
-#' 	 sep = "", autoRun = TRUE)
+#' m1 = umxACEcov(selDVs= selDVs, selCovs= selCovs, dzData= dzData, mzData= mzData, sep= "")
 #' plot(m1)
 #' plot(m1, std = FALSE) # don't standardize
 umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, ...) {
+	model = x # just to be clear that x is a model
+
 	if(!class(x) == "MxModelACEcov"){
 		stop("The first parameter of umxPlotACEcov must be an ACEcov model, you gave me a ", class(x))
 	}
-	model = x # just to be clear that x is a model
-	# relies on 'a' not having its dimnames stripped off...
+
+	if(std){model = umx_standardize(model)}
+
+	# Relies on 'a' not having its dimnames stripped off...
 	if(model$MZ$data$type == "raw"){
 		selDVs = dimnames(model$top$a)[[1]]
-		# selDVs = names(model$MZ$data$observed)
+		# selDVs = dimnames(model$MZ$data$observed)[[2]]
+		selDVs = sub("(_T)?[0-9]$", "", selDVs) # trim "_Tn" from end
 	}else{
 		stop("ACEcov has to have raw data...")
-		# selDVs = dimnames(model$MZ$data$observed)[[1]]
 	}
-	if(std){
-		model = xmu_standardize_ACEcov(model)
-	}
-	out = "";
+
+	nVar    = length(selDVs)/2;
+	selDVs  = selDVs[1:(nVar)]
+	out     = "" ;
 	latents = c();
 
 	varCount = length(selDVs)
@@ -2582,7 +2580,19 @@ umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std 
 	# grep('a', latents, value=T)
 	rankA   = paste("\t{rank = min; ", paste(grep('a'   , latents, value = T), collapse = "; "), "};\n") # {rank=min; a1; a2}
 	rankCE  = paste("\t{rank = max; ", paste(grep('[ce]', latents, value = T), collapse = "; "), "};\n") # {rank=min; c1; e1}
-	digraph = paste("digraph G {\n\tsplines = \"FALSE\";\n", preOut, out, rankVariables, rankA, rankCE, "\n}", sep="");
+	label = model$name
+	splines = "FALSE"
+	digraph = paste0(
+		"digraph G {\n\t",
+		'label="', label, '";\n\t',
+		"splines = \"", splines, "\";\n",
+		preOut,
+		out,
+		rankVariables,
+		rankA,
+		rankCE, "\n}", sep=""
+	)
+	print("?umxPlotACEcov options: std=, means=, digits=, strip_zero=, file=, min=, max =")
 	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 } # end umxPlotACEcov
 
@@ -2611,6 +2621,7 @@ plot.MxModelACEcov <- umxPlotACEcov
 #' @references - <https://tbates.github.io>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(twinData)
 #' twinData$age1 = twinData$age2 = twinData$age
@@ -2618,9 +2629,12 @@ plot.MxModelACEcov <- umxPlotACEcov
 #' dzData = subset(twinData, zygosity == "DZFF")
 #' m1= umxGxE(selDVs= "bmi", selDefs= "age", dzData= dzData, mzData= mzData, sep="", tryHard="yes")
 #' plot(m1)
+#' # Directly call the umx function
 #' umxPlotGxE(x = m1, xlab = "SES", separateGraphs = TRUE, location = "topleft")
+#' 
+#' }
 umxPlotGxE <- function(x, xlab = NA, location = "topleft", separateGraphs = FALSE, acergb = c("red", "green", "blue", "black"), ...) {
-	if(!class(x) == "MxModelGxE"){
+	if(!class(x)[[1]] == "MxModelGxE"){
 		stop("The first parameter of umxPlotGxE must be a GxE model, you gave me a ", class(x))
 	}
 	model = x # to remind us that x has to be a umxGxE model
@@ -2720,24 +2734,18 @@ plot.MxModelGxE <- umxPlotGxE
 #' plot(m1) # No need to remember a special name: plot works fine!
 #' }
 umxPlotCP <- function(x = NA, means = FALSE, std = TRUE, digits = 2, showFixed = TRUE, file = "name", format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, strip_zero = TRUE, ...) {
-	# New plot functions no longer dependent on labels. This means they need to know about the correct matrices to examine.
-	# 1. a_cp_matrix = A latent (and correlations among latents)
-	# 	* These go from a_cp n=row TO common n= row
-	# 	* Or for off diag, from a_cp n=col TO a_cp n= row
-	# 2. Same again for c_cp_matrix, e_cp_matrix
-	# 3. cp_loadings common factor loadings
-
+	# Upgraded from label-based to cell-based plot building
 	format = match.arg(format)
-	model = x # just to emphasise that x has to be a model 
+	model  = x # just to emphasise that x has to be a model 
 	umx_check_model(model, "MxModelCP", callingFn = "umxPlotCP")
 
 	if(std){ model = xmu_standardize_CP(model) }
 
-	facCount = dim(model$top$a_cp$labels)[[1]]
-	varCount = dim(model$top$as$values)[[1]]
-	selDVs   = dimnames(model$MZ$data$observed)[[2]]
-	selDVs   = selDVs[1:(varCount)]
-	selDVs   = sub("(_T)?[0-9]$", "", selDVs) # trim "_Tn" from end
+	nFac   = dim(model$top$a_cp$labels)[[1]]
+	nVar   = dim(model$top$as$values)[[1]]
+	selDVs = dimnames(model$MZ$data$observed)[[2]]
+	selDVs = selDVs[1:(nVar)]
+	selDVs = sub("(_T)?[0-9]$", "", selDVs) # trim "_Tn" from end
 
 	out = list(str = "", latents = c(), manifests = c())
 	# Process x_cp matrices
@@ -2771,13 +2779,23 @@ umxPlotCP <- function(x = NA, means = FALSE, std = TRUE, digits = 2, showFixed =
 		# from = "one"; target = selDVs[c]
 		out = xmu_dot_mat2dot(model$top$expMean, cells = "left", toLabel = selDVs, from = "rows", fromLabel = "one", fromType = "latent", showFixed = showFixed, p = out)
 	}
-	preOut  = xmu_dot_define_shapes(latents = out$latents, manifests = selDVs[1:varCount])
+	preOut  = xmu_dot_define_shapes(latents = out$latents, manifests = selDVs[1:nVar])
 	top     = xmu_dot_rank(out$latents, "^[ace]_cp", "min")
 	bottom  = xmu_dot_rank(out$latents, "^[ace]s[0-9]+$", "max")
-	digraph = paste0("digraph G {\nsplines=\"FALSE\";\n", preOut, top, bottom, out$str, "\n}");
-	if(format != "current"){
-		umx_set_plot_format(format)
-	}
+	
+	label = model$name
+	splines = "FALSE"
+	digraph = paste0(
+		"digraph G {\n\t",
+		'label="', label, '";\n\t',
+		"splines = \"", splines, "\";\n",
+		preOut, 
+		top, 
+		bottom, 
+		out$str, "\n}"
+	)
+	
+	if(format != "current"){ umx_set_plot_format(format) }
 	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 	# TODO umxPlotCP could tabulate thresholds?
 	# Process "_dev" (where are these?)
@@ -2814,29 +2832,35 @@ plot.MxModelCP <- umxPlotCP
 #' umxPlotIP(model, file = NA)
 #' }
 umxPlotIP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, strip_zero = TRUE, ...) {
+	# TODO umxPlotIP: convert to matrix-search (rather than label-dependent) path finding
+	# New plot functions no longer dependent on labels. This means they need to know about the correct matrices to examine.
+	# 1. a_cp_matrix = A latent (and correlations among latents)
+	# 	* These go from a_cp n=row TO common n= row
+	# 	* Or for off diag, from a_cp n=col TO a_cp n= row
+	# 2. Same again for c_cp_matrix, e_cp_matrix
+	# 3. cp_loadings common factor loadings
+
 	format = match.arg(format)
-	if(!class(x) == "MxModelIP"){
-		stop("The first parameter of umxPlotIP must be an IP model, you gave me a ", class(x))
-	}
+	model = x # just to emphasise that x has to be a model 
+	umx_check_model(model, "MxModelIP", callingFn = "umxPlotIP")
 	
-	model = x # to emphasise that x has to be an umxIP model
 	if(std){
 		model = xmu_standardize_IP(model)
 	}
 	# TODO Check I am handling nFac > 1 properly!!
-	varCount = dim(model$top$ai$values)[[1]]
+	nVar = dim(model$top$ai$values)[[1]]
 	selDVs   = dimnames(model$MZ$data$observed)[[2]]
-	selDVs   = selDVs[1:(varCount)]
+	selDVs   = selDVs[1:(nVar)]
+	selDVs   = sub("(_T)?[0-9]$", "", selDVs) # trim "_Tn" from end
+	
 	parameterKeyList = omxGetParameters(model, free = TRUE);
-	out = "";
 	cSpecifics = c();
 	latents = c()
-	
+	out = "";
 	for(thisParam in names(parameterKeyList) ) {
 		if( grepl("^[ace]i_r[0-9]", thisParam)) {
 			# top level a c e
 			# "ai_r1c1" note: c1 = factor1, r1 = variable 1
-			# devtools::document("~/bin/umx.twin"); devtools::install("~/bin/umx.twin");
 			grepStr = '^([ace]i)_r([0-9]+)c([0-9]+)'
 			from    = sub(grepStr, '\\1_\\3', thisParam, perl = TRUE);
 			targetindex = as.numeric(sub(grepStr, '\\2', thisParam, perl=T));
@@ -2884,16 +2908,25 @@ umxPlotIP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TR
 		}
 	}
 	preOut = paste0(preOut, "\n\t# Manifests\n")
-	for(n in c(1:varCount)) {
+	for(n in c(1:nVar)) {
 	   preOut = paste0(preOut, "\n", selDVs[n], " [shape=square];\n")
 	}
 
 	ranks = paste(cSpecifics, collapse = "; ");
 	ranks = paste0("{rank=sink; ", ranks, "}");
-	digraph = paste0("digraph G {\nsplines=\"FALSE\";\n", preOut, ranks, out, "\n}");
-	if(format != "current"){
-		umx_set_plot_format(format)
-	}
+
+	label = model$name
+	splines = "FALSE"
+	digraph = paste0(
+		"digraph G {\n\t",
+		'label="', label, '";\n\t',
+		"splines = \"", splines, "\";\n",
+		preOut,
+		ranks,
+		out, "\n}"
+	)
+
+	if(format != "current"){ umx_set_plot_format(format) }
 	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 }
 
@@ -2931,7 +2964,8 @@ plot.MxModelIP <- umxPlotIP
 #' 	umxPath("G", to = manifests),
 #' 	umxPath(var = manifests),
 #' 	umxPath(var = "G", fixedAt = 1)
-#' )#' umxMI(m1, full=FALSE)
+#' )
+#' # umxMI(m1, full=FALSE)
 umxMI <- function(model = NA, matrices = NA, full = TRUE, numInd = NA, typeToShow = "both", decreasing = TRUE) {
 	if(typeToShow != "both"){
 		message("Only showing both add and remove is supported so far")
@@ -3244,10 +3278,10 @@ umxComputeConditionals <- function(sigma, mu, current, onlyMean = FALSE) {
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
-#' m1 = umxRAM("One Factor", data = mxData(demoOneFactor, type = "raw"),
-#' 	umxPath(from = "G", to = manifests),
-#' 	umxPath(v.m. = manifests),
-#' 	umxPath(v1m0 = "G")
+#' m1 = umxRAM("OneFactor", data = demoOneFactor,
+#' 	umxPath(from = "G", to = manifests), # factor loadings
+#' 	umxPath(v.m. = manifests),           # residual variance
+#' 	umxPath(v1m0 = "G")                  # standardized latent
 #' )
 #' # Parameters with values below .1
 #' umxParameters(m1, "below", .1)
@@ -3255,16 +3289,13 @@ umxComputeConditionals <- function(sigma, mu, current, onlyMean = FALSE) {
 #' umxParameters(m1, "above", .5)
 #' # Parameters with values below .1 and containing "_to_" in their label
 #' umxParameters(m1, "below", .1, "_to_")
-umxParameters <- function(x, thresh = c("all", "above", "below", "NS", "sig"), b = NULL, pattern = ".*", std = FALSE, digits = 2) {
+umxParameters <- function(x, thresh = c("all", "above", "below", ">", "<", "NS", "sig"), b = NULL, pattern = ".*", std = FALSE, digits = 2) {
 	# TODO clarify when to use parameters vs. umxGetParameters
 	# TODO Add filtering by significance (based on SEs)
 	# TODO Offer a method to handle sub-models
 	# 	model$aSubmodel$matrices$aMatrix$labels
 	# 	model$MZ$matrices
 	
-	if(std){
-		stop("Sorry, std not implemented yet: Standardize the model and provide this or the summary as input.")
-	}
 	# x = cp4
 	if(class(thresh) == "numeric"){
 		stop("You might not have specified the parameter value (b) by name. e.g.:\n
@@ -3273,11 +3304,16 @@ or specify all arguments:\n
 	parameters(cp4, 'below', .1, '_cp_')
 		")
 	}
-	thresh <- match.arg(thresh)
+	thresh = match.arg(thresh)
 
 	if(!is.null(b) && (thresh == "all")){
 		message("Ignoring b (cutoff) and thresh = all. Set above or below to pick a beta to cut on.")
 	}
+
+	if(std){
+		x = umx_standardize(x)
+	}
+
 	if(class(x) != "summary.mxmodel"){
 		if(umx_has_been_run(x)){
 			x = summary(x)
@@ -3300,16 +3336,16 @@ or specify all arguments:\n
 	}
 	parList = unique(parList)
 	
-	if(thresh == "above"){
+	if(thresh %in%  c("above", ">") ){
 		filter = x$name %in% parList & abs(x$Estimate) > b
-	} else if(thresh == "below"){
+	} else if(thresh %in% c("below", "<")){
 		filter = x$name %in% parList & abs(x$Estimate) < b
 	} else if(thresh == "all"){
 		filter = x$name %in% parList
 	} else if(thresh == "NS"){
-		stop("NS and Sig not implemented yet: email maintainer('umx') to get this done.")
+		stop("NS not yet implemented in 'parameters' : email maintainer('umx') to get this done.")
 	} else if(thresh == "sig"){
-		stop("NS and Sig not implemented yet: email maintainer('umx') to get this done.")
+		stop("sig not yet implemented in 'parameters': email maintainer('umx') to get this done.")
 	}
 
 	if(sum(filter) == 0){
@@ -3542,7 +3578,7 @@ umxExpCov <- function(object, latents = FALSE, manifests = TRUE, digits = NULL, 
 #' @return - expected means
 #' @export
 #' @family Reporting functions
-#' @references - \url{https://openmx.ssri.psu.edu/thread/2598}
+#' @references - <https://openmx.ssri.psu.edu/thread/2598>
 #' @md
 #' @examples
 #' require(umx)
@@ -3627,8 +3663,7 @@ RMSEA <- function(x, ci.lower, ci.upper, digits) UseMethod("RMSEA", x)
 #' )
 #' RMSEA(m1)
 RMSEA.MxModel <- function(x, ci.lower = .05, ci.upper = .95, digits = 3) { 
-	sm <- summary(x)
-	RMSEA.summary.mxmodel(x= sm, ci.lower = ci.lower, ci.upper = ci.upper, digits = digits)
+	RMSEA.summary.mxmodel(x= summary(x), ci.lower = ci.lower, ci.upper = ci.upper, digits = digits)
 }
 
 #' RMSEA function for MxModels
@@ -3683,21 +3718,25 @@ RMSEA.summary.mxmodel <- function(x, ci.lower = .05, ci.upper = .95, digits = 3)
 #' set of p-values from tests of the same hypothesis in independent samples, 
 #' 
 #' @param pvalues A vector of p-values, e.g. c(.041, .183)
+#' @param ... More p-values if you want to offer them up one by one instead of wrapping in a vector for `pvalues`
 #' @return - A meta-analytic p-value
 #' @export
 #' @family Miscellaneous Stats Helpers
 #' @references - Fisher, R.A. (1925). *Statistical Methods for Research Workers*. Oliver and Boyd (Edinburgh). ISBN 0-05-002170-2.
 #' Fisher, R. A (1948). "Questions and answers #14". *The American Statistician*. **2**: 30–31. doi:10.2307/2681650. JSTOR 2681650.
-#' See also Stouffer's method for combining Z scores, which allow weighting.
-#' Stouffer, S. A. and Suchman, E. A. and DeVinney, L. C. and Star, S. A. and Williams, R. M. Jr. (1949) The American Soldier, Vol. 1 - Adjustment during Army Life. Princeton, Princeton #' University Press.
+#' See also Stouffer's method for combining Z scores, which allows weighting.
+#' Stouffer, S. A. and Suchman, E. A. and DeVinney, L. C. and Star, S. A. and Williams, R. M. Jr. (1949) The American Soldier, Vol. 1 - Adjustment during Army Life. Princeton, Princeton
+#' University Press.
 #' @md
 #' @examples
 #' FishersMethod(c(.041, .378))
-FishersMethod <- function(pvalues){
+FishersMethod <- function(pvalues, ...){
+	dot.items = list(...) # grab all the dot items: mxPaths, etc...
+	pvalues = c(pvalues, unlist(dot.items))
 	pchisq( -2 * sum(log(pvalues)), df= (2 * length(pvalues)), lower.tail = FALSE)
 }
 
-#' umx_fun
+#' Summarizing functions used in umx_aggregate and for umxAPA
 #'
 #' Miscellaneous functions that are handy in summary and other tasks where you might otherwise have
 #' to craft a custom nameless functions. e.g.
@@ -3785,9 +3824,8 @@ umx_fun_mean_sd = function(x, na.rm = TRUE, digits = 2){
 umx_aggregate <- function(formula = DV ~ condition, data = df, what = c("mean_sd", "n"), digits = 2, report = c("markdown", "html", "txt")) {
 	report = match.arg(report)
 	what = xmu_match.arg(what, c("mean_sd", "n"), check = FALSE)
-	# TODO Add more aggregating functions?
-	# 	output odds or odds ratios for binary?
 	# TODO: add summaryBy ability to handle more than var on the left hand side
+	# 	output odds or odds ratios for binary?
 	# doBy::summaryBy(Sex_T1 + Sex_T2 ~ zyg, data = twinData, FUN = function(x) { round(c(
 	# 	n    = length(x),
 	# 	mean = mean(x, na.rm = T),
@@ -3898,15 +3936,15 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA) {
 #' @description
 #' `umxAPA` creates summaries from a range of inputs. Use it for reporting `lm` models, effects, and summarizing data.
 #' 
-#' 1. Given an `lm`, `umxAPA` will return a formatted effect, including 95% CI 
-#' in square brackets, for one of the effects (specified by name in se). e.g.:
-#' `umxAPA(lm(mpg~wt, data=mtcars), "wt")` yields: \eqn{\beta} = -5.344 \[-6.486, -4.203\], p< 0.001
+#' 1. Given an [stats::lm()] model, `umxAPA` will return a formatted effect, including 95% CI 
+#' in square brackets e.g.: `umxAPA(lm(mpg~wt, data=mtcars), "wt")` yields: \eqn{\beta} = -5.344 \[-6.486, -4.203\], p< 0.001. here "wt" 
+#' restricts the output to just the named effect.
 #' 2. This also works for [t.test()], [stats::glm()], [cor.test()], and others as I come across them.
-#' 3. get a CI from obj=beta and se=se : `umxAPA(-0.30, .03) # \eqn{\beta} = -0.3 [-0.36, -0.24]`
-#' 4. Back out an SE from b and CI: `umxAPA(-0.030, c(-0.073, 0.013)) # \eqn{\beta} = -0.03, se =0.02`
-#' 5. Given only a number as obj, will be treated as a p-value as returned in APA format.
-#' 6. Given a dataframe, `umxAPA` will return a table of correlations, with
-#' the mean and SD of each variable as the last row. So, 
+#' 3. Get a CI from obj=beta and se=se : `umxAPA(-0.30, .03)` returns \eqn{\beta} = -0.3 \[-0.36, -0.24\]
+#' 4. Back out an SE from b and CI: `umxAPA(-0.030, c(-0.073, 0.013))` returns \eqn{\beta} = -0.03, se = 0.02
+#' 5. Given only a number as obj, will be treated as a p-value, and returned in APA format.
+#' 6. Given a dataframe, `umxAPA` will return a table of correlations with
+#' the mean and SD of each variable as the last row. e.g.:
 #' `umxAPA(mtcars[,c("cyl", "wt", "mpg", )]` yields a table of 
 #' correlations, means and SDs thus:
 #'   \tabular{lccc}{
@@ -3935,6 +3973,7 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA) {
 #' @param test If obj is a glm, which test to use to generate p-values options = "Chisq", "LRT", "Rao", "F", "Cp"
 #' @return - string
 #' @export
+#' @seealso [SE_from_p()]
 #' @family Reporting Functions
 #' @references - <https://github.com/tbates/umx>, <https://my.ilstu.edu/~jhkahn/apastats.html>
 #' @md
@@ -4169,15 +4208,15 @@ summaryAPA <- umxAPA
 #' 
 #' @param data The twin data.
 #' @param selVars Collection of variables to report on, e.g. c("wt", "ht").
-#' @param sep  The separator string that will turn a variable name into a twin variable name, e.g. "_T" for wt_T1 and wt_T2.
-#' @param zyg  The zygosity variable in the dataset, e.g. "zygosity".
+#' @param sep  The separator string that will turn a variable name into a twin variable name, default= "_T" for wt_T1 and wt_T2.
+#' @param zyg  The zygosity variable in the dataset, default = "zygosity".
 #' @param MZ Set level in zyg corresponding to MZ for two group case (defaults to using 5-group case).
 #' @param DZ Set level in zyg corresponding to DZ for two group case (defaults to using 5-group case).
-#' @param MZFF The level in zyg corresponding to MZ FF pairs: e.g., "MZFF".
-#' @param DZFF The level in zyg corresponding to DZ FF pairs: e.g., "DZFF".
-#' @param MZMM The level in zyg corresponding to MZ MM pairs: e.g., "MZMM".
-#' @param DZMM The level in zyg corresponding to DZ MM pairs: e.g., "DZMM".
-#' @param DZOS The level in zyg corresponding to DZ OS pairs: e.g., "DZOS".
+#' @param MZFF The level of zyg corresponding to MZ FF pairs: default= "MZFF".
+#' @param DZFF The level of zyg corresponding to DZ FF pairs: default= "DZFF".
+#' @param MZMM The level of zyg corresponding to MZ MM pairs: default= "MZMM".
+#' @param DZMM The level of zyg corresponding to DZ MM pairs: default= "DZMM".
+#' @param DZOS The level of zyg corresponding to DZ OS pairs: default= "DZOS".
 #' @param digits Rounding precision of the report (default 2).
 #' @param report What to return (default = 'markdown'). Use 'html' to open a web table.
 #' @return - formatted table, e.g. in markdown.
@@ -4191,7 +4230,7 @@ summaryAPA <- umxAPA
 #' umxSummarizeTwinData(twinData, sep = "", selVars = c("wt", "ht"))
 #' MZs = c("MZMM", "MZFF"); DZs = c("DZFF","DZMM", "DZOS")
 #' umxSummarizeTwinData(twinData, sep = "", selVars = c("wt", "ht"), MZ = MZs, DZ = DZs)
-umxSummarizeTwinData <- function(data = NULL, selVars = "wt", sep = "_T", zyg = "zygosity", MZ = NULL, DZ = NULL, MZFF= "MZFF", DZFF= "DZFF", MZMM= "MZMM", DZMM= "DZMM", DZOS= "DZOS", digits = 2, report = c("markdown", "html")) {
+umxSummarizeTwinData <- function(data = NULL, selVars = NULL, sep = "_T", zyg = "zygosity", MZ = NULL, DZ = NULL, MZFF= "MZFF", DZFF= "DZFF", MZMM= "MZMM", DZMM= "DZMM", DZOS= "DZOS", digits = 2, report = c("markdown", "html")) {
 	report = match.arg(report)
 	# TODO cope with two group case.
 	# data = twinData; selVars = c("wt", "ht"); zyg = "zygosity"; sep = ""; digits = 2

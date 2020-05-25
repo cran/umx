@@ -9,28 +9,34 @@ umxAlgebra(
   expression,
   dimnames = NA,
   ...,
-  fixed = FALSE,
   joinKey = as.character(NA),
   joinModel = as.character(NA),
-  verbose = 0L
+  verbose = 0L,
+  initial = matrix(as.numeric(NA), 1, 1),
+  recompute = c("always", "onDemand"),
+  fixed = "deprecated_use_recompute"
 )
 }
 \arguments{
-\item{name}{The name of the matrix (Default = NA). Note the different order compared to mxMatrix!}
+\item{name}{The name of the algebra (Default = NA). Note the different order compared to mxAlgebra!}
 
-\item{expression}{The algebra.}
+\item{expression}{The algebra}
 
-\item{dimnames}{= Dimnames}
+\item{dimnames}{Dimnames of the algebra}
 
 \item{...}{Other parameters}
-
-\item{fixed}{= See mxAlgebra documentation}
 
 \item{joinKey}{See mxAlgebra documentation}
 
 \item{joinModel}{See mxAlgebra documentation}
 
-\item{verbose}{Quiet of informative}
+\item{verbose}{Quiet or informative}
+
+\item{initial}{See mxAlgebra documentation}
+
+\item{recompute}{See mxAlgebra documentation}
+
+\item{fixed}{= See mxAlgebra documentation}
 }
 \value{
 \itemize{
@@ -52,10 +58,14 @@ class(x$formula) # "call"
 \item \code{\link[=umxMatrix]{umxMatrix()}}
 }
 
-Other Core Modeling Functions: \code{\link{umxMatrix}()},
-  \code{\link{umxModify}()}, \code{\link{umxPath}()},
-  \code{\link{umxRAM}()}, \code{\link{umxRun}()},
-  \code{\link{umxSummary}()},
-  \code{\link{umxSuperModel}()}, \code{\link{umx}}
+Other Core Modeling Functions: 
+\code{\link{umxMatrix}()},
+\code{\link{umxModify}()},
+\code{\link{umxPath}()},
+\code{\link{umxRAM}()},
+\code{\link{umxRun}()},
+\code{\link{umxSummary}()},
+\code{\link{umxSuperModel}()},
+\code{\link{umx}}
 }
 \concept{Core Modeling Functions}

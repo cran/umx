@@ -65,7 +65,7 @@ the univariate model incorporates the moderator in the means model, the bivariat
 the moderator as a first class variable, with its own ACE structure, shared pathways to the trait of interest,
 and the ability to moderate both specific and shared A, C, and E, influences on the trait of interest.
 
-\figure{GxEbiv.png}{}
+\figure{GxEbiv.png}
 
 Twin 1 and twin 2 A, C, and E latent traits are connected in the standard fashion, with the
 covariance of the T1 and T2 latent genetic traits set to .5 for DZ and 1.0 for MZ pairs.
@@ -108,14 +108,21 @@ power in G x E modelling of twin data. \emph{Behavior Genetics},
 \item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}}, \code{\link[=umxReduce]{umxReduce()}}
 }
 
-Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
-  \code{\link{umxACE_cov_fixed}()},
-  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
-  \code{\link{umxACE}()}, \code{\link{umxCP}()},
-  \code{\link{umxDoC}()}, \code{\link{umxGxE_window}()},
-  \code{\link{umxGxE}()}, \code{\link{umxIP}()},
-  \code{\link{umxRotate.MxModelCP}()},
-  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
-  \code{\link{umx}}
+Other Twin Modeling Functions: 
+\code{\link{plot.MxModelTwinMaker}()},
+\code{\link{power.ACE.test}()},
+\code{\link{umxACEcov}()},
+\code{\link{umxACEv}()},
+\code{\link{umxACE}()},
+\code{\link{umxCP}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxDoC}()},
+\code{\link{umxGxE_window}()},
+\code{\link{umxGxE}()},
+\code{\link{umxIP}()},
+\code{\link{umxRotate.MxModelCP}()},
+\code{\link{umxSexLim}()},
+\code{\link{umxSimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

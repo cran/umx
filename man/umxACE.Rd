@@ -22,7 +22,7 @@ umxACE(
   intervals = FALSE,
   tryHard = c("no", "yes", "ordinal", "search"),
   optimizer = NULL,
-  covMethod = c("fixed", "random"),
+  residualizeContinuousVars = FALSE,
   dzAr = 0.5,
   dzCr = 1,
   weightVar = NULL,
@@ -66,7 +66,7 @@ umxACE(
 
 \item{optimizer}{Optionally set the optimizer (default NULL does nothing).}
 
-\item{covMethod}{How to treat covariates: "fixed" (default) or "random".}
+\item{residualizeContinuousVars}{Not yet implemented.}
 
 \item{dzAr}{The DZ genetic correlation (defaults to .5, vary to examine assortative mating).}
 
@@ -124,6 +124,12 @@ read the "Matrices and Labels in ACE model" section in details below...
 and multiple examples.
 }
 \details{
+\strong{Covariates}
+umxACE handles covariates by modelling them in the means.
+On the plus side, there is no distributional assumption for this method. A downside of this approach is that all
+covariates must be non-NA, thus dropping any rows where one or more covariates are missing.
+This can waste data. See also \code{\link[=umx_residualize]{umx_residualize()}}).
+
 \strong{Data Input}
 The function flexibly accepts raw data, and also summary covariance data
 (in which case the user must also supple numbers of observations for the two input data sets).
@@ -175,29 +181,56 @@ could make them independent again with this script:
 of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs (Eaves et al. 1978, p267).
 }
 \examples{
+require(umx)
 # ============================
 # = How heritable is height? =
 # ============================
-require(umx)
+
+# 1. Height in metres has a tiny variance, and this makes optimising hard.
+#    We'll scale it by 10x to make the Optimizer's task easier.
 data(twinData) # ?twinData from Australian twins.
-# Pick the variables
-# 1. Height has a tiny variance, and this makes solution finding very hard.
-# We'll scale height up by 10x to make the Optimizer's task easier.
 twinData[, c("ht1", "ht2")] = twinData[, c("ht1", "ht2")] * 10
 
-# 2. umxACE picks the variables it needs from the data.
+# 2. Make mz & dz data.frames (no need to select variables: umx will do this)
 mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
 
-# 3. umxACE can figure out variable names using sep: 
+\dontshow{
+mzData[1:80, ]
+dzData[1:80, ]
+}
+	
+# 3. Built & run the model, controlling for age in the means model
+m1 = umxACE(selDVs = "ht", selCovs = "age", sep = "", dzData = dzData, mzData = mzData)
+
+# sidebar: umxACE figures out variable names using sep: 
 #    e.g. selVars = "wt" + sep= "_T" -> "wt_T1" "wt_T2"
-m1 = umxACE(selDVs = "ht", sep = "", dzData = dzData, mzData = mzData)
 
-# tip: with report = "html", umxSummary can print the table to your browser!
 umxSummary(m1, std = FALSE) # un-standardized
-# tip: plot gives a figure of the model and parameters
-# plot(m1)
 
+# tip 1: set report = "html" and umxSummary prints the table to your browser!
+# tip 2: plot works for umx: Get a figure of the model and parameters
+# plot(m1) # Also, look at the options for ?plot.MxModel.
+
+\donttest{
+# ============================
+# = Model, with 2 covariates =
+# ============================
+
+# Create another covariate: cohort
+twinData$cohort1 = twinData$cohort2 =twinData$part
+mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
+dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
+
+# 1. def var approach
+m2 = umxACE(selDVs = "ht", selCovs = c("age", "cohort"), sep = "", dzData = dzData, mzData = mzData)
+
+# 2. Residualized approach: remove height variance accounted-for by age.
+FFdata = twinData[twinData$zygosity \%in\% c("MZFF", "DZFF"), ]
+FFdata = umx_residualize("ht", "age", suffixes = 1:2, data = FFdata)
+mzData = FFdata[FFdata$zygosity \%in\% "MZFF", ]
+dzData = FFdata[FFdata$zygosity \%in\% "DZFF", ]
+m3 = umxACE(selDVs = "ht", sep = "", dzData = dzData, mzData = mzData)
 
 # =============================================================
 # = ADE: Evidence for dominance ? (DZ correlation set to .25) =
@@ -208,12 +241,17 @@ umxSummary(m2, comparison = m1)
 # nb: Although summary is smart enough to print d, the underlying 
 #     matrices are still called a, c & e.
 
+# tip: try umxReduce(m1) to automatically build and compare ACE, ADE, AE, CE
+# including conditional probabilities!
+
 # ===================================================
 # = WLS example using diagonal weight least squares =
 # ===================================================
+
 m3 = umxACE(selDVs = "ht", sep = "", dzData = dzData, mzData = mzData, 
 	type = "DWLS", allContinuousMethod='marginals'
 )
+
 
 # ==============================
 # = Univariate model of weight =
@@ -222,16 +260,23 @@ m3 = umxACE(selDVs = "ht", sep = "", dzData = dzData, mzData = mzData,
 # Things to note:
 
 # 1. Weight has a large variance, and this makes solution finding very hard.
-# Here, we scale wt to make the Optimizer's task easier.
+# Here, we residualize the data for age, which also scales weight and height.
 
-twinData = umx_scale_wide_twin_data(data = twinData, varsToScale = c("wt"), sep = "")
-mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
-dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
+data(twinData)
+tmp = umx_residualize(c("wt", "ht"), cov = "age", suffixes= c(1, 2), data = twinData)
+mzData = tmp[tmp$zygosity \%in\% "MZFF", ]
+dzData = tmp[tmp$zygosity \%in\% "DZFF", ]
+
+# tip: You might also want transform variables
+# tmp = twinData$wt1[!is.na(twinData$wt1)]
+# car::powerTransform(tmp, family="bcPower"); hist(tmp^-0.6848438)
+# twinData$wt1 = twinData$wt1^-0.6848438
+# twinData$wt2 = twinData$wt2^-0.6848438
 
 # 4. note: the default boundDiag = 0 lower-bounds a, c, and e at 0.
 #    Prevents mirror-solutions. If not desired: set boundDiag = NULL.
 
-m1 = umxACE(selDVs = "wt", dzData = dzData, mzData = mzData, sep = "", boundDiag = NULL)
+m2 = umxACE(selDVs = "wt", dzData = dzData, mzData = mzData, sep = "", boundDiag = NULL)
 
 # A short cut (which is even shorter for "_T" twin data with "MZ"/"DZ" data in zygosity column is:
 m1 = umxACE(selDVs = "wt", sep = "", data = twinData,
@@ -240,12 +285,17 @@ m1 = umxACE(selDVs = "wt", sep = "", data = twinData,
 # |:--|----:|:--|----:|
 # |wt | 0.93|.  | 0.38|
 
-# MODEL MODIFICATION
+# tip: umx_make_twin_data_nice() will make data into this nice format for you!
+
+# ======================
+# = MODEL MODIFICATION =
+# ======================
 # We can modify this model, e.g. test shared environment. 
 # Set comparison to modify, and show effect in one step.
 
 m2 = umxModify(m1, update = "c_r1c1", name = "no_C", comparison = TRUE)
-# nb: You can see names of free parameters with parameters(m2)
+#*tip* call umxModify(m1) with no parameters, and it will print the labels available to fix!
+# nb: You can see parameters of any model with parameters(m1)
 
 # =========================================================
 # = Well done! Now you can make modify twin models in umx =
@@ -259,8 +309,6 @@ data(twinData)
 twinData = umx_scale_wide_twin_data(data = twinData, varsToScale = c("ht", "wt"), sep = "")
 mzData = twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"),]
 dzData = twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
-mzData = mzData[1:80,] # quicker run to keep CRAN happy
-dzData = dzData[1:80,]
 m1 = umxACE(selDVs = c("ht", "wt"), sep = '', dzData = dzData, mzData = mzData)
 umxSummary(m1)
 
@@ -280,12 +328,13 @@ ordDVs = c("obese1", "obese2")
 twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
-mzData = mzData[1:80, ] # Just top 80 pairs to run fast
-dzData = dzData[1:80, ]
 str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
 
-# Data-prep done - here's the model and summary!:
+# Data-prep done - here's the model and summary!
 m1 = umxACE(selDVs = "obese", dzData = dzData, mzData = mzData, sep = '')
+
+# And controlling age (otherwise manifests appearance as latent C)
+m1 = umxACE(selDVs = "obese", selCov= "age", dzData = dzData, mzData = mzData, sep = '')
 # umxSummary(m1)
 
 # ============================================
@@ -307,6 +356,9 @@ mzData = mzData[1:80,] # just top 80 so example runs in a couple of secs
 dzData = dzData[1:80,]
 m1 = umxACE(selDVs= c("wt","obese"), dzData= dzData, mzData= mzData, sep='')
 
+# And controlling age
+m1 = umxACE(selDVs = c("wt","obese"), selCov= "age", dzData = dzData, mzData = mzData, sep = '')
+
 # =======================================
 # = Mixed continuous and binary example =
 # =======================================
@@ -325,10 +377,8 @@ twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 selDVs = c("wt", "obese")
 mzData = twinData[twinData$zygosity \%in\% "MZFF",]
 dzData = twinData[twinData$zygosity \%in\% "DZFF",]
-\dontrun{
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
-}
 
 # ===================================
 # Example with covariance data only =
@@ -343,6 +393,7 @@ dz = cov(twinData[twinData$zygosity \%in\%  "DZFF", selDVs], use = "complete")
 m1 = umxACE(selDVs=selDVs, dzData=dz, mzData=mz, numObsDZ=569, numObsMZ=351)
 umxSummary(m1)
 plot(m1)
+}
 
 }
 \references{
@@ -356,14 +407,21 @@ to the analysis of human behaviour. \emph{Heredity}, \strong{41}, 249-320. \url{
 \item \code{\link[=umxPlotACE]{umxPlotACE()}}, \code{\link[=umxSummaryACE]{umxSummaryACE()}}, \code{\link[=umxModify]{umxModify()}}
 }
 
-Other Twin Modeling Functions: \code{\link{power.ACE.test}()},
-  \code{\link{umxACE_cov_fixed}()},
-  \code{\link{umxACEcov}()}, \code{\link{umxACEv}()},
-  \code{\link{umxCP}()}, \code{\link{umxDoC}()},
-  \code{\link{umxGxE_window}()}, \code{\link{umxGxEbiv}()},
-  \code{\link{umxGxE}()}, \code{\link{umxIP}()},
-  \code{\link{umxRotate.MxModelCP}()},
-  \code{\link{umxSexLim}()}, \code{\link{umxSimplex}()},
-  \code{\link{umx}}
+Other Twin Modeling Functions: 
+\code{\link{plot.MxModelTwinMaker}()},
+\code{\link{power.ACE.test}()},
+\code{\link{umxACEcov}()},
+\code{\link{umxACEv}()},
+\code{\link{umxCP}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxDoC}()},
+\code{\link{umxGxE_window}()},
+\code{\link{umxGxEbiv}()},
+\code{\link{umxGxE}()},
+\code{\link{umxIP}()},
+\code{\link{umxRotate.MxModelCP}()},
+\code{\link{umxSexLim}()},
+\code{\link{umxSimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

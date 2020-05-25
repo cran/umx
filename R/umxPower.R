@@ -23,7 +23,7 @@
 #'
 #' @param AA Additive genetic variance (Default .5)
 #' @param CC Shared environment variance (Default 0)
-#' @param EE Unique environment variance. Leave NULL to compute an amount summing to 1
+#' @param EE Unique environment variance. Leave NULL (default) to compute an amount summing to 1
 #' @param update Component to drop (Default "a", i.e., drop a)
 #' @param n If provided, solve at the given n (Default NULL)
 #' @param MZ_DZ_ratio MZ pairs per DZ pair (Default 1 = equal numbers.)
@@ -32,14 +32,14 @@
 #' @param value Value to set dropped path to (Default 0)
 #' @param search Whether to return a search across power or just a point estimate (Default FALSE = point)
 #' @param method How to estimate power: Default =  use non-centrality parameter ("ncp"). Alternative is "empirical"
-#' @param tryHard Whether to tryHard to find a solution (default = "no", alternatives are "yes"...)
+#' @param tryHard Whether to tryHard to find a solution (default = "yes", alternatives are "no"...)
+#' @param digits Rounding for reporting parameters (default 2)
 #' @param optimizer If set, will switch the optimizer.
 #' @param nSim Total number of pairs to simulate in the models (default = 4000)
-#' @return [OpenMx::mxPower()] or [OpenMx::mxPowerSearch()] object
+#' @return [OpenMx::mxPower()] object
 #' @family Twin Modeling Functions
 #' @seealso - [OpenMx::mxPower()]
-#' @references -
-#' * Visscher, P.M., Gordon, S., Neale, M.C. (2008). Power of the classical twin design
+#' @references * Visscher, P.M., Gordon, S., Neale, M.C. (2008). Power of the classical twin design
 #' revisited: II detection of common environmental variance. *Twin Res Hum Genet*, **11**: 48-54.
 #' doi: [10.1375/twin.11.1.48](https://doi.org/10.1375/twin.11.1.48)
 #' * Button, K. S., Ioannidis, J. P., Mokrysz, C., Nosek, B. A., Flint, J., Robinson, E. S., and Munafo, M. R. (2013).
@@ -55,6 +55,7 @@
 #' power.ACE.test(AA = .5, CC = 0, update = "a") 
 #' # Suggests n = 84 MZ and 94 DZ pairs.
 #'
+#' \dontrun{
 #' # ================================
 #' # = Show power across range of N =
 #' # ================================
@@ -73,12 +74,11 @@
 #' # 102 of each of MZ and DZ pairs for 80% power.
 #' power.ACE.test(AA= .5, CC= .3, update = "c")
 #'
-#' # ========================================
+#' # ==========================================
 #' # = Set 'a' to a fixed, but non-zero value =
-#' # ========================================
+#' # ==========================================
 #' 
 #' power.ACE.test(update= "a", value= sqrt(.2), AA= .5, CC= 0)
-#' # TODO get power.ACE.test to print the value of A in the null model.
 #'
 #' # ========================================
 #' # = Drop More than one parameter (A & C) =
@@ -109,7 +109,6 @@
 #' power.ACE.test(MZ_DZ_ratio= 2/1, update= "a", AA= .3, CC= 0, method="ncp", tryHard="yes")
 #' power.ACE.test(MZ_DZ_ratio= 1/2, update= "a", AA= .3, CC= 0, method="ncp", tryHard="yes")
 #'
-#' \dontrun{
 #' 
 #' # =====================================
 #' # = Compare ncp and empirical methods =
@@ -137,7 +136,7 @@
 #'
 #' }
 #'
-power.ACE.test <- function(AA= .5, CC= 0, EE= NULL, update = c("a", "c", "a_after_dropping_c"), value = 0, n = NULL, MZ_DZ_ratio = 1, sig.level = 0.05, power = .8, method = c("ncp", "empirical"), search = FALSE, tryHard = c("yes", "no", "ordinal", "search"), optimizer = NULL, nSim=4000){
+power.ACE.test <- function(AA= .5, CC= 0, EE= NULL, update = c("a", "c", "a_after_dropping_c"), value = 0, n = NULL, MZ_DZ_ratio = 1, sig.level = 0.05, power = .8, method = c("ncp", "empirical"), search = FALSE, tryHard = c("yes", "no", "ordinal", "search"), digits = 2, optimizer = NULL, nSim=4000){
 	# # TODO why not equivalent to this?
 	# # https://genepi.qimr.edu.au//general/TwinPowerCalculator/twinpower.cgi
 	#
@@ -149,7 +148,6 @@ power.ACE.test <- function(AA= .5, CC= 0, EE= NULL, update = c("a", "c", "a_afte
 	#         return(0)
 	#     }
 	# }
-	message("This is beta code: I likely will alter the interface!")	
 	method  = match.arg(method)
 	tryHard = match.arg(tryHard)
 	update  = match.arg(update)
@@ -183,11 +181,14 @@ power.ACE.test <- function(AA= .5, CC= 0, EE= NULL, update = c("a", "c", "a_afte
 	# update = c("a", "c", "a_after_dropping_c")
 	if(update == "a"){
 		update = "a_r1c1"
+		paramSize = AA
 	} else if(update == "c"){
 		update = "c_r1c1"
+		paramSize = CC
 	} else if(update == "a_after_dropping_c"){
 		trueModel = umxModify(trueModel, update="c_r1c1", value = value, autoRun = FALSE)
 		update = "a_r1c1"
+		paramSize = AA
 	}
 	# run the true Model
 	trueModel = xmu_safe_run_summary(trueModel, summary = FALSE, std = TRUE, tryHard = tryHard, comparison= FALSE)
@@ -208,10 +209,13 @@ power.ACE.test <- function(AA= .5, CC= 0, EE= NULL, update = c("a", "c", "a_afte
 		nFound = attributes(tmp)$detail$n
 		pairsUsed = paste0(round(nFound * pMZ), " MZ and ",round(nFound * (1 - pMZ)), " DZ pairs")
 		if(!is.null(n)){
-			paramSize = attributes(tmp)$detail$parameterDiff
-			message(paste0("With ", pairsUsed, ", you have ", power * 100, "% power to detect a parameter of ", round(paramSize, 3)))
+			empiricalPower = attributes(tmp)$detail$power
+			update = "a_r1c1"
+			paramSize = AA
+			
+			message(paste0("With ", pairsUsed, ", you have ", round(empiricalPower * 100, digits), "% power to detect an ", update, " (variance) parameter of ", round(paramSize, 3)))
 		} else {
-			message(paste0("For ", power * 100, "% power, you need ", pairsUsed))
+			message(paste0("For ", round(power * 100, digits), "% power to detect ", omxQuotes(update), " of size ", paramSize, ", you need ", pairsUsed))
 		}
 	}
 	return(tmp)

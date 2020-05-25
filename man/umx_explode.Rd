@@ -29,10 +29,15 @@ umx_explode(" ", "cats and dogs") # [1] "cats" "and"  "dogs"
 }
 }
 \seealso{
-Other String Functions: \code{\link{umx_explode_twin_names}()},
-  \code{\link{umx_grep}()}, \code{\link{umx_names}()},
-  \code{\link{umx_object_as_str}()},
-  \code{\link{umx_paste_names}()}, \code{\link{umx_rot}()},
-  \code{\link{umx_trim}()}, \code{\link{umx}}
+Other String Functions: 
+\code{\link{umx_explode_twin_names}()},
+\code{\link{umx_grep}()},
+\code{\link{umx_names}()},
+\code{\link{umx_paste_names}()},
+\code{\link{umx_rot}()},
+\code{\link{umx_str_chars}()},
+\code{\link{umx_str_from_object}()},
+\code{\link{umx_trim}()},
+\code{\link{umx}}
 }
 \concept{String Functions}

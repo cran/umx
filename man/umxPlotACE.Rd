@@ -41,10 +41,9 @@ plot method for \code{\link[=umxACE]{umxACE()}} models. Make a graphical display
 \examples{
 require(umx)
 data(twinData)
-selDVs = "bmi"
-mzData <- subset(twinData, zygosity == "MZFF")
-dzData <- subset(twinData, zygosity == "DZFF")
-m1 = umxACE("plotACEexample", selDVs = selDVs, dzData = dzData, mzData = mzData, sep = "")
+mzData = subset(twinData, zygosity == "MZFF")
+dzData = subset(twinData, zygosity == "DZFF")
+m1 = umxACE("plotACE example", selDVs = "bmi", dzData = dzData, mzData = mzData, sep = "")
 plot(m1, std = FALSE) # don't standardize
 }
 \references{
@@ -61,13 +60,17 @@ plot(m1, std = FALSE) # don't standardize
 \item \code{\link[=umxACE]{umxACE()}}
 }
 
-Other Plotting functions: \code{\link{plot.MxLISRELModel}()},
-  \code{\link{plot.MxModel}()},
-  \code{\link{umxPlotACEcov}()},
-  \code{\link{umxPlotACEv}()}, \code{\link{umxPlotCP}()},
-  \code{\link{umxPlotGxEbiv}()},
-  \code{\link{umxPlotGxE}()}, \code{\link{umxPlotIP}()},
-  \code{\link{umxPlotSexLim}()},
-  \code{\link{umxPlotSimplex}()}, \code{\link{umx}}
+Other Plotting functions: 
+\code{\link{plot.MxLISRELModel}()},
+\code{\link{plot.MxModel}()},
+\code{\link{umxPlotACEcov}()},
+\code{\link{umxPlotACEv}()},
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotGxEbiv}()},
+\code{\link{umxPlotGxE}()},
+\code{\link{umxPlotIP}()},
+\code{\link{umxPlotSexLim}()},
+\code{\link{umxPlotSimplex}()},
+\code{\link{umx}}
 }
 \concept{Plotting functions}

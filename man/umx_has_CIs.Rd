@@ -35,9 +35,12 @@ umx_has_CIs(m1, check = "intervals") # TRUE intervals set
 umx_has_CIs(m1, check = "output")  # FALSE not yet run
 m1 = mxRun(m1)
 umx_has_CIs(m1, check = "output")  # Still FALSE: Set and Run
+\dontrun{
 m1 = mxRun(m1, intervals = TRUE)
 umx_has_CIs(m1, check = "output")  # TRUE: Set, and Run with intervals = T
 umxSummary(m1)
+}
+
 }
 \references{
 \itemize{
@@ -45,18 +48,19 @@ umxSummary(m1)
 }
 }
 \seealso{
-Other Test: \code{\link{umx_check_OS}()},
-  \code{\link{umx_check_model}()},
-  \code{\link{umx_check_names}()},
-  \code{\link{umx_check_parallel}()},
-  \code{\link{umx_check}()},
-  \code{\link{umx_has_been_run}()},
-  \code{\link{umx_has_means}()},
-  \code{\link{umx_has_square_brackets}()},
-  \code{\link{umx_is_MxData}()},
-  \code{\link{umx_is_MxMatrix}()},
-  \code{\link{umx_is_MxModel}()},
-  \code{\link{umx_is_RAM}()}, \code{\link{umx_is_cov}()},
-  \code{\link{umx_is_ordered}()}
+Other Test: 
+\code{\link{umx_check_OS}()},
+\code{\link{umx_check_model}()},
+\code{\link{umx_check_names}()},
+\code{\link{umx_check_parallel}()},
+\code{\link{umx_check}()},
+\code{\link{umx_has_been_run}()},
+\code{\link{umx_has_means}()},
+\code{\link{umx_has_square_brackets}()},
+\code{\link{umx_is_MxData}()},
+\code{\link{umx_is_MxMatrix}()},
+\code{\link{umx_is_MxModel}()},
+\code{\link{umx_is_RAM}()},
+\code{\link{umx_is_cov}()}
 }
 \concept{Test}

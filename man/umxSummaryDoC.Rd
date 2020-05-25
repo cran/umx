@@ -8,27 +8,23 @@
 umxSummaryDoC(
   model,
   digits = 2,
-  file = getOption("umx_auto_plot"),
   comparison = NULL,
   std = TRUE,
   showRg = FALSE,
   CIs = TRUE,
   report = c("markdown", "html"),
+  file = getOption("umx_auto_plot"),
   returnStd = FALSE,
-  extended = FALSE,
   zero.print = ".",
   ...
 )
 }
 \arguments{
-\item{model}{an \code{\link[=mxModel]{mxModel()}} to summarize.}
+\item{model}{a fitted \code{\link[=umxDoC]{umxDoC()}} model to summarize.}
 
 \item{digits}{round to how many digits (default = 2).}
 
-\item{file}{The name of the dot file to write: "name" = use the name of the model.
-Defaults to NA = do not create plot output.}
-
-\item{comparison}{you can run mxCompare on a comparison model (NULL).}
+\item{comparison}{Run mxCompare on a comparison model (default NULL)}
 
 \item{std}{Whether to standardize the output (default = TRUE).}
 
@@ -36,11 +32,12 @@ Defaults to NA = do not create plot output.}
 
 \item{CIs}{Whether to show Confidence intervals if they exist (TRUE).}
 
-\item{report}{If "html", then open an html table of the results.}
+\item{report}{Print tables to the console (as 'markdown'), or open in browser ('html')}
+
+\item{file}{The name of the dot file to write: "name" = use the name of the model.
+Defaults to NA = do not create plot output.}
 
 \item{returnStd}{Whether to return the standardized form of the model (default = FALSE).}
-
-\item{extended}{how much to report (FALSE).}
 
 \item{zero.print}{How to show zeros (".")}
 
@@ -60,31 +57,58 @@ drawing the tables to a web browser where they may readily be copied into non-ma
 See documentation for other umx models here: \code{\link[=umxSummary]{umxSummary()}}.
 }
 \examples{
-require(umx)
-data(twinData)
-}
-\references{
-\itemize{
-\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
+\dontrun{
+# ================
+# = 1. Load Data =
+# ================
+umx_set_auto_plot(FALSE) # turn off autoplotting for CRAN
+data(docData)
+mzData = subset(docData, zygosity \%in\% c("MZFF", "MZMM"))
+dzData = subset(docData, zygosity \%in\% c("DZFF", "DZMM"))
+
+# =======================================
+# = 2. Define manifests for var 1 and 2 =
+# =======================================
+var1 = paste0("varA", 1:3)
+var2 = paste0("varB", 1:3)
+
+# =======================================================
+# = 2. Make the non-causal (Cholesky) and causal models =
+# =======================================================
+Chol= umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= FALSE)
+DoC = umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= TRUE)
+
+# ================================================
+# = Make the directional models by modifying DoC =
+# ================================================
+A2B = umxModify(DoC, "a2b", free = TRUE, name = "A2B")
+A2B = umxModify(DoC, "a2b", free = TRUE, name = "A2B", comp=TRUE)
+B2A = umxModify(DoC, "b2a", free = TRUE, name = "B2A", comp=TRUE)
+umxCompare(B2A, A2B)
+
 }
 }
 \seealso{
 \itemize{
-\item \code{\link[=umxDoC]{umxDoC()}}, \code{\link[=plot.MxModelDoC]{plot.MxModelDoC()}}, \code{\link[=umxModify]{umxModify()}}
+\item \code{\link[=umxDoC]{umxDoC()}}, \code{\link[=plot.MxModelDoC]{plot.MxModelDoC()}}, \code{\link[=umxModify]{umxModify()}}, \code{\link[=umxCP]{umxCP()}}, \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, and ACE models.
 }
 
-Other Twin Reporting Functions: \code{\link{umxPlotCP}()},
-  \code{\link{umxPlotDoC}()}, \code{\link{umxReduceACE}()},
-  \code{\link{umxReduceGxE}()}, \code{\link{umxReduce}()},
-  \code{\link{umxSummarizeTwinData}()},
-  \code{\link{umxSummaryACEcov}()},
-  \code{\link{umxSummaryACEv}()},
-  \code{\link{umxSummaryACE}()},
-  \code{\link{umxSummaryCP}()},
-  \code{\link{umxSummaryGxEbiv}()},
-  \code{\link{umxSummaryGxE}()},
-  \code{\link{umxSummaryIP}()},
-  \code{\link{umxSummarySexLim}()},
-  \code{\link{umxSummarySimplex}()}, \code{\link{umx}}
+Other Twin Reporting Functions: 
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotDoC}()},
+\code{\link{umxReduceACE}()},
+\code{\link{umxReduceGxE}()},
+\code{\link{umxReduce}()},
+\code{\link{umxSummarizeTwinData}()},
+\code{\link{umxSummaryACEcov}()},
+\code{\link{umxSummaryACEv}()},
+\code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryCP}()},
+\code{\link{umxSummaryGxEbiv}()},
+\code{\link{umxSummaryGxE}()},
+\code{\link{umxSummaryIP}()},
+\code{\link{umxSummarySexLim}()},
+\code{\link{umxSummarySimplex}()},
+\code{\link{umx}}
 }
 \concept{Twin Reporting Functions}
