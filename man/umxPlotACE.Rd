@@ -12,6 +12,7 @@ umxPlotACE(
   means = FALSE,
   std = TRUE,
   strip_zero = TRUE,
+  showFixed = FALSE,
   ...
 )
 }
@@ -27,6 +28,8 @@ umxPlotACE(
 \item{std}{Whether to standardize the model (default is TRUE)}
 
 \item{strip_zero}{Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)}
+
+\item{showFixed}{Whether too draw fixed parameters.}
 
 \item{...}{Additional (optional) parameters}
 }
@@ -48,7 +51,7 @@ plot(m1, std = FALSE) # don't standardize
 }
 \references{
 \itemize{
-\item \url{https://www.github.com/tbates/umx}
+\item \url{https://github.com/tbates/umx}
 }
 }
 \seealso{

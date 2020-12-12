@@ -11,6 +11,7 @@ umxSummaryGxE(
   xlab = NA,
   location = "topleft",
   separateGraphs = FALSE,
+  gg = TRUE,
   file = getOption("umx_auto_plot"),
   returnStd = NULL,
   std = NULL,
@@ -31,6 +32,8 @@ umxSummaryGxE(
 \item{location}{default = "topleft"}
 
 \item{separateGraphs}{If TRUE, both std and raw plots in one figure (default FALSE)}
+
+\item{gg}{Whether to use ggplot to create the graphs (default TRUE)}
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
@@ -76,7 +79,7 @@ dzData  = subset(twinData, zygosity == "DZMM", selVars)
 mzData = mzData[!is.na(mzData[selDefs[1]]) & !is.na(mzData[selDefs[2]]),]
 dzData = dzData[!is.na(dzData[selDefs[1]]) & !is.na(dzData[selDefs[2]]),]
 \dontrun{
-m1 = umxGxE(selDVs = selDVs, selDefs = selDefs, dzData = dzData, mzData = mzData)
+m1 = umxGxE(selDVs = "bmi", selDefs = "age", sep="", dzData = dzData, mzData = mzData)
 # Plot Moderation
 umxSummaryGxE(m1)
 umxSummaryGxE(m1, location = "topright")
@@ -95,12 +98,27 @@ umxSummaryGxE(m1, separateGraphs = FALSE)
 
 [umxSummary)]: R:umxSummary)
 
-Other Twin Reporting Functions: 
+Other Twin Modeling Functions: 
+\code{\link{plot.MxModelTwinMaker}()},
+\code{\link{power.ACE.test}()},
+\code{\link{umxACEcov}()},
+\code{\link{umxACEv}()},
+\code{\link{umxACE}()},
+\code{\link{umxCP}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxDoC}()},
+\code{\link{umxGxE_window}()},
+\code{\link{umxGxEbiv}()},
+\code{\link{umxGxE}()},
+\code{\link{umxIP}()},
 \code{\link{umxPlotCP}()},
 \code{\link{umxPlotDoC}()},
 \code{\link{umxReduceACE}()},
 \code{\link{umxReduceGxE}()},
 \code{\link{umxReduce}()},
+\code{\link{umxRotate.MxModelCP}()},
+\code{\link{umxSexLim}()},
+\code{\link{umxSimplex}()},
 \code{\link{umxSummarizeTwinData}()},
 \code{\link{umxSummaryACEcov}()},
 \code{\link{umxSummaryACEv}()},
@@ -111,6 +129,7 @@ Other Twin Reporting Functions:
 \code{\link{umxSummaryIP}()},
 \code{\link{umxSummarySexLim}()},
 \code{\link{umxSummarySimplex}()},
+\code{\link{umxTwinMaker}()},
 \code{\link{umx}}
 }
-\concept{Twin Reporting Functions}
+\concept{Twin Modeling Functions}

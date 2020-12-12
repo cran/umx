@@ -34,7 +34,7 @@ df = umx_as_numeric(df, force=TRUE); str(df)
 }
 }
 \references{
-- <https://www.github.com/tbates/umx>
+- <https://github.com/tbates/umx>
 }
 \seealso{
 Other Data Functions: 
@@ -50,6 +50,7 @@ Other Data Functions:
 \code{\link{umx_polypairwise}()},
 \code{\link{umx_polytriowise}()},
 \code{\link{umx_read_lower}()},
+\code{\link{umx_read_prolific_demog}()},
 \code{\link{umx_rename}()},
 \code{\link{umx_reorder}()},
 \code{\link{umx_select_valid}()},

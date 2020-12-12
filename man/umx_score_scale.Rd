@@ -11,9 +11,10 @@ umx_score_scale(
   min = 1,
   max = NULL,
   data = NULL,
-  score = c("totals", "mean", "max"),
+  score = c("total", "mean", "max", "factor"),
   name = NULL,
-  na.rm = FALSE
+  na.rm = FALSE,
+  minManifests = NA
 )
 }
 \arguments{
@@ -29,11 +30,13 @@ umx_score_scale(
 
 \item{data}{The data frame}
 
-\item{score}{Whether to compute the score totals, mean, or max (default = "totals")}
+\item{score}{Whether to compute the score total, mean, max, or factor (default = "total")}
 
 \item{name}{= name of the scale to be returned. Defaults to "base_score"}
 
 \item{na.rm}{Whether to delete NAs when computing scores (Default = TRUE) Note: Choice affects mean!}
+
+\item{minManifests}{If score = factor, how many missing items to tolerate for an individual?}
 }
 \value{
 \itemize{

@@ -186,7 +186,7 @@ require(umx)
 # = How heritable is height? =
 # ============================
 
-# 1. Height in metres has a tiny variance, and this makes optimising hard.
+# 1. Height in meters has a tiny variance, and this makes optimising hard.
 #    We'll scale it by 10x to make the Optimizer's task easier.
 data(twinData) # ?twinData from Australian twins.
 twinData[, c("ht1", "ht2")] = twinData[, c("ht1", "ht2")] * 10
@@ -195,11 +195,6 @@ twinData[, c("ht1", "ht2")] = twinData[, c("ht1", "ht2")] * 10
 mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
 
-\dontshow{
-mzData[1:80, ]
-dzData[1:80, ]
-}
-	
 # 3. Built & run the model, controlling for age in the means model
 m1 = umxACE(selDVs = "ht", selCovs = "age", sep = "", dzData = dzData, mzData = mzData)
 
@@ -315,22 +310,24 @@ umxSummary(m1)
 # ===================
 # = Ordinal example =
 # ===================
+
+# Prep data
 require(umx)
 data(twinData)
-twinData= umx_scale_wide_twin_data(data=twinData,varsToScale=c("wt"),sep="")
 # Cut BMI column to form ordinal obesity variables
 obLevels = c('normal', 'overweight', 'obese')
 cuts = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
 twinData$obese1=cut(twinData$bmi1, breaks=c(-Inf,cuts,Inf), labels=obLevels)
 twinData$obese2=cut(twinData$bmi2, breaks=c(-Inf,cuts,Inf), labels=obLevels)
+
 # Make the ordinal variables into umxFactors
 ordDVs = c("obese1", "obese2")
 twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
+
 mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
-str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
 
-# Data-prep done - here's the model and summary!
+# Model and summary!
 m1 = umxACE(selDVs = "obese", dzData = dzData, mzData = mzData, sep = '')
 
 # And controlling age (otherwise manifests appearance as latent C)
@@ -419,9 +416,26 @@ Other Twin Modeling Functions:
 \code{\link{umxGxEbiv}()},
 \code{\link{umxGxE}()},
 \code{\link{umxIP}()},
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotDoC}()},
+\code{\link{umxReduceACE}()},
+\code{\link{umxReduceGxE}()},
+\code{\link{umxReduce}()},
 \code{\link{umxRotate.MxModelCP}()},
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
+\code{\link{umxSummarizeTwinData}()},
+\code{\link{umxSummaryACEcov}()},
+\code{\link{umxSummaryACEv}()},
+\code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryCP}()},
+\code{\link{umxSummaryDoC}()},
+\code{\link{umxSummaryGxEbiv}()},
+\code{\link{umxSummaryGxE}()},
+\code{\link{umxSummaryIP}()},
+\code{\link{umxSummarySexLim}()},
+\code{\link{umxSummarySimplex}()},
+\code{\link{umxTwinMaker}()},
 \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

@@ -10,9 +10,13 @@ tmx_show(
   show = c("free", "fixed", "all"),
   matrices = c("S", "A", "M"),
   digits = 2,
-  report = c("markdown", "inline", "html", "report"),
+  report = c("html", "markdown"),
   na.print = "",
-  zero.print = "."
+  zero.print = ".",
+  html_font = NULL,
+  style = c("paper", "material_dark", "classic", "classic_2", "minimal", "material"),
+  bootstrap_options = c("hover", "bordered", "condensed", "responsive"),
+  lightable_options = "striped"
 )
 }
 \arguments{
@@ -31,6 +35,14 @@ tmx_show(
 \item{na.print}{How to display NAs (default = "")}
 
 \item{zero.print}{How to display 0 values (default = ".")}
+
+\item{html_font}{Default is null. Set (e.g. "Optima") to override the style's default font.}
+
+\item{style}{The style for the table (Defaults to "paper". Other options are "material_dark", "classic", "classic_2", "minimal", "material")}
+
+\item{bootstrap_options}{border etc. Defaults to c("hover", "bordered", "condensed", "responsive")}
+
+\item{lightable_options}{Default is "striped"}
 }
 \value{
 None
@@ -53,13 +65,19 @@ m1 = umxRAM("tmx_sh", data = demoOneFactor, type = "cov",
 	umxPath(var = "G", fixedAt = 1)
 )
 
-tmx_show(m1)
-tmx_show(m1, digits = 3)
-tmx_show(m1, matrices = "S")
-tmx_show(m1, what = "free")
-tmx_show(m1, what = "labels")
-tmx_show(m1, what = "free", matrices = "A")
-# tmx_show(m1, what = "free", matrices = "thresholds")
+tmx_show(m1, report = "markdown")
+tmx_show(m1, digits = 3, report = "markdown")
+tmx_show(m1, matrices = "S", report = "markdown")
+tmx_show(m1, what = "free"  , report = "markdown")
+tmx_show(m1, what = "labels", report = "markdown")
+tmx_show(m1, what = "free", matrices = "A", report="markdown")
+\dontrun{
+# =============================================
+# = Show smart table on the web (the default) =
+# =============================================
+tmx_show(m1, report = "html")
+tmx_show(m1, what = "free", matrices = "thresholds")
+}
 
 }
 \references{

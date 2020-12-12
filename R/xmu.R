@@ -13,7 +13,7 @@
 #   limitations under the License.
 
 # ==================================================================================
-# = Fns not used directly by users subject to arbitrary change and deprecation !!  =
+# = FNS NOT USED DIRECTLY BY USERS SUBJECT TO ARBITRARY CHANGE AND DEPRECATION !!  =
 # ==================================================================================
 
 #' Get on or more columns from mzData or regular data.frame
@@ -131,7 +131,7 @@ xmu_twin_get_var_names <- function(model, source = c("expCovMZ", "observed"), tr
 }
 
 # ==========================
-# = Run and Report helpers =
+# = RUN AND REPORT HELPERS =
 # ==========================
 
 #' Upgrade selDvs to SelVars
@@ -328,7 +328,7 @@ xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard 
 }
 
 # ===================================
-# = Data and model checking helpers =
+# = DATA AND MODEL CHECKING HELPERS =
 # ===================================
 
 #' Check data to see if model needs means.
@@ -537,6 +537,7 @@ xmu_data_missing <- function(data, selVars, sep= NULL, dropMissingDef = TRUE, hi
 #' @param fullCovs Covariate names if any (NULL = none) These are checked by `dropMissingDef`
 #' @param dropMissingDef Whether to automatically drop missing def var rows for the user (default = TRUE). You get a polite note.
 #' @param verbose If verbose, report on columns kept and dropped (default FALSE)
+#' @param use When type = cov or cor, should this drop NAs? (use = "pairwise.complete.obs" by default, with a polite note)
 #' @return - [mxData()]
 #' @export
 #' @family xmu internal not for end user
@@ -592,7 +593,7 @@ xmu_data_missing <- function(data, selVars, sep= NULL, dropMissingDef = TRUE, hi
 #' # =======================
 #' xmu_make_mxData(data= c("a", "b", "c"), type = "Auto")
 #' 
-xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS'), manifests = NULL, numObs = NULL, fullCovs = NULL, dropMissingDef = TRUE, verbose = FALSE) {
+xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS'), manifests = NULL, numObs = NULL, fullCovs = NULL, dropMissingDef = TRUE, verbose = FALSE, use = "pairwise.complete.obs") {
 	type = match.arg(type)
 	if(is.null(data)){
 		message("You must set data: either data = data.frame or data = mxData(yourData, type = 'raw|cov)', ...) or at least a list of variable names if using umxRAM in sketch mode)")
@@ -642,10 +643,16 @@ xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", '
 			data = mxData(observed = data, type = "raw")
 		}else if(type == "cov"){
 			# TODO xmu_make_mxData: could refuse to do this, as we don't know how to handle missingness...
-			data = mxData(observed = cov(data), type = type, numObs = nrow(data))
+			if(use %in% c("everything", "all.obs") && anyNA(data)){
+				message("Polite note: there were some NAs in your data: these rows dropped in making cov matrix")
+			}
+			data = mxData(observed = cov(data, use = use), type = type, numObs = nrow(data))
 		}else if(type == "cor"){
 			# TODO xmu_make_mxData: could refuse to do this, as we don't know how to handle missingness...
-			data = mxData(observed = cor(data), type = type, numObs = nrow(data))
+			if(use %in% c("everything", "all.obs") && anyNA(data)){
+				message("Polite note: there were some NAs in your data: these rows dropped in making cor matrix")
+			}
+			data = mxData(observed = umxHetCor(data, use = use), type = type, numObs = nrow(data))
 		} else if(type %in% c('WLS', 'DWLS', 'ULS')){
 			if(any(umx_is_ordered(data))){
 				# At least one non-continuous variable
@@ -734,7 +741,7 @@ for you to pass in raw data, or an mxData, e.g.:\ndata = mxData(yourCov, type= '
 xmu_name_from_lavaan_str <- function(lavaanString = NULL, name = NA, default = "m1") {
 	# Assume `name` should be used if !is.null(name)
 	if(is.na(name)){
-		# If first line contains a #, assume user wants it to be a name for the model
+		# If first line begins with '#', assume user wants it to be a name for the model
 		line1 = strsplit(lavaanString, split="\\n", perl = TRUE)[[1]][1]
 		if(grepl(x = line1, pattern = "#")){
 			# line1 = "## my model ##"
@@ -874,7 +881,11 @@ xmu_twin_check <- function(selDVs, dzData = dzData, mzData = mzData, sep = NULL,
 	# 5. Check data are legal
 		if(!umx_is_class(mzData[, selVars], classes = c("integer", "double", "numeric", "factor", "ordered"), all = TRUE)) {
 			bad = selVars[!umx_is_class(mzData[, selVars], classes = c("integer", "double", "numeric","factor", "ordered"), all = FALSE)]
-			stop("variables must be integer, numeric or (usually ordered) factor. The following are not: ", omxQuotes(bad))
+
+			message("Variables must be integer, numeric or (usually ordered) factor. The following are not: ", omxQuotes(bad))
+			message("First bad class found was: ", omxQuotes(class(mzData[, bad[1] ])) )
+			stop()
+			
 		}
 		# Drop unused columns from mzData and dzData
 		mzData = mzData[, selVars]
@@ -973,7 +984,7 @@ xmu_check_levels_identical <- function(df, selDVs, sep, action = c("stop", "igno
 #' nb: We don't assume what each matrix is for. Instead, the function just sticks labels like "a_r1c1" into each cell
 #' i.e., matrix-name + _ + r + rowNumber + c + colNumber
 #' 
-#' End users should just call [umxLabel()]
+#' Model developers should just call [xmuLabel()]
 #' 
 #'
 #' @param model a matrix-style mxModel to label
@@ -1013,7 +1024,7 @@ xmuLabel_MATRIX_Model <- function(model, suffix = "", verbose = TRUE) {
 #'
 #' This function will label all the free parameters in a RAM [mxModel()]
 #' 
-#' End users should just call [umxLabel()]
+#' Model developers should just call [xmuLabel()]
 #'
 #' @param model a RAM mxModel to label
 #' @param suffix a string to append to each label
@@ -1178,11 +1189,11 @@ xmu_simplex_corner <- function(x, start = .9) {
 #'
 #' This function will label all the free parameters in an [mxMatrix()]
 #' 
-#' End users should just call [umxLabel()]
+#' Model developers should just call [xmuLabel()]
 #'
 #' Purpose: label the cells of an mxMatrix
 #' Detail: Defaults to the handy "name_r1c1" where name is the matrix name, and r1c1 = row 1 col 1.
-#' Use case: You should not use this: call umxLabel
+#' Use case: You should not use this: call xmuLabel
 #' umx:::xmuLabel_Matrix(mxMatrix("Lower", 3, 3, values = 1, name = "a", byrow = TRUE), jiggle = .05, boundDiag = NA);
 #' umx:::xmuLabel_Matrix(mxMatrix("Full" , 3, 3, values = 1, name = "a", byrow = TRUE));
 #' umx:::xmuLabel_Matrix(mxMatrix("Symm" , 3, 3, values = 1, name = "a", byrow = TRUE), jiggle = .05, boundDiag = NA);
@@ -1207,7 +1218,7 @@ xmu_simplex_corner <- function(x, start = .9) {
 #' @export
 xmuLabel_Matrix <- function(mx_matrix = NA, baseName = NA, setfree = FALSE, drop = 0, jiggle = NA, boundDiag = NA, suffix = "", verbose = TRUE, labelFixedCells = FALSE, overRideExisting = FALSE) {
 	if (!is(mx_matrix, "MxMatrix")){ # label a mxMatrix
-		stop("I'm sorry Dave... xmuLabel_Matrix works on mxMatrix. You passed an ", class(mx_matrix), ". And why are you calling xmuLabel_Matrix() anyhow? You want umxLabel()")
+		stop("I'm sorry Dave... xmuLabel_Matrix works on mxMatrix. You passed an ", class(mx_matrix), ". And why are you calling xmuLabel_Matrix() anyhow? You want xmuLabel()")
 	}
 	type = class(mx_matrix)[1]; # Diag Full  Lower Stand Sdiag Symm Iden Unit Zero
 	nrows = nrow(mx_matrix);
@@ -1260,7 +1271,7 @@ xmuLabel_Matrix <- function(mx_matrix = NA, baseName = NA, setfree = FALSE, drop
 		newLabels[upper.tri(newLabels, diag = FALSE)] <- mirrorLabels[upper.tri(mirrorLabels, diag = FALSE)]
 		diag(newLabels) <- NA
 	} else if(type == "IdenMatrix" | type == "UnitMatrix" | type == "ZeroMatrix") {
-		# message("umxLabel Ignored ", type, " matrix ", mx_matrix$name, " - it has no free values!")
+		# message("xmuLabel Ignored ", type, " matrix ", mx_matrix$name, " - it has no free values!")
 		return(mx_matrix)
 	} else {
 		return(paste0("You tried to set type ", "to ", omxQuotes(type)));
@@ -1362,9 +1373,9 @@ xmuMakeDeviationThresholdsMatrices <- function(df, droplevels, verbose) {
 #' Purpose: Create startvalues for OpenMx paths
 #' use cases
 #' umx:::xmuStart_value_list(1)
-#' umxValues(1) # 1 value, varying around 1, with sd of .1
-#' umxValues(1, n=letters) # length(letters) start values, with mean 1 and sd .1
-#' umxValues(100, 15)  # 1 start, with mean 100 and sd 15
+#' xmuValues(1) # 1 value, varying around 1, with sd of .1
+#' xmuValues(1, n=letters) # length(letters) start values, with mean 1 and sd .1
+#' xmuValues(100, 15)  # 1 start, with mean 100 and sd 15
 #'
 #' @param mean the mean start value
 #' @param sd the sd of values
@@ -1386,7 +1397,7 @@ xmu_start_value_list <- function(mean = 1, sd = NA, n = 1) {
 
 #' xmuPropagateLabels (not a user function)
 #'
-#' You should be calling [umxLabel()].
+#' You should be calling [xmuLabel()].
 #' This function is called by xmuLabel_MATRIX_Model
 #'
 #' @param model a model to label
@@ -1556,7 +1567,7 @@ xmuHasSquareBrackets <- function (input) {
 }
 
 # ===================================
-# = Ordinal/Threshold Model Helpers =
+# = ORDINAL/THRESHOLD MODEL HELPERS =
 # ===================================
 
 #' xmuMaxLevels
@@ -1630,7 +1641,7 @@ xmuMinLevels <- function(df, what = c("value", "name")) {
 }
 
 # ===============
-# = RAM helpers =
+# = RAM HELPERS =
 # ===============
 
 #' Remove illegal characters from labels
@@ -1643,7 +1654,7 @@ xmuMinLevels <- function(df, what = c("value", "name")) {
 #' @return - legal label string
 #' @export
 #' @family xmu internal not for end user
-#' @seealso - [umxLabel()]
+#' @seealso - [xmuLabel()]
 #' @md
 #' @examples
 #' xmu_clean_label("data.var", replace = "_")
@@ -1710,7 +1721,7 @@ xmuMakeOneHeadedPathsFromPathList <- function(sourceList, destinationList) {
 
 
 # ====================
-# = Graphviz helpers =
+# = GRAPHVIZ HELPERS =
 # ====================
 
 #' Internal umx function to help plotting graphviz
@@ -1727,12 +1738,16 @@ xmuMakeOneHeadedPathsFromPathList <- function(sourceList, destinationList) {
 #' @md
 xmu_dot_maker <- function(model, file, digraph, strip_zero= TRUE){
 	if(strip_zero){
-		# strip leading "0." (pad "0.5" to "50")
-		# optionally negative number, with only 1 digit after the decimal
-		digraph = umx_names(digraph, '(label ?= ?\\"-?)(0\\.)([0-9])\\"', replacement = "\\1\\30\"", global = TRUE)
-		# optionally negative number, with only 1 or more digits after the decimal
-		digraph = umx_names(digraph, '(label ?= ?\\"-?)(0\\.)([0-9]+)\\"', replacement = "\\1\\3\"", global = TRUE)
-		# a1 -> ht1 [label = "0.92"];
+		# strip leading "0." (pad "@0.5" to "@50")
+		# a1 -> ht1 [label = "@-0.92"];
+
+		# \\1 = "label = @-"
+		# umx_names('a1 -> ht1 [label = "0.92"];', '(label ?= ?\\"@?-?)(0\\.)([0-9])\\"', replacement = "\\1\\30\"", global = TRUE)
+
+		# look for (optionally @ or negative) number with only 1 digit after the decimal
+		digraph = umx_names(digraph, '(label ?= ?\\"@?-?)(0\\.)([0-9])\\"', replacement = "\\1\\30\"", global = TRUE)
+		# look for (optionally @ or negative) number, with 1 or more digits after the decimal
+		digraph = umx_names(digraph, '(label ?= ?\\"@?-?)(0\\.)([0-9]+)\\"', replacement = "\\1\\3\"", global = TRUE)
 	}
 
 	if(!is.na(file)){
@@ -2033,6 +2048,70 @@ xmu_string2path <- function(from) {
 	}
 }
 
+
+#' Convert an "A_r1c1"-style label to a bracket address.
+#'
+#' Takes a label like "A_r1c1" and returns "A\[1,1\]"
+#'
+#' @param label A umx style row col label
+#' @param dotprefix Dot address prefix for label (e.g., "ai"
+#' @param suffix e.g. "_std" default = "")
+#' @return - label e.g. "ai\[1,1\]"
+#' @export
+#' @family xmu internal not for end user
+#' @references - <https://tbates.github.io>, <https://github.com/tbates/umx>
+#' @md
+#' @examples
+#' xmu_rclabel_2_bracket_address(label = "A_r1c1") #A[1,1]
+#' xmu_rclabel_2_bracket_address(label = "A_r10c1")
+#' xmu_rclabel_2_bracket_address(label = "A_r1c1", dotprefix = "model.top")
+#' xmu_rclabel_2_bracket_address("A_r1c1", suffix= "_std")
+#' xmu_rclabel_2_bracket_address("A_r1c1", dotprefix="myModel", suffix="_std")
+#'
+xmu_rclabel_2_bracket_address <- function(label, dotprefix = "", suffix = "") {
+	grepStr = '^(.*)_r([0-9]+)c([0-9]+)$' # 1 = matrix names, 2 = row, 3 = column
+	if(!dotprefix == ""){
+		dotprefix = paste0(dotprefix, ".")
+	}
+	mat = sub(x = label, pattern = grepStr, replacement = '\\1', perl = TRUE);
+	row = sub(x = label, pattern = grepStr, replacement = '\\2', perl = TRUE);
+	col = sub(x = label, pattern = grepStr, replacement = '\\3', perl = TRUE);
+	# prefix = "top."
+	label = paste0(dotprefix, mat, suffix, "[", row, ",", col, "]")
+	return(label)
+}
+
+#' Convert a bracket address into an A_rXcX-style label.
+#'
+#' Takes a label like A\[1,1\] and returns "A_r1c1".
+#'
+#' @param label A bracket label
+#' @param keepPrefix Keep any prefix found e.g. "model.top"
+#' @return - label e.g. "ai_r1c1"
+#' @export
+#' @family xmu internal not for end user
+#' @references - <https://tbates.github.io>, <https://github.com/tbates/umx>
+#' @md
+#' @examples
+#' xmu_bracket_address2rclabel(label = "A[1,1]")
+#' xmu_bracket_address2rclabel(label = "top.A[1,1]")
+#' xmu_bracket_address2rclabel(label = "A_std[1,1]")
+#'
+xmu_bracket_address2rclabel <- function(label, keepPrefix = TRUE) {
+	grepStr = "^(.*\\.)?(.+)\\[([0-9]+),([0-9]+)\\]" # 1 = matrix names, 2 = row, 3 = column
+	prefix  = sub(x = label, pattern = grepStr, replacement = '\\1', perl = TRUE);
+	mat     = sub(x = label, pattern = grepStr, replacement = '\\2', perl = TRUE);
+	row     = sub(x = label, pattern = grepStr, replacement = '\\3', perl = TRUE);
+	col     = sub(x = label, pattern = grepStr, replacement = '\\4', perl = TRUE);
+	# prefix = "top."
+	if(keepPrefix){
+		label = paste0(prefix, mat, "[", row, ",", col, "]")
+	} else {
+		label = paste0(mat, "[", row, ",", col, "]")
+	}
+	return(label)
+}
+
 #' Look up and report CIs for free parameters
 #'
 #' Look up CIs for free parameters in a model, and return as APA-formatted text string.
@@ -2043,31 +2122,31 @@ xmu_string2path <- function(from) {
 #' @param prefix The submodel to look in (default = "top.")
 #' @param suffix The suffix for algebras when standardized (default = "_std")
 #' @param SEstyle If TRUE, report "b(se)" instead of b CI95\[l,u\] (default = FALSE)
-#' @param digits = 2
+#' @param digits Rounding digits.
 #' @param verbose = FALSE
 #' @return - the CI string, e.g. ".73\[-.20, .98\]" or .73(.10)
 #' @export
 #' @family xmu internal not for end user
-#' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
+#' @references - <https://tbates.github.io>, <https://github.com/tbates/umx>
 #' @md
 #' @examples
 #' \dontrun{
 #' require(umx); data(demoOneFactor)
 #' manifests = names(demoOneFactor)
 #'
-#' m1 = umxRAM("get_CI_example", data = demoOneFactor, type = "cov",
+#' tmp = umxRAM("get_CI_example", data = demoOneFactor, type = "cov",
 #' 	umxPath("G", to = manifests),
 #' 	umxPath(var = manifests),
 #' 	umxPath(var = "G", fixedAt = 1)
 #' )
-#' m1 = umxCI(m1, run= "yes")
+#' tmp = umxCI(tmp, run= "yes")
 #' 
 #' # Get CI by parameter label
-#' xmu_get_CI(model= m1, "x1_with_x1")
-#' xmu_get_CI(model= m1, "x1_with_x1", SEstyle=TRUE, digits=3)
+#' xmu_get_CI(model= tmp, "x1_with_x1")
+#' xmu_get_CI(model= tmp, "x1_with_x1", SEstyle = TRUE, digits = 3)
 #' 
 #' # prefix (submodel) and suffix (e.g. std) are ignored if not needed
-#' xmu_get_CI(model= m1, "x1_with_x1", prefix = "top.", suffix = "_std")
+#' xmu_get_CI(model= tmp, "x1_with_x1", prefix = "top.", suffix = "_std")
 #' 
 #' xmu_get_CI(fit_IP, label = "ai_r1c1", prefix = "top.", suffix = "_std")
 #' xmu_get_CI(fit_IP, label = "ai_r1c1", prefix = "top.", SEstyle = TRUE, suffix = "_std")
@@ -2078,12 +2157,11 @@ xmu_get_CI <- function(model, label, prefix = "top.", suffix = "_std", digits = 
 	# TODO xmu_get_CI: Look for CIs, if not found look for SEs, if not found compute with mxSE (high priority!)
 	# TODO xmu_get_CI: Add choice of separator for CI (stash as preference) (easy)
 	if(!umx_has_CIs(model)){
-		if(verbose){
-			message("no CIs")
-		}
+		if(verbose){ message("no CIs") }
 		return(NA)
 	} else {
 		# We want "top.ai_std[1,1]" from "ai_r1c1"
+		# or...
 		result = tryCatch({
 			CIlist = model$output$confidenceIntervals
 			intervalNames = dimnames(CIlist)[[1]]
@@ -2092,13 +2170,10 @@ xmu_get_CI <- function(model, label, prefix = "top.", suffix = "_std", digits = 
 				check = label
 			}else{
 				# Probably an auto-bracket-labelled CI e.g. "top.A_std[1,3]", in which case label would be "A_r1c3"
-				grepStr = '^(.*)_r([0-9]+)c([0-9]+)$' # 1 = matrix names, 2 = row, 3 = column
-				mat = sub(x = label, pattern = grepStr, replacement = '\\1', perl = TRUE);
-				row = sub(x = label, pattern = grepStr, replacement = '\\2', perl = TRUE);
-				col = sub(x = label, pattern = grepStr, replacement = '\\3', perl = TRUE);
-				# prefix = "top."
-				dimIndex    = paste0(prefix, mat, suffix, "[", row, ",", col, "]")
-				dimNoSuffix = paste0(prefix, mat, "[", row, ",", col, "]")
+				# TODO this needs fixing.. what are we looking for?
+				dimIndex    = xmu_bracket_address2rclabel(label, keepPrefix = TRUE)
+				dimNoSuffix = xmu_bracket_address2rclabel(label, keepPrefix = FALSE)
+				
 
 				if(dimIndex %in% intervalNames){
 					check = dimIndex
@@ -2145,4 +2220,39 @@ xmu_get_CI <- function(model, label, prefix = "top.", suffix = "_std", digits = 
 		return(result)
 	}
 	# if estimate differs...
+}
+
+# =================
+# = TABLE HELPERS =
+# =================
+xmu_style_kable <- function(tb, style, html_font = NULL, bootstrap_options=bootstrap_options, lightable_options = lightable_options, full_width = FALSE) {
+	if(is.null(html_font)){
+		if(style == "classic"){
+			tb = kable_classic(tb, full_width = full_width, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "classic_2"){
+			tb = kable_classic_2(tb, full_width = full_width, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "minimal"){
+			tb = kable_minimal(tb, full_width = full_width, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "material"){
+			tb = kable_material(tb, full_width = full_width, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "material_dark"){
+			tb = kable_material_dark(tb, full_width = full_width, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "paper"){
+			tb = kable_paper(tb, full_width = full_width, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		}
+	}else{
+		if(style == "classic"){
+			tb = kable_classic(tb, full_width = full_width, html_font = html_font, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "classic_2"){
+			tb = kable_classic_2(tb, full_width = full_width, html_font = html_font, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "minimal"){
+			tb = kable_minimal(tb, full_width = full_width, html_font = html_font, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "material"){
+			tb = kable_material(tb, full_width = full_width, html_font = html_font, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "material_dark"){
+			tb = kable_material_dark(tb, full_width = full_width, html_font = html_font, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		} else if(style == "paper"){
+			tb = kable_paper(tb, full_width = full_width, html_font = html_font, bootstrap_options=bootstrap_options, lightable_options = lightable_options)
+		}
+	}
 }

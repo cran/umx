@@ -24,7 +24,7 @@ nb: We don't assume what each matrix is for. Instead, the function just sticks l
 i.e., matrix-name + _ + r + rowNumber + c + colNumber
 }
 \details{
-End users should just call \code{\link[=umxLabel]{umxLabel()}}
+Model developers should just call \code{\link[=xmuLabel]{xmuLabel()}}
 }
 \examples{
 require(umx)
@@ -46,7 +46,6 @@ m4 = umx:::xmuLabel_MATRIX_Model(m2, suffix = "male")
 Other xmu internal not for end user: 
 \code{\link{umxModel}()},
 \code{\link{umxRenameMatrix}()},
-\code{\link{umxTwinMaker}()},
 \code{\link{umx_APA_pval}()},
 \code{\link{umx_fun_mean_sd}()},
 \code{\link{umx_get_bracket_addresses}()},
@@ -71,6 +70,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_CI_stash}()},
 \code{\link{xmu_DF_to_mxData_TypeCov}()},
 \code{\link{xmu_PadAndPruneForDefVars}()},
+\code{\link{xmu_bracket_address2rclabel}()},
 \code{\link{xmu_cell_is_on}()},
 \code{\link{xmu_check_levels_identical}()},
 \code{\link{xmu_check_needs_means}()},
@@ -94,6 +94,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_name_from_lavaan_str}()},
 \code{\link{xmu_path2twin}()},
 \code{\link{xmu_path_regex}()},
+\code{\link{xmu_rclabel_2_bracket_address}()},
 \code{\link{xmu_safe_run_summary}()},
 \code{\link{xmu_set_sep_from_suffix}()},
 \code{\link{xmu_show_fit_or_comparison}()},

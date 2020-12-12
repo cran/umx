@@ -1,3 +1,5 @@
+# "I like ambitious goals. I
+
 # TODO Create a tmx path tracing rules
 # TODO Fix up umxUnexplainedCausalNexus()
 
@@ -110,7 +112,7 @@ tmx_genotypic_effect <- function(p = .75, q = (1-p), a = .5, d = 0, m = 0, show 
 		return(thePlot)
 	}
 	# Genotypes BB Bb bb Frequency p2 2pq q2
-	df <- data.frame(stringsAsFactors = FALSE,
+	df = data.frame(stringsAsFactors = FALSE,
 		Genotypes = c("Frequency", "fraction"),
 		BB = c("p\u00B2", round(p^2, 2)),
 		Bb = c("2pq"    , round(2 * p * q, 2)),
@@ -145,7 +147,7 @@ tmx_genotypic_effect <- function(p = .75, q = (1-p), a = .5, d = 0, m = 0, show 
 	# meanDose = 2 * p^2 + 2 * p * q  # eq 3.14
 	# df$effect * df$freq; sum(df$effect * df$freq) # sums to zero
 	# TODO add examples on page 57
-	df <- data.frame(stringsAsFactors = FALSE,
+	df = data.frame(stringsAsFactors = FALSE,
 		dose     = c(0            , 1     , 2      ),
 		genotype = c("bb"         , "Bb"  , "BB"   ),
 		value    = c(G_bb         , G_Bb  , G_BB   ),
@@ -167,7 +169,7 @@ tmx_genotypic_effect <- function(p = .75, q = (1-p), a = .5, d = 0, m = 0, show 
 	# = Genotypic EFFECT model (the regression line) =
 	# ================================================
 	# p55, pink book, fig 3.2
-	df <- data.frame(stringsAsFactors = FALSE,
+	df = data.frame(stringsAsFactors = FALSE,
 		dose     = c(0     , 1     , 2     ),
 		genotype = c("bb"  , "Bb"  , "BB"  ),
 		effect   = c(-a    , d     , a     ),
@@ -264,6 +266,10 @@ tmx_is.identified <- function(nVariables, nFactors){
 #' @param na.print How to display NAs (default = "")
 #' @param zero.print How to display 0 values (default = ".")
 #' @param report How to report the results. "html" = open in browser.
+#' @param style The style for the table (Defaults to "paper". Other options are "material_dark", "classic", "classic_2", "minimal", "material")
+#' @param bootstrap_options border etc. Defaults to c("hover", "bordered", "condensed", "responsive")
+#' @param lightable_options Default is "striped"
+#' @param html_font Default is null. Set (e.g. "Optima") to override the style's default font.
 #' @return None
 #' @export
 #' @family Teaching and Testing functions
@@ -280,22 +286,38 @@ tmx_is.identified <- function(nVariables, nFactors){
 #' 	umxPath(var = "G", fixedAt = 1)
 #' )
 #'
-#' tmx_show(m1)
-#' tmx_show(m1, digits = 3)
-#' tmx_show(m1, matrices = "S")
-#' tmx_show(m1, what = "free")
-#' tmx_show(m1, what = "labels")
-#' tmx_show(m1, what = "free", matrices = "A")
-#' # tmx_show(m1, what = "free", matrices = "thresholds")
+#' tmx_show(m1, report = "markdown")
+#' tmx_show(m1, digits = 3, report = "markdown")
+#' tmx_show(m1, matrices = "S", report = "markdown")
+#' tmx_show(m1, what = "free"  , report = "markdown")
+#' tmx_show(m1, what = "labels", report = "markdown")
+#' tmx_show(m1, what = "free", matrices = "A", report="markdown")
+#' \dontrun{
+#' # =============================================
+#' # = Show smart table on the web (the default) =
+#' # =============================================
+#' tmx_show(m1, report = "html")
+#' tmx_show(m1, what = "free", matrices = "thresholds")
+#' }
 #'
-tmx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_free"), show = c("free", "fixed", "all"), matrices = c("S", "A", "M"), digits = 2, report = c("markdown", "inline", "html", "report"), na.print = "", zero.print = ".") {
+tmx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_free"), show = c("free", "fixed", "all"), matrices = c("S", "A", "M"), digits = 2, report = c("html", "markdown"), na.print = "", zero.print = ".", html_font = NULL, style = c("paper","material_dark", "classic", "classic_2", "minimal", "material"), bootstrap_options=c("hover", "bordered", "condensed", "responsive"), lightable_options = "striped") {
 	if(!umx_is_RAM(model)){
 		stop("I can only show the components of RAM models: You gave me an ", class(model)[[1]])
 	}
 	what   = match.arg(what)
 	show   = match.arg(show)
 	report = match.arg(report)
+	style  = match.arg(style)
 	
+	# filter out non-empty matrices
+	requestedMatrices = matrices
+	matrices = c()
+	for (w in requestedMatrices) {
+		if(!is.null(model$matrices[[w]])){
+			matrices = c(matrices, w)
+		}
+	}
+	oldTableFormat = umx_set_table_format(report) # side effect
 	if("thresholds" %in% matrices){
 		# TODO tmx_show: Threshold printing not yet finalised
 		if(!is.null(model$deviations_for_thresh)){
@@ -330,31 +352,51 @@ tmx_show <- function(model, what = c("values", "free", "labels", "nonzero_or_fre
 		}
 	} else {
 		for (w in matrices) {
-			if(report == "html"){ file = paste0(what, w, ".html") } else { file = NA}
-			if(what == "values"){
-				tmp = data.frame(model$matrices[[w]]$values)
-				message("\n", "Values of ", omxQuotes(w), " matrix (0 shown as .):", appendLF = FALSE)
-			}else if(what == "free"){
-				tmp = model$matrices[[w]]$free
-				message("\n", "Free cells in ", w, " matrix (FALSE shown as .):", appendLF = FALSE)
-			}else if(what == "labels"){
-				x = model$matrices[[w]]$labels
-				if(show == "free"){
-					x[model$matrices[[w]]$free != TRUE] = ""
-				} else if (show == "fixed") {
-					x[model$matrices[[w]]$free == TRUE] = ""
+			if(report == "html"){
+				file = paste0(what, w, ".html")
+				# generate the free + value + popover label using kableExtra
+				values = umx_round(model$matrices[[w]]$values, digits)
+				free   = model$matrices[[w]]$free
+				values[!free & values ==0] = zero.print
+				
+				cols = dim(values)[[2]]
+				tb = kbl(values, caption = paste0(w, " matrix"))
+				tb = add_footnote(tb, label = paste0("Fixed cells in gray, free in black, mouse-over to see labels, paths fixed@0 are shown as ", omxQuotes(zero.print))) # , paths fixed@0 left blank
+				tb = xmu_style_kable(tb, html_font = html_font, bootstrap_options= bootstrap_options, lightable_options = lightable_options, full_width = FALSE)
+				
+				for (thisCol in 2:(cols+1)) {
+					tb = column_spec(tb, thisCol, 
+						color = ifelse(model$matrices[[w]]$free[, thisCol-1], "black", "#AAAAAA"), # #666666 red= #D7261E green= #26D71E
+						tooltip = model$A$labels[, (thisCol-1)]
+					)
 				}
-				tmp = x
-				message("\n", show, " labels for ", w, " matrix:", appendLF = FALSE)
-			}else if(what == "nonzero_or_free"){
-				message("99 means parameter is fixed at a non-zero value")
-				values = model$matrices[[w]]$values
-				Free   = model$matrices[[w]]$free
-				values[!Free & values !=0] = 99
-				tmp = data.frame(values)
-				message("\n", what, " for ", w, " matrix (0 shown as '.', 99=fixed non-zero value):", appendLF = FALSE)
+				print(tb)
+			} else {
+				if(what == "values"){
+					tmp = data.frame(model$matrices[[w]]$values)
+					message("\n", "Values of ", omxQuotes(w), " matrix (0 shown as .):", appendLF = FALSE)
+				}else if(what == "free"){
+					tmp = data.frame(model$matrices[[w]]$free)
+					message("\n", "Free cells in ", w, " matrix (FALSE shown as .):", appendLF = FALSE)
+				}else if(what == "labels"){
+					tmp = model$matrices[[w]]$labels
+					if(show == "free"){
+						tmp[model$matrices[[w]]$free != TRUE] = ""
+					} else if (show == "fixed") {
+						tmp[model$matrices[[w]]$free == TRUE] = ""
+					}
+					message("\n", show, " labels for ", w, " matrix:", appendLF = FALSE)
+				}else if(what == "nonzero_or_free"){
+					message("99 means parameter is fixed at a non-zero value")
+					values = model$matrices[[w]]$values
+					Free   = model$matrices[[w]]$free
+					values[!Free & values !=0] = 99
+					tmp = data.frame(values)
+					message("\n", what, " for ", w, " matrix (0 shown as '.', 99=fixed non-zero value):", appendLF = FALSE)
+				}
+				umx_print(tmp, zero.print = zero.print, na.print = na.print, digits = digits, file= NA)
 			}
-			umx_print(tmp, zero.print = zero.print, na.print = na.print, digits = digits, file= file)
-		}
+		} # for each matrix
 	}
+	umx_set_table_format(oldTableFormat) # side effect	
 }

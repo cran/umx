@@ -28,7 +28,7 @@ Other functions to think of include:
 \examples{
 umx_apply(mean, mtcars, by = "columns")
 umx_apply("mean", of = mtcars, by = "columns")
-tmp = mtcars[1:3,]; tmp[1,1]=NA
+tmp = mtcars[1:3,]; tmp[1,1] = NA
 umx_apply("mean", by = "rows", of = tmp)
 umx_apply("mean", by = "rows", of = tmp, na.rm = TRUE)
 }
@@ -45,6 +45,8 @@ umx_apply("mean", by = "rows", of = tmp, na.rm = TRUE)
 Other Miscellaneous Stats Helpers: 
 \code{\link{FishersMethod}()},
 \code{\link{SE_from_p}()},
+\code{\link{geometric_mean}()},
+\code{\link{harmonic_mean}()},
 \code{\link{oddsratio}()},
 \code{\link{reliability}()},
 \code{\link{umxCov2cor}()},

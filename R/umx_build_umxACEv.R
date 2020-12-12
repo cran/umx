@@ -14,10 +14,14 @@
 
 #' Build and run 2-group uni- or multi-variate ACE models based on VARIANCE (not paths).
 #'
+#' @description
 #' A common task in twin modeling involves using the genetic and environmental differences 
 #' between large numbers of pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together
-#' to model the genetic and environmental structure of one, or, typically, several phenotypes
-#' (measured behaviors).
+#' to model the genetic and environmental structure of one, or, typically, several phenotypes.
+#' `umxACEv` directly estimates variance components (rather than paths, which 
+#' are then squared to produce variance and therefore cannot be negative). It offers better power, 
+#' correct Type I error and un-biased estimates (with no zero-bound for the variances) as a saturated model.
+#' (Verhulst et al, 2019).
 #' 
 #' The ACE variance-based model decomposes phenotypic variance into additive genetic (A),
 #' unique environmental (E) and, optionally, either common environment (shared-environment, C) or 
@@ -88,7 +92,10 @@
 #' @return - [mxModel()] subclass `mxModel.ACE`
 #' @export
 #' @family Twin Modeling Functions
-#' @references - Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches 
+#' @references - Verhulst, B., Prom-Wormley, E., Keller, M., Medland, S., & Neale, M. C. (2019).
+#' Type I Error Rates and Parameter Bias in Multivariate Behavioral Genetic Models. *Behav Genet*, 
+#' **49**, 99-111. doi:<https://doi.org/10.1007/s10519-018-9942-y>
+#' Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches 
 #' to the analysis of human behaviour. *Heredity*, **41**, 249-320. <https://www.nature.com/articles/hdy1978101.pdf>
 #' @md
 #' @examples
@@ -252,32 +259,41 @@ umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, m
 	covMethod           = match.arg(covMethod)
 	allContinuousMethod = match.arg(allContinuousMethod)
 	if(dzCr == .25 & name == "ACEv"){ name = "ADEv" }
+
+	# if data provided create twin files 
 	if(!is.null(data)){
 		if(is.null(sep)){ sep = "_T" }
-		mzData = data[data[,zyg] %in% ifelse(is.null(mzData), "DZ", mzData), ]
-		dzData = data[data[,zyg] %in% ifelse(is.null(dzData), "DZ", dzData), ]
+		# avoid ingesting tibbles
+		if("tbl" %in% class(data)){
+			data = as.data.frame(data)
+		}
+		if(is.null(dzData)){ dzData = "DZ"; mzData = "MZ" }
+		mzData = data[data[,zyg] %in% mzData, ]
+		dzData = data[data[,zyg] %in% dzData, ]
+		# mzData = data[data[,zyg] %in% ifelse(is.null(mzData), "DZ", mzData), ]
+		# dzData = data[data[,zyg] %in% ifelse(is.null(dzData), "DZ", dzData), ]
+	}else{
+		# avoid ingesting tibbles
+		if("tbl" %in% class(mzData)){
+			mzData = as.data.frame(mzData)
+			dzData = as.data.frame(dzData)
+		}
 	}
+
 	xmu_twin_check(selDVs= selDVs, sep = sep, dzData = dzData, mzData = mzData, enforceSep = TRUE, nSib = nSib, optimizer = optimizer)
 	
 	# If given covariates, call umxACEvcov
-	if(!is.null(selCovs)){
-		if(covMethod == "fixed"){
-			stop("Implementing fixed means effects for version 2.0")
-			# TODO add allContinuousMethod = allContinuousMethod and type
-			# umxACEvdefcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, autoRun = autoRun, tryHard = tryHard)
-		} else if(covMethod == "random") {
-			message("umxACEvcov not yet implemented")
-			# TODO implement umxACEvcov or refactor
-			# TODO add allContinuousMethod = allContinuousMethod and type
-			# umxACEvcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, autoRun = autoRun, tryHard = tryHard)
-		}
-		return(model)
+	if(covMethod == "random") {
+		stop("random covariates for umxACEv not yet implemented")
+		# TODO implement umxACEvcov or refactor
+		# TODO add allContinuousMethod = allContinuousMethod and type
+		# umxACEvcov(name = name, selDVs=selDVs, selCovs=selCovs, dzData=dzData, mzData=mzData, sep = sep, dzAr = dzAr, dzCr = dzCr, addStd = addStd, addCI = addCI, boundDiag = boundDiag, equateMeans = equateMeans, bVector = bVector, autoRun = autoRun, tryHard = tryHard)
 	}
 	# nSib = 2, equateMeans = TRUE, verbose = verbose
 	selVars = tvars(selDVs, sep = sep, suffixes= 1:nSib)
 	nVar = length(selVars)/nSib; # Number of dependent variables ** per INDIVIDUAL ( so times-2 for a family) **
-
-	model = xmu_make_TwinSuperModel(name=name, mzData = mzData, dzData = dzData, selDVs = selDVs, selCovs= NULL, sep = sep, type = type, allContinuousMethod = allContinuousMethod, numObsMZ = numObsMZ, numObsDZ = numObsDZ, nSib= nSib, equateMeans = equateMeans, weightVar = weightVar)
+	
+	model = xmu_make_TwinSuperModel(name=name, mzData = mzData, dzData = dzData, selDVs = selDVs, selCovs= selCovs, sep = sep, type = type, allContinuousMethod = allContinuousMethod, numObsMZ = numObsMZ, numObsDZ = numObsDZ, nSib= nSib, equateMeans = equateMeans, weightVar = weightVar)
 	tmp = xmu_starts(mzData, dzData, selVars = selDVs, sep = sep, nSib = nSib, varForm = "Cholesky", equateMeans= equateMeans, SD= TRUE, divideBy = 3)
 
 	# Finish building top
@@ -367,7 +383,7 @@ umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, m
 #' @param ... Other parameters to control model summary
 #' @return - optional [mxModel()]
 #' @export
-#' @family Twin Reporting Functions
+#' @family Twin Modeling Functions
 #' @seealso - [umxACEv()] 
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
@@ -597,14 +613,16 @@ umxSummary.MxModelACEv <- umxSummaryACEv
 #' @export
 #' @family Plotting functions
 #' @family Reporting functions
-#' @references - <https://www.github.com/tbates/umx>
+#' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
 #' require(umx)
 #' data(twinData)
-#' mzData <- subset(twinData, zygosity == "MZFF")
-#' dzData <- subset(twinData, zygosity == "DZFF")
+#' mzData = subset(twinData, zygosity == "MZFF")
+#' dzData = subset(twinData, zygosity == "DZFF")
 #' m1 = umxACEv(selDVs = "bmi", dzData = dzData, mzData = mzData, sep = "")
+#' umxSummary(m1)
+#' umxPlotACEv(m1, std = FALSE) # Don't standardize
 #' plot(m1, std = FALSE) # don't standardize
 umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, ...) {
 	# TODO umxPlotACEv: update to matrix version instead of label hunting
@@ -617,7 +635,8 @@ umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = 
 	if(std){ model = umx_standardize(model) }
 
 	selDVs = xmu_twin_get_var_names(model)
-	nVar   = length(selDVs)/2 # assumes 2 siblings
+	# umx_msg(selDVs)
+	nVar   = length(selDVs) # assumes 2 siblings
 	selDVs = selDVs[1:(nVar)]
 
 	parameterKeyList = omxGetParameters(model) # e.g. expMean_r1c1  A_r1c1  C_r1c1  E_r1c1
@@ -685,7 +704,7 @@ umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = 
 		rankCE, "\n}"
 	)
 	
-	print("?umxPlotACE options: std=, means=, digits=, strip_zero=, file=, min=, max =")
+	print("?umxPlotACEv options: std=, means=, digits=, strip_zero=, file=, min=, max =")
 	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 } # end umxPlotACE
 

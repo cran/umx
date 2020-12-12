@@ -11,6 +11,8 @@ umxPlotGxE(
   location = "topleft",
   separateGraphs = FALSE,
   acergb = c("red", "green", "blue", "black"),
+  gg = TRUE,
+  moderatorValues = NULL,
   ...
 )
 }
@@ -26,6 +28,10 @@ see ?legend for alternatives like bottomright}
 
 \item{acergb}{Colors to use for plot c(a = "red", c = "green", e = "blue", tot = "black")}
 
+\item{gg}{Use ggplot2 (default = TRUE)}
+
+\item{moderatorValues}{If you want to pass in your own list of moderator values instead of the real ones in the data (Default = NULL)}
+
 \item{...}{Optional additional parameters}
 }
 \value{
@@ -36,6 +42,9 @@ Plot GxE results (univariate environmental moderation of ACE components).
 Options include plotting the raw and standardized graphs separately, or in a combined panel.
 You can also set the label for the x axis (xlab), and choose the location of the legend.
 }
+\details{
+\emph{note}: If \code{gg=TRUE}, the plots are drawn in ggplot, and also returned as a \code{list(raw, std)} so you can edit them.
+}
 \examples{
 \dontrun{
 require(umx)
@@ -45,8 +54,9 @@ mzData = subset(twinData, zygosity == "MZFF")
 dzData = subset(twinData, zygosity == "DZFF")
 m1= umxGxE(selDVs= "bmi", selDefs= "age", dzData= dzData, mzData= mzData, sep="", tryHard="yes")
 plot(m1)
-# Directly call the umx function
-umxPlotGxE(x = m1, xlab = "SES", separateGraphs = TRUE, location = "topleft")
+# Directly call umxPlotGxE
+umxPlotGxE(m1, xlab = "Age", separateGraphs = TRUE, gg = FALSE)
+umxPlotGxE(m1, moderatorValues=18:67)
 
 }
 }

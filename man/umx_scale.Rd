@@ -46,7 +46,7 @@ plot(wt1 ~ wt2, data = df)
 }
 \references{
 \itemize{
-\item \url{https://www.github.com/tbates/umx}
+\item \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
@@ -55,6 +55,8 @@ umx_scale_wide_twin_data scale
 Other Miscellaneous Stats Helpers: 
 \code{\link{FishersMethod}()},
 \code{\link{SE_from_p}()},
+\code{\link{geometric_mean}()},
+\code{\link{harmonic_mean}()},
 \code{\link{oddsratio}()},
 \code{\link{reliability}()},
 \code{\link{umxCov2cor}()},

@@ -100,7 +100,7 @@ As can be seen, each phenotype also by default has A, C, and E influences specif
 Features of the model include the ability to include add more one set of independent pathways, different numbers
 of pathways for a, c, and e, as well the ability to use ordinal data, and different fit functions, e.g. WLS.
 
-\strong{note}: The function \code{\link[=umx_set_mvn_optimization_options]{umx_set_mvn_optimization_options()}} allows users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
+\strong{note}: The function \code{\link[=umx_set_optimization_options]{umx_set_optimization_options()}} allows users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
 mvnRelEps defaults to .005. For ordinal models, you might find that '0.01' works better.
 }
 \details{
@@ -163,8 +163,8 @@ So, in a model where the means for twin 1 and twin 2 had been equated
 \dontrun{
 require(umx)
 data(GFF)
-mzData <- subset(GFF, zyg_2grp == "MZ")
-dzData <- subset(GFF, zyg_2grp == "DZ")
+mzData = subset(GFF, zyg_2grp == "MZ")
+dzData = subset(GFF, zyg_2grp == "DZ")
 selDVs = c("gff","fc","qol","hap","sat","AD") # These will be expanded into "gff_T1" "gff_T2" etc.
 m1 =    umxIP(selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData)
 
@@ -187,7 +187,7 @@ umxCompare(m1, m2)
 }
 \references{
 \itemize{
-\item \url{https://www.github.com/tbates/umx}
+\item \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
@@ -207,9 +207,26 @@ Other Twin Modeling Functions:
 \code{\link{umxGxE_window}()},
 \code{\link{umxGxEbiv}()},
 \code{\link{umxGxE}()},
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotDoC}()},
+\code{\link{umxReduceACE}()},
+\code{\link{umxReduceGxE}()},
+\code{\link{umxReduce}()},
 \code{\link{umxRotate.MxModelCP}()},
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
+\code{\link{umxSummarizeTwinData}()},
+\code{\link{umxSummaryACEcov}()},
+\code{\link{umxSummaryACEv}()},
+\code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryCP}()},
+\code{\link{umxSummaryDoC}()},
+\code{\link{umxSummaryGxEbiv}()},
+\code{\link{umxSummaryGxE}()},
+\code{\link{umxSummaryIP}()},
+\code{\link{umxSummarySexLim}()},
+\code{\link{umxSummarySimplex}()},
+\code{\link{umxTwinMaker}()},
 \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

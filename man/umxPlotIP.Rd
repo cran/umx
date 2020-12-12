@@ -11,6 +11,7 @@ umxPlotIP(
   digits = 2,
   means = FALSE,
   std = TRUE,
+  showFixed = TRUE,
   format = c("current", "graphviz", "DiagrammeR"),
   SEstyle = FALSE,
   strip_zero = TRUE,
@@ -26,11 +27,13 @@ umxPlotIP(
 
 \item{means}{Whether to show means paths (defaults to FALSE)}
 
-\item{std}{whether to standardize the model (defaults to TRUE)}
+\item{std}{Whether to standardize the model (defaults to TRUE)}
+
+\item{showFixed}{Whether to graph paths that are fixed but != 0 (default = TRUE)}
 
 \item{format}{= c("current", "graphviz", "DiagrammeR")}
 
-\item{SEstyle}{report "b (se)" instead of "b [lower, upper]" (Default)}
+\item{SEstyle}{Report "b (se)" instead of "b [lower, upper]" (Default)}
 
 \item{strip_zero}{Whether to strip the leading "0" and decimal point from parameter estimates (default = TRUE)}
 
@@ -46,6 +49,12 @@ Options include digits (rounding), showing means or not, standardization, and wh
 }
 \examples{
 \dontrun{
+require(umx)
+data(GFF)
+mzData = subset(GFF, zyg_2grp == "MZ")
+dzData = subset(GFF, zyg_2grp == "DZ")
+selDVs = c("gff","fc","qol","hap","sat","AD") # These will be expanded into "gff_T1" "gff_T2" etc.
+m1 =    umxIP(selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData)
 plot(model)
 umxPlotIP(model, file = NA)
 }

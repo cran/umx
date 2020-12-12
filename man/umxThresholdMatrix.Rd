@@ -6,19 +6,20 @@
 \usage{
 umxThresholdMatrix(
   df,
-  selDVs = NULL,
+  fullVarNames = NULL,
   sep = NULL,
   method = c("Mehta", "allFree"),
   threshMatName = "threshMat",
   l_u_bound = c(NA, NA),
   droplevels = FALSE,
-  verbose = FALSE
+  verbose = FALSE,
+  selDVs = "deprecated"
 )
 }
 \arguments{
 \item{df}{The data being modeled (to allow access to the factor levels and quantiles within these for each variable)}
 
-\item{selDVs}{The variable names. Note for twin data, just the base names, which sep will be used to fill out.}
+\item{fullVarNames}{The variable names. Note for twin data, just the base names, which sep will be used to fill out.}
 
 \item{sep}{(e.g. "_T") Required for wide (twin) data. It is used to break the base names our from their numeric suffixes.}
 
@@ -31,6 +32,8 @@ umxThresholdMatrix(
 \item{droplevels}{Whether to drop levels with no observed data (defaults to FALSE)}
 
 \item{verbose}{How much to say about what was done. (defaults to FALSE)}
+
+\item{selDVs}{deprecated. Use "fullVarNames"}
 }
 \value{
 \itemize{
@@ -38,7 +41,8 @@ umxThresholdMatrix(
 }
 }
 \description{
-High-level helper for ordinal modeling. Creates, labels, and sets smart-starts for this complex matrix. Big time saver!
+High-level helper for ordinal modeling. Creates, labels, and sets smart-starts for this
+complex set set of an algebra and matrices. Big time saver!
 }
 \details{
 We often need to model ordinal data: sex, low-med-hi, depressed/normal, etc.,
@@ -177,10 +181,12 @@ all(tmp[[2]]$free)
 }
 }
 \seealso{
+\code{\link[OpenMx:mxThreshold]{OpenMx::mxThreshold()}}
+
 Other Advanced Model Building Functions: 
 \code{\link{umxJiggle}()},
-\code{\link{umxLabel}()},
-\code{\link{umxValues}()},
-\code{\link{umx}}
+\code{\link{umx}},
+\code{\link{xmuLabel}()},
+\code{\link{xmuValues}()}
 }
 \concept{Advanced Model Building Functions}

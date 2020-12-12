@@ -30,7 +30,7 @@ Does the following to \code{model} (i.e., a umx top/MZ/DZ supermodel):
 \item Add "expMean" algebra to each data group.
 }
 \itemize{
-\item \code{grp.expMean} sums \code{top.intercept}  and grp.DefVars \%*\% top.meansBetas for each twin.
+\item \code{grp.expMean} sums \code{top.intercept}  and \code{grp.DefVars \%*\% top.meansBetas} for each twin.
 }
 }
 \details{
@@ -57,7 +57,6 @@ dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
 Other xmu internal not for end user: 
 \code{\link{umxModel}()},
 \code{\link{umxRenameMatrix}()},
-\code{\link{umxTwinMaker}()},
 \code{\link{umx_APA_pval}()},
 \code{\link{umx_fun_mean_sd}()},
 \code{\link{umx_get_bracket_addresses}()},
@@ -82,6 +81,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_CI_stash}()},
 \code{\link{xmu_DF_to_mxData_TypeCov}()},
 \code{\link{xmu_PadAndPruneForDefVars}()},
+\code{\link{xmu_bracket_address2rclabel}()},
 \code{\link{xmu_cell_is_on}()},
 \code{\link{xmu_check_levels_identical}()},
 \code{\link{xmu_check_needs_means}()},
@@ -105,6 +105,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_name_from_lavaan_str}()},
 \code{\link{xmu_path2twin}()},
 \code{\link{xmu_path_regex}()},
+\code{\link{xmu_rclabel_2_bracket_address}()},
 \code{\link{xmu_safe_run_summary}()},
 \code{\link{xmu_set_sep_from_suffix}()},
 \code{\link{xmu_show_fit_or_comparison}()},

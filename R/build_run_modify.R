@@ -40,15 +40,16 @@
 	umx_set_plot_file_suffix("gv")
 	umx_set_silent(FALSE)
 
-	if(is.null(getOption('knitr.table.format'))){
-		umx_set_table_format('markdown')
-		# options('knitr.table.format' = "markdown")
-	}
+	# if(is.null(getOption('knitr.table.format'))){
+	# 	umx_set_table_format('markdown')
+	# 	options('knitr.table.format' = "markdown")
+	# }
 	umx_set_silent(FALSE)
 	umx_set_auto_run(TRUE)
 	umx_set_auto_plot(TRUE)
 	umx_set_data_variance_check(minVar = .1, maxVarRatio = 1000)
 	umx_set_separator(umx_default_separator = ",")
+	umx_set_table_format("markdown")
 	# umx_complete_dollar()
 	packageStartupMessage("For an overview type '?umx'")
 }
@@ -64,11 +65,17 @@
 #' @importFrom stats setNames update var delete.response terms
 #' @importFrom utils combn data flush.console read.table txtProgressBar
 #' @importFrom utils globalVariables write.table packageVersion
-#' @importFrom utils browseURL install.packages str
+#' @importFrom utils browseURL install.packages str read.csv
 
-#' @importFrom cowplot draw_label
-#' @importFrom ggplot2 qplot scale_x_continuous theme element_text scale_x_continuous
-#' @importFrom ggplot2 expand_limits aes geom_point geom_segment
+#' @importFrom cowplot draw_label plot_grid ggdraw 
+#' @importFrom ggplot2 ggplot qplot ggtitle ylab xlab labs
+#' @importFrom ggplot2 scale_x_continuous scale_x_continuous theme 
+#' @importFrom ggplot2 geom_point geom_segment geom_line geom_ribbon
+#' @importFrom ggplot2 element_text element_blank expand_limits aes
+#' @importFrom kableExtra kbl add_footnote column_spec
+#' @importFrom kableExtra kable_classic kable_classic_2 kable_minimal kable_material kable_material_dark kable_paper
+
+# # ' @importFrom knitr
 
 # Used in plot
 #' @importFrom DiagrammeR DiagrammeR
@@ -369,7 +376,7 @@ umxModel <- function(...) {
 #' @param data data for the model. Can be an [mxData()] or a data.frame
 #' @param ... umxPaths, mxThreshold objects, etc.
 #' @param group (optional) Column name to use for a multi-group model (default = NULL)
-#' @param group.equal In multi-group models, what to equate across groups (default = NULL)
+#' @param group.equal In multi-group models, what to equate across groups (default = NULL: all free)
 #' @param comparison Compare the new model to the old (if updating an existing model: default = TRUE)
 #' @param suffix String to append to each label (useful if model will be used in a multi-group model)
 #' @param name A friendly name for the model
@@ -437,12 +444,13 @@ umxModel <- function(...) {
 #' # = A multi-group model =
 #' # =======================
 #'
+#' mtcars$litres = mtcars$disp/61.02
 #' m1 = umxRAM("tim", data = mtcars, group = "am",
 #' 	umxPath(c("wt", "litres"), to = "mpg"),
 #' 	umxPath("wt", with = "litres"),
 #' 	umxPath(v.m. = c("wt", "litres", "mpg"))
 #' )
-#' # In this model, all parameters are equated across the two groups.
+#' # In this model, all parameters are free across the two groups.
 #'
 #' # ====================================
 #' # = A cov model, with steps laid out =
@@ -551,11 +559,19 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 	allContinuousMethod = match.arg(allContinuousMethod)
 
 	if(show != "deprecated"){
-		message("polite note: In future, replace show with std = T/F/NULL ")
+		message("polite note: In future, replace 'show =' with 'std = TRUE' or FALSE ")
 		if(show =="raw" ){
-			std=FALSE
+			std = FALSE
 		} else {
-			std= TRUE
+			std = TRUE
+		}
+	}
+
+	# if data provided check it isn't a tibble
+	if(!is.null(data)){
+		# avoid ingesting tibbles
+		if("tbl" %in% class(data)){
+			data = as.data.frame(data)
 		}
 	}
 
@@ -581,12 +597,11 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 		# comparison
 		# allContinuousMethod
 		# remove_unused_manifests
-		model = umxLav2RAM(model = model, data = data, group = group, group.equal = group.equal, std.lv = std.lv, name = name, 
+		model = umxLav2RAM(model = model, data = data, type = type, group = group, group.equal = group.equal, std.lv = std.lv, name = name, 
 					lavaanMode = lavaanMode, autoRun = autoRun, tryHard = tryHard, printTab = printTab)
 		return(model)
 	}
 
-	umx_check(!is.null(data), "stop", "In umxRAM, you must set 'data = '. If you're building a model with no data, use mxModel")
 
 	# umxPath-based model
 	if(typeof(model) == "character"){
@@ -601,9 +616,18 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 			if(is.na(name)){
 				name = model$name
 			}
-			newModel = mxModel(model, dot.items, name = name)
+			if(is.null(data)){
+				newModel = mxModel(model, dot.items, name = name)
+			} else {
+				if(umx_is_MxData(data)){
+					newModel = mxModel(model, dot.items, data, name = name)
+				} else {
+					stop("Polite note: I don't know how to convert raw data into mxData to update your model - can you please do that for me and try again?")
+					# newModel = mxModel(model, dot.items, data, name = name)
+				}
+			}
 			# if(setValues){
-			# 	newModel = umxValues(newModel)
+			# 	newModel = xmuValues(newModel)
 			# }
 			newModel = xmu_safe_run_summary(newModel, autoRun = autoRun,  tryHard =  tryHard)
 			return(newModel)
@@ -611,6 +635,9 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 			stop("First item must be either an existing model or a name string. You gave me a ", typeof(model))
 		}
 	}
+
+	umx_check(!is.null(data), "stop", "In umxRAM, you must set 'data = '. If you're building a model with no data, use mxModel")
+
 	if(!length(dot.items) > 0){
 		# do we care?
 	}
@@ -704,7 +731,8 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 	# ==================
 	# = Assemble model =
 	# ==================
-	newModel = do.call("mxModel", list(name = name, type = "RAM", 
+
+	newModel = do.call("mxModel", list(name = name, type = "RAM",
 		manifestVars = usedManifests,
 		latentVars  = latentVars,
 		independent = independent, dot.items)
@@ -714,7 +742,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 	# ============
 	if (class(myData) == "character"){
 		# User is just running a trial model, with no data, but provided names for sketch mode
-		newModel = umxLabel(newModel, suffix = suffix)
+		newModel = xmuLabel(newModel, suffix = suffix)
 		if(is.null(group)){
 			if(autoRun && umx_set_auto_plot(silent = TRUE)){
 				plot(newModel)
@@ -725,8 +753,7 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 		}
 	}else{
 		newModel = mxModel(newModel, myData)
-		# will be re-processed with the required data below...
-		# except should not do this if lavaan... i.e., subset here with level of group...
+		# note: if necessary (group), will be re-processed to add the required data below...
 	}
 	
 	# ==========================
@@ -740,9 +767,14 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 		"mxPath('one', to = manifestVars)")
 		newModel = mxModel(newModel, mxPath("one", usedManifests))
 	}
-	newModel = umxLabel(newModel, suffix = suffix)
+
+	# =========================
+	# = Labels and set values =
+	# =========================
+	suffix = ifelse(is.null(group), yes = suffix, no = paste0(suffix, "_GROUP"))
+	newModel = xmuLabel(newModel, suffix = suffix)
 	if(setValues){
-		newModel = umxValues(newModel, onlyTouchZeros = TRUE)
+		newModel = xmuValues(newModel, onlyTouchZeros = TRUE)
 	}
 
 	if(any(umx_is_ordered(myData$observed))){
@@ -763,16 +795,13 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 	# = Handle group here =
 	# =====================
 	if(!is.null(group)){
-		# 1. go back to raw data and subset by "group" column
-		# 2. create new mxData,
-		# 3. add data to copy of the model and accumulate in list of models
+		# 1. Go back to raw data and subset by "group" column
+		# 2. Create new mxData,
+		# 3. Add data to copy of the model and accumulate in list of models
 		# 4. Add list of models to umxSuperModel
 		modelList = list()
-		groupCol = data[,group]
+		groupCol  = data[, group]
 		levelsOfGroup = unique(groupCol)
-		if(!is.null(group.equal)){
-			message("sorry, haven't implemented group.equal yet")
-		}
 		# already computed above
 		# unusedManifests = setdiff(manifestVars, foundNames)
 		# usedManifests   = setdiff(intersect(manifestVars, foundNames), "one")
@@ -785,9 +814,17 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 				myData = xmu_make_mxData(data= thisSubset, type = type, verbose = FALSE)
 			}
 			thisModel = mxModel(newModel, myData, name= paste0(name, "_", thisLevelOfGroup))
+
+			if(!is.null(group.equal)){
+				message("sorry, haven't implemented group.equal yet")
+			}else{
+				# replace "_GROUP$" with _thisLevelOfGroup
+				thisModel = umxSetParameters(thisModel, regex= "_GROUP$", newlabels= paste0("_", thisLevelOfGroup))
+			}
+
 			modelList = c(modelList, thisModel)
 		}
-		newModel = umxSuperModel(name = name, modelList)
+		return(umxSuperModel(name = name, modelList, autoRun = autoRun, tryHard = tryHard, std = std))
 	}
 
 	newModel = omxAssignFirstParameters(newModel)
@@ -892,7 +929,7 @@ umxSuperModel <- function(name = 'top', ..., autoRun = getOption("umx_auto_run")
 	# Trundle through and make sure values with the same label have the same start value... means for instance.
 	newModel = omxAssignFirstParameters(newModel)
 	newModel = xmu_safe_run_summary(newModel, autoRun = autoRun, tryHard = tryHard, std = std)
-	return(newModel)
+	invisible(newModel)
 }
 
 #' umxModify: Add, set, or drop model paths by label.
@@ -999,7 +1036,7 @@ umxModify <- function(lastFit, update = NULL, master = NULL, regex = FALSE, free
 	tryHard = match.arg(tryHard)
 
 	if(!is.null(master)){
-		x = umxEquate(lastFit, master = master, slave = update, free = freeToStart, verbose = verbose, name = name, autoRun = autoRun, comparison = comparison)
+		x = umxEquate(lastFit, a = master, b = update, free = freeToStart, verbose = verbose, name = name, autoRun = autoRun, comparison = comparison)
 		return(x)
 	}
 
@@ -1036,6 +1073,8 @@ umxModify <- function(lastFit, update = NULL, master = NULL, regex = FALSE, free
 		# handle labels as input
 		if (!regex) {
 			theLabels = update
+			# TODO: check the labels are present
+			# if not suggest reversal for with items
 			if(is.null(newlabels)){
 				newModel = omxSetParameters(newModel, labels = theLabels, free = free, values = value, name = name)
 			}else{
@@ -1209,7 +1248,7 @@ umxModify <- function(lastFit, update = NULL, master = NULL, regex = FALSE, free
 #' # = How heritable is height? =
 #' # ============================
 #' 
-#' # 1. Height in metres has a tiny variance, and this makes optimising hard.
+#' # 1. Height in meters has a tiny variance, and this makes optimising hard.
 #' #    We'll scale it by 10x to make the Optimizer's task easier.
 #' data(twinData) # ?twinData from Australian twins.
 #' twinData[, c("ht1", "ht2")] = twinData[, c("ht1", "ht2")] * 10
@@ -1218,11 +1257,6 @@ umxModify <- function(lastFit, update = NULL, master = NULL, regex = FALSE, free
 #' mzData = twinData[twinData$zygosity %in% "MZFF", ]
 #' dzData = twinData[twinData$zygosity %in% "DZFF", ]
 #' 
-#' \dontshow{
-#' mzData[1:80, ]
-#' dzData[1:80, ]
-#' }
-#' 	
 #' # 3. Built & run the model, controlling for age in the means model
 #' m1 = umxACE(selDVs = "ht", selCovs = "age", sep = "", dzData = dzData, mzData = mzData)
 #'
@@ -1338,22 +1372,24 @@ umxModify <- function(lastFit, update = NULL, master = NULL, regex = FALSE, free
 #' # ===================
 #' # = Ordinal example =
 #' # ===================
+#' 
+#' # Prep data
 #' require(umx)
 #' data(twinData)
-#' twinData= umx_scale_wide_twin_data(data=twinData,varsToScale=c("wt"),sep="")
 #' # Cut BMI column to form ordinal obesity variables
 #' obLevels = c('normal', 'overweight', 'obese')
 #' cuts = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
 #' twinData$obese1=cut(twinData$bmi1, breaks=c(-Inf,cuts,Inf), labels=obLevels)
 #' twinData$obese2=cut(twinData$bmi2, breaks=c(-Inf,cuts,Inf), labels=obLevels)
+#' 
 #' # Make the ordinal variables into umxFactors
 #' ordDVs = c("obese1", "obese2")
 #' twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
+#' 
 #' mzData = twinData[twinData$zygosity %in% "MZFF", ]
 #' dzData = twinData[twinData$zygosity %in% "DZFF", ]
-#' str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
 #' 
-#' # Data-prep done - here's the model and summary!
+#' # Model and summary!
 #' m1 = umxACE(selDVs = "obese", dzData = dzData, mzData = mzData, sep = '')
 #'
 #' # And controlling age (otherwise manifests appearance as latent C)
@@ -1429,11 +1465,23 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, dzData= NULL, mzData= N
 
 	if(dzCr == .25 & (name == "ACE")){ name = "ADE" }
 
+	# if data provided create twin files 
 	if(!is.null(data)){
 		if(is.null(sep)){ sep = "_T" }
+		# avoid ingesting tibbles
+		if("tbl" %in% class(data)){
+			data = as.data.frame(data)
+		}
 		mzData = data[data[,zyg] %in% ifelse(is.null(mzData), "DZ", mzData), ]
 		dzData = data[data[,zyg] %in% ifelse(is.null(dzData), "DZ", dzData), ]
+	}else{
+		# avoid ingesting tibbles
+		if("tbl" %in% class(mzData)){
+			mzData = as.data.frame(mzData)
+			dzData = as.data.frame(dzData)
+		}
 	}
+
 	xmu_twin_check(selDVs= selDVs, sep = sep, dzData = dzData, mzData = mzData, enforceSep = FALSE, nSib = nSib, optimizer = optimizer)
 		
 	# nSib = 2, equateMeans = TRUE, verbose = verbose
@@ -1500,12 +1548,12 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, dzData= NULL, mzData= N
 			mxAlgebra(name = "e_std", SD %*% e)  # standardized e
 		)
 		model = mxModel(model, newTop)
-		if(addCI){
-			if(addStd){
-				model = mxModel(model, mxCI(c('top.a_std', 'top.c_std', 'top.e_std')))
-			}else{
-				model = mxModel(model, mxCI(c('top.a', 'top.c', 'top.e')))
-			}
+	}
+	if(addCI){
+		if(addStd){
+			model = mxModel(model, mxCI(c('top.a_std', 'top.c_std', 'top.e_std')))
+		}else{
+			model = mxModel(model, mxCI(c('top.a', 'top.c', 'top.e')))
 		}
 	}
 	# Trundle through and make sure values with the same label have the same start value... means for instance.
@@ -1555,7 +1603,7 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, dzData= NULL, mzData= N
 #' @examples
 #' require(umx)
 #' data(twinData) 
-#' umx_set_optimizer("SLSQP")
+# twinData = tibble::as_tibble(twinData)
 #' twinData$age1 = twinData$age2 = twinData$age
 #' selDVs  = "bmi"
 #' selDefs = "age"
@@ -1619,17 +1667,28 @@ umxGxE <- function(name = "G_by_E", selDVs, selDefs, dzData, mzData, sep = NULL,
 		# mxAlgebra( cbind(top.intercept + DefT1Rlin + DefT1Rquad, top.intercept + DefT2Rlin + DefT2Rquad), name = "expMeans")
 	# },
 
+	if(dzCr == .25 & name == "G_by_E") name = "G_by_E_ADE"
 	tryHard = match.arg(tryHard)
 	nSib    = 2;
+
+	# if data provided create twin files 
 	if(!is.null(data)){
+		# avoid ingesting tibbles
+		if("tbl" %in% class(data)){
+			data = as.data.frame(data)
+		}
 		if(is.null(dzData)){ dzData = "DZ"; mzData = "MZ" }
 		mzData = data[data[,zyg] %in% mzData, ]
 		dzData = data[data[,zyg] %in% dzData, ]
+	}else{
+		# avoid ingesting tibbles
+		if("tbl" %in% class(mzData)){
+			mzData = as.data.frame(mzData)
+			dzData = as.data.frame(dzData)
+		}
 	}
-
-	if(dzCr == .25 & name == "G_by_E") name = "G_by_E_ADE"
-	
 	xmu_twin_check(selDVs=selDVs, dzData = dzData, mzData = mzData, optimizer = optimizer, sep = sep, nSib = nSib)
+
 	selDVs  = umx_paste_names(selDVs , sep = sep, suffixes = 1:nSib)
 	selDefs = umx_paste_names(selDefs, sep = sep, suffixes = 1:nSib)
 	if(any(selDefs %in% selDVs)) {
@@ -2349,7 +2408,7 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NU
 #' 
 #' Features include the ability to include more than one common pathway, to use ordinal data.
 #' 
-#' **note**: The function [umx_set_mvn_optimization_options()] allows users to see and set `mvnRelEps` and `mvnMaxPointsA`
+#' **note**: The function [umx_set_optimization_options()] allows users to see and set `mvnRelEps` and `mvnMaxPointsA`
 #' mvnRelEps defaults to .005. For ordinal models, you might find that '0.01' works better.
 #' 
 #' @details
@@ -2441,7 +2500,7 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NU
 #' @family Twin Modeling Functions
 #' @seealso - [umxSummaryCP()], [umxPlotCP()]. See [umxRotate.MxModelCP()] to rotate the factor loadings of a [umxCP()] model. See [umxACE()] for more examples of twin modeling. 
 #' [plot()] and [umxSummary()] work for all twin models, e.g., [umxIP()], [umxCP()], [umxGxE()], and [umxACE()].
-#' @references - <https://www.github.com/tbates/umx>
+#' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
 #' \dontrun{
@@ -2498,7 +2557,7 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NU
 #' dzData = subset(GFF, zyg_2grp == "DZ")
 #' 
 #' # umx_set_optimizer("NPSOL")
-#' # umx_set_mvn_optimization_options("mvnRelEps", .01)
+#' # umx_set_optimization_options("mvnRelEps", .01)
 #' m1 = umxCP(selDVs = selDVs, sep = "_T", nFac = 3, dzData = dzData, mzData = mzData)
 #' m2 = umxModify(m1, regex = "(cs_r[3-5]|c_cp_r[12])", name = "dropC", comp= TRUE)
 #' 
@@ -2526,10 +2585,21 @@ umxCP <- function(name = "CP", selDVs, selCovs=NULL, dzData= NULL, mzData= NULL,
 	# Add nFac to base name if no user-set name provided.
 	if(name == "CP"){ name = paste0(name, nFac, "fac") }
 
+	# if data provided create twin files 
 	if(!is.null(data)){
 		if(is.null(sep)){ sep = "_T" }
+		# avoid ingesting tibbles
+		if("tbl" %in% class(data)){
+			data = as.data.frame(data)
+		}
 		mzData = data[data[,zyg] %in% ifelse(is.null(mzData), "DZ", mzData), ]
 		dzData = data[data[,zyg] %in% ifelse(is.null(dzData), "DZ", dzData), ]
+	}else{
+		# avoid ingesting tibbles
+		if("tbl" %in% class(mzData)){
+			mzData = as.data.frame(mzData)
+			dzData = as.data.frame(dzData)
+		}
 	}
 	xmu_twin_check(selDVs= selDVs, dzData = dzData, mzData = mzData, enforceSep = TRUE, sep = sep, nSib = nSib, optimizer = optimizer)
 	
@@ -2674,7 +2744,7 @@ umxCP <- function(name = "CP", selDVs, selCovs=NULL, dzData= NULL, mzData= NULL,
 #' Features of the model include the ability to include add more one set of independent pathways, different numbers
 #' of pathways for a, c, and e, as well the ability to use ordinal data, and different fit functions, e.g. WLS.
 #' 
-#' **note**: The function [umx_set_mvn_optimization_options()] allows users to see and set `mvnRelEps` and `mvnMaxPointsA`
+#' **note**: The function [umx_set_optimization_options()] allows users to see and set `mvnRelEps` and `mvnMaxPointsA`
 #' mvnRelEps defaults to .005. For ordinal models, you might find that '0.01' works better.
 #' 
 #' @details
@@ -2763,14 +2833,14 @@ umxCP <- function(name = "CP", selDVs, selCovs=NULL, dzData= NULL, mzData= NULL,
 #' @export
 #' @family Twin Modeling Functions
 #' @seealso - [plot()], [umxSummary()] work for IP, CP, GxE, SAT, and ACE models.
-#' @references - <https://www.github.com/tbates/umx>
+#' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
 #' \dontrun{
 #' require(umx)
 #' data(GFF)
-#' mzData <- subset(GFF, zyg_2grp == "MZ")
-#' dzData <- subset(GFF, zyg_2grp == "DZ")
+#' mzData = subset(GFF, zyg_2grp == "MZ")
+#' dzData = subset(GFF, zyg_2grp == "DZ")
 #' selDVs = c("gff","fc","qol","hap","sat","AD") # These will be expanded into "gff_T1" "gff_T2" etc.
 #' m1 =    umxIP(selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData)
 #' 
@@ -2798,20 +2868,37 @@ umxIP <- function(name = "IP", selDVs, dzData, mzData, sep = NULL, nFac = c(a=1,
 	tryHard             = match.arg(tryHard)
 	nSib                = 2 # Number of siblings in a twin pair.
 
-	if(correlatedA){ message("Sorry, I haven't implemented correlated A yet...") }
+	if(correlatedA){ message("Sorry, I haven't implemented correlated A yet in umxIP...") }
 
+	# if data provided create twin files 
 	if(!is.null(data)){
 		if(is.null(sep)){ sep = "_T" }
+		# avoid ingesting tibbles
+		if("tbl" %in% class(data)){
+			data = as.data.frame(data)
+		}
 		mzData = data[data[,zyg] %in% ifelse(is.null(mzData), "DZ", mzData), ]
 		dzData = data[data[,zyg] %in% ifelse(is.null(dzData), "DZ", dzData), ]
+	}else{
+		# avoid ingesting tibbles
+		if("tbl" %in% class(mzData)){
+			mzData = as.data.frame(mzData)
+			dzData = as.data.frame(dzData)
+		}
 	}
-	
 	# TODO umxIP: check covariates
 	xmu_twin_check(selDVs= selDVs, sep = sep, dzData = dzData, mzData = mzData, enforceSep = TRUE, nSib = nSib, optimizer = optimizer)
 
 	if(length(nFac) == 1){
 		nFac = c(a = nFac, c = nFac, e = nFac)
-	} else if (length(nFac) != 3){
+	} else if (length(nFac) == 3){
+		if(is.null(names(nFac))){
+			names(nFac)=c("a","c","e")
+		}
+		if(!all(names(nFac)==c("a","c","e"))){
+			stop("nFac must be named a=, c=, and e=")
+		}
+	}else{
 		stop("nFac must be either 1 number or 3. You gave me ", length(nFac))
 	}
 
@@ -3062,23 +3149,27 @@ xmuRAM2Ordinal <- function(model, verbose = TRUE, name = NULL) {
 	return(model)
 }
 
-#' umxValues: Set values in RAM model, matrix, or path
+#' xmuValues: Set values in RAM model, matrix, or path
 #'
-#' For models to be estimated, it is essential that path values start at credible values. umxValues takes on that task for you.
-#' umxValues can set start values for the free parameters in both RAM and Matrix [mxModel()]s. It can also take an mxMatrix as input.
+#' For models to be estimated, it is essential that path values start at credible values. 
+#' `xmuValues` takes on that task for you.
+#' 
+#' xmuValues can set start values for the free parameters in both RAM and Matrix [mxModel()]s. 
+#' It can also take an mxMatrix as input.
 #' It tries to be smart in guessing starts from the values in your data and the model type.
 #' 
-#' \emph{note}: If you give umxValues a numeric input, it will use obj as the mean, and return a list of length n, with sd = sd.
+#' *note*: If you give xmuValues a numeric input, it will use obj as the mean, and return a 
+#' list of length n, with sd = sd.
 #'
 #' @param obj The RAM or matrix [mxModel()], or [mxMatrix()] that you want to set start values for.
 #' @param sd Optional Standard Deviation for start values
 #' @param n Optional Mean for start values
-#' @param onlyTouchZeros Don't alter parameters that appear to have already been started (useful for speeding [umxModify()])
+#' @param onlyTouchZeros Don't alter parameters that have starts (useful to speed [umxModify()])
 #' @return - [mxModel()] with updated start values
 #' @export
 #' @seealso - Core functions:
 #' @family Advanced Model Building Functions
-#' @references - <https://www.github.com/tbates/umx>, <https://tbates.github.io>
+#' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
 #' require(umx)
@@ -3098,11 +3189,11 @@ xmuRAM2Ordinal <- function(model, verbose = TRUE, name = NULL) {
 #' )
 #' mxEval(S, m1) # default variances are jiggled away from near-zero
 #' # Add start values to the model
-#' m1 = umxValues(m1)
+#' m1 = xmuValues(m1)
 #' mxEval(S, m1) # plausible variances
 #' umx_print(mxEval(S,m1), 3, zero.print = ".") # plausible variances
-#' umxValues(14, sd = 1, n = 10) # Return vector of length 10, with mean 14 and sd 1
-umxValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
+#' xmuValues(14, sd = 1, n = 10) # Return vector of length 10, with mean 14 and sd 1
+xmuValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 	if(is.numeric(obj) ) {
 		# Use obj as the mean, return a list of length n, with sd = sd
 		return(xmu_start_value_list(mean = obj, sd = sd, n = n))
@@ -3115,13 +3206,13 @@ umxValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 		# TODO: Start latent means?...
 		# TODO: Handle sub models...
 		if (length(obj$submodels) > 0) {
-			stop("umxValues cannot yet handle sub-models. Build each with umxRAM, then use umxSuperModel to assemble")
+			stop("xmuValues cannot yet handle sub-models. Build each with umxRAM, then use umxSuperModel to assemble")
 		}
 		if (is.null(obj$data)) {
 			stop("'model' does not contain any data")
 		}
 		if(!is.null(obj$matrices$Thresholds)){
-			message("This is a threshold RAM model... I'm not sure how to handle setting values in these yet. left it alone...")
+			message("This is a threshold RAM model... Not sure how to set values in these yet, so left it as-is.")
 			return(obj)
 		}
 		theData   = obj$data$observed
@@ -3167,7 +3258,7 @@ umxValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 			}else if (type %in% c("cov", "cor")){
 				covData = as.matrix(theData)
 			}else{
-				message("umxValues can't recognise data of type ", type, ". I only know raw, cov, cor, and acov")
+				message("xmuValues can't recognise data of type ", type, ". I only know raw, cov, cor, and acov")
 				covData = as.matrix(theData)
 			}
 		} else {
@@ -3222,9 +3313,9 @@ umxValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 	}
 }
 
-#' umxLabel: Add labels to a RAM model, matrix, or path
+#' xmuLabel: Add labels to a RAM model, matrix, or path
 #'
-#' umxLabel adds labels to things, be it an: [mxModel()] (RAM or matrix based), an [mxPath()], or an [mxMatrix()]
+#' xmuLabel adds labels to things, be it an: [mxModel()] (RAM or matrix based), an [mxPath()], or an [mxMatrix()]
 #' This is a core function in umx: Adding labels to paths opens the door to [umxEquate()], as well as [omxSetParameters()]
 #'
 #' @param obj An [mxModel()] (RAM or matrix based), [mxPath()], or [mxMatrix()]
@@ -3241,7 +3332,7 @@ umxValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 #' @return - [mxModel()]
 #' @export
 #' @family Advanced Model Building Functions
-#' @references - <https://www.github.com/tbates/umx>
+#' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
 #' # ==============================================================
@@ -3260,30 +3351,30 @@ umxValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 #' )
 #'
 #' umxGetParameters(m1) # Default "matrix address" labels, i.e "One Factor.S[2,2]"
-#' m1 = umxLabel(m1)
+#' m1 = xmuLabel(m1)
 #' umxGetParameters(m1, free = TRUE) # Informative labels: "G_to_x1", "x4_with_x4", etc.
 #'
 #' # =======================================================================
 #' # = Create a new model, with suffixes added to paths, and model renamed =
 #' # =======================================================================
-#' m2 = umxLabel(m1, suffix= "_male", overRideExisting= TRUE, name = "male")
+#' m2 = xmuLabel(m1, suffix= "_male", overRideExisting= TRUE, name = "male")
 #' umxGetParameters(m2, free = TRUE) # suffixes added
 #' 
 #' # =============================
 #' # = Example Labeling a matrix =
 #' # =============================
-#' a = umxLabel(mxMatrix(name = "a", "Full", 3, 3, values = 1:9))
+#' a = xmuLabel(mxMatrix(name = "a", "Full", 3, 3, values = 1:9))
 #' a$labels
-#' a = umxLabel(mxMatrix(name = "a", "Full", 3, 3, values = 1:9), baseName="bob")
+#' a = xmuLabel(mxMatrix(name = "a", "Full", 3, 3, values = 1:9), baseName="bob")
 #' a$labels
 #' # note: labels with "data." in the name are left untouched!
 #' a = mxMatrix(name = "a", "Full", 1,3, labels = c("data.a", "test", NA))
 #' a$labels
-#' umxLabel(a, verbose = TRUE)
-#' umxLabel(a, verbose = TRUE, overRideExisting = FALSE)
-#' umxLabel(a, verbose = TRUE, overRideExisting = TRUE)
-umxLabel <- function(obj, suffix = "", baseName = NA, setfree = FALSE, drop = 0, labelFixedCells = TRUE, jiggle = NA, boundDiag = NA, verbose = FALSE, overRideExisting = FALSE, name = NULL) {	
-	# TODO umxLabel: Change these to an S3 method with three classes...
+#' xmuLabel(a, verbose = TRUE)
+#' xmuLabel(a, verbose = TRUE, overRideExisting = FALSE)
+#' xmuLabel(a, verbose = TRUE, overRideExisting = TRUE)
+xmuLabel <- function(obj, suffix = "", baseName = NA, setfree = FALSE, drop = 0, labelFixedCells = TRUE, jiggle = NA, boundDiag = NA, verbose = FALSE, overRideExisting = FALSE, name = NULL) {	
+	# TODO xmuLabel: Change these to an S3 method with three classes...
 	# 	Check that arguments not used by a particular class are not set away from their defaults
 	# 	Perhaps make "A_with_A" --> "var_A"
 	# 	Perhaps make "one_to_x2" --> "mean_x2" best left as is
@@ -3331,11 +3422,11 @@ umxLabel <- function(obj, suffix = "", baseName = NA, setfree = FALSE, drop = 0,
 #' @param ... Additional parameters (!! not currently supported by umxMatrix)
 #' @param joinKey See mxMatrix documentation: Defaults to as.character(NA)
 #' @param joinModel See mxMatrix documentation: Defaults to as.character(NA)
-#' @param jiggle = NA passed to umxLabel to jiggle start values (default does nothing)
+#' @param jiggle = NA passed to xmuLabel to jiggle start values (default does nothing)
 #' @return - [mxMatrix()]
 #' @export
 #' @family Core Modeling Functions
-#' @seealso - [xmu_simplex_corner()], [mxMatrix()], [umxLabel()], [umxRAM()]
+#' @seealso - [xmu_simplex_corner()], [mxMatrix()], [xmuLabel()], [umxRAM()]
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
@@ -3379,7 +3470,7 @@ umxMatrix <- function(name = NA, type = "Full", nrow = NA, ncol = NA, free = FAL
 
 	x = mxMatrix(type = type, nrow = nrow, ncol = ncol, free = free, values = values, labels = labels, lbound = lbound, ubound = ubound, byrow = byrow, dimnames = dimnames, name = name, condenseSlots = condenseSlots, joinKey = joinKey, joinModel = joinModel, ...)
 	if(setLabels){
-		x = umxLabel(x, baseName = baseName, jiggle = jiggle)
+		x = xmuLabel(x, baseName = baseName, jiggle = jiggle)
 	}
 	return(x)
 }
@@ -3439,7 +3530,7 @@ umxAlgebra <- function(name = NA, expression, dimnames = NA, ..., joinKey=as.cha
 #' @param comparison Whether to run umxCompare() after umxRun
 #' @return - [mxModel()]
 #' @family Core Modeling Functions
-#' @references - <https://www.github.com/tbates/umx>
+#' @references - <https://github.com/tbates/umx>
 #' @export
 #' @md
 #' @examples
@@ -3472,10 +3563,10 @@ umxRun <- function(model, n = 1, calc_SE = TRUE, calc_sat = TRUE, setValues = FA
 	# TODO: umxRun: Stash saturated model for re-use
 	# TODO: umxRun: Optimise for speed
 	if(setLabels){
-		model = umxLabel(model)
+		model = xmuLabel(model)
 	}
 	if(setValues){
-		model = umxValues(model)
+		model = xmuValues(model)
 	}
 	if(n == 1){
 		model = mxRun(model, intervals = intervals);
@@ -3559,7 +3650,7 @@ umxRun <- function(model, n = 1, calc_SE = TRUE, calc_sat = TRUE, setValues = FA
 #' @return - [mxModel()]
 #' @export
 #' @family Modify or Compare Models
-#' @seealso - [umxModify()], [umxLabel()]
+#' @seealso - [umxModify()], [xmuLabel()]
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
@@ -3625,20 +3716,23 @@ umxSetParameters <- function(model, labels, free = NULL, values = NULL, newlabel
 #' 
 #' \emph{Tip}: To find labels by name, use the regex parameter of [umxGetParameters()]
 #' 
-#' @param model   An [mxModel()] within which to equate parameters
-#' @param master  A list of "master" labels to which slave labels will be equated
-#' @param slave   A list of slave labels which will be updated to match master labels, thus equating the parameters
+#' @param model   An [mxModel()] within which to equate parameters listed in "a" with those in "b"
+#' @param a  one or more parameter labels to equate with b labels
+#' @param b  one or more labels to equate (if newNames is not set, these will set to the a labels, thus equating the parameters
+#' @param newlabels (optional) list of new labels for the equated parameters.
 #' @param free    Should parameter(s) initially be free? (default = TRUE)
 #' @param verbose Whether to give verbose feedback (default = TRUE)
 #' @param name    name for the returned model (optional: Leave empty to leave name unchanged)
 #' @param comparison Compare the new model to the old (if updating an existing model: default = TRUE)
 #' @param autoRun Whether to run the model (default), or just to create it and return without running.
 #' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"
+#' @param master  A list of "master" labels to which slave labels will be equated
+#' @param slave   A list of slave labels which will be updated to match master labels, thus equating the parameters
 #' @return - [mxModel()]
 #' @export
 #' @seealso [umxModify()], [umxCompare()]
 #' @family Modify or Compare Models
-#' @references - <https://www.github.com/tbates/umx>
+#' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
 #' require(umx)
@@ -3649,45 +3743,69 @@ umxSetParameters <- function(model, labels, free = NULL, values = NULL, newlabel
 #' 	umxPath(var = manifests),
 #' 	umxPath(var = "G", fixedAt = 1)
 #' )
-#' # By default, umxEquate just equates master and slave labels
-#' m2 = umxEquate(m1, master = "G_to_x1", slave = "G_to_x2", name = "Eq x1 x2 loadings")
+#' # By default, umxEquate just equates master and slave labels: doesn't run model
+#' m2 = umxEquate(m1, a = "G_to_x1", b = "G_to_x2", name = "Eq x1 x2 loadings")
+#' 
 #' # Set autoRun = TRUE and comparison = TRUE to run and output a comparison
-#' m2 = umxEquate(m1, autoRun = TRUE, comparison = TRUE, name = "Eq x1 x2",
-#' 	     master = "G_to_x1", slave = "G_to_x2"
+#' m2 = umxEquate(m1, autoRun = TRUE, comparison = TRUE, name = "Eq_x1_x2",
+#' 	     a = "G_to_x1", b = "G_to_x2"
 #' )
-umxEquate <- function(model, master, slave, free = c(TRUE, FALSE, NA), verbose = FALSE, name = NULL, autoRun = FALSE, tryHard = c("no", "yes", "ordinal", "search"), comparison = TRUE) {
-	tryHard = match.arg(tryHard)
+#'
+#' # rename the equated paths
+#' m2 = umxEquate(m1, autoRun = TRUE, comparison = TRUE, name = "Eq_x1_x2",
+#' 	     a = "G_to_x1", b = "G_to_x2", newlabels = c("equated")
+#' )
+#' parameters(m2)
+umxEquate <- function(model, a, b, newlabels= NULL, free = c(TRUE, FALSE, NA), verbose = FALSE, name = NULL, autoRun = FALSE, tryHard = c("no", "yes", "ordinal", "search"), comparison = TRUE, master= NULL, slave= NULL) {
 	free = xmu_match.arg(free, c(TRUE, FALSE, NA)) # match.arg can't handle Boolean as options?
+	tryHard = match.arg(tryHard)
+
+	if(!is.null(master)){
+		listA = master
+		listB = slave
+	}else{
+		listA = a
+		listB = b		
+	}
+
 	if(!umx_is_MxModel(model)){
 		message("ERROR in umxEquate: model must be a model, you gave me a ", class(model)[1])
-		message("A usage example is umxEquate(model, master=\"a_to_b\", slave=\"a_to_c\", name=\"model2\") # equate paths a->b and a->c, in a new model called \"model2\"")
+		message("A usage example is umxEquate(model, listA=\"a_to_b\", listB=\"a_to_c\", name=\"model2\") # equate paths a->b and a->c, in a new model called \"model2\"")
 		stop()
 	}
 
-	if(length(master) == 1){
-		if(length(grep("[\\^\\.\\*\\[\\(\\+\\|]+", master) ) < 1){ # no grep found: add some anchors
-			master = paste0("^", master, "$"); # anchor to the start of the string
-			slave  = paste0("^", slave,  "$");
+	if(length(listA) == 1){
+		if(length(grep("[\\^\\.\\*\\[\\(\\+\\|]+", listA) ) < 1){ # no grep found: add some anchors
+			listA = paste0("^", listA, "$"); # anchor to the start of the string
+			listB  = paste0("^", listB,  "$");
 			if(verbose == TRUE){
 				cat("note: matching whole label\n");
 			}
 		}
 	}
-	masterLabels = umxGetParameters(model, regex = master, free = free, verbose = verbose)
-	slaveLabels  = umxGetParameters(model, regex = slave , free = free, verbose = verbose)
-	if( length(slaveLabels) != length(masterLabels) && (length(masterLabels)!=1)) {
-		print(list(masterLabels = masterLabels, slaveLabels = slaveLabels))
-		stop("ERROR in umxEquate: master and slave labels not the same length!\n",
-		length(slaveLabels), " slavelabels found, and ", length(masterLabels), " masters")
+	listALabels = umxGetParameters(model, regex = listA, free = free, verbose = verbose)
+	listBLabels = umxGetParameters(model, regex = listB, free = free, verbose = verbose)
+	if( length(listBLabels) != length(listALabels) && (length(listALabels)!=1)) {
+		print(list(listALabels = listALabels, listBLabels = listBLabels))
+		stop("ERROR in umxEquate: listA and listB labels not the same length!\n",
+		length(listBLabels), " list B labels found, and ", length(listALabels), " list As")
 	}
-	if(length(slaveLabels) == 0) {
+	if(length(listBLabels) == 0) {
 		legal = names(omxGetParameters(model, indep=FALSE, free=free))
 		legal = legal[which(!is.na(legal))]
 		message("Labels available in model are: ", paste(legal, ", "))
-		stop("ERROR in umxEquate: no slave labels found or none requested!")
+		stop("ERROR in umxEquate: no listB labels found or none requested!")
 	}
-	# print(list(masterLabels = masterLabels, slaveLabels = slaveLabels))
-	newModel = omxSetParameters(model = model, labels = slaveLabels, newlabels = masterLabels, name = name)
+	# print(list(listALabels = listALabels, listBLabels = listBLabels))
+	if(is.null(newlabels)){
+		newModel = omxSetParameters(model = model, labels = listBLabels, newlabels = listALabels, name = name)
+	} else {
+		umx_check(length(newlabels)==length(listALabels), "stop", "newlabels must be the same length as list a. ", 
+			"Found ", length(listALabels), " list a labels, and ", length(newlabels), " newlabels"
+		)
+		newModel = omxSetParameters(model = model   , labels = listALabels, newlabels = newlabels, name = name)
+		newModel = omxSetParameters(model = newModel, labels = listBLabels, newlabels = newlabels, name = name)
+	}
 	newModel = omxAssignFirstParameters(newModel, indep = FALSE)
 	newModel = xmu_safe_run_summary(newModel, model, autoRun = autoRun, tryHard = tryHard, comparison = comparison)
 	return(newModel)
@@ -3753,7 +3871,8 @@ umxFixAll <- function(model, name = "_fixed", run = FALSE, verbose= FALSE){
 
 #' Create the threshold matrix needed for modeling ordinal data.
 #'
-#' High-level helper for ordinal modeling. Creates, labels, and sets smart-starts for this complex matrix. Big time saver!
+#' High-level helper for ordinal modeling. Creates, labels, and sets smart-starts for this 
+#' complex set set of an algebra and matrices. Big time saver!
 #'
 #' @details We often need to model ordinal data: sex, low-med-hi, depressed/normal, etc., 
 #' A useful conceptual strategy to handle these data is to build a standard model for normally-varying data 
@@ -3784,15 +3903,17 @@ umxFixAll <- function(model, name = "_fixed", run = FALSE, verbose= FALSE){
 #' dev_1 "obese_dev1"   "obese_dev1"
 #'
 #' @param df The data being modeled (to allow access to the factor levels and quantiles within these for each variable)
-#' @param selDVs The variable names. Note for twin data, just the base names, which sep will be used to fill out.
+#' @param fullVarNames The variable names. Note for twin data, just the base names, which sep will be used to fill out.
 #' @param sep (e.g. "_T") Required for wide (twin) data. It is used to break the base names our from their numeric suffixes.
 #' @param method How to implement the thresholds: Mehta, (1 free thresh for binary, first two fixed for ordinal) or "allFree"
 #' @param l_u_bound c(NA, NA) by default, you can use this to bound the first (base) threshold.
 #' @param droplevels Whether to drop levels with no observed data (defaults to FALSE)
 #' @param threshMatName name of the matrix which is returned. Defaults to "threshMat" - best not to change it.
 #' @param verbose How much to say about what was done. (defaults to FALSE)
+#' @param selDVs deprecated. Use "fullVarNames"
 #' @return - list of thresholds matrix, deviations, lowerOnes
 #' @export
+#' @seealso [OpenMx::mxThreshold()]
 #' @family Advanced Model Building Functions
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
@@ -3898,9 +4019,8 @@ umxFixAll <- function(model, name = "_fixed", run = FALSE, verbose= FALSE){
 #' tmp = umxThresholdMatrix(twinData, selDVs = tvars(selDVs, sep= ""), sep = "", method = "allFree")
 #' all(tmp[[2]]$free)
 #' 
-umxThresholdMatrix <- function(df, selDVs = NULL, sep = NULL, method = c("Mehta", "allFree"), threshMatName = "threshMat", l_u_bound = c(NA, NA), droplevels = FALSE, verbose = FALSE){
+umxThresholdMatrix <- function(df, fullVarNames = NULL, sep = NULL, method = c("Mehta", "allFree"), threshMatName = "threshMat", l_u_bound = c(NA, NA), droplevels = FALSE, verbose = FALSE, selDVs= "deprecated"){
 	# TODO: umxThresholdMatrix: priority A: Move to a more robust way to detect twin than just the sep isn't NULL??
-	# could change parameter name from selDVs to completeVarNames
 	# TODO: Consider changing from "threshMat" to "Thresholds" to match what mxModel does with mxThresholds internally now...
 	# df = x; sep = NULL; threshMatName = "threshMat"; method = "auto"; l_u_bound = c(NA,NA); verbose = T
 	method = match.arg(method)
@@ -3908,20 +4028,23 @@ umxThresholdMatrix <- function(df, selDVs = NULL, sep = NULL, method = c("Mehta"
 		verbose=FALSE
 	}
 
-	if(is.null(selDVs)){
-		warning("Polite message: For coding safety, when calling umxThresholdMatrix, set selDVs to the list of FULL names of all the variables in the model (AND you MUST include sep if this is a twin model!!)")
+	if(any(selDVs!="deprecated")){
+		message("Polite note: please use fullVarNames instead of selDVs when calling umxThresholdMatrix")
+		fullVarNames= selDVs
+	}
+
+	if(is.null(fullVarNames)){
+		warning("Polite message: For coding safety, when calling umxThresholdMatrix, set fullVarNames to the list of FULL names of all the variables in the model (AND you MUST include sep if this is a twin model!!)")
 		fullVarNames = names(df)
 		nSib = 1
 	} else if(is.null(sep)){
 		# no sep: Assume this is not family data
-		fullVarNames = selDVs 
 		nSib = 1
 	} else {
 		# sep provided: Assume this is twin data (already expanded... no way currently to tell if sep was intended to build or decompose vars - see TODO above!!)
 		# Set nSib, and break down names into base and suffix if necessary
-		fullVarNames = selDVs
 		msg = paste0("umxThresholdMatrix needs the _FULL_ name of each variable (in addition to the `sep` used to break them down to base names)... 
-			you provided: ", omxQuotes(selDVs))
+			you provided: ", omxQuotes(fullVarNames))
 		umx_check_names(namesNeeded = fullVarNames, data = df, die = TRUE, message = msg)
 		tmp         = umx_explode_twin_names(fullVarNames, sep = sep)
 		baseNames   = tmp$baseNames
@@ -4489,7 +4612,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 			thisTo    = to[i:nTo]
 			fromList  = c(fromList, thisFrom)
 			toList    = c(toList, thisTo)
-			# Needn't bother with this as it will all be taken care of in umxLabel...
+			# Needn't bother with this as it will all be taken care of in xmuLabel...
 			labelList = c(labelList, paste(thisFrom, thisTo, sep = '_to_'))
 			n = (n - 1)
 		}
@@ -4820,7 +4943,6 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 #' @family Plotting functions
 #' @family Super-easy helpers
 #' @family Twin Modeling Functions
-#' @family Twin Reporting Functions
 #' @family Twin Data functions
 #' @family Get and set
 #' @family Check or test
@@ -4833,7 +4955,7 @@ umxPath <- function(from = NULL, to = NULL, with = NULL, var = NULL, cov = NULL,
 #' @family Advanced Model Building Functions
 #' @family zAdvanced Helpers
 #' @family xmu internal not for end user
-#' @references - <https://www.github.com/tbates/umx>
+#' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
 #' require("umx")

@@ -1,3 +1,19 @@
+Hermine
+Maes
+Neale
+Behav
+Medland
+Verhulst
+Wormley
+kableExtra
+arial
+Arial
+helvetica
+labelNumericZygosity
+varA
+varB
+sortable
+rXcX
 ACECov
 ADEv
 BUGFIX
@@ -659,7 +675,6 @@ umxIP
 umxJiggle
 umxLabel
 umxLabeler
-umxLabels
 umxMakeThresholdMatrix
 umxMatrix
 umxModel
@@ -684,7 +699,8 @@ umxSuperModel
 umxTryHard
 umxTwoStage
 umxUnexplainedCausalNexus
-umxValues
+xmuLabels
+xmuValues
 umxVersion
 uni
 UVa

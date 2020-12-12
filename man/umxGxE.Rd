@@ -79,7 +79,6 @@ The following figure the GxE model as a path diagram:
 \examples{
 require(umx)
 data(twinData) 
-umx_set_optimizer("SLSQP")
 twinData$age1 = twinData$age2 = twinData$age
 selDVs  = "bmi"
 selDefs = "age"
@@ -139,9 +138,26 @@ Other Twin Modeling Functions:
 \code{\link{umxGxE_window}()},
 \code{\link{umxGxEbiv}()},
 \code{\link{umxIP}()},
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotDoC}()},
+\code{\link{umxReduceACE}()},
+\code{\link{umxReduceGxE}()},
+\code{\link{umxReduce}()},
 \code{\link{umxRotate.MxModelCP}()},
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
+\code{\link{umxSummarizeTwinData}()},
+\code{\link{umxSummaryACEcov}()},
+\code{\link{umxSummaryACEv}()},
+\code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryCP}()},
+\code{\link{umxSummaryDoC}()},
+\code{\link{umxSummaryGxEbiv}()},
+\code{\link{umxSummaryGxE}()},
+\code{\link{umxSummaryIP}()},
+\code{\link{umxSummarySexLim}()},
+\code{\link{umxSummarySimplex}()},
+\code{\link{umxTwinMaker}()},
 \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}

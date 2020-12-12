@@ -85,7 +85,7 @@ plot(m1, std = TRUE, file = NA)
 }
 \references{
 \itemize{
-\item \url{https://www.github.com/tbates/umx}
+\item \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
@@ -152,16 +152,14 @@ Other Twin Modeling Functions:
 \code{\link{umxGxEbiv}()},
 \code{\link{umxGxE}()},
 \code{\link{umxIP}()},
-\code{\link{umxRotate.MxModelCP}()},
-\code{\link{umxSexLim}()},
-\code{\link{umxSimplex}()}
-
-Other Twin Reporting Functions: 
 \code{\link{umxPlotCP}()},
 \code{\link{umxPlotDoC}()},
 \code{\link{umxReduceACE}()},
 \code{\link{umxReduceGxE}()},
 \code{\link{umxReduce}()},
+\code{\link{umxRotate.MxModelCP}()},
+\code{\link{umxSexLim}()},
+\code{\link{umxSimplex}()},
 \code{\link{umxSummarizeTwinData}()},
 \code{\link{umxSummaryACEcov}()},
 \code{\link{umxSummaryACEv}()},
@@ -172,7 +170,8 @@ Other Twin Reporting Functions:
 \code{\link{umxSummaryGxE}()},
 \code{\link{umxSummaryIP}()},
 \code{\link{umxSummarySexLim}()},
-\code{\link{umxSummarySimplex}()}
+\code{\link{umxSummarySimplex}()},
+\code{\link{umxTwinMaker}()}
 
 Other Twin Data functions: 
 \code{\link{umx_long2wide}()},
@@ -191,7 +190,7 @@ Other Get and set:
 \code{\link{umx_set_condensed_slots}()},
 \code{\link{umx_set_cores}()},
 \code{\link{umx_set_data_variance_check}()},
-\code{\link{umx_set_mvn_optimization_options}()},
+\code{\link{umx_set_optimization_options}()},
 \code{\link{umx_set_optimizer}()},
 \code{\link{umx_set_plot_file_suffix}()},
 \code{\link{umx_set_plot_format}()},
@@ -221,6 +220,7 @@ Other Data Functions:
 \code{\link{umx_polypairwise}()},
 \code{\link{umx_polytriowise}()},
 \code{\link{umx_read_lower}()},
+\code{\link{umx_read_prolific_demog}()},
 \code{\link{umx_rename}()},
 \code{\link{umx_reorder}()},
 \code{\link{umx_select_valid}()},
@@ -249,6 +249,8 @@ Other String Functions:
 Other Miscellaneous Stats Helpers: 
 \code{\link{FishersMethod}()},
 \code{\link{SE_from_p}()},
+\code{\link{geometric_mean}()},
+\code{\link{harmonic_mean}()},
 \code{\link{oddsratio}()},
 \code{\link{reliability}()},
 \code{\link{umxCov2cor}()},
@@ -286,14 +288,13 @@ Other datasets:
 
 Other Advanced Model Building Functions: 
 \code{\link{umxJiggle}()},
-\code{\link{umxLabel}()},
 \code{\link{umxThresholdMatrix}()},
-\code{\link{umxValues}()}
+\code{\link{xmuLabel}()},
+\code{\link{xmuValues}()}
 
 Other xmu internal not for end user: 
 \code{\link{umxModel}()},
 \code{\link{umxRenameMatrix}()},
-\code{\link{umxTwinMaker}()},
 \code{\link{umx_APA_pval}()},
 \code{\link{umx_fun_mean_sd}()},
 \code{\link{umx_get_bracket_addresses}()},
@@ -318,6 +319,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_CI_stash}()},
 \code{\link{xmu_DF_to_mxData_TypeCov}()},
 \code{\link{xmu_PadAndPruneForDefVars}()},
+\code{\link{xmu_bracket_address2rclabel}()},
 \code{\link{xmu_cell_is_on}()},
 \code{\link{xmu_check_levels_identical}()},
 \code{\link{xmu_check_needs_means}()},
@@ -341,6 +343,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_name_from_lavaan_str}()},
 \code{\link{xmu_path2twin}()},
 \code{\link{xmu_path_regex}()},
+\code{\link{xmu_rclabel_2_bracket_address}()},
 \code{\link{xmu_safe_run_summary}()},
 \code{\link{xmu_set_sep_from_suffix}()},
 \code{\link{xmu_show_fit_or_comparison}()},
@@ -376,7 +379,6 @@ Other xmu internal not for end user:
 \concept{Teaching and testing Functions}
 \concept{Twin Data functions}
 \concept{Twin Modeling Functions}
-\concept{Twin Reporting Functions}
 \concept{datasets}
 \concept{xmu internal not for end user}
 \concept{zAdvanced Helpers}

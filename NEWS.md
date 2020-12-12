@@ -1,3 +1,67 @@
+# umx 4.2.5
+* December 2020 R 4.0.3 (2020-06-22)
+* NEW: `tmx_show` display model matrices on the web, with color-coded free/false, values + roll-over labels.
+* NEW: `harmonic_mean` with support for weights.
+* NEW: `geometric_mean`
+* NEW: `fin_compound_interest`
+* NEW: `fin_percent_off`
+* IMPROVED: `umxPlotGxE` gains CI ribbons (closes #96)
+* IMPROVED: `umxPlotGxE` defaults to use ggplot and now returns the graphs for decoration (closes #139)
+* IMPROVED: `umxPlotGxE` can now plot user-specified moderator ranges (closes #96)
+* IMPROVED: `umxPlotIP` now relies on matrix cells, not the labels they contain (closes #61)
+* IMPROVED: `umxACE` returns group models invisibly #134 @khusmann.
+* IMPROVED: `plot` now allows "ortho" "compound" and "polyline" spline control.
+* IMPROVED: `umx_set_optimization_options` can get and set "Parallel diagnostics"
+* IMPROVED: `umx_set_optimization_options` can get and set "Parallel diagnostics".
+* IMPROVED: `tmx_show` smart about not printing NULL matrices.
+* IMPROVED: 'umxEquate` gained a `newlabels` parameter for the equated paths (rather than one path adopting the label of the other)
+* IMPROVED: `umx_score_scale` supports minManifests for factor scores
+* IMPROVED: `umx_open_CRAN_page` now can install a package if not installed, as well as open the CRAN page for the package.
+* IMPROVED: `umx_rename_file` nicer user feedback about matches and files checked
+* IMPROVED: `umx_long2wide` more resilient to zygosity column type
+* IMPROVED: `umxSummarizeTwinData` more resilient to name of age column
+* IMPROVED: `plot` strip_zero option works for fixed (@) parameters
+* IMPROVED: `umx_is_class` handle non-df input
+* IMPROVED: `umxCI`: gains `regex` parameter to support adding and removing CIs on labels matching a string pattern.
+* IMPROVED: `umx_is_class` handle non-df input
+* IMPROVED: `umx_rename_file` nicer user feedback about matches and files checked
+* IMPROVED: `umx_set_table_format` to markdown on load
+* FIXED: 'umxRAM` group option failing to pass autoRun tryHard Merge pull request #134 @khusmann
+* FIXED: `umxRAM` with a model as first parameter now doesn't demand new data. Updates data if data is provided.
+* FIXED: `umxPlotIP` wasn't working with threshold models (didn't ignore thresh names for plot).
+* FIXED: `umx_time` was using time units for model 1 for all models... h/t @khusmann
+* FIXED: `umxPlotACEv` was not displaying half the variables in an MV model as NA.
+* FIXED: `umx_set_cores` no longer use `imxGetNumThreads` which is actually hard-coded to not report number of threads.
+* FIXED: Check for more than one named CI requested (closes #136).
+* FIXED: `tmx_show` has `html_font` parameter in help.
+* WORKAROUND: 'umxSummary` wraps `mxRefModels` error for WLS models in tryCatch to tell user OpenMx doesn't support fit stats for WLS as yet.
+* BACKWARD: `umxThresholdMatrix` changed parameter from selDVs to fullVarNames to prevent user error.
+* HELP: `harmonic_mean` example averaging speeds across distance.
+* NEW: `umx_read_prolific_demog` to read prolific academic demographics files.
+
+# umx 4.1.0
+* July 2020 R 4.0.0
+* CHANGE: `umxRAM` group now independent by default (label style  "path_group" )
+* FIXED: 'umxRAM` group option failing to pass autoRun tryHard Merge pull request #134 @khusmann
+* IMPROVED: `umxACE` return group models invisibly #134 @khusmann
+* IMPROVED: `umxACEv` support for covariates enabled.
+* IMPROVED: `umx_score_scale` gains the ability to return a factor score.
+* IMPROVED: `umxEFA` returns scores by default when requested (used to require user to also set `return = "loadings"`  (thanks to user!)
+* IMPROVED: `umx_r_test` handles case of overlapping variables, i.e., compare r(ab) to r(ac) 
+* IMPROVED: `umxPlotACE` uses matrix cells, not labels to draw the plot (so now labels are arbitrary)
+* IMPROVED: `umxIP` checks names of nFac for each of a, c, and e 
+* IMPROVED: `umxSimplex` default sep is now "_T" instead of NULL (should do this throughout?) 
+* IMPROVED: `residuals` can now suppress 0s - helpful for large tables
+* IMPROVED: `xmu_dot_mat2dot` can cope with 1-variable name lists
+* DEVELOPER `umxValues` -> `xmuValues` clean up namespace 
+* DEVELOPER `umxLabels`  -> `xmuLabels` clean up namespace
+* FIXED: `parameters`: std wasn't being used.
+* INFO:  TLI /CFI vs. RMSEA
+* HELP:  `umxEFA` examples.
+* HELP:  `umxTwinMaker`.
+
+
+
 # umx 4.0.0
 * May 2020 R 4.0.0
 * FIXED: `umx_score_scale` Fix a bad design decision where I was storing the reversed items in the data returned to the user. Worked for 1 run, but not repeats...
@@ -8,21 +72,11 @@
 	* umxTwinMaker handles making twin2, variance components covariances, MZ and DZ groups, makes a `umxSuperModel` and runs it!
 	* `plot()` and "std= TRUE" work for any model now! 
 * NEW: `umxDoCp` Path-based Direction of causation model.
-* NEW: `umxSummaryACE` prints a means table! including for intercepts only, no means model, and intercepts + covariate betas. Other models gain this also.
-* NEW: `umxRenameMatrix` wrap up the multiple lines of code needed to modify a matrix in OpenMx.
-* NEW: `umx_str_chars` return selected characters of a string.
-* NEW: `umxTwinUpgradeMeansToCovariateModel` function to add def-based covariates to means in umx twin models.
-* NEW: `xmu_data_missing` helper to drop rows with missing def vars or stop and alert the user to do this.
-* NEW: `xmu_extract_column` to allow mxData
-* NEW: `xmu_twin_add_WeightMatrices` helper.
-* NEW: `umxTwinAddMeansModel` will add a means model to a twin model (not finished!)
-* NEW: `xmuDefMean` helper
-* NEW: `xmuDefBetas` helper
-* NEW `xmu_twin_upgrade_selDvs2SelVars` helper.
-* NEW: `xmu_make_TwinSuperModel` handles selCovs
+* IMPROVED: `umxSummaryACE` prints a means table!
+	* including for intercepts only, no means model, and intercepts + covariate betas.
+	* All RAM and twin models gain this also.
 * IMPROVED `plot` for `umxACEv` now prints model name on the diagram.
-* IMPROVED `plot` for `umxACEv` now prints tips for print.
-* IMPROVED `plot` for `umxACE` now prints tips for print.
+* IMPROVED `plot` for `umxACE` now uses tips for printing.
 * IMPROVED: `FishersMethod`: accepts p-values for meta-analysis in "..." argument.
 * IMPROVED: `namez` handles class(list) objects, returning $ components.
 * IMPROVED: `parameters` supports standardizing parameters (closes #92)	.
@@ -43,32 +97,40 @@
 * IMPROVED: `umx_is_ordered` can process mxData as well as df.
 * IMPROVED: `umx_make_TwinData` has dzAr.
 * IMPROVED: `umx_make_twin_data_nice` can turn numeric zyg column into human readable "MZMM" etc.
-* IMPROVED: `umx_print` gains options to append to existing file.
-* IMPROVED: `umx_print` gains options to make tables sort-able.
-* IMPROVED: `umx_print` gains options to output content in "both" md and html.
-* IMPROVED: `umx_print` to react correctly to report as an input to file more mergers of print to console and to html.
+* IMPROVED: `umx_print` gains option to append to existing file.
+* IMPROVED: `umx_print` gains option to make tables sort-able.
+* IMPROVED: `umx_print` gains option to output content in "both" md and html.
+* IMPROVED: `umx_print` supports report to html.
 * IMPROVED: `umx_rename` now uses "from=, to=" format for renaming columns.
 * IMPROVED: `umx_rename` was using old/replace  instead of from/to (and so generating a polite note).
 * IMPROVED: `umx_residualize` now prints the betas (and CIs) of the residualization it performs.
-* IMPROVED: `umx_rot` can NA the last value.
 * IMPROVED: `umx_score_scale` checks input ranges
 * IMPROVED: `umx_score_scale` tell user what the max response is for reversed items if they leave this blank.
 * IMPROVED: `umx_score_scale` Warns user if there are NAs when "score"  is totals.
 * IMPROVED: `umx_rename_file`: Perl mode is TRUE (allows lookahead/behind features; default list pattern is NULL.
 * IMPROVED: `umx_rename_file` now ignores file suffix by default.
+* IMPROVED: `umx_rot` can NA the last value.
 * IMPROVED: `umx_var` upgrades input to df (e.g. if you feed it a column, it now works).
-* IMPROVED: `xmuTwinUpgradeMeansToCovariateModel` uses the incoming model's thresholds name.
 * IMPROVED: `xmu_data_missing` can `hint=` to user which dataset had missingness.
 * IMPROVED: `xmu_make_mxData` handles dropping rows, alerting about variance ratios.
 * IMPROVED: `xmu_make_mxData` now handles cov matrix input (added `numObs` parameter).
 * IMPROVED: better labels for output tables.
-* IMPROVED: increase use of `xmu_data_missing` helper.
 * IMPROVED: standardize on expMean as name of means matrix even when it's a local algebra.
 * IMPROVED: twin Models print out means now.
 * HELP: `umxACE` improved tutorial, more tips * IMPROVED `plot` for `umxACE` now prints model name on the diagram.
 * HELP: `umxACE` covariate examples
 * HELP: `umx_explode_twin_names` links for find-ability
 * HELP: `umxACE` residualize examples match
+* NEW: `umxRenameMatrix` wrap up the multiple lines of code needed to modify a matrix in OpenMx.
+* NEW: `umx_str_chars` return selected characters of a string.
+* NEW: `umxTwinUpgradeMeansToCovariateModel` function to add def-based covariates to means in umx twin models.
+* NEW: `xmu_data_missing` helper to drop rows with missing def vars or stop and alert the user to do this.
+* NEW: `xmu_extract_column` to allow mxData
+* NEW: `xmu_twin_add_WeightMatrices` helper.
+* NEW: `xmuDefMean` helper
+* NEW: `xmuDefBetas` helper
+* NEW `xmu_twin_upgrade_selDvs2SelVars` helper.
+* NEW: `xmu_make_TwinSuperModel` handles selCovs
 * REPLACE: `parallel::detectCores` --> ` imxGetNumThreads` (as OpenMx does).
 
 # umx 3.1.0

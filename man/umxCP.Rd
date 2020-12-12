@@ -117,7 +117,7 @@ As can be seen, each phenotype also by default has A, C, and E influences specif
 
 Features include the ability to include more than one common pathway, to use ordinal data.
 
-\strong{note}: The function \code{\link[=umx_set_mvn_optimization_options]{umx_set_mvn_optimization_options()}} allows users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
+\strong{note}: The function \code{\link[=umx_set_optimization_options]{umx_set_optimization_options()}} allows users to see and set \code{mvnRelEps} and \code{mvnMaxPointsA}
 mvnRelEps defaults to .005. For ordinal models, you might find that '0.01' works better.
 }
 \details{
@@ -227,7 +227,7 @@ mzData = subset(GFF, zyg_2grp == "MZ")
 dzData = subset(GFF, zyg_2grp == "DZ")
 
 # umx_set_optimizer("NPSOL")
-# umx_set_mvn_optimization_options("mvnRelEps", .01)
+# umx_set_optimization_options("mvnRelEps", .01)
 m1 = umxCP(selDVs = selDVs, sep = "_T", nFac = 3, dzData = dzData, mzData = mzData)
 m2 = umxModify(m1, regex = "(cs_r[3-5]|c_cp_r[12])", name = "dropC", comp= TRUE)
 
@@ -249,7 +249,7 @@ m1 = umxCP("new", selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData,
 }
 \references{
 \itemize{
-\item \url{https://www.github.com/tbates/umx}
+\item \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
@@ -270,9 +270,26 @@ Other Twin Modeling Functions:
 \code{\link{umxGxEbiv}()},
 \code{\link{umxGxE}()},
 \code{\link{umxIP}()},
+\code{\link{umxPlotCP}()},
+\code{\link{umxPlotDoC}()},
+\code{\link{umxReduceACE}()},
+\code{\link{umxReduceGxE}()},
+\code{\link{umxReduce}()},
 \code{\link{umxRotate.MxModelCP}()},
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
+\code{\link{umxSummarizeTwinData}()},
+\code{\link{umxSummaryACEcov}()},
+\code{\link{umxSummaryACEv}()},
+\code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryCP}()},
+\code{\link{umxSummaryDoC}()},
+\code{\link{umxSummaryGxEbiv}()},
+\code{\link{umxSummaryGxE}()},
+\code{\link{umxSummaryIP}()},
+\code{\link{umxSummarySexLim}()},
+\code{\link{umxSummarySimplex}()},
+\code{\link{umxTwinMaker}()},
 \code{\link{umx}}
 }
 \concept{Twin Modeling Functions}
