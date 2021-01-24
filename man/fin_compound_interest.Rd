@@ -7,11 +7,13 @@
 fin_compound_interest(
   principal = 0,
   deposits = 0,
+  deposit_inflator = 0,
   interest = 0.05,
   yrs = 10,
   n = 12,
   when = "beginning",
-  symbol = "$"
+  symbol = "$",
+  report = c("markdown", "html")
 )
 }
 \arguments{
@@ -19,24 +21,28 @@ fin_compound_interest(
 
 \item{deposits}{Optional periodic additional investment each \emph{year}.}
 
-\item{interest}{Annual interest rate (decimal)}
+\item{deposit_inflator}{Whether to increase the deposits over time (default 0 = no)}
 
-\item{yrs}{Duration of the investment.}
+\item{interest}{Annual interest rate (default = .05)}
 
-\item{n}{Compounding per unit time (e.g. 12 for monthly, 365 for daily)}
+\item{yrs}{Duration of the investment (default = 10).}
+
+\item{n}{Compounding intervals per year (default = 12 (monthly), 365 for daily)}
 
 \item{when}{Deposits made at the "beginning" (of each year) or "end"}
 
 \item{symbol}{Currency symbol to embed in the result.}
+
+\item{report}{"markdown" or "html"}
 }
 \value{
 \itemize{
-\item Value after yrs
+\item Value of balance after yrs of investment.
 }
 }
 \description{
-This function allows you to determine the final value of a principle, with optional additional
-periodic savings, over a number of years at a given rate of interest.
+Allows you to determine the final value of an initial \code{principle} (with optional
+periodic \code{deposits}), over a number of years (\code{yrs}) at a given rate of \code{interest}.
 }
 \details{
 None.
@@ -72,12 +78,12 @@ fin_compound_interest(deposits = 10e3, interest = 0.06, yrs = 5, n=1, when= "end
 }
 \seealso{
 \itemize{
-\item \code{\link[=fin_percent_off]{fin_percent_off()}}
+\item \code{\link[=fin_percent]{fin_percent()}}
 }
 
 Other Miscellaneous Functions: 
 \code{\link{deg2rad}()},
-\code{\link{fin_percent_off}()},
+\code{\link{fin_percent}()},
 \code{\link{rad2deg}()}
 }
 \concept{Miscellaneous Functions}

@@ -16,7 +16,66 @@
 # = FNS NOT USED DIRECTLY BY USERS SUBJECT TO ARBITRARY CHANGE AND DEPRECATION !!  =
 # ==================================================================================
 
-#' Get on or more columns from mzData or regular data.frame
+#' Print algebras from a umx model
+#'
+#' @description
+#' `xmu_print_algebras` adds the results of algebras to a summary
+#'
+#' @details Non-user function called by [umxSummary()]
+#'
+#' @param model A umx model from which to print algebras.
+#' @param digits rounding (default = 3)
+#' @param verbose tell user if no algebras found
+#' @return - nothing
+#' @export
+#' @family xmu internal not for end user
+#' @seealso - [umxSummary()]
+#' @md
+#' @examples
+#' 
+#' \dontrun{
+#' library(mlbench)
+#' data(BostonHousing2)
+#' BostonHousing2$log_crim = log2(BostonHousing2$crim)
+#' BostonHousing2$nox      = BostonHousing2$nox*100
+#' m2 = umxRAM(data = BostonHousing2, "#crime_model
+#' 	cmedv ~ log_crim + b1*nox; 
+#' 	nox   ~ a1*rad + a2*log_crim
+#'	i_1 := a1*b1
+#'	i_2 := a2*b1"
+#' )
+#' m3 = mxRun(mxModel(m1, mxAlgebra(name= "rtwo", rbind(i_1, i_2))))
+#' m3 = mxRun(mxModel(m3, mxAlgebra(name= "ctwo", cbind(i_1, i_2))))
+#' xmu_print_algebras(m3)
+#' }
+xmu_print_algebras <- function(model, digits = 3, verbose = FALSE){
+	# OpenMx algebras are just matrices of values, so just print what we find as a table if more than 1 cell?
+	# umx_check_model(model)
+	commaSep = paste0(umx_set_separator(silent = TRUE), " ")
+	if (length(model@algebras) > 0){
+		algNames = names(model@algebras)
+		for(thisAlg in algNames){
+			b  = mxEvalByName(thisAlg, model)
+			if(dim(b)[1] == 1 && dim(b)[2] == 1){
+				# 1*1 algebra
+				SE = mxSE(thisAlg, model, silent = TRUE, forceName = TRUE)
+				p  = 2 * pnorm(abs(b/SE), lower.tail = FALSE)
+				SEstring = paste0(round(b, digits), "CI95[", round(b - (1.96 * SE), digits), commaSep, round(b + (1.96 * SE), digits), "]")
+				cat("Algebra", omxQuotes(thisAlg), " = ", SEstring, ". p-value ", umx_APA_pval(p, addComparison = TRUE), "\n", sep = "")
+			}else{
+				SE = mxSE(thisAlg, model, silent = TRUE, forceName = TRUE)
+				cat("Algebra", omxQuotes(thisAlg), ":\n", sep = "")
+				umx_print(umx_round(b, 3))
+			}
+		}
+	} else {
+		if(verbose){
+			message("No algebras")
+		}
+	}
+}
+
+#' Get one or more columns from mzData or regular data.frame
 #'
 #' @description
 #' same effect as `df[, col]` but works for [mxData()] and check the names are present
@@ -452,7 +511,7 @@ xmu_twin_print_means <- function(model, digits = 3, report = c("markdown", "html
 	int = model$top$intercept$values
 	if(!is.null(int)){
 		# means and betas
-		msg = message("Means: Intercept and (raw) betas from model$top$intercept and model$top$meansBetas")
+		caption = "Means and (raw) betas from model$top$intercept and model$top$meansBetas"
 		row.names(int) = "intercept"
 		b = model$top$meansBetas$values
 		bvals = b[,1:dim(b)[[2]], drop = FALSE]
@@ -461,7 +520,7 @@ xmu_twin_print_means <- function(model, digits = 3, report = c("markdown", "html
 		int = model$top$expMean$values
 		if(!is.null(int)){
 			# expMeans
-			msg = "Means: Intercepts from model$top$expMean"
+			caption = "Means (from model$top$expMean)"
 			row.names(int) = "intercept"
 		}else{
 			# no means
@@ -469,8 +528,7 @@ xmu_twin_print_means <- function(model, digits = 3, report = c("markdown", "html
 	}
 
 	if(!is.null(int)){
-		message(msg) 
-		umx_print(int, digits = digits, file=report, append = TRUE, sortableDF = TRUE)
+		umx_print(int, digits = digits, caption = caption, file=report, append = TRUE, sortableDF = TRUE)
 		# if(report == "html"){
 		# 	# depends on R2HTML::HTML
 		# 	R2HTML::HTML(int, file = "tmp.html", Border = 0, append = TRUE, sortableDF = TRUE);
@@ -1752,17 +1810,33 @@ xmu_dot_maker <- function(model, file, digraph, strip_zero= TRUE){
 
 	if(!is.na(file)){
 		if(file == "name"){
-			# maybe:
-			if (umx_set_plot_format(silent = TRUE) == "DiagrammeR"){
+			if (umx_set_plot_format(silent = TRUE) %in% c("DiagrammeR", "pdf", "png")){
+				# tempfile
 				file = tempfile(fileext = paste0(".", umx_set_plot_file_suffix(silent = TRUE)) )
-			} else { # leave in the users current directory?
+			} else {
+				# leave in the users current directory for graphviz
 				file = paste0(model$name, ".", umx_set_plot_file_suffix(silent = TRUE))
 			}
 		}
-		cat(digraph, file = file) # write to file
-		if(umx_set_plot_format(silent = TRUE) == "DiagrammeR"){
-				print(DiagrammeR::DiagrammeR(diagram = file, type = "grViz"))
+		cat(digraph, file = file) # write dot file
+		if(umx_set_plot_format(silent=TRUE) == "DiagrammeR"){
+			print(DiagrammeR(diagram = file, type = "grViz"))
+		}else if(umx_set_plot_format(silent=TRUE) %in%  c("pdf", "svg", "png")){
+			tmp = export_svg(grViz(file)) #export as SVG
+			raw = charToRaw(tmp) # flatten
+			if(umx_set_plot_format(silent=TRUE) == "pdf"){
+				fileName = paste0(model$name, ".pdf")
+				rsvg_pdf(raw, fileName) # save as pdf
+			} else if(umx_set_plot_format(silent=TRUE) == "png"){
+				fileName = paste0(model$name, ".png")
+				rsvg_png(raw, fileName) # save as png in current working directory
+			} else if(umx_set_plot_format(silent=TRUE) == "svg"){
+				fileName = paste0(model$name, ".svg")
+				cat(tmp, file = fileName)
+			}
+			umx_open(fileName)
 		} else {
+			# graphviz
 			if(umx_check_OS("OSX")){
 				umx_open(file);
 			} else if(umx_check_OS("Windows")){

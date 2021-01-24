@@ -38,6 +38,7 @@
 	# umx_set_condensed_slots(FALSE)
 	umx_set_plot_format('DiagrammeR')
 	umx_set_plot_file_suffix("gv")
+	umx_set_plot_use_hrbrthemes(FALSE)
 	umx_set_silent(FALSE)
 
 	# if(is.null(getOption('knitr.table.format'))){
@@ -54,12 +55,16 @@
 	packageStartupMessage("For an overview type '?umx'")
 }
 
+# #' @importFrom Base::charToRaw
+#' @importFrom DiagrammeR DiagrammeR grViz
+#' @importFrom DiagrammeRsvg export_svg
+#' @importFrom rsvg rsvg_png rsvg_pdf
 #' @importFrom graphics plot abline
 #' @importFrom methods as getSlots is slotNames setClass
 # methods::setClass is called during build not package source code.
 # suppress NOTE with a spurious importFrom in the namespace
 #' @importFrom stats AIC C aggregate as.formula coef complete.cases
-#' @importFrom stats confint cor cov cov.wt cov2cor df lm cor.test
+#' @importFrom stats confint cor cov cov.wt cov2cor df lm cor.test dnorm pnorm
 #' @importFrom stats logLik na.exclude na.omit pchisq pf qchisq
 #' @importFrom stats qnorm quantile residuals rnorm runif sd
 #' @importFrom stats setNames update var delete.response terms
@@ -100,6 +105,7 @@
 NULL
 
 utils::globalVariables(c(
+	'x',
 	'xtable',
 	'M', 'S',
 	'A', 'E',
@@ -1030,7 +1036,7 @@ umxSuperModel <- function(name = 'top', ..., autoRun = getOption("umx_auto_run")
 #' searchString = "G_to_x([0-9])"
 #' newLabel = "loading_for_path\\1" # use value in regex group 1
 #' m2 = umxModify(m1, regex = searchString, newlabels= newLabel, name = "grep", comparison = TRUE)
-#' }
+#' } # end dontrun
 #' 
 umxModify <- function(lastFit, update = NULL, master = NULL, regex = FALSE, free = FALSE, value = 0, newlabels = NULL, freeToStart = NA, name = NULL, verbose = FALSE, intervals = FALSE, comparison = FALSE, autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "ordinal", "search")) {
 	tryHard = match.arg(tryHard)
@@ -1598,7 +1604,7 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, dzData= NULL, mzData= N
 #' @seealso [umxGxE_window()], [umxReduce()], [umxSummary()]
 #' @family Twin Modeling Functions
 #' @references - Purcell, S. (2002). Variance components models for gene-environment interaction in twin analysis. *Twin Research*,
-#'  **6**, 554-571. DOI: [10.1375/twin.5.6.554](https://doi.org/10.1375/twin.5.6.554)
+#'  **6**, 554-571. DOI: \doi{10.1375/twin.5.6.554}
 #' @md
 #' @examples
 #' require(umx)
@@ -2111,11 +2117,11 @@ umxGxE_window <- function(selDVs = NULL, moderator = NULL, mzData = mzData, dzDa
 #' @references 
 #' Neale, M. C., & Martin, N. G. (1989). The effects of age, sex, 
 #' and genotype on self-report drunkenness following a challenge dose of alcohol. 
-#' *Behavior Genetics*, **19**, 63-78. doi:<https://doi.org/10.1007/BF01065884>.
+#' *Behavior Genetics*, **19**, 63-78. doi:\doi{10.1007/BF01065884}.
 #' 
 #' Schwabe, I., Boomsma, D. I., Zeeuw, E. L., & Berg, S. M. (2015). A New Approach
 #' to Handle Missing Covariate Data in Twin Research : With an Application to
-#' Educational Achievement Data. *Behavior Genetics*, **46**, 583-95. doi:<https://doi.org/10.1007/s10519-015-9771-1>.
+#' Educational Achievement Data. *Behavior Genetics*, **46**, 583-95. doi:\doi{10.1007/s10519-015-9771-1}.
 #'
 #' @examples
 #' \dontrun{
@@ -2478,7 +2484,7 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NU
 #' @param allContinuousMethod "cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.
 #' @param data If provided, dzData and mzData are treated as valid levels of zyg to select() data sets (default = NULL)
 #' @param zyg If data provided, this column is used to select rows by zygosity (Default = "zygosity")
-#' @param correlatedA ?? (default = FALSE).
+#' @param correlatedA (a, and c and e). Allows correlations between the factors built by each of the a, c, and e matrices. Default = FALSE.
 #' @param dzAr The DZ genetic correlation (defaults to .5, vary to examine assortative mating).
 #' @param dzCr The DZ "C" correlation (defaults to 1: set to .25 to make an ADE model).
 #' @param autoRun Whether to run the model (default), or just to create it and return without running.
@@ -2508,18 +2514,17 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NU
 #' # = Run a 3-factor Common pathway twin model of 6 traits =
 #' # ========================================================
 #' require(umx)
-#' umx_set_optimizer("SLSQP")
 #' data(GFF)
 #' mzData = subset(GFF, zyg_2grp == "MZ")
 #' dzData = subset(GFF, zyg_2grp == "DZ")
 #  # These will be expanded into "gff_T1" "gff_T2" etc.
 #' selDVs = c("gff", "fc", "qol", "hap", "sat", "AD") 
-#' m1 = umxCP("new", selDVs = selDVs, sep = "_T", nFac = 3,
-#' 		dzData = dzData, mzData = mzData, tryHard = "yes")
+#' m1 = umxCP(selDVs = selDVs, sep = "_T", nFac = 3, tryHard = "yes",
+#' 		dzData = dzData, mzData = mzData)
 #'
 #' # Shortcut using "data ="
 #' selDVs = c("gff", "fc", "qol", "hap", "sat", "AD") 
-#' m1 = umxCP(selDVs = selDVs, nFac = 3, data=GFF, zyg="zyg_2grp")
+#' m1 = umxCP(selDVs= selDVs, nFac= 3, data=GFF, zyg="zyg_2grp")
 #'
 #' # ===================
 #' # = Do it using WLS =
@@ -2572,9 +2577,29 @@ umxACEcov <- function(name = "ACEcov", selDVs, selCovs, dzData, mzData, sep = NU
 #' mzData = subset(GFF, zyg_2grp == "MZ")
 #' dzData = subset(GFF, zyg_2grp == "DZ")
 #' selDVs = c("gff", "fc", "qol", "hap", "sat", "AD")
-#' m1 = umxCP("new", selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData, 
-#' 	nFac = 3, correlatedA = TRUE, tryHard = "yes")
-#' }
+#' m5 = umxCP("correlated_causes", selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData, 
+#' 	 nFac = 3, correlatedA = TRUE, tryHard = "yes")
+#' 
+#' umxCompare(m4, m1)
+#'
+#' # What are the ace covariance labels? (two ways to get)
+#' umx_lower.tri(m5$top$a_cp$labels)
+#' parameters(m5, patt = "[ce]_cp")
+#'
+#' # =================================
+#' # = Stop c and e from correlating =
+#' # =================================
+#' tmp = umx_lower.tri(m5$top$a_cp$labels)
+#' tmp = namez(tmp, "a_cp", "[ce]_cp")
+#' m6  = umxModify(m5, regex= tmp, name= "onlyAcorr", comp = TRUE)
+#' 
+#' # 1. Drop all (a|c|e) correlations, then add one a<->a covariance
+#' tmp= namez(umx_lower.tri(m5$top$a_cp$labels), "a_cp", replace= "[ace]_cp")
+#' m6 = umxModify(m5, regex= tmp, auto = FALSE)
+#' # 2. now free back up "a2_a1_cov"
+#' m6 = umxModify(m6, regex= "a_cp_r2c1", name= "a2_a1_cov", free=TRUE)
+#' umxCompare(m6, m1)
+#' } # end dontrun
 #'
 umxCP <- function(name = "CP", selDVs, selCovs=NULL, dzData= NULL, mzData= NULL, sep = NULL, nFac = 1, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), data = NULL, zyg = "zygosity", allContinuousMethod = c("cumulants", "marginals"), correlatedA = FALSE, dzAr= .5, dzCr= 1, autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "ordinal", "search"), optimizer = NULL, equateMeans= TRUE, weightVar = NULL, bVector = FALSE, boundDiag = 0, addStd = TRUE, addCI = TRUE, numObsDZ = NULL, numObsMZ = NULL, freeLowerA = FALSE, freeLowerC = FALSE, freeLowerE = FALSE) {
 	# TODO umxCP: Add covariates to means model: Will involve xmu_make_top_twin? also means model?
@@ -2616,17 +2641,17 @@ umxCP <- function(name = "CP", selDVs, selCovs=NULL, dzData= NULL, mzData= NULL,
 		c_cp_matrix = umxMatrix("c_cp", "Lower", nFac, nFac, free = TRUE, values = 0) # latent common factor Common environmental path coefficients
 		e_cp_matrix = umxMatrix("e_cp", "Lower", nFac, nFac, free = TRUE, values = 0) # latent common factor Unique environmental path coefficients
 
-		diag(a_cp_matrix$values) <- .7
-		diag(c_cp_matrix$values) <- .0
-		diag(e_cp_matrix$values) <- .7
+		diag(a_cp_matrix$values) = .7
+		diag(c_cp_matrix$values) = .0
+		diag(e_cp_matrix$values) = .7
 
 		# a_cp_matrix$lbound[lower.tri(a_cp_matrix$lbound)] = -1
 		# c_cp_matrix$lbound[lower.tri(a_cp_matrix$lbound)] = -1
 		# e_cp_matrix$lbound[lower.tri(a_cp_matrix$lbound)] = -1
-		#
-		# a_cp_matrix$lbound[lower.tri(a_cp_matrix$ubound)] =  1
-		# c_cp_matrix$lbound[lower.tri(a_cp_matrix$ubound)] =  1
-		# e_cp_matrix$lbound[lower.tri(a_cp_matrix$ubound)] =  1
+
+		a_cp_matrix$lbound[lower.tri(a_cp_matrix$lbound)] = 0
+		c_cp_matrix$lbound[lower.tri(a_cp_matrix$lbound)] = 0
+		e_cp_matrix$lbound[lower.tri(a_cp_matrix$lbound)] = 0
 
 	} else {
 		a_cp_matrix = umxMatrix("a_cp", "Diag" , nFac, nFac, free = TRUE, values = .7)
@@ -2653,6 +2678,7 @@ umxCP <- function(name = "CP", selDVs, selCovs=NULL, dzData= NULL, mzData= NULL,
 		umxMatrix("cs", "Lower", nVar, nVar, free = TRUE, values = .1), # Common env path 
 		umxMatrix("es", "Lower", nVar, nVar, free = TRUE, values = .5), # Unique env path
 		umxMatrix("cp_loadings", "Full", nVar, nFac, free = TRUE, values = .5), # loadings on latent phenotype
+
 		# Quadratic multiplication to add cp_loading effects
 		mxAlgebra(name = "A"  , cp_loadings %&% A_cp + as %*% t(as)), # Additive genetic variance
 		mxAlgebra(name = "C"  , cp_loadings %&% C_cp + cs %*% t(cs)), # Common environmental variance

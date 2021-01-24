@@ -94,7 +94,7 @@
 #' @family Twin Modeling Functions
 #' @references - Verhulst, B., Prom-Wormley, E., Keller, M., Medland, S., & Neale, M. C. (2019).
 #' Type I Error Rates and Parameter Bias in Multivariate Behavioral Genetic Models. *Behav Genet*, 
-#' **49**, 99-111. doi:<https://doi.org/10.1007/s10519-018-9942-y>
+#' **49**, 99-111. \doi{10.1007/s10519-018-9942-y}
 #' Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches 
 #' to the analysis of human behaviour. *Heredity*, **41**, 249-320. <https://www.nature.com/articles/hdy1978101.pdf>
 #' @md
@@ -704,7 +704,7 @@ umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = 
 		rankCE, "\n}"
 	)
 	
-	print("?umxPlotACEv options: std=, means=, digits=, strip_zero=, file=, min=, max =")
+	message("\n?umxPlotACEv options: std=, means=, digits=, strip_zero=, file=, min=, max =")
 	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
 } # end umxPlotACE
 

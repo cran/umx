@@ -26,6 +26,8 @@ umx_set_plot_format() # print current state
 old = umx_set_plot_format(silent = TRUE) # store current value
 umx_set_plot_format("graphviz")
 umx_set_plot_format("DiagrammeR")
+umx_set_plot_format("png")
+umx_set_plot_format("pdf")
 umx_set_plot_format(old) # reinstate
 }
 \references{
@@ -46,6 +48,7 @@ Other Get and set:
 \code{\link{umx_set_optimization_options}()},
 \code{\link{umx_set_optimizer}()},
 \code{\link{umx_set_plot_file_suffix}()},
+\code{\link{umx_set_plot_use_hrbrthemes}()},
 \code{\link{umx_set_separator}()},
 \code{\link{umx_set_silent}()},
 \code{\link{umx_set_table_format}()},

@@ -15,7 +15,9 @@
 # devtools::document("~/bin/umx"); devtools::install("~/bin/umx");
 # utility naming convention: "umx_" prefix, lowercase, and "_" (not camel case) e.g. xmu_data_swap_a_block()
 
-# Poems one should know by heart:
+# ===================================
+# = Poems one should know by heart: =
+# ===================================
 
 # William Shakespeare
 # [Tomorrow and tomorrow soliloquy](https://www.poetryfoundation.org/poems/56964/speech-tomorrow-and-tomorrow-and-tomorrow)
@@ -26,9 +28,10 @@
 #  * "One half of me is yours, the other half is yours,
 #    Mine own, I would say; but if mine, then yours,
 #    And so all yours."
-#  * If to do were as easy as to know what were good to do, chapels 
-#    had been churches, and poor men's cottages princes’ palaces.
-# * “This above all: to thine own self be true,
+#  * If to do were as easy as to know what were good to do,
+#    chapels had been churches, 
+#    and poor men's cottages princes’ palaces.
+#  * This above all: to thine own self be true,
 
 # # PERCY BYSSHE SHELLEY
 # [Ozymandias](https://www.poetryfoundation.org/poems/46565/ozymandias)
@@ -367,21 +370,55 @@ umx_get_options <- function() {
 	umx_set_auto_plot()
 	umx_set_plot_format()
 	umx_set_plot_file_suffix()
+	umx_set_plot_use_hrbrthemes()
 	umx_set_table_format()
 	umx_set_optimizer()
 	message(umx_set_cores(silent = TRUE), " cores will be used")
 	umx_set_auto_run() 
 	umx_set_condensed_slots()
+	
 }
 
-#' Set output suffix used in umx plot (structural diagrams) files to disk 
+#' Set theme system to use for plots.
 #'
 #' Set output file suffix (default = "gv", alternative is "dot"). If you call this with no
 #' value, it will return the current setting. If you call it with TRUE, it toggles the setting.
 #'
-#' @param umx.plot.suffix the suffix for plots files (if empty, returns the current value of umx.plot.format). If "TRUE", then toggles
+#' @param umx.plot.use_hrbrthemes whether to them plots with hrbrthemes (if empty returns the current value)
 #' @param silent If TRUE, no message will be printed.
-#' @return - Current umx.plot.suffix setting
+#' @return - Current setting
+#' @export
+#' @family Get and set
+#' @md
+#' @examples
+#' umx_set_plot_use_hrbrthemes() # print current state
+#' old = umx_set_plot_use_hrbrthemes(silent = TRUE) # store current value
+#' umx_set_plot_use_hrbrthemes(TRUE)
+#' umx_set_plot_use_hrbrthemes(old) # reinstate
+umx_set_plot_use_hrbrthemes <- function(umx.plot.use_hrbrthemes = NULL, silent = FALSE) {
+	if(is.null(umx.plot.use_hrbrthemes)) {
+		if(!silent){
+			message("Currently option to use hrbrthemes for plots is", 
+				omxQuotes(getOption("umx.plot.use_hrbrthemes")),
+				". Valid options are TRUE or FALSE"
+			)
+		}
+		invisible(getOption("umx.plot.use_hrbrthemes"))
+	} else {
+		umx_check(umx.plot.use_hrbrthemes %in% c(TRUE, FALSE), "stop", "valid options are TRUE or FALSE)")
+		options("umx.plot.use_hrbrthemes" = umx.plot.use_hrbrthemes)
+	}
+}
+
+#' Set output suffix used in umx SEM diagram files saved to disk.
+#'
+#' `umx` SEM diagram files can have a suffix of "gv" (default) or  "dot".
+#' Interrogate the setting by calling with no value: it will return the current setting. 
+#' To change the setting call with "gv" or "dot". Or use TRUE to toggle the setting.
+#'
+#' @param umx.plot.suffix The suffix for plot files (if empty current value is returned). "TRUE", toggles setting.
+#' @param silent If TRUE, no message will be printed.
+#' @return - Current setting
 #' @export
 #' @family Get and set
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
@@ -434,13 +471,15 @@ umx_set_plot_file_suffix <- function(umx.plot.suffix = NULL, silent = FALSE) {
 #' old = umx_set_plot_format(silent = TRUE) # store current value
 #' umx_set_plot_format("graphviz")
 #' umx_set_plot_format("DiagrammeR")
+#' umx_set_plot_format("png")
+#' umx_set_plot_format("pdf")
 #' umx_set_plot_format(old) # reinstate
 umx_set_plot_format <- function(umx.plot.format = NULL, silent = FALSE) {
 	if(is.null(umx.plot.format)) {
 		if(!silent){
-			message("Current format is", 
+			message("Current format is ", 
 				omxQuotes(getOption("umx.plot.format")),
-				". Valid options are 'graphviz' or 'DiagrammeR'. Use TRUE to toggle"
+				". Valid options are 'DiagrammeR', 'pdf', 'png', 'svg', or 'graphviz'. TRUE toggles between DiagrammeR and graphviz"
 			)
 		}
 		invisible(getOption("umx.plot.format"))
@@ -453,7 +492,7 @@ umx_set_plot_format <- function(umx.plot.format = NULL, silent = FALSE) {
 				umx.plot.format = "graphviz"
 			}
 		} else {
-			umx_check(umx.plot.format %in% c("graphviz", "DiagrammeR"), "stop", "valid options are 'graphviz' or 'DiagrammeR'. Use TRUE to toggle)")
+			umx_check(umx.plot.format %in% c("DiagrammeR", "pdf", "png", 'svg', "graphviz"), "stop", "valid options are 'DiagrammeR', 'pdf', 'png', 'svg', 'graphviz'. TRUE toggles between DiagrammeR and graphviz)")
 		}
 		options("umx.plot.format" = umx.plot.format)
 	}
@@ -612,13 +651,20 @@ umx_set_data_variance_check <- function(minVar = NULL, maxVarRatio = NULL, silen
 	invisible(list(minVar = minVar, maxVarRatio = maxVarRatio))
 }
 
-#' Print anything when running a model?
+#' Turn off most console and summary output from umx
 #'
-#' Sets a umx property "silent" to `TRUE` or `FALSE`. This is fed to [OpenMx::mxRun()] inside functions like [umxRAM()].
+#' Running multiple analyses or simulations, it can be handy to turn off the automatic summary, 
+#' graphing, and printing that umx does to help interactive sessions. `umx_set_silent` does this.
+#' Summary and graph output, as well as progress and durable console output will be suppressed.
+#' 
+#' Not every function knows about silent, but most, like [umx::umxRAM()] etc do.
+#' 
+#' @details
+#' Under the hood, `umx_set_silent` sets options("umx_silent"). This can be set to either `TRUE` or `FALSE`.
 #' If TRUE, then the progress messages from model runs are suppressed. Useful for power simulations etc.
 #'
-#' @param value If TRUE mxRun is silent in most umx Models. Empty returns the current value.
-#' @param silent If TRUE, no message will be printed.
+#' @param value Boolean stating if umx Models should run silently (TRUE).
+#' @param silent If TRUE, this function itself will just return the state of the option, with no user message.
 #' @return - Current silent value
 #' @export
 #' @family Get and set
@@ -1503,20 +1549,30 @@ umxVersion <- function (model = NULL, min = NULL, verbose = TRUE, return = "umx"
 umx_open_CRAN_page <- function(package = "umx", inst=FALSE) {
 	for (p in package) {
 		# deparse(substitute(package))
+
+		# 1. Open the web pages
+		system(paste0("open 'https://cran.r-project.org/package=", p, "'"))		
+
+		# 2. install if requested
+		if(inst){
+			install.packages(p)
+		} else {
+			# print("cleanup-code")
+		}
+
+		# 3. print data on current version and load
 		result = tryCatch({
 		    print(packageVersion(p))
+		    library(p, character.only = TRUE)
 		}, warning = function(x) {
-		    print("not installed locally")
+		    print(paste(p, "Might not be installed locally:\n"))
+			print(x)
 		}, error = function(x) {
-		    print("not installed locally")
-		}, finally={
-			if(inst){
-				install.packages(package)
-			} else {
-				# print("cleanup-code")
-			}
+		    print(paste(p, "Might not be installed locally:\n"))
+			print(x)
+		}, finally = {
+			#
 		})		
-		system(paste0("open 'https://cran.r-project.org/package=", p, "'"))		
 	}
 }
 
@@ -1914,7 +1970,7 @@ umx_rename_file <- function(findStr = "old", replaceStr = NA, baseFolder = "Find
 		baseFolder = system(intern = TRUE, "osascript -e 'tell application \"Finder\" to get the POSIX path of (target of front window as alias)'")
 		message("Using front-most Finder window:", baseFolder)
 	} else if(baseFolder == "") {
-		baseFolder = paste(dirname(file.choose(new = FALSE)), "/", sep = "") ## choose a directory
+		baseFolder = paste(dirname(file.choose(new = FALSE)), "/", sep = "") # choose a directory
 		message("Using selected folder:", baseFolder)
 	}
 
@@ -2043,7 +2099,7 @@ umx_move_file <- function(baseFolder = NA, regex = NULL, fileNameList = NA, dest
 		baseFolder = system(intern = TRUE, "osascript -e 'tell application \"Finder\" to get the POSIX path of (target of front window as alias)'")
 		message("Using front-most Finder window:", baseFolder)
 	} else if(baseFolder == "") {
-		baseFolder = paste(dirname(file.choose(new = FALSE)), "/", sep="") ## choose a directory
+		baseFolder = paste(dirname(file.choose(new = FALSE)), "/", sep="") # choose a directory
 		message("Using selected folder:", baseFolder)
 	}
 	moved = 0
@@ -2188,7 +2244,7 @@ umx_make_sql_from_excel <- function(theFile = "Finder") {
 		theFile = system(intern = TRUE, "osascript -e 'tell application \"Finder\" to get the POSIX path of (selection as alias)'")
 		message("Using file selected in front-most Finder window:", theFile)
 	} else if(theFile == "") {
-		theFile = file.choose(new = FALSE) ## choose a file
+		theFile = file.choose(new = FALSE) # choose a file
 		message("Using selected file:", theFile)
 	} else if(theFile == "make") {
 		theFile = system.file("extdata", "GQ6.sql.xlsx", package = "umx")
@@ -2280,8 +2336,8 @@ umx_write_to_clipboard <- function(x) {
 #' Compute the value of a principle plus annual savings, at a compound interest over a number of years
 #'
 #' @description
-#' This function allows you to determine the final value of a principle, with optional additional 
-#' periodic savings, over a number of years at a given rate of interest.
+#' Allows you to determine the final value of an initial `principle` (with optional 
+#' periodic `deposits`), over a number of years (`yrs`) at a given rate of `interest`.
 #'
 #' @details None.
 #' If an amount of $5,000 is deposited into a savings account at an annual interest rate of 5%, compounded monthly, 
@@ -2291,15 +2347,17 @@ umx_write_to_clipboard <- function(x) {
 #'
 #' @param principal The initial investment at time 0.
 #' @param deposits Optional periodic additional investment each *year*.
-#' @param interest Annual interest rate (decimal)
-#' @param yrs Duration of the investment.
-#' @param n Compounding per unit time (e.g. 12 for monthly, 365 for daily)
+#' @param interest Annual interest rate (default = .05)
+#' @param deposit_inflator Whether to increase the deposits over time (default 0 = no)
+#' @param yrs Duration of the investment (default = 10).
+#' @param n Compounding intervals per year (default = 12 (monthly), 365 for daily)
 #' @param when Deposits made at the "beginning" (of each year) or "end"
 #' @param symbol Currency symbol to embed in the result.
-#' @return - Value after yrs
+#' @param report "markdown" or "html"
+#' @return - Value of balance after yrs of investment.
 #' @export
 #' @family Miscellaneous Functions
-#' @seealso - [fin_percent_off()]
+#' @seealso - [fin_percent()]
 #' @references - [tutorials](https://tbates.github.io), [tutorials](https://github.com/tbates/umx)
 #' @md
 #' @examples
@@ -2322,38 +2380,97 @@ umx_write_to_clipboard <- function(x) {
 #' # $10,000 invested at the end of each year for 5 years at 6%
 #' fin_compound_interest(deposits = 10e3, interest = 0.06, yrs = 5, n=1, when= "end")
 #'
-fin_compound_interest <- function(principal = 0, deposits = 0, interest = 0.05, yrs = 10, n = 12, when = "beginning", symbol = "$"){
+fin_compound_interest <- function(principal = 0, deposits = 0, deposit_inflator = 0, interest = 0.05, yrs = 10, n = 12, when = "beginning", symbol = "$", report= c("markdown", "html")){
+	report = match.arg(report)
+	if(deposit_inflator != 0){
+		deposits = c(deposits, rep(deposits, times = yrs-1) *(1+deposit_inflator)^c(1:(yrs-1)))
+	}else{
+		deposits = rep(deposits, times = yrs)
+	}
 	# deposits = 100
 	# interest = .05
 	# n        = 12
 	# yrs      = 10
+
+	# TODO add an annual table like this
+	# Final Investment Value		Initial  Balance
+	# £267,672,51					$principle
+	# Total Interest Earned		Total <period> deposits
+	# £267,672,51					£267,672,51
+	# 							Effective annual rate: 4.06%
+	#
+
 	# 1. compute compounding rate per unit time n (allowing for zero interest so 1.0)
 	rate = ifelse(interest==0, 1, 1+(interest/n))
 
-	# 2. compute compounded value of the principal (initial deposit)
-	Compound_interest_for_principal = principal* rate^(n*yrs)
-
-	# 3. compute compounded value of the deposits
-	if(interest==0){
-		Future_value_of_a_series = deposits * yrs
-	} else {
-		# beginning: A = PMT × (((1 + r/n)^(nt) - 1) ÷ (r/n))
-		# end      : A = PMT × (((1 + r/n)^(nt) - 1) ÷ (r/n)) × (1+r/n)
+	# make a pretty table
+	# n    = n    # units per year
+	# rate = rate # rate per unit time (n)
+	
+	tableOut = data.frame(Year = NA, Deposits = NA, Interest = NA, Total_Deposits = NA, Total_Interest = NA, Total = scales::dollar(principal, prefix = symbol, largest_with_cents = 0))
+	balance  = principal
+	totalDeposits = 0
+	totalInterest = 0
+	for (yr in 1:yrs) {
+		# 1. Compute compounding rate per unit time n (allowing for zero interest so 1.0)
 		if(when == "beginning"){
-			# deposits at the beginning of each year
-			periods = (yrs:1)*n
-			Future_value_of_a_series = sum(deposits*(rate^periods))
+			# Deposits at the beginning of each year
+			thisInterest = ((balance + deposits[yr]) * rate^n) - (balance + deposits[yr])
 		} else {
-			# deposits at the end of the year
-			periods = ((yrs-1):1)*n
-			Future_value_of_a_series = sum(deposits*(rate^periods)) + (1*deposits)
+			# Deposits at the end of the year
+			thisInterest = (balance * rate^n) - balance
 		}
+		totalDeposits = (totalDeposits + deposits[yr])
+		totalInterest = (totalInterest + thisInterest)
+		balance       = (balance + deposits[yr] + thisInterest)
+		thisRow = c(Year=yr, Deposit= deposits[yr], Interest = thisInterest, Total_Deposit = totalDeposits, Total_Interest = totalInterest, Total = balance)
+		thisRow = c(thisRow[1], scales::dollar(thisRow[-1], prefix = symbol, largest_with_cents = 0))
+		tableOut = rbind(tableOut, thisRow)
 	}
-	Total =  Compound_interest_for_principal+ Future_value_of_a_series
+	umx_print(tableOut, justify = "right", report=report)
+
+	# invisible(report)
+	# gray?		green		orange		Blue
+	# | Year| Deposits | Interest | Total Deposits | Tot Interest| Total |
+	# |:----|:---------|:---------|:---------------|:---------|:---------|
+	# | 1   | £19,000  | £1,000   | £40,000        | £1,200   | £100,200 |
+	# | 2   | £10,000  | £1,000   | £65,000        | £1,200   | £100,200 |
+	# | 3   | £19,000  | £1,000   | £65,000        | £1,200   | £100,200 |
+	# | 4   | £19,000  | £1,000   | £65,000        | £1,200   | £200,200 |
+	# | 5   | £19,000  | £1,000   | £65,000        | £1,200   | £300,200 |
+	# | 6   | £19,000  | £1,000   | £65,000        | £1,200   | £400,200 |
+
+	if(length(deposits)==1){
+		# 2. compute compounded value of the principal (initial deposit)
+		Compound_interest_for_principal = principal* rate^(n*yrs)
+
+		# 3. compute compounded value of the deposits
+
+		if(interest==0){
+			Future_value_of_a_series = deposits * yrs
+		} else {
+			# beginning: A = PMT × (((1 + r/n)^(nt) - 1) ÷ (r/n))
+			# end      : A = PMT × (((1 + r/n)^(nt) - 1) ÷ (r/n)) × (1+r/n)
+			if(when == "beginning"){
+				# deposits at the beginning of each year
+				periods = (yrs:1)*n
+				Future_value_of_a_series = sum(deposits*(rate^periods))
+			} else {
+				# deposits at the end of the year
+				periods = ((yrs-1):1)*n
+				Future_value_of_a_series = sum(deposits*(rate^periods)) + (1*deposits)
+			}
+		}
+
+		Total =  Compound_interest_for_principal+ Future_value_of_a_series
+	} else {
+		Total = balance
+	}
 	class(Total) = 'money'
 	attr(Total, 'symbol') <- symbol
 	return(Total)
 }
+
 
 #' Print a money object
 #'
@@ -2363,7 +2480,7 @@ fin_compound_interest <- function(principal = 0, deposits = 0, interest = 0.05, 
 #' @param symbol Default prefix if not set.
 #' @param ... further arguments passed to or from other methods.
 #' @return - invisible
-#' @seealso - [print()], [umx::fin_compound_interest()], 
+#' @seealso - [umx::fin_percent()], [print()]
 #' @md
 #' @method print money
 #' @export
@@ -2387,8 +2504,9 @@ print.money <- function(x, symbol = "$", ...) {
 #' @details None.
 #' If an amount of $100 has 20% added, what percent do we need to drop it by to return to the original value?
 #' 
-#' @param percent Change in percent (e.g. 0.1 = 10%%)
+#' @param percent Change in percent (e.g. for 10%, enter 10, not 0.1)
 #' @param value Principal
+#' @param symbol units (default = $)
 #' @param digits (rounding)
 #' @return - new value and change required to return to baseline.
 #' @export
@@ -2398,21 +2516,200 @@ print.money <- function(x, symbol = "$", ...) {
 #' @examples
 #' #
 #' # Percent needed to return to original value after 10% off
-#' fin_percent_off(-.1)
-#' fin_percent_off(-.1, digits=3)
-#' #
+#' fin_percent(-10)
 #' # Percent needed to return to original value after 10% on
-#' fin_percent_off(.1)
+#' fin_percent(10)
+#'
 #' # Percent needed to return to original value after 50% off 34.50
-#' fin_percent_off(-.5, value = 34.5)
-fin_percent_off <- function(percent, value= 100, digits = 2) {
-	if(abs(percent) > 1){
-		percent= percent/100
-	}
-	off = value*(1+percent)
-	on = (value/off)-1
-	list(off = off, on = round(on, digits))
+#' fin_percent(-50, value = 34.5)
+fin_percent <- function(percent, value= 100, symbol = "$", digits = 2) {
+	percent  = percent/100
+	newValue = value * (1 + percent)
+	percent_to_reverse = (value/newValue) - 1
+	class(newValue) = 'percent'
+	attr(newValue, 'oldValue') = value
+	attr(newValue, 'percent')  = percent
+	attr(newValue, 'digits')   = digits
+	attr(newValue, 'symbol')   = symbol
+	attr(newValue, 'percent_to_reverse') = percent_to_reverse
+	return(newValue)
 }
+
+#' Print a percent object
+#'
+#' Print method for, class()= "percent" objects: e.g. [umx::fin_percent()]. 
+#'
+#' @param x percent object.
+#' @param ... further arguments passed to or from other methods.
+#' @return - invisible
+#' @seealso - [umx::fin_percent()], [print()]
+#' @md
+#' @method print percent
+#' @export
+#' @examples
+#' # Percent needed to return to original value after 10% off
+#' fin_percent(-10)
+#' # Percent needed to return to original value after 10% on
+#' fin_percent(10)
+#'
+#' # Percent needed to return to original value after 50% off 34.50
+#' fin_percent(-50, value = 34.5)
+#'
+print.percent <- function(x, ...) {
+	if(!is.null(attr(x, 'digits')) ){
+		digits = attr(x, 'digits')
+	}
+	oldValue = round(attr(x, 'oldValue'), digits)
+	percentChange  = attr(x, 'percent')
+	symbol   = attr(x, 'symbol')
+	percent_to_reverse = round(attr(x, 'percent_to_reverse'), digits)
+	dir = ifelse(percentChange < 0, "decreased", "increased")
+
+	cat(symbol, oldValue, " ", dir , " by ", percentChange*100, "% = ", symbol, x, " (Percent to reverse = ", percent_to_reverse*100, "%)", sep="")
+}
+
+#' Plot a percent change graph
+#'
+#' Plot method for, class()= "percent" objects: e.g. [umx::fin_percent()]. 
+#'
+#' @param x percent object.
+#' @param ... further arguments passed to or from other methods.
+#' @return - invisible
+#' @seealso - [umx::fin_percent()], [print()]
+#' @md
+#' @method plot percent
+#' @export
+#' @examples
+#' # Percent needed to return to original value after 10% off
+#' plot(fin_percent(-10))
+#' # Percent needed to return to original value after 10% on
+#' plot(fin_percent(10))
+#'
+#' # Percent needed to return to original value after 50% off 34.50
+#' plot(fin_percent(-50, value = 34.5))
+#'
+plot.percent <- function(x, ...) {
+	symbol   = attr(x, 'symbol')
+	digits   = attr(x, 'digits')
+	oldValue = round(attr(x, 'oldValue'), digits)
+	percentChange  = attr(x, 'percent')	
+	percent_to_reverse = round(attr(x, 'percent_to_reverse'), digits)
+
+	
+	dir = ifelse(percentChange < 0, "decreased", "increased")
+
+	# fnReversePercent(-.1)
+	fnReversePercent <- function(x) {
+		# 1/(1+.1)
+		percentOn = x/100
+		newValue = (1 + percentOn)
+		percent_to_reverse = 1-(1/newValue)
+		return(-percent_to_reverse*100)
+	}
+	# x range	= -100 (%) to +500 (%)?
+	# y = -100 to +200?
+	# y range	= -100 to +200?
+
+	# ISA fixes all of this... 20k/yr to add
+	# Income   tax-free allowance = £12,500/yr
+	# Interest tax-free allowance = £12,500/yr
+	# Dividend tax-free allowance =  £2,000/yr (I'm under.. phew)
+	# Capital gains tax-free allowance = £12,300 (tax rate = 20%)
+	
+	p = ggplot(data.frame(x = c(-90, 0)), aes(x))
+	p = p + ggplot2::scale_y_continuous(n.breaks = 8) + ggplot2::scale_x_continuous(n.breaks = 10) #trans="log")
+	p = p + ggplot2::stat_function(fun = fnReversePercent, color= "lightblue")
+	p = p + labs(x = "Percent Off", y = "Percent back on to recover", title = "Percent change on, and off")
+
+	# subtitle = "Subtitle: (1973-74)",
+	# caption  = "Caption: Data from the 1974 Motor Trend US magazine",
+	# tag      = "Tag: A"
+
+	if(umx_set_plot_use_hrbrthemes(silent = TRUE)){
+		# p = p + hrbrthemes::theme_ipsum()
+		p = p + hrbrthemes::theme_ft_rc()
+	} else {
+		# p = p + ggplot2::theme_bw()
+		p = p + cowplot::theme_cowplot(font_size = 11)
+	}
+	lab = paste0(percentChange*100, "% off=", percent_to_reverse * 100, "% on", sep = "")
+	p = p + cowplot::draw_label(lab, vjust=1, hjust = .5, x = percentChange*100, y = percent_to_reverse*100, color= "lightgrey")
+	p = p + cowplot::draw_label("\u25CF", hjust=0, x = percentChange*100, y = percent_to_reverse*100, color = "red")
+	print(p)
+	cat(symbol, oldValue, " ", dir , " by ", percentChange*100, "% = ", symbol, x, " (Percent to reverse = ", percent_to_reverse*100, "%)", sep="")
+	return(p)
+}
+
+#' Easily plot functions in R
+#'
+#' @description
+#' A wrapper for [ggplot2::stat_function()]
+#'
+#' @details Easily plot a function - like sin, using ggplot.
+#'
+#' @param fun Function to plot
+#' @param min x min
+#' @param max x max
+#' @param xlab = Optional x axis label
+#' @param ylab = Optional y axis label
+#' @param title Optional title for the plot
+#' @param p  Optional plot onto which to draw the function.
+#' @return - A ggplot graph
+#' @export
+#' @family Plotting functions
+#' @seealso - [ggplot2::stat_function()]
+#' @md
+#' @examples
+#' \dontrun{
+#' # Uses fonts not available on CRAN
+#' # Maybe call this funplot?
+#' umxPlotFun(sin, max= 2*pi)
+#'
+#' 
+#' # Manually	
+#' p = ggplot(data.frame(x = c(0, 10000)), aes(x))
+#' p = p + ggplot2::stat_function(fun = function(x) decay(x, signal_loss$water), colour = "blue")
+#' p = p + ggplot2::stat_function(fun = function(x) decay(x, signal_loss$white_matter), colour = "red")
+#' }
+#'
+umxPlotFun <- function(fun= dnorm, min= 0, max= 5, xlab = NULL, ylab = NULL, title = NULL, p = NULL) {
+	if(!is.null(p)){
+		p = p + ggplot2::stat_function(fun = fun, xlim= c(min, max))
+	}else{
+		p     = ggplot(data.frame(x = c(min, max)), aes(x))
+		p     = p + ggplot2::stat_function(fun = fun)
+		xlab  = ifelse(!is.null(xlab),  xlab , "X value")
+		if(is.null(ylab)){
+			if(length(as.character(quote(sin))) == 1){
+				ylab = paste0(as.character(quote(sin), " of x"))
+			} else {
+				ylab = paste0("Function of X")
+			}
+		}
+
+		if(is.null(title)){
+			if(length(as.character(quote(sin))) == 1){
+				title = paste0("Plot of ", as.character(quote(sin), " function"))
+			} else {
+				title = paste0("Function plot")
+			}
+		}
+		p = p + labs(x = xlab, y = ylab, caption = title)
+	}
+	if(umx_set_plot_use_hrbrthemes(silent = TRUE)){
+		p = p + hrbrthemes::theme_ipsum()
+	} else {
+		p = p + cowplot::theme_cowplot(font_family = "Times", font_size = 12)
+	}
+
+	print(p)
+	invisible(p)	
+	# Doing it manually
+	# p = ggplot(data.frame(x = c(-5, 5)), aes(x))
+	# p = p + ggplot2::stat_function(fun = dnorm)
+	# p
+}
+
 
 #' Compute odds ratio (OR)
 #'
@@ -2849,7 +3146,7 @@ install.OpenMx <- function(loc = c("NPSOL", "travis", "CRAN", "open travis build
 			url = system(intern = TRUE, "osascript -e 'tell application \"Finder\" to get the POSIX path of (selection as alias)'")
 			message("Using file selected in front-most Finder window:", url)
 		} else if(url == "") {
-			url = file.choose(new = FALSE) ## choose a file
+			url = file.choose(new = FALSE) # choose a file
 			message("Using selected file:", url)
 		}
 		install.packages(url)
@@ -3396,43 +3693,52 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 #'
 #' @param x A data.frame to print (matrices will be coerced to data.frame)
 #' @param digits  The number of decimal places to print (getOption("digits"))
-#' @param quote  Parameter passed to print (FALSE)
-#' @param na.print How to display NAs (default = "")
-#' @param zero.print How to display 0 values (default = "0")
+#' @param caption Optional caption.
+#' @param file Whether to write to a file (defaults to NA (no file). Use "html" to open table in browser.
+#' @param report How to report the results. "html" = open in browser.
+#' @param kableExtra Whether to print the table using kableExtra (if report="html")
+#' @param zero.print How to display 0 values (default = "0") for sparse tables, using "." can produce more readable results.
 #' @param justify Parameter passed to print (defaults to "none")
-#' @param file whether to write to a file (defaults to NA (no file). Use "html" to open table in browser.
-#' @param suppress minimum numeric value to print (NULL = print all values, no matter how small)
+#' @param na.print How to display NAs (default = "")
+#' @param quote Whether or not to quote strings (FALSE)
+#' @param suppress Minimum numeric value to print (NULL = print all values, no matter how small)
 #' @param append If html, is this appended to file? (FALSE)
 #' @param sortableDF If html, is table sortable? (TRUE)
 #' @param both If html, is table also printed as markdown? (TRUE)
-#' @param kableExtra Whether to print the table using kableExtra (if html)
-
-#' @param report How to report the results. "html" = open in browser.
 #' @param style The style for the table "paper","material_dark" etc.
-#' @param bootstrap_options border etc.
-#' @param lightable_options striped
-#' @param html_font Override style font. e.g. "Times" or '"Arial Narrow", arial, helvetica, sans-s'
+#' @param bootstrap_options e.g.  border etc.
+#' @param lightable_options e.g. striped
+#' @param html_font Override default font. e.g. "Times" or '"Arial Narrow", arial, helvetica, sans-s'
 #' @param ... Optional parameters for print
-
 #' @return - A dataframe of text
-#' @export
 #' @seealso [umx_msg()], [umx_set_table_format()] 
 #' @family Miscellaneous Utility Functions
+#' @export
 #' @md
 #' @examples
 #' umx_print(mtcars[1:10,], digits = 2, zero.print = ".", justify = "left")
 #' umx_print(mtcars[1,1:2], digits = 2, zero.print = "")
+#' umx_print(mtcars[1,1:2], digits = 2, caption="Hi: I'm the caption!")
 #' \dontrun{
 #' umx_print(mtcars[1:10,], file = "html")
 #' umx_print(mtcars[1:10,], file = "tmp.html")
 #' }
-umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print = "", zero.print = "0", justify = "none", suppress = NULL, file = c(NA, "tmp.html"), kableExtra = TRUE, append = FALSE, sortableDF= TRUE, report = c("html", "markdown"), html_font = NULL, style = c("paper","material_dark", "classic", "classic_2", "minimal", "material"), bootstrap_options=c("hover", "bordered", "condensed", "responsive"), lightable_options = "striped", both = TRUE, ...){
-	# Depends on R2HTML::HTML and knitr::kable
-	file = xmu_match.arg(file, c(NA, "tmp.html"), check = FALSE)
-	style = match.arg(style)
+umx_print <- function (x, digits = getOption("digits"), caption = NULL, report = c("markdown", "html"), file = c(NA, "tmp.html"), na.print = "", zero.print = "0", justify = "none", quote = FALSE, suppress = NULL, kableExtra = TRUE, append = FALSE, sortableDF= TRUE,  html_font = NULL, style = c("paper","material_dark", "classic", "classic_2", "minimal", "material"), bootstrap_options=c("hover", "bordered", "condensed", "responsive"), lightable_options = "striped", both = TRUE, ...){
+	style  = match.arg(style)
+	file   = xmu_match.arg(file, c(NA, "tmp.html"), check = FALSE)
+	report = match.arg(report)		
+
+	# Catch legacy users passing in file instead of report...
 	if(!is.na(file) && file == "markdown"){
-		file = NA
+		report = "markdown"
+		file   = NA
+	}else if(!is.na(file) && file == "html"){
+		report = "html"
+		file   = "tmp.html"
+	}else{
+		#
 	}
+
 	if(class(x)[[1]] == "character"){
 		print(x)
 	}else if(class(x)[[1]] != "data.frame"){
@@ -3460,25 +3766,25 @@ umx_print <- function (x, digits = getOption("digits"), quote = FALSE, na.print 
 
 	    if (is.numeric(x) || is.complex(x)){
 	        print(x, quote = quote, right = TRUE, ...)
-		} else if(!is.na(file)){
-			# From report = html
-			if(file == "html"){ file = "tmp.html" }
-			if(both){ print(knitr::kable(x)) }
+		} else if(report == "html"){
+			# From report = "html"
+			if(both){ print(knitr::kable(x, caption= caption)) }
 			if(kableExtra){
-				x = umx_round(x, digits)
-				x[x == 0] = zero.print
-				x = kbl(x) #caption = 
+				# default html output
+				x = kbl(x,  caption = caption)
 				if(zero.print != "0"){
 					x = add_footnote(x, label = paste0("zero printed as ", omxQuotes(zero.print)))
 				}
 				x = xmu_style_kable(x, html_font = html_font, style = style, bootstrap_options= bootstrap_options, lightable_options = lightable_options, full_width = FALSE)
 				print(x)
 			} else {
+				# !kableExtra
 				R2HTML::HTML(x, file = file, Border = 0, append = append, sortableDF = sortableDF)
 				system(paste0("open ", file))
 			}
 	    }else{
-			print(knitr::kable(x))
+			print(knitr::kable(x, caption = caption))
+			# print(kbl(x, caption = caption, format = umx_set_table_format(silent=TRUE)))
 	    }
 	    invisible(x)
 	}
@@ -3770,6 +4076,31 @@ umx_var <- function(df, format = c("full", "diag", "lower"), use = c("complete.o
 	} else {
 		return(out)
 	}
+}
+
+
+#' Get values from lower triangle of a matrix 
+#'
+#' @description
+#' `umx_lower.tri` is a wrapper for [lower.tri()] and a selection to return
+#' values from a lower matrix in one step.
+#'
+#' @param x a [matrix()] from which to extract values.
+#' @param diag whether to include the diagonal (default = FALSE).
+#' @return - values of cells of the lower triangle.
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @seealso - [lower.tri()]
+#' @md
+#' @examples
+#' x = qm(1,2,3|4,5,6|7,8,9)
+#' umx_lower.tri(x)
+#' # 4,7,8
+#' umx_lower.tri(x, diag=TRUE) # 1 4 7 5 8 9
+#'
+umx_lower.tri <- function(x, diag=FALSE){
+	lowercells = lower.tri(x, diag = diag)
+	x[lowercells]
 }
 
 #' umx_means
@@ -4403,7 +4734,7 @@ umx_cont_2_quantiles <- function(x, nlevels = NULL, type = c("mxFactor", "ordere
 	} else {
 		cutPoints = quantile(x, probs = c((1:(nlevels-1)) / (nlevels)), type = 8, na.rm = TRUE)
 		levelLabels = paste0("quantile", 1:(nlevels))
-		## needed to collapse overlapping quantiles
+		# needed to collapse overlapping quantiles
 		uniqueItems = !duplicated(cutPoints)
 		cutPoints   = cutPoints[uniqueItems]
 		levelLabels = levelLabels[uniqueItems]

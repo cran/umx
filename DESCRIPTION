@@ -1,6 +1,6 @@
 Package: umx
-Version: 4.2.5
-Date: 2020-12-12
+Version: 4.3.0
+Date: 2021-01-29
 Title: Structural Equation and Twin Modeling in R
 Authors@R: c(
 	person(c("Timothy", "C."), "Bates"   , role = c("aut", "cre"), email = "timothy.c.bates@gmail.com", comment = c(ORCID = "0000-0002-1153-9007")),
@@ -20,16 +20,16 @@ Description: Quickly create, run, and report structural equation and twin models
     Timothy C. Bates, Michael C. Neale, Hermine H. Maes, (2019). umx: A library for Structural Equation and Twin Modelling in R.
     Twin Research and Human Genetics, 22, 27-41. <doi:10.1017/thg.2019.2>.
 Depends: R (>= 3.5.0), OpenMx (>= 2.11.5)
-Imports: cowplot, DiagrammeR, ggplot2, kableExtra, knitr, lavaan, MASS,
-        Matrix, methods, MuMIn, mvtnorm, nlme, polycor, R2HTML, RCurl,
-        scales, utils, xtable
-Suggests: cocor, devtools, gdata, Hmisc, spelling, testthat, rmarkdown,
-        psych
+Imports: cowplot, DiagrammeR, DiagrammeRsvg, rsvg, ggplot2, kableExtra,
+        knitr, lavaan, MASS, Matrix, methods, MuMIn, mvtnorm, nlme,
+        polycor, R2HTML, RCurl, scales, utils, xtable
+Suggests: cocor, devtools, gdata, hrbrthemes, Hmisc, spelling,
+        testthat, rmarkdown, psych
 BugReports: https://github.com/tbates/umx/issues
 LazyData: true
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2020-12-12 15:01:20 UTC; tim
+Packaged: 2021-01-24 12:19:23 UTC; tim
 Author: Timothy C. Bates [aut, cre] (<https://orcid.org/0000-0002-1153-9007>),
   Gillespie Nathan [ctb],
   Brenton Wiernik [ctb],
@@ -37,4 +37,4 @@ Author: Timothy C. Bates [aut, cre] (<https://orcid.org/0000-0002-1153-9007>),
   Michael C. Neale [ctb],
   Hermine Maes [ctb]
 Repository: CRAN
-Date/Publication: 2020-12-12 15:30:02 UTC
+Date/Publication: 2021-01-24 13:30:02 UTC
