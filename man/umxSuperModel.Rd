@@ -5,7 +5,7 @@
 \title{Make a multi-group model}
 \usage{
 umxSuperModel(
-  name = "top",
+  name = "super",
   ...,
   autoRun = getOption("umx_auto_run"),
   tryHard = c("no", "yes", "ordinal", "search"),
@@ -13,7 +13,7 @@ umxSuperModel(
 )
 }
 \arguments{
-\item{name}{The name for the container model (default = 'top')}
+\item{name}{The name for the container model (default = 'super')}
 
 \item{...}{Models forming the multiple groups contained in the supermodel.}
 
@@ -29,16 +29,18 @@ umxSuperModel(
 }
 }
 \description{
-umxSuperModel takes 1 or more models and wraps them in a supermodel with a
+\code{umxSuperModel} takes 1 or more models and wraps them in a supermodel with a
 \code{\link[=mxFitFunctionMultigroup]{mxFitFunctionMultigroup()}} fit function that minimizes the sum of the
 fits of the sub-models.
+
+\emph{note}: Any duplicate model-names are renamed to be unique by suffixing \verb{_1} etc.
 }
 \examples{
 
 \dontrun{
 library(umx)
 # Create two sets of data in which X & Y correlate ~ .4 in both datasets.
-manifests = c("x","y")
+manifests = c("x", "y")
 tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 150, 
 		AA = 0, CC = .4, EE = .6, varNames = manifests)
 
@@ -51,7 +53,7 @@ grp2   = tmp[tmp$zygosity == "DZ", manifests]
 g2Data = mxData(cov(grp2), type = "cov", numObs = nrow(grp2), means=umx_means(grp2))
 
 
-# Model 1 (could add auto=FALSE if you don't want to run this as it is being built)
+# Model 1 (could add autoRun = FALSE if you don't want to run this as it is being built)
 m1 = umxRAM("m1", data = g1Data,
 	umxPath("x", to = "y", labels = "beta"),
 	umxPath(var = manifests, labels = c("Var_x", "Resid_y_grp1")),
@@ -84,6 +86,19 @@ umxSummary(m3, std= TRUE)
 
 summary(m3)
 
+# ====================================
+# = Test models with duplicate names =
+# ====================================
+data(GFF)
+mzData = subset(GFF, zyg_2grp == "MZ")
+dzData = subset(GFF, zyg_2grp == "DZ")
+selDVs = c("gff", "fc", "qol")
+m1 = umxCP(selDVs= selDVs, nFac= 1, dzData= dzData, mzData= mzData, sep= "_T", autoRun= TRUE)
+m2 = mxRename(m1, "CP2")
+umxModelNames(m1) # "top" "MZ" "DZ"
+umxModelNames(m2) # "top" "MZ" "DZ"
+super = umxSuperModel("myModel", m1, m2, autoRun = TRUE)
+umxModelNames(super)
 }
 }
 \references{

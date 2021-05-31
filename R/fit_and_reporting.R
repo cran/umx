@@ -842,15 +842,17 @@ umxSummary.default <- function(model, ...){
 #' @param model The [mxModel()] whose fit will be reported
 #' @param std If TRUE, model is standardized (Default FALSE, NULL means "don't show").
 #' @param digits How many decimal places to report (Default 2)
-#' @param report If "html", then show results in browser (alternative = "markdown")
-#' @param filter whether to show significant paths (SIG) or NS paths (NS) or all paths (ALL)
+#' @param report If "html", then show results in browser (default = "markdown")
 #' @param SE Whether to compute SEs... defaults to TRUE. In rare cases, you might need to turn off to avoid errors.
+#' @param means Whether to include means in the summary (TRUE)
+#' @param residuals Whether to include residuals in the summary (TRUE)
+#' @param filter whether to show significant paths (SIG) or NS paths (NS) or all paths (ALL)
 #' @param RMSEA_CI Whether to compute the CI on RMSEA (Defaults to FALSE)
 #' @param refModels Saturated models if needed for fit indices (see example below:
 #' 	If NULL will be computed on demand. If FALSE will not be computed.
 #' @param ... Other parameters to control model summary
 #' @param matrixAddresses Whether to show "matrix address" columns (Default = FALSE)
-#' @family Reporting functions
+#' @family Summary functions
 #' @seealso - [umxRAM()]
 #' @references - Hu, L., & Bentler, P. M. (1999). Cutoff criteria for fit indexes in covariance 
 #'  structure analysis: Conventional criteria versus new alternatives. *Structural Equation Modeling*, **6**, 1-55. 
@@ -889,12 +891,11 @@ umxSummary.default <- function(model, ...){
 #' 	umxPath(v1m0 = "G")
 #' )
 #' umxSummary(m1, std = TRUE, filter = "NS")
-umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2, report = c("markdown", "html"), filter = c("ALL", "NS", "SIG"), SE = TRUE, RMSEA_CI = FALSE, ..., matrixAddresses = FALSE){
+umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2, report = c("markdown", "html"), means= TRUE, residuals= TRUE, SE = TRUE, filter = c("ALL", "NS", "SIG"), RMSEA_CI = FALSE, ..., matrixAddresses = FALSE){
 	# TODO make table take lists of models...
 	commaSep = paste0(umx_set_separator(silent = TRUE), " ")
-
-	report = match.arg(report)
-	filter = match.arg(filter)
+	report   = match.arg(report)
+	filter   = match.arg(filter)
 	
 	message("?umxSummary std=T|F', digits, report= 'html', filter= 'NS' & more")
 	
@@ -912,15 +913,16 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 	if(is.null(refModels)) {
 		# SaturatedModels not passed in from outside, so get them from the model
 		# TODO umxSummary Improve efficiency: Compute summary only once by detecting when SaturatedLikelihood is missing
+		# m1$output$SaturatedLikelihood
 		modelSummary = summary(model)
 		if(is.na(modelSummary$SaturatedLikelihood)){
 			# no SaturatedLikelihood, compute refModels
 			refModels = tryCatch({
 			    refModels = mxRefModels(model, run = TRUE)
 			}, warning = function(x) {
-			    print("warning calling mxRefModels: Note WLS not supported for ref models, fit indices not available https://github.com/OpenMx/OpenMx/issues/184")
+			    print("Warning calling mxRefModels: mxRefModels can't handle all designs, including twin, and WLS https://github.com/OpenMx/OpenMx/issues/184")
 			}, error = function(x) {
-			    print("error calling mxRefModels: Note fit indices not available as WLS not supported for ref models https://github.com/OpenMx/OpenMx/issues/184")
+			    print("Error calling mxRefModels: mxRefModels can't handle all designs, including twin, and WLS https://github.com/OpenMx/OpenMx/issues/184")
 			}, finally={
 			    # print("cleanup-code")
 			})
@@ -1004,8 +1006,10 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 		} else if(filter == "SIG") {
 			toShow = parameterTable[parameterTable$sig == TRUE, namesToShow]
 		} else {
-			toShow = parameterTable[,namesToShow]
+			toShow = parameterTable[, namesToShow]
 		}
+		toShow = xmu_summary_RAM_group_parameters(model, toShow,  means= means, residuals = residuals)
+
 		umx_print(toShow, digits = digits, report = report, caption = "Model Parameter loadings", na.print = "", zero.print = "0", justify = "none")
 	}
 	with(modelSummary, {
@@ -1045,8 +1049,8 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 				"; ", RMSEA_CI
 			)
 			message(fitMsg)
-			if(TLI_OK   != "OK"){ message("TLI is worse than desired") }
-			if(RMSEA_OK != "OK"){ message("RMSEA is worse than desired")}
+			if(TLI_OK   != "OK"){ message("TLI is worse than desired (>.95)") }
+			if(RMSEA_OK != "OK"){ message("RMSEA is worse than desired (<.06)")}
 		}
 	})
 	# TODO: umxSummary.MxRAMModel integrate interval printing into summary table
@@ -1056,7 +1060,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 	
 	xmu_print_algebras(model)
 	
-	if(!is.null(std)){ # return these as  invisible for the user to filer, sort etc.
+	if(!is.null(std)){ # return these as  invisible for the user to filter, sort etc.
 		if(filter == "NS"){
 			invisible(parameterTable[parameterTable$sig == FALSE, namesToShow])
 		}else if(filter == "SIG"){
@@ -1275,8 +1279,7 @@ umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), 
 			CI_Fit$top$e$values = e_CI
 		} # end Use CIs
 	} # end list catcher?
-	
-	
+
 	if(!is.na(file)) {
 		# message("making dot file")
 		if(hasCIs & CIs){
@@ -1315,7 +1318,7 @@ umxSummary.MxModelACE <- umxSummaryACE
 #' @param ... Other parameters to control model summary
 #' @return - optional [mxModel()]
 #' @export
-#' @family Twin Modeling Functions
+#' @family Summary functions
 #' @seealso - [umxACEcov()] 
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
@@ -1510,7 +1513,7 @@ umxSummary.MxModelACEcov <- umxSummaryACEcov
 #' @param ... Optional additional parameters
 #' @return - optional [mxModel()]
 #' @export
-#' @family Twin Modeling Functions
+#' @family Summary functions
 #' @seealso - \code{\link{umxCP}()}, [plot()], [umxSummary()] work for IP, CP, GxE, SAT, and ACE models.
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
@@ -1652,7 +1655,7 @@ umxSummary.MxModelCP <- umxSummaryCP
 #' @param returnStd Whether to return the standardized form of the model (default = FALSE)
 #' @param ... Optional additional parameters
 #' @return - optional [mxModel()]
-#' @family Twin Modeling Functions
+#' @family Summary functions
 #' @export
 #' @seealso - \code{\link{umxIP}()}, [plot()], [umxSummary()] work for IP, CP, GxE, SAT, and ACE models.
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
@@ -1777,7 +1780,7 @@ umxSummary.MxModelIP <- umxSummaryIP
 #' @param show not doing anything yet (required for all summary functions)
 #' @param ... Optional additional parameters
 #' @return - optional [mxModel()]
-#' @family Twin Modeling Functions
+#' @family Summary functions
 #' @export
 #' @seealso - [umxGxE()], [umxReduce()], [plot()], [umxSummary)] all work for IP, CP, GxE, and ACE models.
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
@@ -1868,7 +1871,9 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' (handy for getting tables into Word, and other text systems!)
 #' @param file file to write html too if report = "html" (defaults to "tmp.html")
 #' @param compareWeightedAIC Show the Wagenmakers AIC weighted comparison (default = FALSE)
-#' @family Reporting functions
+#' @family Core Modelling Functions
+#' @family Modify or Compare Models
+#' @family Summary functions
 #' @seealso - [mxCompare()], [umxSummary()], [umxRAM()],
 #' @references - <https://github.com/tbates/umx>
 #' @export
@@ -1890,10 +1895,27 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' \dontrun{
 #' umxCompare(m1, m2, report = "html") # Open table in browser
 #' }
+#'
+#' # Two comparison models
 #' m3 = umxModify(m2, update = "G_to_x3", name = "drop_path_2_x2_and_3")
+#' 
 #' umxCompare(m1, c(m2, m3))
 #' umxCompare(m1, c(m2, m3), compareWeightedAIC = TRUE)
 #' umxCompare(c(m1, m2), c(m2, m3), all = TRUE)
+#'
+#' \dontrun{
+#' manifests = names(demoOneFactor)
+#' m1 = umxRAM("WLS", data = demoOneFactor, type = "DWLS",
+#' 	umxPath("G", to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = "G", fixedAt = 1)
+#' )
+#'
+#' m2 = umxModify(m1, update = "G_to_x2", name = "drop_path_2_x2")
+#' umxCompare(m1, m2)
+#' umxCompare(m1, m2, report = "inline") # Add English-sentence descriptions
+#' umxCompare(m1, m2, report = "html") # Open table in browser
+#' }
 umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, report = c("markdown", "html", "inline"), compareWeightedAIC = FALSE, file = "tmp.html") {
 	report = match.arg(report)
 	if(umx_is_MxModel(all)){
@@ -1921,15 +1943,47 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 		}
 	}
 	tableOut = mxCompare(base = base, comparison = comparison, all = all)
+	tableOut = as.data.frame(tableOut)
 
-	# | 1       |    2          | 3  | 4        | 5   | 6        | 7        | 8      | 9    |
+	# | base    | comparison    | ep | minus2LL | df  | AIC      | diffLL   | diffdf |p     |fit       |fitUnits |diffFit |chisq     |SBchisq |
+	# |:--------|:--------------|---:|:---------|:----|---------:|:---------|:-------|:-----|:---------|:--------|:-------|:---------|:-------|
+	# |DWLS     |               |  6 |          |0    | 12.00000 |          |        |      |0         |r'Wr     |        |0         |        |
+	# |DWLS     |drop_l2mpg     |  5 |          |1    | 14.49542 |          |1       |      |4.4954186 |r'Wr     |        |4.4954186 |        |
+	
 	# | base    | comparison    | ep | minus2LL | df  | AIC      | diffLL   | diffdf | p    |
+	#    1            2           3     4          5     6          7          8        9     
 	# | twinSat | <NA>          | 13 | 333.0781 | 149 | 35.07809 | NA       | NA     | NA   |
 	# | twinSat | betaSetToZero | 10 | 351.6486 | 152 | 47.64858 | 18.57049 | 3      | 0.01 |
-	tablePub = tableOut[, c("comparison", "ep", "diffLL"      , "diffdf"    , "p", "AIC", "base")]
+
+	# Pre Feb 2021 version 2.18.1.233
+	if(packageVersion("OpenMx") < "2.18.1.233"){
+		# old format mxCompare
+		tablePub = tableOut[, c("comparison", "ep", "diffLL" , "diffdf", "p", "AIC", "base")]
+		names(tablePub)     = c("comparison", "ep", "diffFit", "diffdf", "p", "AIC", "base")
+		tablePub$fitUnits = ""
+	} else {
+		# new format mxCompare
+		tablePub = tableOut[, c("comparison", "ep", "diffFit", "diffdf", "p", "AIC", "base", "fitUnits")]
+		# str(tmp@results)
+		# 'data.frame':	2 obs. of  13 variables:
+		#  $ base      : chr  "tim" "tim"
+		#  $ comparison: chr  NA "tim"
+		#  $ ep        : num  9 9
+		#  $ df        : num  87 87
+		#  $ diffdf    : num  NA 0
+		#  $ fit       : num  330 330
+		#  $ fitUnits  : chr  "-2lnL" "-2lnL"
+		#  $ diffFit   : num  NA 0
+		#  $ AIC       : num  348 348
+		#  $ p         : num  NA NA
+		#  $ minus2LL  : num  330 330
+		#  $ diffLL    : num  NA 0
+		#  $ SBchisq   : num  NA NA
+	}
+
+	# Subtract row-1 AIC from all values and place the resulting deltaAIC column after AIC 
 	tablePub$deltaAIC = tablePub[, "AIC"] - tablePub[1, "AIC"]
-	# rearrange
-	tablePub = tablePub[,c("comparison", "ep", "diffLL", "diffdf", "p", "AIC", "deltaAIC", "base")]
+	tablePub = tablePub[,c("comparison", "ep", "diffFit", "diffdf", "p", "AIC", "deltaAIC", "base", "fitUnits")]
 
 	# c("1: Comparison", "2: Base", "3: EP", "4: AIC", "5: &Delta; -2LL", "6: &Delta; df", "7: p")
 	# U+2206 = math delta
@@ -1937,34 +1991,34 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 	nRows = dim(tablePub)[1]
 	for (i in 1:nRows) {
 		if(is.na(tablePub[i, "comparison"])){
-			tablePub[i, "comparison"] = tablePub[i, "base"] 
+			tablePub[i, "comparison"] = tablePub[i, "base"]
 			tablePub[i, "base"] = NA
 		}
 	}
-	tablePub[,"p"] = umx_APA_pval(tablePub[, "p"], min = (1/ 10^3), digits = digits, addComparison = NA)
+	tablePub[, "p"] = umx_APA_pval(tablePub[, "p"], min = (1/ 10^3), digits = digits, addComparison = NA)
 	if(report == "inline"){
 		n_rows = dim(tablePub)[1]
 		for (i in 1:n_rows) {
-			thisPValue = tableOut[i,"p"]
+			thisPValue = tableOut[i, "p"]
 			if(!is.na(thisPValue) && !is.nan(thisPValue)){
 				if(tableOut[i, "p"] < .05){
 					this = ". This caused a significant loss of fit "
 				} else {
 					this = ". This did not lower fit significantly "
 				}
-				inlineMsg  = paste0("The hypothesis that ", omxQuotes(tablePub[i,"comparison"]), 
-				" was tested by dropping ", tablePub[i,"comparison"],
+				inlineMsg = paste0("The hypothesis that ", omxQuotes(tablePub[i, "comparison"]), 
+				" was tested by dropping ", tablePub[i, "comparison"],
 				" from ", omxQuotes(tablePub[i, "base"]), 
-				this, "(\u03C7\u00B2(", tablePub[i, "diffdf"], ") = ", round(tablePub[i, "diffLL"], 2), # \u03A7 = Chi \u00B2 = superscript 2
-				", p = ", tablePub[i,"p"], ": AIC = ", round(tablePub[i,"AIC"], digits), " change in AIC = ", round(tablePub[i,"deltaAIC"], digits), ")."
+				this, "(\u03C7\u00B2(", tablePub[i, "diffdf"], ") = ", round(tablePub[i, "diffFit"], 2), # \u03A7 = Chi \u00B2 = superscript 2
+				", p = ", tablePub[i, "p"], ": AIC = ", round(tablePub[i, "AIC"], digits), " change in AIC = ", round(tablePub[i, "deltaAIC"], digits), ")."
 				)
 				cat(inlineMsg)
 			}
 		}
 	}
 	
-	# rename for printing to console
-	names(tablePub) = c("Model", "EP", "\u0394 -2LL" , "\u0394 df" , "p", "AIC", "\u0394 AIC", "Compare with Model")
+	# Rename for printing to console
+	names(tablePub) = c("Model", "EP", "\u0394 Fit" , "\u0394 df" , "p", "AIC", "\u0394 AIC", "Compare with Model", "Fit units")
 
 	if(report == "inline"){ report= "markdown"}
 	umx_print(tablePub, digits = digits, zero.print = "0", caption = "Table of Model Comparisons", report = report)
@@ -2232,14 +2286,14 @@ plot.MxModel <- function(x = NA, std = FALSE, fixed = TRUE, means = TRUE, digits
 			plot.MxModel(sub, std = std, fixed = fixed, means = means, digits = digits, file = file, labels = labels, resid = resid, strip_zero = strip_zero, splines = splines, min= min, same= same, max= max, ...)
 			n = n + 1
 		}
-	}else{	
+	} else {
 		# ==========
 		# = Setup  =
 		# ==========
-		model = x # just to be clear that x is a model
-		resid = match.arg(resid)
-		labels = match.arg(labels)
-		latents = model@latentVars   # 'vis', 'math', and 'text' 
+		model   = x # just to be clear that x is a model
+		resid   = match.arg(resid)
+		labels  = match.arg(labels)
+		latents = model@latentVars # 'vis', 'math', and 'text' 
 		selDVs  = model@manifestVars # 'visual', 'cubes', 'paper', 'general', 'paragrap'...
 	
 		# Update values using compute = T to capture labels with [] references.
@@ -2337,6 +2391,27 @@ plot.MxModel <- function(x = NA, std = FALSE, fixed = TRUE, means = TRUE, digits
 		x = xmu_dot_move_ranks(max = max, min = min, same=same, old_min = latents, old_same = selDVs, old_max = varianceNames)
 		rankVariables = xmu_dot_rank_str(min = x$min, same = x$same, max = x$max)
 
+		# ===================
+		# = Selection paths =
+		# ===================
+		if(!is.null(model$expectation$selectionPlan)){
+			# Draw each found "from-to" pair as a headless arrow on the diagram.
+			
+			selPaths = cbind(model$expectation$selectionPlan, value = model[["selectionVector"]]$values)
+		  #   step from to     values
+		  # 1    1   V1 V2 -0.2373752
+
+			for(thisPath in 1:nrow(selPaths)) {
+		 	    step = selPaths[thisPath, "step"] # color
+				color = c("red", "green", "blue")[step]
+				from = selPaths[thisPath, "from"]
+				to   = selPaths[thisPath, "to"]
+				val  = round(selPaths[thisPath, "value"], digits)
+				newPath = paste0("\t", from, " ->", to, "[label='", val, "' color='", color, "' dir='none'];\n")
+				out = paste0(out, newPath)
+			}			
+		}
+		
 		# ===================================
 		# = Assemble full text to write out =
 		# ===================================
@@ -2712,7 +2787,6 @@ plot.MxModelGxE <- umxPlotGxE
 #' @seealso - [plot()], [umxSummary()] work for IP, CP, GxE, SAT, and ACE models.
 #' @seealso - [umxCP()]
 #' @family Plotting functions
-#' @family Twin Modeling Functions
 #' @references - <https://tbates.github.io>
 #' @md
 #' @examples
@@ -3604,17 +3678,17 @@ RMSEA <- function(x, ci.lower, ci.upper, digits) UseMethod("RMSEA", x)
 #' RMSEA function for MxModels
 #'
 #' Return RMSEA and its confidence interval on a model.
+#' RMSEA(tmp, silent=TRUE)$RMSEA
 #'
 #' @rdname RMSEA.MxModel
 #' @param x an [mxModel()] from which to get RMSEA
-#' @param ci.lower the lower CI to compute
-#' @param ci.upper the upper CI to compute
-#' @param digits digits to show (defaults to 3)
-#' @return - object containing the RMSEA and lower and upper bounds
+#' @param ci.lower the lower CI to compute (only .05 supported)
+#' @param ci.upper the upper CI to compute (only .95 supported)
+#' @param digits digits to show (default = 3)
+#' @return - object containing the RMSEA, lower and upper bounds, and p-close
 #' @export
 #' @family Reporting functions
-#' @references - <https://github.com/tbates/umx>,
-#' \url{https://github.com/simsem/semTools/wiki/Functions}
+#' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
 #' require(umx)
@@ -3627,13 +3701,44 @@ RMSEA <- function(x, ci.lower, ci.upper, digits) UseMethod("RMSEA", x)
 #' 	umxPath(var = "G", fixedAt = 1)
 #' )
 #' RMSEA(m1)
+#' x = RMSEA(m1)
+#' x$RMSEA # -> 0.0309761
+#' # Raw: needs to be run by umx to get RMSEA
+#' m2 = umxRAM("One Factor", data = demoOneFactor,
+#' 	umxPath("G", to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = "G", fixedAt = 1)
+#' )
+#' RMSEA(m2)
 RMSEA.MxModel <- function(x, ci.lower = .05, ci.upper = .95, digits = 3) { 
-	RMSEA.summary.mxmodel(x= summary(x), ci.lower = ci.lower, ci.upper = ci.upper, digits = digits)
+	model = x
+	if(is.null(model$output$SaturatedLikelihood)){
+		# no ref models in summary... compute them
+		# no SaturatedLikelihood, compute refModels
+		refModels = tryCatch({
+		    refModels = mxRefModels(model, run = TRUE)
+		}, warning = function(x) {
+		    print("warning calling mxRefModels: mxRefModels can't handle all designs, including twin, and WLS https://github.com/OpenMx/OpenMx/issues/184")
+		}, error = function(x) {
+		    print("error calling mxRefModels: mxRefModels can't handle all designs, including twin, and WLS https://github.com/OpenMx/OpenMx/issues/184")
+		}, finally={
+		    # print("cleanup-code")
+		})
+		if(!class(refModels)=="list"){
+			modelSummary = summary(model)
+		} else {
+			modelSummary = summary(model, refModels = refModels)
+		}
+	}else{
+		modelSummary = summary(model)		
+	}
+	RMSEA.summary.mxmodel(x= modelSummary, ci.lower = ci.lower, ci.upper = ci.upper, digits = digits)
 }
 
 #' RMSEA function for MxModels
 #'
-#' Compute the confidence interval on RMSEA
+#' Compute the confidence interval on RMSEA and print it out. 
+#' *note*: If your goal is to extract the RMSEA from a model, use `RMSEA(m1)$RMSEA`
 #'
 #' @param x an [mxModel()] summary from which to get RMSEA
 #' @param ci.lower the lower CI to compute
@@ -3655,21 +3760,59 @@ RMSEA.MxModel <- function(x, ci.lower = .05, ci.upper = .95, digits = 3) {
 #' 	umxPath(var = manifests),
 #' 	umxPath(var = "G", fixedAt = 1.0)
 #' )
-#'
-#' RMSEA(m1)
+#' tmp = summary(m1)
+#' RMSEA(tmp)
 RMSEA.summary.mxmodel <- function(x, ci.lower = .05, ci.upper = .95, digits = 3){
+	summary = x # x is a model summary
 	if(ci.lower != .05 | ci.upper != .95){
 		stop("only 95% CI on RMSEA supported as yet...")
 	}
+	if(is.na(summary$RMSEA) || is.null(summary$RMSEA)){
+		message("model summary has no RMSEA, sorry - you might need to run ref models?")
+		return(NA)
+	} else {
+		output = list(RMSEA = summary$RMSEA, CI.lower = summary$RMSEACI["lower"], CI.upper = summary$RMSEACI["upper"], RMSEA.pvalue = summary$RMSEAClose)
+		class(output) = "RMSEA"
+		attr(output, 'digits')   = digits
+		return(output)
+	}
+}
+
+#' Print a RMSEA object
+#'
+#' Print method for, class()= "RMSEA" objects: e.g. [umx::RMSEA()]. 
+#'
+#' @param x RMSEA object.
+#' @param ... further arguments passed to or from other methods.
+#' @return - invisible
+#' @seealso - [umx::RMSEA()], [print()]
+#' @md
+#' @method print RMSEA
+#' @export
+#' @examples
+#' data(demoOneFactor)
+#' manifests = names(demoOneFactor)
+#'
+#' m1 = umxRAM("One Factor", data = demoOneFactor, type= "cov",
+#' 	umxPath("G", to = manifests),
+#' 	umxPath(var = manifests),
+#' 	umxPath(var = "G", fixedAt = 1.0)
+#' )
+#' tmp = summary(m1)
+#' RMSEA(tmp)
+#'
+print.RMSEA <- function(x, ...) {
+	# x is an RMSEA object
+	if(!is.null(attr(x, 'digits')) ){
+		digits = attr(x, 'digits')
+	}
+
 	txt = paste0("RMSEA = ", round(x$RMSEA, digits))
-	txt = paste0(txt, " CI", sub("^0?\\.", replacement = "", ci.upper))
-	txt = paste0(txt, "[", round(x$RMSEACI["lower"], digits), ", ")
-	txt = paste0(txt, round(x$RMSEACI["upper"], digits), "], ")
-	txt = paste0(txt, "Prob(RMSEA <= 0.05) = ", umx_APA_pval(x$RMSEAClose))
-	print(txt)
-	invisible(list(RMSEA = x$RMSEA, CI.lower = x$RMSEACI["lower"], 
-		CI.upper = x$RMSEACI["upper"], RMSEA.pvalue = x$RMSEAClose, txt = txt)
-	)
+	txt = paste0(txt, " CI[")
+	txt = paste0(txt, round(x$CI.lower, digits), ", ")
+	txt = paste0(txt, round(x$CI.upper, digits), "], ")
+	txt = paste0(txt, "Prob(RMSEA <= 0.05) = ", umx_APA_pval(x$RMSEA.pvalue))
+	cat(txt)
 }
 
 # ===================================
@@ -3978,7 +4121,7 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA) {
 #' Creates nicely formatted journal-style summaries of models, p-values, data-frames and much more.
 #'
 #' @description
-#' `umxAPA` creates summaries from a range of inputs. Use it for reporting `lm` models, effects, and summarizing data.
+#' `umxAPA` creates APA-style reports from a range of statistical models, or to summarize data.
 #' 
 #' 1. Given an [stats::lm()] model, `umxAPA` will return a formatted effect, including 95% CI. 
 #' e.g.: `umxAPA(lm(mpg~wt, data=mtcars), "wt")` yields: \eqn{\beta} = -5.34 \[-6.48, -4.20\], p < 0.001. here "wt" 
@@ -4145,23 +4288,25 @@ umxAPA <- function(obj = .Last.value, se = NULL, p = NULL, std = FALSE, digits =
 		if(std){
 			obj = update(obj, data = umx_scale(obj$model))
 		}
-		model_coefficients = summary(obj)$coefficients
-		conf = confint(obj)
+		sumry = summary(obj)
+		conf  = confint(obj)
 		if(is.null(se)){
-			se = dimnames(model_coefficients)[[1]]
+			se = dimnames(sumry$coefficients)[[1]]
 		}
 		for (i in se) {
 			lower   = conf[i, 1]
 			upper   = conf[i, 2]
-			b_and_p = model_coefficients[i, ]
+			b_and_p = sumry$coefficients[i, ]
 			b       = b_and_p["Estimate"]
 			tval    = b_and_p["t value"]
 			pval    = b_and_p["Pr(>|t|)"]
 			cat(paste0(i, betaSymbol, round(b, digits), 
-			   " [", round(lower, digits), commaSep, round(upper, digits), "], ",
-			   "t = ", round(tval, digits), ", p ", umx_APA_pval(pval, addComparison = TRUE), "\n"
-			))		
+				" ["  , round(lower, digits), commaSep, round(upper, digits), "], ",
+				"t = ", round(tval , digits), ", p ", umx_APA_pval(pval, addComparison = TRUE), "\n"
+			))
 		}
+		cat(paste0("R\u00B2 = ", round(sumry$r.squared, 3), " (adj = ", round(sumry$adj.r.squared, 3), ")"))
+		
 	} else if("glm" == class(obj)[[1]]) {
 		# report glm summary table
 		if(std){
@@ -4223,17 +4368,23 @@ umxAPA <- function(obj = .Last.value, se = NULL, p = NULL, std = FALSE, digits =
 				return(umx_APA_pval(obj, min = min, digits = digits, addComparison = addComparison))
 			} else {
 				# p-value provided but not SE
-				se = SE_from_p(beta = obj, p = p)
-				return(paste0("\u03B2 = ", round(obj, digits), " [", round(obj - (1.96 * se), digits), commaSep, round(obj + (1.96 * se), digits), "]"))				
+				se  = SE_from_p(beta = obj, p = p)
+				str = paste0("\u03B2 = ", round(obj, digits), " [", round(obj - (1.96 * se), digits), commaSep, round(obj + (1.96 * se), digits), "]")
+				cat(str)
+				invisible(str)
 			}
 		} else if(length(se) == 2){
 			# beta and CI
 			# lower = b - (1.96 * se)
 			# upper = b + (1.96 * se)
-			return(paste0("\u03B2 = ", round(obj, digits), ", se =", round((se[2] - se[1])/(1.96 * 2), digits)))
+			str= paste0("\u03B2 = ", round(obj, digits), "SE = ", round((se[2] - se[1])/(1.96 * 2), digits))
+			cat(str)
+			invisible(str)
 		} else {
 			# obj = beta and SE
-			return(paste0("\u03B2 = ", round(obj, digits), " [", round(obj - (1.96 * se), digits), commaSep, round(obj + (1.96 * se), digits), "]"))
+			str = paste0("\u03B2 = ", round(obj, digits), " [", round(obj - (1.96 * se), digits), commaSep, round(obj + (1.96 * se), digits), "]")
+			cat(str)
+			invisible(str)
 		}
 
 	}

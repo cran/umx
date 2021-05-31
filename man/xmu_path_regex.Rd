@@ -33,7 +33,7 @@ xmu_path_regex(c("a", "one", "b"), pattern = "$", replacement = "_T1")
 }
 \references{
 \itemize{
-\item \href{https://tbates.github.io}{tutorials}, \href{https://github.com/tbates/umx}{tutorials}
+\item \href{https://tbates.github.io}{tutorials}, \href{https://github.com/tbates/umx}{github}
 }
 }
 \seealso{
@@ -108,6 +108,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_standardize_Simplex}()},
 \code{\link{xmu_start_value_list}()},
 \code{\link{xmu_starts}()},
+\code{\link{xmu_summary_RAM_group_parameters}()},
 \code{\link{xmu_twin_add_WeightMatrices}()},
 \code{\link{xmu_twin_check}()},
 \code{\link{xmu_twin_get_var_names}()},

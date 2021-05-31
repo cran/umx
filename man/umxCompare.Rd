@@ -60,10 +60,27 @@ umxCompare(m1, m2, report = "inline") # Add English-sentence descriptions
 \dontrun{
 umxCompare(m1, m2, report = "html") # Open table in browser
 }
+
+# Two comparison models
 m3 = umxModify(m2, update = "G_to_x3", name = "drop_path_2_x2_and_3")
+
 umxCompare(m1, c(m2, m3))
 umxCompare(m1, c(m2, m3), compareWeightedAIC = TRUE)
 umxCompare(c(m1, m2), c(m2, m3), all = TRUE)
+
+\dontrun{
+manifests = names(demoOneFactor)
+m1 = umxRAM("WLS", data = demoOneFactor, type = "DWLS",
+	umxPath("G", to = manifests),
+	umxPath(var = manifests),
+	umxPath(var = "G", fixedAt = 1)
+)
+
+m2 = umxModify(m1, update = "G_to_x2", name = "drop_path_2_x2")
+umxCompare(m1, m2)
+umxCompare(m1, m2, report = "inline") # Add English-sentence descriptions
+umxCompare(m1, m2, report = "html") # Open table in browser
+}
 }
 \references{
 \itemize{
@@ -75,21 +92,22 @@ umxCompare(c(m1, m2), c(m2, m3), all = TRUE)
 \item \code{\link[=mxCompare]{mxCompare()}}, \code{\link[=umxSummary]{umxSummary()}}, \code{\link[=umxRAM]{umxRAM()}},
 }
 
-Other Reporting functions: 
-\code{\link{RMSEA.MxModel}()},
-\code{\link{RMSEA.summary.mxmodel}()},
-\code{\link{RMSEA}()},
-\code{\link{extractAIC.MxModel}()},
-\code{\link{loadings}()},
-\code{\link{residuals.MxModel}()},
-\code{\link{umxCI_boot}()},
-\code{\link{umxCI}()},
-\code{\link{umxConfint}()},
-\code{\link{umxExpCov}()},
-\code{\link{umxExpMeans}()},
-\code{\link{umxFitIndices}()},
-\code{\link{umxPlotACEv}()},
-\code{\link{umxRotate}()},
-\code{\link{umxSummary.MxModel}()}
+Other Modify or Compare Models: 
+\code{\link{umxEquate}()},
+\code{\link{umxFixAll}()},
+\code{\link{umxMI}()},
+\code{\link{umxModify}()},
+\code{\link{umxSetParameters}()},
+\code{\link{umxUnexplainedCausalNexus}()},
+\code{\link{umx}}
+
+Other Summary functions: 
+\code{\link{umxSummary.MxModel}()},
+\code{\link{umxSummaryACEcov}()},
+\code{\link{umxSummaryCP}()},
+\code{\link{umxSummaryGxE}()},
+\code{\link{umxSummaryIP}()}
 }
-\concept{Reporting functions}
+\concept{Core Modelling Functions}
+\concept{Modify or Compare Models}
+\concept{Summary functions}

@@ -217,26 +217,26 @@ m1 = umxACEv(selDVs = c("ht", "wt"), sep = '', dzData = dzData, mzData = mzData)
 # ===================
 require(umx)
 data(twinData)
+
 # Cut bmi column to form ordinal obesity variables
-ordDVs = c("obese1", "obese2")
-selDVs = c("obese")
-obesityLevels = c('normal', 'overweight', 'obese')
 cutPoints = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
+obesityLevels = c('normal', 'overweight', 'obese')
 twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+
 # Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
-twinData[, ordDVs] = mxFactor(twinData[, ordDVs], levels = obesityLevels)
-mzData = twinData[twinData$zygosity \%in\% "MZFF", ][1:80,] # 80 pairs for speed
+twinData[, c("obese1", "obese2")] = umxFactor(twinData[, c("obese1", "obese2")])
+mzData = twinData[twinData$zygosity \%in\% "MZFF", ][1:80,] # 80 pairs for speed on CRAN
 dzData = twinData[twinData$zygosity \%in\% "DZFF", ][1:80,]
-str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
-m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
-umxSummary(m1)
+m2 = umxACEv(selDVs = "obese", dzData = dzData, mzData = mzData, sep = '')
+
+# FYI: Show mz, dz, and t1 and t2 have the same levels!
+str(mzData)
 
 # ============================================
 # = Bivariate continuous and ordinal example =
 # ============================================
 data(twinData)
-selDVs = c("wt", "obese")
 # Cut bmi column to form ordinal obesity variables
 ordDVs = c("obese1", "obese2")
 obesityLevels = c('normal', 'overweight', 'obese')
@@ -244,13 +244,14 @@ cutPoints = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
 twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 
-# Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
-twinData[, ordDVs] = mxFactor(twinData[, ordDVs], levels = obesityLevels)
+# Make the ordinal variables into ordered mxFactors
+twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 
 # umxACEv can trim out unused variables on its own
 mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
-m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
+
+m1 = umxACEv(selDVs = c("wt", "obese"), dzData = dzData, mzData = mzData, sep = '')
 plot(m1)
 
 # =======================================
@@ -265,7 +266,7 @@ obesityLevels = c('normal', 'obese')
 twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 ordDVs = c("obese1", "obese2")
-twinData[, ordDVs] = mxFactor(twinData[, ordDVs], levels = obesityLevels)
+twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 
 selDVs = c("wt", "obese")
 mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
@@ -299,7 +300,6 @@ to the analysis of human behaviour. \emph{Heredity}, \strong{41}, 249-320. \url{
 }
 \seealso{
 Other Twin Modeling Functions: 
-\code{\link{plot.MxModelTwinMaker}()},
 \code{\link{power.ACE.test}()},
 \code{\link{umxACEcov}()},
 \code{\link{umxACE}()},
@@ -310,8 +310,6 @@ Other Twin Modeling Functions:
 \code{\link{umxGxEbiv}()},
 \code{\link{umxGxE}()},
 \code{\link{umxIP}()},
-\code{\link{umxPlotCP}()},
-\code{\link{umxPlotDoC}()},
 \code{\link{umxReduceACE}()},
 \code{\link{umxReduceGxE}()},
 \code{\link{umxReduce}()},
@@ -319,14 +317,10 @@ Other Twin Modeling Functions:
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
 \code{\link{umxSummarizeTwinData}()},
-\code{\link{umxSummaryACEcov}()},
 \code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryACE}()},
-\code{\link{umxSummaryCP}()},
 \code{\link{umxSummaryDoC}()},
 \code{\link{umxSummaryGxEbiv}()},
-\code{\link{umxSummaryGxE}()},
-\code{\link{umxSummaryIP}()},
 \code{\link{umxSummarySexLim}()},
 \code{\link{umxSummarySimplex}()},
 \code{\link{umxTwinMaker}()},

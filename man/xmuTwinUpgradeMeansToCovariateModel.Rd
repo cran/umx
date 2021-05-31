@@ -45,7 +45,7 @@ dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
 # m1 = umxACE(selDVs= "ht", sep= "", dzData= dzData, mzData= mzData, autoRun= FALSE)
 # m2 = xmuTwinUpgradeMeansToCovariateModel(m1, fullVars = c("ht1", "ht2"),
 # 	fullCovs = c("age1", "sex1", "age2", "sex2"), sep = "")
-#
+
 }
 
 }
@@ -121,6 +121,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_standardize_Simplex}()},
 \code{\link{xmu_start_value_list}()},
 \code{\link{xmu_starts}()},
+\code{\link{xmu_summary_RAM_group_parameters}()},
 \code{\link{xmu_twin_add_WeightMatrices}()},
 \code{\link{xmu_twin_check}()},
 \code{\link{xmu_twin_get_var_names}()},

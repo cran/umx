@@ -56,7 +56,7 @@ Finally, set se to the CI c(lower, upper), to back out the SE.}
 }
 }
 \description{
-\code{umxAPA} creates summaries from a range of inputs. Use it for reporting \code{lm} models, effects, and summarizing data.
+\code{umxAPA} creates APA-style reports from a range of statistical models, or to summarize data.
 \enumerate{
 \item Given an \code{\link[stats:lm]{stats::lm()}} model, \code{umxAPA} will return a formatted effect, including 95\% CI.
 e.g.: \code{umxAPA(lm(mpg~wt, data=mtcars), "wt")} yields: \eqn{\beta} = -5.34 [-6.48, -4.20], p < 0.001. here "wt"
@@ -151,7 +151,6 @@ Other Reporting Functions:
 \code{\link{umxParameters}()},
 \code{\link{umxReduce}()},
 \code{\link{umx_aggregate}()},
-\code{\link{umx_names}()},
 \code{\link{umx_time}()},
 \code{\link{umx}}
 }

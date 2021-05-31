@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.R
 \name{umx_get_options}
 \alias{umx_get_options}
-\title{umx_get_options}
+\title{Display umx options}
 \usage{
 umx_get_options()
 }

@@ -39,9 +39,11 @@ x = umxVersion(); x
 
 Other Miscellaneous Utility Functions: 
 \code{\link{install.OpenMx}()},
+\code{\link{libs}()},
 \code{\link{qm}()},
 \code{\link{umxBrownie}()},
 \code{\link{umxLav2RAM}()},
+\code{\link{umxModelNames}()},
 \code{\link{umxRAM2Lav}()},
 \code{\link{umx_array_shift}()},
 \code{\link{umx_find_object}()},
@@ -50,7 +52,6 @@ Other Miscellaneous Utility Functions:
 \code{\link{umx_open_CRAN_page}()},
 \code{\link{umx_pad}()},
 \code{\link{umx_print}()},
-\code{\link{umx_score_scale}()},
 \code{\link{umx}}
 }
 \concept{Miscellaneous Utility Functions}

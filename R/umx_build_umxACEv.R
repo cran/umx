@@ -180,26 +180,26 @@
 #' # ===================
 #' require(umx)
 #' data(twinData)
+#'
 #' # Cut bmi column to form ordinal obesity variables
-#' ordDVs = c("obese1", "obese2")
-#' selDVs = c("obese")
-#' obesityLevels = c('normal', 'overweight', 'obese')
 #' cutPoints = quantile(twinData[, "bmi1"], probs = c(.5, .2), na.rm = TRUE)
+#' obesityLevels = c('normal', 'overweight', 'obese')
 #' twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 #' twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
+#'
 #' # Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
-#' twinData[, ordDVs] = mxFactor(twinData[, ordDVs], levels = obesityLevels)
-#' mzData = twinData[twinData$zygosity %in% "MZFF", ][1:80,] # 80 pairs for speed
+#' twinData[, c("obese1", "obese2")] = umxFactor(twinData[, c("obese1", "obese2")])
+#' mzData = twinData[twinData$zygosity %in% "MZFF", ][1:80,] # 80 pairs for speed on CRAN
 #' dzData = twinData[twinData$zygosity %in% "DZFF", ][1:80,]
-#' str(mzData) # make sure mz, dz, and t1 and t2 have the same levels!
-#' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
-#' umxSummary(m1)
+#' m2 = umxACEv(selDVs = "obese", dzData = dzData, mzData = mzData, sep = '')
+#'
+#' # FYI: Show mz, dz, and t1 and t2 have the same levels!
+#' str(mzData)
 #' 
 #' # ============================================
 #' # = Bivariate continuous and ordinal example =
 #' # ============================================
 #' data(twinData)
-#' selDVs = c("wt", "obese")
 #' # Cut bmi column to form ordinal obesity variables
 #' ordDVs = c("obese1", "obese2")
 #' obesityLevels = c('normal', 'overweight', 'obese')
@@ -207,13 +207,14 @@
 #' twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 #' twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 #'
-#' # Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
-#' twinData[, ordDVs] = mxFactor(twinData[, ordDVs], levels = obesityLevels)
+#' # Make the ordinal variables into ordered mxFactors
+#' twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 #'
 #' # umxACEv can trim out unused variables on its own
 #' mzData = twinData[twinData$zygosity %in% "MZFF", ]
 #' dzData = twinData[twinData$zygosity %in% "DZFF", ]
-#' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
+#' 
+#' m1 = umxACEv(selDVs = c("wt", "obese"), dzData = dzData, mzData = mzData, sep = '')
 #' plot(m1)
 #' 
 #' # =======================================
@@ -228,7 +229,7 @@
 #' twinData$obese1 = cut(twinData$bmi1, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 #' twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = obesityLevels) 
 #' ordDVs = c("obese1", "obese2")
-#' twinData[, ordDVs] = mxFactor(twinData[, ordDVs], levels = obesityLevels)
+#' twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 #' 
 #' selDVs = c("wt", "obese")
 #' mzData = twinData[twinData$zygosity %in% "MZFF", ]
@@ -419,22 +420,23 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 	selDVs = dimnames(model$top.expCovMZ)[[1]]
 	nVar   = length(selDVs)/2;
 
-	A  <- mxEval(top.A, model); # Variances
-	C  <- mxEval(top.C, model);
-	E  <- mxEval(top.E, model);
+	A = mxEval(top.A, model) # Variances
+	C = mxEval(top.C, model)
+	E = mxEval(top.E, model)
 
 	if(std){
-		message("Standardized solution")
+		caption = paste0("Standardized parameter estimates from a ", dim(A)[2], "-factor Direct variance ACE model. ")
+		
 		# TODO replace with call to umx_standardize()??
 		# Calculate standardized variance components
 		Vtot  = A + C + E; # Total variance
 		I     = diag(nVar); # nVar Identity matrix
 
 		# Inverse of diagonal matrix of standard deviations.
-		InvSD <- sqrt(solve(I * Vtot));
+		InvSD = sqrt(solve(I * Vtot));
 
 		# Standardized _variance_ coefficients ready to be stacked together
-		A_std = InvSD %&% A 	# Standardized variance coefficients
+		A_std = InvSD %&% A # Standardized variance coefficients
 		C_std = InvSD %&% C
 		E_std = InvSD %&% E
 		
@@ -442,7 +444,8 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 		CClean = C_std
 		EClean = E_std
 	} else {
-		message("Raw solution")
+		caption = paste0("Raw parameter estimates from a ", dim(A)[2], "-factor direct-variance ACE model. ")
+		
 		AClean = A
 		CClean = C
 		EClean = E
@@ -454,16 +457,19 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 	rowNames  = sub("(_T)?1$", "", selDVs[1:nVar])
 	Estimates = data.frame(cbind(AClean, CClean, EClean), row.names = rowNames, stringsAsFactors = FALSE);
 
-	colNames = c("A", "C", "E")
 	if(model$top$dzCr$values == .25){
 		colNames = c("A", "D", "E")
+		caption = paste0(caption, "A: additive genetic; D: dominance effects; E: unique environment.")
+	} else {
+		colNames = c("A", "C", "E")
+		caption = paste0(caption, "A: additive genetic; C: common environment; E: unique environment.")
 	}
-	names(Estimates) = paste0(rep(colNames, each = nVar), rep(1:nVar));
-	umx_print(Estimates, digits = digits, zero.print = zero.print, append=FALSE, sortableDF=TRUE, both=TRUE, na.print="NA", file=report)
+	names(Estimates) = paste0(rep(colNames, each = nVar), rep(1:nVar))
+
+	umx_print(Estimates, digits = digits, caption = caption, append=FALSE, sortableDF=TRUE, both=TRUE, na.print="NA", file=report, zero.print = zero.print)
 	xmu_twin_print_means(model, digits = digits, report = report)
 	
 	if(extended == TRUE) {
-		message("Unstandardized path coefficients")
 		AClean = A
 		CClean = C
 		EClean = E
@@ -472,12 +478,11 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 		EClean[upper.tri(EClean)] = NA
 		unStandardizedEstimates = data.frame(cbind(AClean, CClean, EClean), row.names = rowNames);
 		names(unStandardizedEstimates) = paste0(rep(colNames, each = nVar), rep(1:nVar));
-		umx_print(unStandardizedEstimates, digits = digits, zero.print = zero.print)
+		umx_print(unStandardizedEstimates, caption = "Unstandardised path coefficients", digits = digits, zero.print = zero.print)
 	}
 
 	# Pre & post multiply covariance matrix by inverse of standard deviations
 	if(showRg) {
-		message("Genetic correlations")
 		NAmatrix <- matrix(NA, nVar, nVar);
 		rA = tryCatch(solve(sqrt(I*A)) %*% A %*% solve(sqrt(I*A)), error = function(err) return(NAmatrix)); # genetic correlations
 		rC = tryCatch(solve(sqrt(I*C)) %*% C %*% solve(sqrt(I*C)), error = function(err) return(NAmatrix)); # C correlations
@@ -489,10 +494,10 @@ umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"),
 		rCClean[upper.tri(rCClean)] = NA
 		rEClean[upper.tri(rEClean)] = NA
 		genetic_correlations = data.frame(cbind(rAClean, rCClean, rEClean), row.names = rowNames);
-		names(genetic_correlations) <- rowNames
+		names(genetic_correlations) = rowNames
 	 	# Make a nice table.
 		names(genetic_correlations) = paste0(rep(c("rA", "rC", "rE"), each = nVar), rep(1:nVar));
-		umx_print(genetic_correlations, digits = digits, zero.print = zero.print)
+		umx_print(genetic_correlations, caption = "Genetic correlations", digits = digits, zero.print = zero.print)
 	}
 	hasCIs = umx_has_CIs(model)
 		if(hasCIs & CIs) {
@@ -612,7 +617,6 @@ umxSummary.MxModelACEv <- umxSummaryACEv
 #' @return - optionally return the dot code
 #' @export
 #' @family Plotting functions
-#' @family Reporting functions
 #' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples

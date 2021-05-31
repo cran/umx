@@ -12,7 +12,8 @@ xmu_safe_run_summary(
   summary = !umx_set_silent(silent = TRUE),
   std = "default",
   comparison = TRUE,
-  digits = 3
+  digits = 3,
+  returning = c("model", "summary")
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ xmu_safe_run_summary(
 \item{comparison}{Toggle to allow not making comparison, even if second model is provided (more flexible in programming).}
 
 \item{digits}{Rounding precision in tables and plots}
+
+\item{returning}{What to return (default, the run model)}
 }
 \value{
 \itemize{
@@ -142,6 +145,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_standardize_Simplex}()},
 \code{\link{xmu_start_value_list}()},
 \code{\link{xmu_starts}()},
+\code{\link{xmu_summary_RAM_group_parameters}()},
 \code{\link{xmu_twin_add_WeightMatrices}()},
 \code{\link{xmu_twin_check}()},
 \code{\link{xmu_twin_get_var_names}()},

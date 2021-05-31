@@ -120,7 +120,7 @@ umxDoCp <- function(var1Indicators, var2Indicators, mzData= NULL, dzData= NULL, 
 #' @export
 #' @family Twin Modeling Functions
 #' @seealso - [umxRAM()], [umxSuperModel()], [umxPath()]
-#' @references - [tutorials](https://tbates.github.io), [tutorials](https://github.com/tbates/umx)
+#' @references - [tutorials](https://tbates.github.io), [github](https://github.com/tbates/umx)
 #' @md
 #' @examples
 #' \dontrun{
@@ -272,7 +272,7 @@ umxTwinMaker <- function(name = "m1", paths, t1_t2links = list('a'=c(1, .5), 'c'
 #' @param ... Optional parameters
 #' @export
 #' @seealso - [umx_set_plot_format()], [plot.MxModel()], [umxPlotACE()], [umxPlotCP()], [umxPlotIP()], [umxPlotGxE()]
-#' @family Twin Modeling Functions
+#' @family Plotting functions
 #' @md
 #' @examples
 #' \dontrun{
@@ -516,7 +516,7 @@ xmu_path2twin <- function(paths, thisTwin = 1, sep = "_T"){
 #' @export
 #' @family xmu internal not for end user
 #' @seealso - [xmu_path2twin()], [umxTwinMaker()]
-#' @references - [tutorials](https://tbates.github.io), [tutorials](https://github.com/tbates/umx)
+#' @references - [tutorials](https://tbates.github.io), [github](https://github.com/tbates/umx)
 #' @md
 #' @examples
 #' xmu_path_regex(c("a", "one", "b"), pattern = "$", replacement = "_T1")

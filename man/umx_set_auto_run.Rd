@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc_and_utility.R
 \name{umx_set_auto_run}
 \alias{umx_set_auto_run}
-\title{umx_set_auto_run}
+\title{Automatically run models?}
 \usage{
 umx_set_auto_run(autoRun = NA, silent = FALSE)
 }
@@ -17,7 +17,7 @@ umx_set_auto_run(autoRun = NA, silent = FALSE)
 }
 }
 \description{
-Set autoRun default for models like umxACE umxGxE etc.
+Set \code{autoRun} default for models like \code{\link[=umxRAM]{umxRAM()}}, \code{\link[=umxACE]{umxACE()}} etc.
 }
 \examples{
 library(umx)
@@ -25,11 +25,6 @@ umx_set_auto_run() # print existing value
 old = umx_set_auto_run(silent = TRUE) # store existing value
 umx_set_auto_run(FALSE)  # set to FALSE
 umx_set_auto_run(old)    # reinstate
-}
-\references{
-\itemize{
-\item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
-}
 }
 \seealso{
 Other Get and set: 

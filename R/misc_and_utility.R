@@ -20,8 +20,8 @@
 # ===================================
 
 # William Shakespeare
-# [Tomorrow and tomorrow soliloquy](https://www.poetryfoundation.org/poems/56964/speech-tomorrow-and-tomorrow-and-tomorrow)
-# [To be or not to be](https://www.poetryfoundation.org/poems/56965/speech-to-be-or-not-to-be-that-is-the-question)
+# [Macbeth Tomorrow and tomorrow soliloquy](https://www.poetryfoundation.org/poems/56964/speech-tomorrow-and-tomorrow-and-tomorrow)
+# [Othello To be or not to be](https://www.poetryfoundation.org/poems/56965/speech-to-be-or-not-to-be-that-is-the-question)
 # [The Merchant of Venice](https://www.goodreads.com/work/quotes/2682703-the-merchant-of-venice)
 #  * "How far that little candle throws his beams! So shines a good deed in a weary world."
 #  * The quality of mercy is not strained.
@@ -45,224 +45,118 @@
 #  * [The Second Coming](https://en.wikipedia.org/wiki/The_Second_Coming_(poem))
 
 
-#' Determine whether a dataset will need weights and summary statistics for the means if used with mxFitFunctionWLS
+#' load libraries
 #'
-#' Given either a data.frame or an mxData of type raw, this function determines whether [mxFitFunctionWLS()]
-#' will generate expectations for means.
-#' 
-#' All-continuous models processed using the "cumulants" method lack means, while
-#' all continuous processed with allContinuousMethod = "marginals" will have means.
-#' 
-#' When data are not all continuous, allContinuousMethod is ignored, and means are modeled.
+#' @description
+#' `libs` allows loading multiple libraries in one call
 #'
-#' @param data The raw data being used in a [mxFitFunctionWLS()] model.
-#' @param allContinuousMethod the method used to process data when all columns are continuous (default = "cumulants")
-#' @param verbose Whether or not to report diagnostics.
-#' @return - list describing the data.
-#' @family xmu internal not for end user
-#' @seealso - [mxFitFunctionWLS()], [omxAugmentDataWithWLSSummary()]
+#' @param ... library names as  string
+#' @return - [libs()]
 #' @export
+#' @family Miscellaneous Utility Functions
+#' @seealso - [library()]
 #' @md
 #' @examples
-#'
-#' # ====================================
-#' # = All continuous, data.frame input =
-#' # ====================================
-#'
-#' tmp =xmu_describe_data_WLS(mtcars, allContinuousMethod= "cumulants", verbose = TRUE)
-#' tmp$hasMeans # FALSE - no means with cumulants
-#' tmp =xmu_describe_data_WLS(mtcars, allContinuousMethod= "marginals") 
-#' tmp$hasMeans # TRUE we get means with marginals
-#'
-#' # ==========================
-#' # = mxData object as input =
-#' # ==========================
-#' tmp = mxData(mtcars, type="raw")
-#' xmu_describe_data_WLS(tmp, allContinuousMethod= "cumulants", verbose = TRUE)$hasMeans # FALSE
-#' xmu_describe_data_WLS(tmp, allContinuousMethod= "marginals")$hasMeans  # TRUE
-#'
-#' # =======================================
-#' # = One var is a factor: Means modeled =
-#' # =======================================
-#' tmp = mtcars
-#' tmp$cyl = factor(tmp$cyl)
-#'xmu_describe_data_WLS(tmp, allContinuousMethod= "cumulants")$hasMeans # TRUE - always has means
-#'xmu_describe_data_WLS(tmp, allContinuousMethod= "marginals")$hasMeans # TRUE
-#' 
-xmu_describe_data_WLS <- function(data, allContinuousMethod = c("cumulants", "marginals"), verbose=FALSE){
-	allContinuousMethod = match.arg(allContinuousMethod)
-	if(class(data) == "data.frame"){
-		# all good
-	} else if(class(data) == "MxDataStatic" && data$type == "raw"){
-		data = data$observed
-	}else{
-		message("xmu_describe_data_WLS currently only knows how to process dataframes and mxData of type = 'raw'.\n",
-		"You offered up an object of class: ", omxQuotes(class(data)))
-	}
-
-	if(all(sapply(data, FUN= is.numeric))){
-		if(verbose){ print("all continuous") }
-
-		if(allContinuousMethod == "cumulants"){
-			return(list(hasMeans = FALSE))
-		} else {
-			return(list(hasMeans = TRUE))
-		}
-	}else{
-		# Data with any non-continuous vars have means under WLS
-		return(list(hasMeans = TRUE))
+#' \dontrun{
+#' libs("umx", "OpenMx", "car")
+#' libs("umx", c("OpenMx", "car"))
+#' }
+libs <- function(...) {
+	dot.items = list(...) # grab all the dot items
+	dot.items = unlist(dot.items) # In case any dot items are lists
+	for (pack in dot.items) {
+		library(pack, character.only = TRUE)		
 	}
 }
 
-#' Score a psychometric scale by summing normal and reversed items. 
-#' 
-#' In the presence of NAs, `score= "mean"` and `score = "totals"` both return NA unless na.rm = TRUE.
-#' `score = "max"`, ignores NAs no matter what.
+#' Return names of models found within a model
 #'
 #' @description
-#' Use this function to generate scores as the appropriate sum of responses to the normal and reversed items in a scale.
-#' 
-#' Items must be named on the pattern `baseN`, where `base` is the string common to all item (column) names and N is the item number in the scale.
-#' 
-#' `pos` and `rev` are vectors of the item numbers for the normal and reverse-scored item numbers.
-#' 
-#' To reverse items, the function uses `max` and `min` as the lowest and highest possible response scores to compute how to reverse items.
-#' 
-#' *note*: `min` defaults to 1.
-#' 
-#' @param base String common to all item names.
-#' @param pos The positive-scored item numbers.
-#' @param rev The reverse-scored item numbers.
-#' @param min Min possible score (default = 1). Not implemented for values other than 1 so far...
-#' @param max Max possible score for an item (to compute how to reverse items).
-#' @param data The data frame
-#' @param score Whether to compute the score total, mean, max, or factor (default = "total")
-#' @param name = name of the scale to be returned. Defaults to "base_score"
-#' @param na.rm Whether to delete NAs when computing scores (Default = TRUE) Note: Choice affects mean!
-#' @param minManifests If score = factor, how many missing items to tolerate for an individual?
-#' @return - scores
+#' `umxModelNames` returns the names of each model contained in the model provided to it 
+#' (optionally excluding the out model itself).
+#'
+#' @param model an [mxModel()] to search for model names.
+#' @param includeOuterModelName FALSE
+#' @return - All models names
 #' @export
 #' @family Miscellaneous Utility Functions
+#' @seealso - [mxRename()], [umxSuperModel()]
 #' @md
 #' @examples
-#' library(psych)
-#' data(bfi)
+#' \dontrun{
+#' data(GFF)
+#' mzData = subset(GFF, zyg_2grp == "MZ")
+#' dzData = subset(GFF, zyg_2grp == "DZ")
+#' selDVs = c("gff", "fc", "qol")
+#' m1 = umxCP(selDVs= selDVs, nFac= 1, dzData= dzData, mzData= mzData, sep= "_T", autoRun= TRUE)
+#' m2 = mxRename(m1, "model2")
+#' umxModelNames(m1) # "top" "MZ" "DZ"
+#' umxModelNames(m2) # "top" "MZ" "DZ"
 #' 
-#' # ==============================
-#' # = Score Agreeableness totals =
-#' # ==============================
+#' super = umxSuperModel("myModel", m1, m2, autoRun = TRUE)
+#' umxModelNames(super)
 #' 
-#' # Handscore subject 1
-#' # A1(Reversed) + A2 + A3 + A4 + A5 
-#' #      (6+1)-2 + 4  + 3  + 4  + 4  = 20
-#' 
-#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A")
-#' tmp[1, namez(tmp, "A",ignore.case=FALSE)]
-#' #  A1 A2 A3 A4 A5  A
-#' #  2  4  3  4  4  20
-#' 
-#' # =================================================================================
-#' # = Note: (as of a fix in 2020-05-08) items not reversed in the returned data set =
-#' # =================================================================================
-#' tmp = umx_score_scale("A", pos = 1, rev = 2:5, max = 6, data= bfi, name = "A")
-#' tmp[1, namez(tmp, "A",ignore.case=FALSE)]
-#' #   A1 A2 A3 A4 A5   A
-#' #   2   4  3  4  4 = 15
-#' 
-#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A", score="mean")
-#' tmp$A[1] # subject 1 mean = 4
-#' 
-#' # ===========================================
-#' # = How does mean react to a missing value? =
-#' # ===========================================
-#' tmpDF = bfi
-#' tmpDF[1, "A1"] = NA
-#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= tmpDF, name = "A", score="mean")
-#' tmp$A[1] # NA: (na.rm defaults to FALSE)
-#' 
-#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= tmpDF, 
-#'      name = "A", score="mean", na.rm=TRUE)
-#' tmp$A[1] # 3.75
-#' 
-#' # ===============
-#' # = Score = max =
-#' # ===============
-#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A", score="max")
-#' tmp$A[1] # subject 1 max = 5 (the reversed item 1)
-#' 
-#' tmp = umx_score_scale("E", pos = c(3,4,5), rev = c(1,2), max = 6, data= tmp)
-#' tmp$E_score[1] # default scale name
-#' 
-#' # Using @BillRevelle's psych package: More diagnostics, including alpha
-#' scores= psych::scoreItems(items = bfi, min = 1, max = 6, keys = list(
-#'		E = c("-E1","-E2", "E3", "E4", "E5"),
-#'		A = c("-A1", "A2", "A3", "A4", "A5")
-#' ))
-#' summary(scores)
-#' scores$scores[1,]
-#' #  E   A 
-#' # 3.8 4.0 
-#' 
-#' # Compare output
-#' # (note, by default psych::scoreItems replaces NAs with the sample median...)
-#' RevelleE = as.numeric(scores$scores[,"E"]) * 5
-#' all(RevelleE == tmp[,"E_score"], na.rm = TRUE)
+#' plot(super$CP1fac)
+#' }
+umxModelNames <- function(model, includeOuterModelName = FALSE) {
+	nameList = c()
+	if(includeOuterModelName){
+		nameList = c(nameList, model$name)
+	}
+	if(length(model$submodels) > 0){
+		# get the names of the submodels
+		subNames = names(model$submodels)
+		nameList = c(nameList, subNames)
+		# iterate overthem finding sub-sub-models
+		for (thisSubModel in subNames) {
+			newNames = names(eval(parse(text = paste0("model$", thisSubModel, "$submodels"))))
+			nameList = c(nameList, newNames)
+		}
+	}
+	return(nameList)
+}
+
+# =========================================================
+# = Obscure enough to be in xmu internal not for end user =
+# =========================================================
+#' Rename a umxMatrix (in a model)
 #'
-umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL, score = c("total", "mean", "max", "factor"), name = NULL, na.rm=FALSE, minManifests = NA) {
-	score = match.arg(score)
-	
-	if(is.null(name)){ name = paste0(base, "_score") }
+#' @description
+#' Rename a umxMatrix, including updating its labels
+#'
+#' @param x A model or matrix
+#' @param matrixName Name of the matrix
+#' @param name The new name
+#' @return - updated matrix or model with updated matrix in it.
+#' @export
+#' @family xmu internal not for end user
+#' @md
+#' @examples
+#' data(twinData) # ?twinData from Australian twins.
+#' twinData[, c("ht1", "ht2")] = twinData[, c("ht1", "ht2")] * 10
+#' mzData = twinData[twinData$zygosity %in% "MZFF", ]
+#' dzData = twinData[twinData$zygosity %in% "DZFF", ]
+#' m1  = umxACE(selDVs= "ht", sep= "", dzData= dzData, mzData= mzData, autoRun= FALSE)
+#' tmp = umxRenameMatrix(m1$top, matrixName = "a", name="hello")
+#' umx_check(tmp$hello$labels == "hello_r1c1") # new is there
+#' umx_check(is.null(tmp$a))                   # old is gone
+umxRenameMatrix <- function(x, matrixName, name) {
+	if(umx_is_MxModel(x)){
+		# 1. Grab a copy of the matrix
+		tmp = x[[matrixName]]
+		umx_check(!is.null(tmp), "stop", paste0("matrix ", matrixName, " not found (calling umxRenameMatrix in model ", omxQuotes(x$name), ")"))
+		# 2. Update the new copy
+		tmp$name   = name
+		tmp$labels = namez(tmp$labels, pattern = paste0(matrixName), replacement = paste0(name))
 
-	mins = umx_apply("min", data[ , paste0(base, c(pos, rev)), drop = FALSE], by = "columns", na.rm=TRUE)
-	maxs = umx_apply("max", data[ , paste0(base, c(pos, rev)), drop = FALSE], by = "columns", na.rm=TRUE)
-	if(any(mins < min)){
-		msg = paste0("Polite warning: the following columns had responses less than the min response you set (", omxQuotes(min), "):", omxQuotes(names(mins)[(mins<min)]))
-		umx_msg(msg)
+		# 2. Delete the old one from the model
+		x = mxModel(x, matrixName, remove= TRUE)
+		# 4. Add back to top
+		x = mxModel(x, tmp)
+		return(x)
+	} else {
+		stop("Haven't implemented umxRenameMatrix for matrices")
 	}
-	if(any(maxs > max)){
-		msg = paste0("Polite warning: the following columns had responses greater than the max response you set (", omxQuotes(max), "):", omxQuotes(names(max)[(maxs>max)]))
-		umx_msg(msg)
-	}
-
-	oldData = data
-	# ==================================
-	# = Reverse any items needing this =
-	# ==================================
-	if(!is.null(rev)){
-		if(is.null(max)){
-			maxs = umx_apply("max", data[ , paste0(base, rev), drop = FALSE], by = "columns", na.rm= TRUE)
-			message("If there are reverse items, you must set 'max' (the highest possible score for an item) in umx_score_scale (note: min defaults to 1)")
-			print(table(data[ , paste0(base, rev[1])] ))
-			stop("FYI, the max appears to be ", max(maxs))
-        }
-		revItems = data[,paste0(base, rev), drop= FALSE]
-		revItems = (max + min) - revItems
-		data[,paste0(base, rev)] = revItems
-	}
-
-	allColNames = paste0(base, c(pos, rev))
-	df = data[ , allColNames, drop = FALSE]
-
-	if(score == "max"){
-		scaleScore = rep(NA, nrow(df))
-		for (i in 1:nrow(df)) {
-			scaleScore[i] = max(df[i,], na.rm=TRUE)
-		}
-	}else if(score == "total"){
-		if(any(is.na(df))){
-			message("Polite note: you asked for scale totals, but some subjects have missing data: I just ignored that. You might want means...")
-		}
-		scaleScore = rowSums(df, na.rm = na.rm)
-	}else if(score == "mean"){
-		scaleScore = rowMeans(df, na.rm = na.rm)
-	}else if(score == "factor"){
-		x = umxEFA(name = "score", factors = "g", data = df, scores= "Regression", minManifests= minManifests)
-		scaleScore = x$g
-	}else{
-		stop("not sure how to handle score = ", omxQuotes(score), ". Legal options are: ", omxQuotes(c("total", "mean", "max", "factor")))
-	}
-	oldData[, name] = scaleScore
-	return(oldData)
 }
 
 
@@ -357,7 +251,8 @@ xmu_cell_is_on <- function(r, c, where=c("diag", "lower", "lower_inc", "upper", 
 # ==============================
 # = Get and set OpenMx options =
 # ==============================
-#' umx_get_options
+
+#' Display umx options
 #'
 #' Show the umx options. Useful for beginners to discover, or people like me to remember :-)
 #'
@@ -373,10 +268,9 @@ umx_get_options <- function() {
 	umx_set_plot_use_hrbrthemes()
 	umx_set_table_format()
 	umx_set_optimizer()
-	message(umx_set_cores(silent = TRUE), " cores will be used")
 	umx_set_auto_run() 
 	umx_set_condensed_slots()
-	
+	message(umx_set_cores(silent = TRUE), " cores will be used")	
 }
 
 #' Set theme system to use for plots.
@@ -695,16 +589,15 @@ umx_set_silent <- function(value = NA, silent = FALSE) {
 	invisible(oldValue)
 }
 
-#' umx_set_auto_run
+#' Automatically run models?
 #'
-#' Set autoRun default for models like umxACE umxGxE etc.
+#' Set `autoRun` default for models like [umxRAM()], [umxACE()] etc.
 #'
 #' @param autoRun If TRUE or FALSE, sets the umx_auto_run option. Else returns the current value of umx_auto_run
 #' @param silent If TRUE, no message will be printed.
 #' @return - Current umx_auto_run setting
 #' @export
 #' @family Get and set
-#' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
 #' @examples
 #' library(umx)
@@ -1456,31 +1349,157 @@ umx_factor <- umxFactor
 # = Utility =
 # ===========
 
-#' A recipe Easter-egg for umx
+#' Score a psychometric scale by summing normal and reversed items. 
+#' 
+#' In the presence of NAs, `score= "mean"` and `score = "totals"` both return NA unless na.rm = TRUE.
+#' `score = "max"`, ignores NAs no matter what.
 #'
 #' @description
-#' How to cook steak.
-#' @details Equipment matters. You should buy a heavy cast-iron skillet, and a digital internal thermometer.
-#' Preferably cook over a gas flame.
+#' Use this function to generate scores as the appropriate sum of responses to the normal and reversed items in a scale.
 #' 
-#' *note*: Cheaper cuts like blade steak can come out fine.
+#' Items must be named on the pattern `baseN`, where `base` is the string common to all item (column) names and N is the item number in the scale.
 #' 
-#' A great reference is The Food Lab by Kenji Alt Lopez. https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087.
-#'
+#' `pos` and `rev` are vectors of the item numbers for the normal and reverse-scored item numbers.
+#' 
+#' To reverse items, the function uses `max` and `min` as the lowest and highest possible response scores to compute how to reverse items.
+#' 
+#' *note*: `min` defaults to 1.
+#' 
+#' @param base String common to all item names.
+#' @param pos The positive-scored item numbers.
+#' @param rev The reverse-scored item numbers.
+#' @param min Min possible score (default = 1). Not implemented for values other than 1 so far...
+#' @param max Max possible score for an item (to compute how to reverse items).
+#' @param data The data frame
+#' @param score Whether to compute the score total, mean, max, or factor (default = "total")
+#' @param name = name of the scale to be returned. Defaults to "base_score"
+#' @param na.rm Whether to delete NAs when computing scores (Default = TRUE) Note: Choice affects mean!
+#' @param minManifests If score = factor, how many missing items to tolerate for an individual?
+#' @return - scores
 #' @export
-#' @family Miscellaneous Utility Functions
-#' @seealso - [omxBrownie()]
-#' @references - [The Food Lab](https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087)
-#' @examples
-#' umxBrownie()
+#' @family Data Functions
 #' @md
-umxBrownie <- function() {
-	message("Rub steak in a table spoon of salt, put it back in the fridge for an hour (longer is fine).\n",
-	"Place steak on a hot cast-iron skillet, with a little peanut oil.\n",
-	"Turn steaks as often as you wish. Control heat to below smoke point.\n",
-	"Remove and eat when internal temp reaches 130 \u0080 F.\n"
-	)
+#' @examples
+#' library(psych)
+#' data(bfi)
+#' 
+#' # ==============================
+#' # = Score Agreeableness totals =
+#' # ==============================
+#' 
+#' # Handscore subject 1
+#' # A1(Reversed) + A2 + A3 + A4 + A5 
+#' #      (6+1)-2 + 4  + 3  + 4  + 4  = 20
+#' 
+#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A")
+#' tmp[1, namez(tmp, "A",ignore.case=FALSE)]
+#' #  A1 A2 A3 A4 A5  A
+#' #  2  4  3  4  4  20
+#' 
+#' # =================================================================================
+#' # = Note: (as of a fix in 2020-05-08) items not reversed in the returned data set =
+#' # =================================================================================
+#' tmp = umx_score_scale("A", pos = 1, rev = 2:5, max = 6, data= bfi, name = "A")
+#' tmp[1, namez(tmp, "A",ignore.case=FALSE)]
+#' #   A1 A2 A3 A4 A5   A
+#' #   2   4  3  4  4 = 15
+#' 
+#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A", score="mean")
+#' tmp$A[1] # subject 1 mean = 4
+#' 
+#' # ===========================================
+#' # = How does mean react to a missing value? =
+#' # ===========================================
+#' tmpDF = bfi
+#' tmpDF[1, "A1"] = NA
+#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= tmpDF, name = "A", score="mean")
+#' tmp$A[1] # NA: (na.rm defaults to FALSE)
+#' 
+#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= tmpDF, 
+#'      name = "A", score="mean", na.rm=TRUE)
+#' tmp$A[1] # 3.75
+#' 
+#' # ===============
+#' # = Score = max =
+#' # ===============
+#' tmp = umx_score_scale("A", pos = 2:5, rev = 1, max = 6, data= bfi, name = "A", score="max")
+#' tmp$A[1] # subject 1 max = 5 (the reversed item 1)
+#' 
+#' tmp = umx_score_scale("E", pos = c(3,4,5), rev = c(1,2), max = 6, data= tmp)
+#' tmp$E_score[1] # default scale name
+#' 
+#' # Using @BillRevelle's psych package: More diagnostics, including alpha
+#' scores= psych::scoreItems(items = bfi, min = 1, max = 6, keys = list(
+#'		E = c("-E1","-E2", "E3", "E4", "E5"),
+#'		A = c("-A1", "A2", "A3", "A4", "A5")
+#' ))
+#' summary(scores)
+#' scores$scores[1,]
+#' #  E   A 
+#' # 3.8 4.0 
+#' 
+#' # Compare output
+#' # (note, by default psych::scoreItems replaces NAs with the sample median...)
+#' RevelleE = as.numeric(scores$scores[,"E"]) * 5
+#' all(RevelleE == tmp[,"E_score"], na.rm = TRUE)
+#'
+umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL, score = c("total", "mean", "max", "factor"), name = NULL, na.rm=FALSE, minManifests = NA) {
+	score = match.arg(score)
+	
+	if(is.null(name)){ name = paste0(base, "_score") }
+
+	mins = umx_apply("min", data[ , paste0(base, c(pos, rev)), drop = FALSE], by = "columns", na.rm=TRUE)
+	maxs = umx_apply("max", data[ , paste0(base, c(pos, rev)), drop = FALSE], by = "columns", na.rm=TRUE)
+	if(any(mins < min)){
+		msg = paste0("Polite warning: the following columns had responses less than the min response you set (", omxQuotes(min), "):", omxQuotes(names(mins)[(mins<min)]))
+		umx_msg(msg)
+	}
+	if(any(maxs > max)){
+		msg = paste0("Polite warning: the following columns had responses greater than the max response you set (", omxQuotes(max), "):", omxQuotes(names(max)[(maxs>max)]))
+		umx_msg(msg)
+	}
+
+	oldData = data
+	# ==================================
+	# = Reverse any items needing this =
+	# ==================================
+	if(!is.null(rev)){
+		if(is.null(max)){
+			maxs = umx_apply("max", data[ , paste0(base, rev), drop = FALSE], by = "columns", na.rm= TRUE)
+			message("If there are reverse items, you must set 'max' (the highest possible score for an item) in umx_score_scale (note: min defaults to 1)")
+			print(table(data[ , paste0(base, rev[1])] ))
+			stop("FYI, the max appears to be ", max(maxs))
+        }
+		revItems = data[,paste0(base, rev), drop = FALSE]
+		revItems = (max + min) - revItems
+		data[ , paste0(base, rev)] = revItems
+	}
+
+	allColNames = paste0(base, c(pos, rev))
+	df = data[ , allColNames, drop = FALSE]
+
+	if(score == "max"){
+		scaleScore = rep(NA, nrow(df))
+		for (i in 1:nrow(df)) {
+			scaleScore[i] = max(df[i,], na.rm=TRUE)
+		}
+	}else if(score == "total"){
+		if(any(is.na(df))){
+			message("Polite note: you asked for scale totals, but some subjects have missing data: I just ignored that. You might want means...")
+		}
+		scaleScore = rowSums(df, na.rm = na.rm)
+	}else if(score == "mean"){
+		scaleScore = rowMeans(df, na.rm = na.rm)
+	}else if(score == "factor"){
+		x = umxEFA(name = "score", factors = "g", data = df, scores= "Regression", minManifests= minManifests)
+		scaleScore = x$g
+	}else{
+		stop("not sure how to handle score = ", omxQuotes(score), ". Legal options are: ", omxQuotes(c("total", "mean", "max", "factor")))
+	}
+	oldData[, name] = scaleScore
+	return(oldData)
 }
+
 
 #' Get or print the version of umx, along with detail from OpenMx and general system info.
 #'
@@ -1548,8 +1567,6 @@ umxVersion <- function (model = NULL, min = NULL, verbose = TRUE, return = "umx"
 #' }
 umx_open_CRAN_page <- function(package = "umx", inst=FALSE) {
 	for (p in package) {
-		# deparse(substitute(package))
-
 		# 1. Open the web pages
 		system(paste0("open 'https://cran.r-project.org/package=", p, "'"))		
 
@@ -1930,6 +1947,32 @@ umx_grep <- function(df, grepString, output = c("both", "label", "name"), ignore
 	}
 }
 
+#' A recipe Easter-egg for umx
+#'
+#' @description
+#' How to cook steak.
+#' @details Equipment matters. You should buy a heavy cast-iron skillet, and a digital internal thermometer.
+#' Preferably cook over a gas flame.
+#' 
+#' *note*: Cheaper cuts like blade steak can come out fine.
+#' 
+#' A great reference is The Food Lab by Kenji Alt Lopez. https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087.
+#'
+#' @export
+#' @family Miscellaneous Utility Functions
+#' @seealso - [omxBrownie()]
+#' @references - [The Food Lab](https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087)
+#' @examples
+#' umxBrownie()
+#' @md
+umxBrownie <- function() {
+	message("Rub steak in a table spoon of salt, put it back in the fridge for an hour (longer is fine).\n",
+	"Place steak on a hot cast-iron skillet, with a little peanut oil.\n",
+	"Turn steaks as often as you wish. Control heat to below smoke point.\n",
+	"Remove and eat when internal temp reaches 130 \u0080 F.\n"
+	)
+}
+
 # ===========================
 # = File handling functions =
 # ===========================
@@ -2019,37 +2062,6 @@ umx_rename_file <- function(findStr = "old", replaceStr = NA, baseFolder = "Find
 	} else {
 		umx_msg(changed)
 	}
-}
-
-#' dl_from_dropbox
-#'
-#' Download a file from Dropbox, given either the url, or the name and key
-#'
-#' Improvements would include error handling...
-#' @param x Either the file name, or full dropbox URL (see example below)
-#' @param key the code after s/ and before the file name in the dropbox url
-#' @return None
-#' @export
-#' @family File Functions
-#' @references - \url{https://thebiobucket.blogspot.kr/2013/04/download-files-from-dropbox.html}
-#' @examples
-#' \dontrun{
-#' dl_from_dropbox("https://dl.dropboxusercontent.com/s/7kauod48r9cfhwc/tinytwinData.rda")
-#' dl_from_dropbox("tinytwinData.rda", key = "7kauod48r9cfhwc")
-#' }
-dl_from_dropbox <- function(x, key=NULL){
-	# depends on RCurl::getBinaryURL
-	if(is.null(key)){
-		bin <- RCurl::getBinaryURL(x, ssl.verifypeer = FALSE)
-		x = sub("^.+/(.*)$", "\\1", x, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
-	} else {
-		# user has provided key and file name, so concatenate with https...
-		bin <- RCurl::getBinaryURL(paste0("https://dl.dropboxusercontent.com/s/", key, "/", x), ssl.verifypeer = FALSE)
-	}
-	con <- file(x, open = "wb")
-	writeBin(bin, con)
-	close(con)
-	message(noquote(paste(x, "read into", getwd())))
 }
 
 
@@ -2328,62 +2340,148 @@ umx_write_to_clipboard <- function(x) {
 	}
 }
 
-# =========================
-# = Various Stats helpers =
-# =========================
+#' dl_from_dropbox
+#'
+#' Download a file from Dropbox, given either the url, or the name and key
+#'
+#' Improvements would include error handling...
+#' @param x Either the file name, or full dropbox URL (see example below)
+#' @param key the code after s/ and before the file name in the dropbox url
+#' @return None
+#' @export
+#' @family File Functions
+#' @references - \url{https://thebiobucket.blogspot.kr/2013/04/download-files-from-dropbox.html}
+#' @examples
+#' \dontrun{
+#' dl_from_dropbox("https://dl.dropboxusercontent.com/s/7kauod48r9cfhwc/tinytwinData.rda")
+#' dl_from_dropbox("tinytwinData.rda", key = "7kauod48r9cfhwc")
+#' }
+dl_from_dropbox <- function(x, key=NULL){
+	# depends on RCurl::getBinaryURL
+	if(is.null(key)){
+		bin <- RCurl::getBinaryURL(x, ssl.verifypeer = FALSE)
+		x = sub("^.+/(.*)$", "\\1", x, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
+	} else {
+		# user has provided key and file name, so concatenate with https...
+		bin <- RCurl::getBinaryURL(paste0("https://dl.dropboxusercontent.com/s/", key, "/", x), ssl.verifypeer = FALSE)
+	}
+	con <- file(x, open = "wb")
+	writeBin(bin, con)
+	close(con)
+	message(noquote(paste(x, "read into", getwd())))
+}
 
 
-#' Compute the value of a principle plus annual savings, at a compound interest over a number of years
+# ===================
+# = Stats functions =
+# ===================
+
+# =======================
+# = Financial utilities =
+# =======================
+
+#' Work the valuation of a company
 #'
 #' @description
-#' Allows you to determine the final value of an initial `principle` (with optional 
+#' `fin_valuation` uses the revenue, operating margin, expenses and PE to compute a market capitalization
+#'
+#' @details
+#' Revenue is multiplied by opmargin to get a gross profit. From this the proportion specified in `expenses` is subtracted 
+#' and the resulting earnings turned into a price via the `PE`
+#' 
+#' @param revenue Revenue of the company
+#' @param opmargin Margin on operating revenue
+#' @param expenses Additional fixed costs
+#' @param PE of the company
+#' @param symbol Currency
+#' @param use reporting values in "B" (billion) or "M" (millions)
+#' @return - value
+#' @export
+#' @family Miscellaneous Functions
+#' @seealso - [fin_interest()]
+#' @md
+#' @examples
+#' fin_valuation(rev=7e9, opmargin=.1, PE=33)
+#' # Market cap =  $18,480,000,000
+#' # (Based on PE= 33, operating Income of $0.70 B, and net income =$0.56B
+#'
+fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, symbol = "$", use = c("B", "M")) {
+	use = match.arg(use)
+	if(use=="B"){
+		divisor=1e9
+	} else {
+		divisor=1e6
+	}
+	operatingIncome = revenue * opmargin
+	netIncome = operatingIncome *(1-expenses)
+	marketCap = netIncome*PE
+	class(marketCap) = 'money'; attr(marketCap, 'symbol') <- symbol
+	class(netIncome) = 'money'; attr(netIncome, 'symbol') <- symbol
+	class(operatingIncome) = 'money'; attr(operatingIncome, 'symbol') <- symbol
+	
+	cat("Market cap = ", print(marketCap, cat=F))
+	cat("\n(Based on PE= ", PE, ", operating Income of ", print(operatingIncome/divisor, cat=F), " ", use, ", and net income =", print(netIncome/divisor, cat=F), use, "\n", sep = "")
+
+	invisible(marketCap)
+}
+
+#' Compute the value of a principal & annual deposits at a compound interest over a number of years
+#' @description
+#' Allows you to determine the final value of an initial `principal` (with optional 
 #' periodic `deposits`), over a number of years (`yrs`) at a given rate of `interest`.
-#'
-#' @details None.
-#' If an amount of $5,000 is deposited into a savings account at an annual interest rate of 5%, compounded monthly, 
-#' with additional deposits of $100 per month (made at the end of each month). The value of the investment after 10 
-#' years can be calculated as follows...
-#'
-#'
+#' Principal and deposits are optional. You control compounding periods each year (n) and whether deposits occur at the beginning or end of the year.
+#' The function outputs a nice table of annual returns, formats the total using a user-settable currency `symbol`. Can also `report` using a web table.
 #' @param principal The initial investment at time 0.
 #' @param deposits Optional periodic additional investment each *year*.
 #' @param interest Annual interest rate (default = .05)
-#' @param deposit_inflator Whether to increase the deposits over time (default 0 = no)
+#' @param dinflate How much to inflate deposits over time (default = 0)
 #' @param yrs Duration of the investment (default = 10).
 #' @param n Compounding intervals per year (default = 12 (monthly), 365 for daily)
 #' @param when Deposits made at the "beginning" (of each year) or "end"
 #' @param symbol Currency symbol to embed in the result.
-#' @param report "markdown" or "html"
+#' @param report "markdown" or "html", 
+#' @param table Whether to print a table of annual returns (default TRUE)
+#' @param largest_with_cents Default = 0
+#' @param baseYear Default = 0, can set, e.g. to 2020 for printing
 #' @return - Value of balance after yrs of investment.
 #' @export
 #' @family Miscellaneous Functions
 #' @seealso - [fin_percent()]
-#' @references - [tutorials](https://tbates.github.io), [tutorials](https://github.com/tbates/umx)
+#' @references - [tutorials](https://tbates.github.io), [github](https://github.com/tbates/umx)
 #' @md
 #' @examples
-#' #
-#' # Value of a principle after yrs years at 5% return, compounding monthly.
-#' fin_compound_interest(principal = 5000, interest = 0.05, yrs = 10)
-#' # annual compounding
-#' fin_compound_interest(principal = 5000, interest = 0.05, yrs = 10, n=1)
-#' #
+#' # Value of a principal after yrs years at 5% return, compounding monthly.
+#' # Report as a nice table of annual returns and a formatted total:
+#' fin_interest(principal = 5000, interest = 0.05, yrs = 10)
+#'
+#' \dontrun{
+#' # Make a nice table and open in web browser...
+#' fin_interest(principal = 5000, interest = 0.05, rep= "html")
+#' }
+#'
 #' # Value of periodic deposit of $100/yr after 10 years at rate 7% return.
-#' fin_compound_interest(deposits = 100, interest = 0.07, yrs = 10, n = 12)
-#' #
-#' # Value of principal + deposit of $100/yr after 10 years at rate 7% return.
-#' fin_compound_interest(principal = 20000, deposits = 100, interest = 0.07, yrs = 10)
-#' #
-#' fin_compound_interest(deposits = 20e3, interest = 0.07, yrs = 10, n=1)
-#' # manually
+#' fin_interest(deposits = 100, interest = 0.07, yrs = 10, n = 12)
+#'
+#' # Annual rather than monthly compounding (n=1)
+#' fin_interest(deposits = 100, interest = 0.07, yrs = 10, n=1)
+#'
+#' # Value of principal + deposits of $100/yr over 10 years at 7% return.
+#' fin_interest(principal = 20000, deposits = 100, interest = 0.07, yrs = 10)
+#'
+#' # £20k at 7% once a year for 10 years
+#' fin_interest(deposits=20e3, interest = 0.07, yrs = 10, n=1)
+#' # $295,672
+#'
+#' # manual sum
 #' sum(20e3*(1.07^(10:1))) # 295672
 #'
 #' # $10,000 invested at the end of each year for 5 years at 6%
-#' fin_compound_interest(deposits = 10e3, interest = 0.06, yrs = 5, n=1, when= "end")
+#' fin_interest(deposits = 10e3, interest = 0.06, yrs = 5, n=1, when= "end")
 #'
-fin_compound_interest <- function(principal = 0, deposits = 0, deposit_inflator = 0, interest = 0.05, yrs = 10, n = 12, when = "beginning", symbol = "$", report= c("markdown", "html")){
+fin_interest <- function(principal = 0, deposits = 0, dinflate = 0, interest = 0.05, yrs = 10, n = 12, when = "beginning", symbol = "$", largest_with_cents = 0, baseYear= as.numeric(format(Sys.time(), "%Y")), table = TRUE, report= c("markdown", "html")){
 	report = match.arg(report)
-	if(deposit_inflator != 0){
-		deposits = c(deposits, rep(deposits, times = yrs-1) *(1+deposit_inflator)^c(1:(yrs-1)))
+	if(dinflate != 0){
+		deposits = c(deposits, rep(deposits, times = yrs-1) *(1+dinflate)^c(1:(yrs-1)))
 	}else{
 		deposits = rep(deposits, times = yrs)
 	}
@@ -2394,7 +2492,7 @@ fin_compound_interest <- function(principal = 0, deposits = 0, deposit_inflator 
 
 	# TODO add an annual table like this
 	# Final Investment Value		Initial  Balance
-	# £267,672,51					$principle
+	# £267,672,51					$principal
 	# Total Interest Earned		Total <period> deposits
 	# £267,672,51					£267,672,51
 	# 							Effective annual rate: 4.06%
@@ -2423,11 +2521,13 @@ fin_compound_interest <- function(principal = 0, deposits = 0, deposit_inflator 
 		totalDeposits = (totalDeposits + deposits[yr])
 		totalInterest = (totalInterest + thisInterest)
 		balance       = (balance + deposits[yr] + thisInterest)
-		thisRow = c(Year=yr, Deposit= deposits[yr], Interest = thisInterest, Total_Deposit = totalDeposits, Total_Interest = totalInterest, Total = balance)
-		thisRow = c(thisRow[1], scales::dollar(thisRow[-1], prefix = symbol, largest_with_cents = 0))
+		thisRow = c(Year=yr+baseYear, Deposit= deposits[yr], Interest = thisInterest, Total_Deposit = totalDeposits, Total_Interest = totalInterest, Total = balance)
+		thisRow = c(thisRow[1], scales::dollar(thisRow[-1], prefix = symbol, largest_with_cents = largest_with_cents))
 		tableOut = rbind(tableOut, thisRow)
 	}
-	umx_print(tableOut, justify = "right", report=report)
+	if(table){
+		umx_print(tableOut, justify = "right", report=report)
+	}
 
 	# invisible(report)
 	# gray?		green		orange		Blue
@@ -2472,57 +2572,33 @@ fin_compound_interest <- function(principal = 0, deposits = 0, deposit_inflator 
 }
 
 
-#' Print a money object
-#'
-#' Print method for, class()= "money" objects: e.g. [umx::fin_compound_interest()]. 
-#'
-#' @param x money object.
-#' @param symbol Default prefix if not set.
-#' @param ... further arguments passed to or from other methods.
-#' @return - invisible
-#' @seealso - [umx::fin_percent()], [print()]
-#' @md
-#' @method print money
-#' @export
-#' @examples
-#' fin_compound_interest(deposits = 20e3, interest = 0.07, yrs = 20)
-#'
-print.money <- function(x, symbol = "$", ...) {
-	if(!is.null(attr(x, 'symbol')) ){
-		symbol = attr(x, 'symbol')
-	}
-	# bucks <- scales::dollar_format(prefix = symbol, suffix = "", largest_with_cents = 1e+05, big.mark = ",", negative_parens = FALSE)
-	# dollar is from scales::
-	cat(scales::dollar(as.numeric(x), prefix = symbol, big.mark = ",", decimal.mark = ".", trim = TRUE, largest_with_cents = 1e+05, negative_parens = FALSE))
-}
-
 #' Compute the percent change needed to return to the original value after percent off (or on).
 #'
 #' @description
-#' Determine the percent change needed to "undo" an initial percent change.
-#'
-#' @details None.
-#' If an amount of $100 has 20% added, what percent do we need to drop it by to return to the original value?
+#' Determine the percent change needed to "undo" an initial percent change. Has a plot function as well.
+#' If an amount of \$100 has 20\% added, what percent do we need to drop it by to return to the original value?
+#' `fin_percent(20)` yields \$100 increased by 20\% = \$120 (Percent to reverse = -17\%)
 #' 
-#' @param percent Change in percent (e.g. for 10%, enter 10, not 0.1)
+#' @param percent Change in percent (enter 10 for 10%, not 0.1)
 #' @param value Principal
-#' @param symbol units (default = $)
-#' @param digits (rounding)
+#' @param symbol value units (default = "$")
+#' @param digits Rounding of results (default 2 places)
+#' @param plot Whether to plot the result (default TRUE)
 #' @return - new value and change required to return to baseline.
 #' @export
 #' @family Miscellaneous Functions
-#' @seealso - [fin_compound_interest()]
+#' @seealso - [fin_interest()]
 #' @md
 #' @examples
-#' #
-#' # Percent needed to return to original value after 10% off
+#' # Percent needed to return to original value after 10% taken off
 #' fin_percent(-10)
-#' # Percent needed to return to original value after 10% on
+#'
+#' # Percent needed to return to original value after 10% added on
 #' fin_percent(10)
 #'
 #' # Percent needed to return to original value after 50% off 34.50
 #' fin_percent(-50, value = 34.5)
-fin_percent <- function(percent, value= 100, symbol = "$", digits = 2) {
+fin_percent <- function(percent, value= 100, symbol = "$", digits = 2, plot = TRUE) {
 	percent  = percent/100
 	newValue = value * (1 + percent)
 	percent_to_reverse = (value/newValue) - 1
@@ -2532,8 +2608,51 @@ fin_percent <- function(percent, value= 100, symbol = "$", digits = 2) {
 	attr(newValue, 'digits')   = digits
 	attr(newValue, 'symbol')   = symbol
 	attr(newValue, 'percent_to_reverse') = percent_to_reverse
-	return(newValue)
+
+	if(plot){
+		plot(newValue)
+	}else{
+		return(newValue)
+	}
 }
+
+
+
+#' Print a money object
+#' @aliases bucks print
+#'
+#' Print method for, class()= "money" objects: e.g. [umx::fin_interest()]. 
+#'
+#' @param x money object.
+#' @param symbol Default prefix if not set.
+#' @param ... further arguments passed to or from other methods.
+#' @return - invisible
+#' @seealso - [umx::fin_percent()], [print()]
+#' @md
+#' @export
+#' @examples
+#' bucks(100 * 1.05^32)
+#' fin_interest(deposits = 20e3, interest = 0.07, yrs = 20)
+#'
+bucks <- function(x, symbol = "$", ...) {
+	dot.items = list(...) # grab all the dot items cat
+	cat = ifelse(is.null(dot.items[["cat"]]), TRUE, dot.items[["cat"]])
+	
+	if(!is.null(attr(x, 'symbol')) ){
+		symbol = attr(x, 'symbol')
+	}
+	# bucks <- scales::dollar_format(prefix = symbol, suffix = "", largest_with_cents = 1e+05, big.mark = ",", negative_parens = FALSE)
+	formatted = scales::dollar(as.numeric(x), prefix = symbol, big.mark = ",", decimal.mark = ".", trim = TRUE, largest_with_cents = 1e+05, negative_parens = FALSE)
+	if(cat){
+		cat(formatted)
+	} else {
+		formatted
+	}
+}
+
+#' @export
+#' @method print money
+print.money <- bucks
 
 #' Print a percent object
 #'
@@ -2595,7 +2714,6 @@ plot.percent <- function(x, ...) {
 	percentChange  = attr(x, 'percent')	
 	percent_to_reverse = round(attr(x, 'percent_to_reverse'), digits)
 
-	
 	dir = ifelse(percentChange < 0, "decreased", "increased")
 
 	# fnReversePercent(-.1)
@@ -2609,17 +2727,11 @@ plot.percent <- function(x, ...) {
 	# x range	= -100 (%) to +500 (%)?
 	# y = -100 to +200?
 	# y range	= -100 to +200?
-
-	# ISA fixes all of this... 20k/yr to add
-	# Income   tax-free allowance = £12,500/yr
-	# Interest tax-free allowance = £12,500/yr
-	# Dividend tax-free allowance =  £2,000/yr (I'm under.. phew)
-	# Capital gains tax-free allowance = £12,300 (tax rate = 20%)
 	
 	p = ggplot(data.frame(x = c(-90, 0)), aes(x))
 	p = p + ggplot2::scale_y_continuous(n.breaks = 8) + ggplot2::scale_x_continuous(n.breaks = 10) #trans="log")
 	p = p + ggplot2::stat_function(fun = fnReversePercent, color= "lightblue")
-	p = p + labs(x = "Percent Off", y = "Percent back on to recover", title = "Percent change on, and off")
+	p = p + labs(x = "Percent change", y = "Percent change to reverse", title = paste0(oldValue, " percent change"))
 
 	# subtitle = "Subtitle: (1973-74)",
 	# caption  = "Caption: Data from the 1974 Motor Trend US magazine",
@@ -2633,11 +2745,14 @@ plot.percent <- function(x, ...) {
 		p = p + cowplot::theme_cowplot(font_size = 11)
 	}
 	lab = paste0(percentChange*100, "% off=", percent_to_reverse * 100, "% on", sep = "")
+
+	# Add label to plot, centred on x, top at y} (in data coordinates)
 	p = p + cowplot::draw_label(lab, vjust=1, hjust = .5, x = percentChange*100, y = percent_to_reverse*100, color= "lightgrey")
-	p = p + cowplot::draw_label("\u25CF", hjust=0, x = percentChange*100, y = percent_to_reverse*100, color = "red")
+	# Add label to plot in data coordinates, flush-left at x, baseline centred on y.
+	p = p + cowplot::draw_label("\u25CF", hjust=0, vjust=.5, x = percentChange*100, y = percent_to_reverse*100, color = "red")
 	print(p)
 	cat(symbol, oldValue, " ", dir , " by ", percentChange*100, "% = ", symbol, x, " (Percent to reverse = ", percent_to_reverse*100, "%)", sep="")
-	return(p)
+	invisible(p)
 }
 
 #' Easily plot functions in R
@@ -2647,9 +2762,9 @@ plot.percent <- function(x, ...) {
 #'
 #' @details Easily plot a function - like sin, using ggplot.
 #'
-#' @param fun Function to plot
-#' @param min x min
-#' @param max x max
+#' @param fun Function to plot. Also takes strings like "sin(x) + sqrt(1/x)"
+#' @param min x-range min
+#' @param max x-range max
 #' @param xlab = Optional x axis label
 #' @param ylab = Optional y axis label
 #' @param title Optional title for the plot
@@ -2662,40 +2777,93 @@ plot.percent <- function(x, ...) {
 #' @examples
 #' \dontrun{
 #' # Uses fonts not available on CRAN
-#' # Maybe call this funplot?
 #' umxPlotFun(sin, max= 2*pi)
+#' umxPlotFun("sqrt(1/x)", max= 2*pi)
+#' umxPlotFun(sin, max= 2*pi, ylab="Output of sin", title="My Big Graph")
+#' p = umxPlotFun(function(x){x^2}, max= 100, title="Supply and demand")
+#' umxPlotFun(function(x){100^2-x^2}, p = p)
 #'
-#' 
-#' # Manually	
-#' p = ggplot(data.frame(x = c(0, 10000)), aes(x))
-#' p = p + ggplot2::stat_function(fun = function(x) decay(x, signal_loss$water), colour = "blue")
-#' p = p + ggplot2::stat_function(fun = function(x) decay(x, signal_loss$white_matter), colour = "red")
+#' # Controlling other plot features
+#' umxPlotFun(c("sin(x)", "x^3")) + ylim(c(-1,5)) 
 #' }
 #'
-umxPlotFun <- function(fun= dnorm, min= 0, max= 5, xlab = NULL, ylab = NULL, title = NULL, p = NULL) {
-	if(!is.null(p)){
-		p = p + ggplot2::stat_function(fun = fun, xlim= c(min, max))
+umxPlotFun <- function(fun= dnorm, min= -1, max= 5, xlab = NULL, ylab = NULL, title = NULL, p = NULL) {
+	# umx_msg(ylim)
+	# args <- list(...)
+	# if (length(args)>0){
+	# 	for(i in 1:length(args)) {
+	# 		assign(x = names(args)[i], value = args[[i]])
+	# 	}
+	# 	if(is.null(ylim)){
+	# 		ylim=NA
+	# 	}
+	# }
+	
+	if(class(fun) == "numeric"){
+		stop("If you write a function symbolically, you need to put it in quotes, e.g. 'x^2'")
+	} else if(class(fun) == "character"){
+		make_function <- function(args, body, env = parent.frame()) {
+			args <- as.pairlist(args)
+			eval(call("function", args, body), env)
+		}
+		funOut = c()
+		for (i in fun) {			
+			if(is.null(title)){ title = paste0("Plot of ", i) }
+			# filed ideas to format as latex...
+			# if(is.null(title)){ title = parse(text=paste0("'Plot of '", expression(i) ) ) }
+			# if(is.null(title)){ title = parse(text = paste0("Plot of ", i)) }
+			if(is.null(ylab)){ ylab = i}
+			thisFun = make_function(alist(x=NA), parse(text = i)[[1]] )
+			funOut = c(funOut, thisFun)
+		}
+		fun = funOut # 1 or more functions
 	}else{
-		p     = ggplot(data.frame(x = c(min, max)), aes(x))
-		p     = p + ggplot2::stat_function(fun = fun)
-		xlab  = ifelse(!is.null(xlab),  xlab , "X value")
+		# Got a bare function like sin
+		fun = list(fun)
+	}
+	# plot function 1
+	if(!is.null(p)){
+		if(is.na(max)){
+			p = p + ggplot2::stat_function(fun = fun[[1]])
+		} else {
+			p = p + ggplot2::stat_function(fun = fun[[1]], xlim= c(min, max))
+		}
+	}else{
+		p    = ggplot(data.frame(x = c(min, max)), aes(x))
+		p    = p + ggplot2::stat_function(fun = fun[[1]])
+		xlab = ifelse(!is.null(xlab),  xlab , "X value")
 		if(is.null(ylab)){
-			if(length(as.character(quote(sin))) == 1){
-				ylab = paste0(as.character(quote(sin), " of x"))
+			if(length(as.character(quote(fun[[1]]))) == 1){
+				ylab = paste0(as.character(quote(fun[[1]]), " of x"))
 			} else {
 				ylab = paste0("Function of X")
 			}
 		}
 
 		if(is.null(title)){
-			if(length(as.character(quote(sin))) == 1){
-				title = paste0("Plot of ", as.character(quote(sin), " function"))
-			} else {
-				title = paste0("Function plot")
+			if(length(as.character(quote(fun[[1]]))) == 1){
+				pref= "Plot of function: "
+			}else{
+				pref= "Plot of Functions: "
 			}
+			result = tryCatch({
+				title = expression(paste0(pref,fun[[1]]))
+			}, error = function() {
+				title = paste0(pref, as.character(quote(fun[[1]]), " function"))
+			})
 		}
 		p = p + labs(x = xlab, y = ylab, caption = title)
 	}
+
+	if(length(fun)>1){
+		n= 1
+		colorList = c("red", "green", "blue")
+		for (i in fun[2:length(fun)]) {
+			p = p + ggplot2::stat_function(fun = i, color=colorList[n])
+			n=n+1
+		}
+	}
+	
 	if(umx_set_plot_use_hrbrthemes(silent = TRUE)){
 		p = p + hrbrthemes::theme_ipsum()
 	} else {
@@ -2704,10 +2872,6 @@ umxPlotFun <- function(fun= dnorm, min= 0, max= 5, xlab = NULL, ylab = NULL, tit
 
 	print(p)
 	invisible(p)	
-	# Doing it manually
-	# p = ggplot(data.frame(x = c(-5, 5)), aes(x))
-	# p = p + ggplot2::stat_function(fun = dnorm)
-	# p
 }
 
 
@@ -2991,7 +3155,7 @@ specify_decimal <- function(x, k){
 #' @export
 #' @family Miscellaneous Stats Helpers
 #' @seealso - [umx::print.reliability()], 
-#' @references - \url{https://cran.r-project.org/package=Rcmdr}
+#' @references - <https://cran.r-project.org/package=Rcmdr>
 #' @examples
 #' # treat car data as items of a test
 #' data(mtcars)
@@ -3065,40 +3229,38 @@ print.reliability <- function (x, digits = 4, ...){
 #'
 #' @description Just a helper to multiply radians by 180 and divide by \eqn{\pi} to get degrees.
 #' 
-#' *note*: R's trig functions, e.g. [sin()] use Radians for input! There are 2\eqn{x} \eqn{\pi} 
-#' radians in a circle.
+#' *note*: R's trig functions, e.g. [sin()] use Radians for input! There are \eqn{2\pi} 
+#' radians in a circle. 1 Rad = \eqn{180/\pi} degrees (~ 57.296\eqn{^{\circ}})
 #'
 #' @param rad The value in Radians you wish to convert
 #' @return - value in degrees
 #' @export
 #' @family Miscellaneous Functions
 #' @seealso - [deg2rad()], [sin()]
+#' @references [https://en.wikipedia.org/wiki/Radian](https://en.wikipedia.org/wiki/Radian)
 #' @md
 #' @examples
 #' rad2deg(pi) #180 degrees
-rad2deg <- function(rad) {
-	rad * 180/pi
-}
+rad2deg <- function(rad) { rad * 180/pi }
 
 #' Convert Degrees to Degrees 
 #'
-#' @description Just a helper to multiply degrees by \eqn{\pi} and divide by 180 to get radians.
+#' @description A helper to convert degrees (360 in  a circle) to Rad (\eqn{2\pi} in a circle, so \eqn{deg x 180/\pi} to get radians.
 #' 
-#' *note*: R's trig functions, e.g. [sin()] use Radians for input! 180 Degrees is equal to 
-#' 2\eqn{x \pi} radians.
+#' *note*: R's trig functions, e.g. [sin()] use Radians for input! 
+#' 
+#' 180 Degrees is equal to \eqn{\pi} radians. 1 Rad = \eqn{180/\pi} degrees	 (\eqn{\approx 57.296^{\circ}})
 #'
 #' @param deg The value in degrees you wish to convert to radians
 #' @return - value in radians
 #' @export
 #' @family Miscellaneous Functions
 #' @seealso - [rad2deg()], [sin()]
+#' @references [https://en.wikipedia.org/wiki/Radian](https://en.wikipedia.org/wiki/Radian)
 #' @md
 #' @examples
-#' deg2rad(180) # pi!
-deg2rad <- function(deg) {
-	deg * pi/ 180
-}
-
+#' deg2rad(180) == pi # TRUE!
+deg2rad <- function(deg) { deg * pi/ 180 }
 
 # =======================
 # = Developer functions =
@@ -3817,7 +3979,7 @@ umx_print <- function (x, digits = getOption("digits"), caption = NULL, report =
 #' )#'
 #' umx_has_been_run(m1)
 umx_has_been_run <- function(model, stop = FALSE) {
-	output <- model$output
+	output = model$output
 	if (is.null(output)){
 		if(stop){
 			stop("Provided model has no objective function, and thus no output to process further")
@@ -5227,7 +5389,7 @@ umx_str_from_object <- function(x) {
 #' @export
 #' @family String Functions
 #' @seealso - [umx_explode()]
-#' @references - [tutorials](https://tbates.github.io), [tutorials](https://github.com/tbates/umx)
+#' @references - [tutorials](https://tbates.github.io), [github](https://github.com/tbates/umx)
 #' @md
 #' @examples
 #' umx_str_chars("myFpassUword", c(3,8))
@@ -5363,7 +5525,6 @@ umx_explode <- function(delimiter = character(), string) {
 #' @export
 #' @seealso - Base-R pattern matching functions: [grep()].
 #' And [umx_check_names()] to check for existence of names in a dataframe. 
-#' @family Reporting Functions
 #' @family String Functions
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
@@ -6044,7 +6205,7 @@ umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumeric
 #' 
 #' You supply the number of pairs of each zygosity that wish to simulate (nMZpairs, nDZpairs), along with the values of AA, CC,and EE.
 #' 
-#' *Note*, if you want a power calculator, see [mxPower()].
+#' *Note*, if you want a power calculator, see [power.ACE.test()] and [mxPower()].
 #' 
 #' **Shortcuts**
 #' 
@@ -6104,18 +6265,19 @@ umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumeric
 #' # Show dataframe with 20,000 rows and 3 variables: var_T1, var_T2, and zygosity
 #' str(tmp)
 #'
-#' # =====================================
-#' # = How to consume the built datasets =
-#' # =====================================
+#' # ===============================
+#' # = How to consume the datasets =
+#' # ===============================
+#'
 #' mzData = tmp[tmp$zygosity == "MZ", ]
 #' dzData = tmp[tmp$zygosity == "DZ", ]
 #' str(mzData); str(dzData); 
-#' cov(mzData[, c("var_T1","var_T2")])
-#' cov(dzData[, c("var_T1","var_T2")])
-#' umxAPA(mzData[,c("var_T1","var_T2")])
+#' cov(mzData[, c("var_T1", "var_T2")])
+#' cov(dzData[, c("var_T1", "var_T2")])
+#' umxAPA(mzData[, c("var_T1", "var_T2")])
 #' 
 #' # Prefer to work in path coefficient values? (little a?)
-#' tmp = umx_make_TwinData(2000, AA = .7^2, CC = .0)
+#' tmp    = umx_make_TwinData(2000, AA = .7^2, CC = .0)
 #' mzData = tmp[tmp$zygosity == "MZ", ]
 #' dzData = tmp[tmp$zygosity == "DZ", ]
 #' m1 = umxACE(selDVs="var", sep="_T", mzData= mzData, dzData= dzData)
@@ -6978,7 +7140,7 @@ umx_read_prolific_demog <-function(file, base = "", df = NULL, verbose = FALSE, 
 #' IQtests = c("brainstorm", "matrix", "moral", "shopping", "typing")
 #' allCols = c("C", IQtests, "avgIQ", "maxIQ", "video")
 #' 
-#' df = umx_read_lower(file = "", diag = FALSE)
+#' df = umx_read_lower(diag = FALSE, names = allCols)
 #' 0.38
 #' 0.86	0.30
 #' 0.42	0.12	0.27
@@ -7019,7 +7181,7 @@ umx_read_lower <- function(file= "", diag= TRUE, names= NULL, ensurePD= FALSE){
     n = floor((sqrt(1 + 8*m) - d)/2)
 	if(is.null(names)){
 		names = paste0("X", 1:n)
-	}else if(length(names!= n)){
+	}else if(length(names) != n){
 		message("names ignored as you provided ", length(names), " but the data are n = ", n, " wide.")
 		names = paste0("X", 1:n)
 	}
