@@ -40,20 +40,23 @@ m1 = umxRAM("One Factor", data = demoOneFactor, type="cov",
 # Ran your model (if autoRun is on), and displayed a brief summary
 # including a comparison if you modified a model...!
 
-# Let's get some journal-ready fit information for standardized parameters
+# umxSummary generates journal-ready fit information.
+# We can choose std=T for standardized parameters and can also
+# filter out some types of parameter (e.g. means or residuals)
 
-umxSummary(m1, std = TRUE)
-# You can get the coefficients of an MxModel with coef(), just like for lm etc.
-coef(m1)
+umxSummary(m1, std = TRUE, residuals=FALSE)
 
-# But with more control using "parameters", for example just the G loadings
-# above .3, rounded to 2-digits.
+# parameters() flexibly retrieves model coefficients. 
+# For example just G-loadings greater than |.3| and rounded to 2-digits.
 parameters(m1, thresh="above", b=.3, pattern = "G_to.*", digits = 2)
+
+# (The built-in coef works as for lm etc.)
+coef(m1)
 
 # ==================
 # = Model updating =
 # ==================
-# We'll use umxModify to modify the model...
+# umxModify modifies, renames, re-runs, and compares a model
 # Can we set the loading of x1 on G to zero? (nope...)
 m2 = umxModify(m1, "G_to_x1", name = "no_effect_of_g_on_X1", comparison = TRUE)
 
@@ -93,32 +96,26 @@ Other Teaching and testing Functions:
 \code{\link{tmx_genotypic_effect}()},
 \code{\link{tmx_is.identified}()}
 
-Other Core Modeling Functions: 
-\code{\link{umxAlgebra}()},
+Other Core Model Building Functions: 
 \code{\link{umxMatrix}()},
 \code{\link{umxModify}()},
 \code{\link{umxPath}()},
 \code{\link{umxRAM}()},
-\code{\link{umxRun}()},
-\code{\link{umxSummary}()},
 \code{\link{umxSuperModel}()}
 
-Other Modify or Compare Models: 
+Other Model Summary and Comparison: 
 \code{\link{umxCompare}()},
 \code{\link{umxEquate}()},
-\code{\link{umxFixAll}()},
 \code{\link{umxMI}()},
-\code{\link{umxModify}()},
+\code{\link{umxReduce}()},
 \code{\link{umxSetParameters}()},
-\code{\link{umxUnexplainedCausalNexus}()}
+\code{\link{umxSummary}()}
 
 Other Reporting Functions: 
-\code{\link{loadings.MxModel}()},
 \code{\link{umxAPA}()},
 \code{\link{umxFactorScores}()},
 \code{\link{umxGetParameters}()},
 \code{\link{umxParameters}()},
-\code{\link{umxReduce}()},
 \code{\link{umx_aggregate}()},
 \code{\link{umx_time}()}
 
@@ -266,7 +263,6 @@ Other Miscellaneous Utility Functions:
 \code{\link{install.OpenMx}()},
 \code{\link{libs}()},
 \code{\link{qm}()},
-\code{\link{umxBrownie}()},
 \code{\link{umxLav2RAM}()},
 \code{\link{umxModelNames}()},
 \code{\link{umxRAM2Lav}()},
@@ -287,8 +283,12 @@ Other datasets:
 \code{\link{us_skinfold_data}}
 
 Other Advanced Model Building Functions: 
+\code{\link{umxAlgebra}()},
+\code{\link{umxFixAll}()},
 \code{\link{umxJiggle}()},
+\code{\link{umxRun}()},
 \code{\link{umxThresholdMatrix}()},
+\code{\link{umxUnexplainedCausalNexus}()},
 \code{\link{xmuLabel}()},
 \code{\link{xmuValues}()}
 
@@ -314,6 +314,7 @@ Other xmu internal not for end user:
 \code{\link{xmuPropagateLabels}()},
 \code{\link{xmuRAM2Ordinal}()},
 \code{\link{xmuTwinSuper_Continuous}()},
+\code{\link{xmuTwinSuper_NoBinary}()},
 \code{\link{xmuTwinUpgradeMeansToCovariateModel}()},
 \code{\link{xmu_CI_merge}()},
 \code{\link{xmu_CI_stash}()},
@@ -363,17 +364,18 @@ Other xmu internal not for end user:
 \code{\link{xmu_twin_add_WeightMatrices}()},
 \code{\link{xmu_twin_check}()},
 \code{\link{xmu_twin_get_var_names}()},
+\code{\link{xmu_twin_make_def_means_mats_and_alg}()},
 \code{\link{xmu_twin_upgrade_selDvs2SelVars}()}
 }
 \concept{Advanced Model Building Functions}
 \concept{Check or test}
-\concept{Core Modeling Functions}
+\concept{Core Model Building Functions}
 \concept{Data Functions}
 \concept{File Functions}
 \concept{Get and set}
 \concept{Miscellaneous Stats Helpers}
 \concept{Miscellaneous Utility Functions}
-\concept{Modify or Compare Models}
+\concept{Model Summary and Comparison}
 \concept{Plotting functions}
 \concept{Reporting Functions}
 \concept{String Functions}

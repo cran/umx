@@ -141,7 +141,7 @@ umxWeightedAIC <- function(models, digits= 2) {
 #' @param report How to report the results. "html" = open in browser
 #' @param baseFileName (optional) custom filename for html output (defaults to "tmp")
 #' @param ... Other parameters to control model summary
-#' @family Reporting Functions
+#' @family Model Summary and Comparison
 #' @family Twin Modeling Functions
 #' @seealso [umxReduceGxE()], [umxReduceACE()]
 #' @references - Wagenmakers, E.J., & Farrell, S. (2004). AIC model selection using Akaike weights. *Psychonomic Bulletin and Review*, **11**, 192-196. \doi{10.3758/BF03206482}
@@ -177,7 +177,7 @@ umxReduce.default <- function(model, ...){
 #' @return best model
 #' @export
 #' @family Twin Modeling Functions
-#' @seealso [umxReduceACE()], [umxReduce()]
+#' @seealso [umxReduce()], [umxReduceACE()]
 #' @references - Wagenmakers, E.J., & Farrell, S. (2004). AIC model selection using Akaike weights.
 #' *Psychonomic Bulletin and Review*, **11**, 192-196. \doi{10.3758/BF03206482}.
 #' @md
@@ -432,7 +432,7 @@ loadings.default <- function(x, ...) stats::loadings(x, ...)
 #' @param ... Other parameters (currently unused)
 #' @return - loadings matrix
 #' @export
-#' @family Reporting Functions
+#' @family Miscellaneous Functions
 #' @seealso - [factanal()], [loadings()]
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
@@ -801,7 +801,7 @@ umxCI <- function(model = NULL, which = c("ALL", NA, "list of your making"), rem
 #'
 #' @param model The [mxModel()] whose fit will be reported
 #' @param ... Other parameters to control model summary
-#' @family Core Modeling Functions
+#' @family Model Summary and Comparison
 #' @md
 #' @export
 umxSummary <- function(model, ...){
@@ -1009,8 +1009,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 			toShow = parameterTable[, namesToShow]
 		}
 		toShow = xmu_summary_RAM_group_parameters(model, toShow,  means= means, residuals = residuals)
-
-		umx_print(toShow, digits = digits, report = report, caption = "Model Parameter loadings", na.print = "", zero.print = "0", justify = "none")
+		umx_print(toShow, digits = digits, report = report, caption = paste0("Parameter loadings for model ", omxQuotes(model$name)), na.print = "", zero.print = "0", justify = "none")
 	}
 	with(modelSummary, {
 		if(!is.finite(TLI)){
@@ -1696,8 +1695,8 @@ umxSummaryIP <- function(model, digits = 2, file = getOption("umx_auto_plot"), s
 	nFac     = c(a = dim(ai)[2], c = dim(ci)[2], e = dim(ei)[2]);
 
 	Vtot     = A+C+E; # total variance
-	nVarIden = diag(nVar); # Make up a little nVar Identity matrix using the clever behavior of diag to make an nVar*nVar Identity matrix
-	SD       = solve(sqrt(nVarIden*Vtot))   # inverse of diagonal matrix of standard deviations  (same as "(\sqrt(I.Vtot))~"
+	nVarIden = diag(nVar); # Make up a little nVar Identity matrix using the behavior of diag to make an nVar*nVar Identity matrix
+	SD       = solve(sqrt(nVarIden*Vtot)) # inverse of diagonal matrix of standard deviations  (same as "(\sqrt(I.Vtot))~"
 	ai_std   = SD %*% ai ; # Standardized path coefficients (independent general factors )
 	ci_std   = SD %*% ci ; # Standardized path coefficients (independent general factors )
 	ei_std   = SD %*% ei ; # Standardized path coefficients (independent general factors )
@@ -1872,7 +1871,7 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' @param file file to write html too if report = "html" (defaults to "tmp.html")
 #' @param compareWeightedAIC Show the Wagenmakers AIC weighted comparison (default = FALSE)
 #' @family Core Modelling Functions
-#' @family Modify or Compare Models
+#' @family Model Summary and Comparison
 #' @family Summary functions
 #' @seealso - [mxCompare()], [umxSummary()], [umxRAM()],
 #' @references - <https://github.com/tbates/umx>
@@ -3002,7 +3001,7 @@ plot.MxModelIP <- umxPlotIP
 #' @param typeToShow Whether to shown additions or deletions (default = "both")
 #' @param decreasing How to sort (default = TRUE, decreasing)
 #' @seealso - [mxMI()]
-#' @family Modify or Compare Models
+#' @family Model Summary and Comparison
 #' @references - <https://github.com/tbates/umx>
 #' @export
 #' @md
@@ -3065,7 +3064,7 @@ umxMI <- function(model = NA, matrices = NA, full = TRUE, numInd = NA, typeToSho
 #' @param to The dependent variable that you want to watch changing.
 #' @param model The model containing variables from and to.
 #' @seealso - [mxCheckIdentification()], [mxCompare()]
-#' @family Modify or Compare Models
+#' @family Advanced Model Building Functions
 #' @references - https://github.com/tbates/umx/
 #' @export
 #' @md
@@ -3780,7 +3779,7 @@ RMSEA.summary.mxmodel <- function(x, ci.lower = .05, ci.upper = .95, digits = 3)
 
 #' Print a RMSEA object
 #'
-#' Print method for, class()= "RMSEA" objects: e.g. [umx::RMSEA()]. 
+#' Print method for "RMSEA" objects: e.g. [umx::RMSEA()]. 
 #'
 #' @param x RMSEA object.
 #' @param ... further arguments passed to or from other methods.
@@ -4049,9 +4048,8 @@ umx_aggregate <- function(formula = DV ~ condition, data = df, what = c("mean_sd
 	if(report == "html"){
 		umx_print(tmp, digits = digits, file = "tmp.html")
 	} else if(report == "markdown"){
-		return(knitr::kable(tmp))
+		return(kable(tmp, format="pipe"))
 	}else{
-		# umx_print(tmp, digits = digits)
 		return(tmp)
 	}
 }
@@ -4241,7 +4239,8 @@ umxAPA <- function(obj = .Last.value, se = NULL, p = NULL, std = FALSE, digits =
 			". CI[", round(obj$conf.int[1], 2), ", ", round(obj$conf.int[2], 2), "]. ",
 			"t(", round(obj$parameter, 2), ") = ", round(obj$statistic, 2), ", p = ", umxAPA(obj$p.value))
 		}
-		return(o)
+		cat(o)
+		invisible(o)
 	}else if("data.frame" == class(obj)[[1]]){
 		# Generate a summary of correlation and means
 		# TODO umxAPA could upgrade strings to factors here (instead of stopping)...
@@ -4434,7 +4433,7 @@ umxSummarizeTwinData <- function(data = NULL, selVars = NULL, sep = "_T", zyg = 
 	} else {
 		ageCol = data[, paste0("age", sep, 1)]
 	}
-	print(paste0("mean age ", round(mean(ageCol, na.rm = TRUE), 2), " (SD= ", round(sd(ageCol, na.rm = TRUE), 2), ")"))
+	cat(paste0("mean age ", round(mean(ageCol, na.rm = TRUE), 2), " (SD= ", round(sd(ageCol, na.rm = TRUE), 2), ")"))
 	
 	
 	selDVs = tvars(selVars, sep)

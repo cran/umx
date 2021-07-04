@@ -1,11 +1,34 @@
-## dev umx 4.8.0
+## dev umx 4.9.0
+* NEW: `umxACEv` and `umxACE` work with `nSib = 3`!
+* BETA: `umxCP` `correlatedACE` was not being filtered out of the expectation #hat-tip @micanzach But still working on what the right choices are here...
+* CHANGED:  `umxCP` defaults to tryHard = "yes"
+* REMOVED: `umxRAM` deprecated parameter `show` after 4 years deprecation
+* FIXED: `tmx_show` works for M matrix, closed  #163
+* FIXED: `kable` and `kbl` get format passed in at all calls
+* IMPROVED: `umx_make_TwinData` supports `nSib` > 2 for MZ/DZr mode
+* IMPROVED: `umxAPA` more use of cat to print (easier to read and copy)
+* IMPROVED:  `umx_open_CRAN_page` printing if installed version if found
+* IMPROVED: `umxAPA` more use of cat to print (easier to read and copy)
+* IMPROVED: `fin_interest` compute effective interest
+* IMPROVED: `xmuTwinSuper_NoBinary` update for nSib > 2
+* MINOR: `kable` formats (pandoc "pipe" and "simple" added, "pandoc" removed)
+* MINOR: `add_footnote` in place of `footnote`...
+* HELP:  `umxPath` and `umxRAM` help
+* HELP:  better organization of functions/families
+* xmu: `xmuTwinUpgradeMeansToCovariateModel` can handle nSib=3
+* xmu: `xmu_twin_make_def_means_mats_and_alg` helper
+* xmu: `xmu_start` improved closes #158
+
+# Releases
+## umx 4.8.0
+* June 2021 R 4.1.0 (2021-06-01)
 * NEW: `umxPlot` now detects and plots Pearson-Aitken selection paths (solid red headless).
-* NEW: `umxPlotFun` plot functions, e.g "sin(x)", "cos(x)" without hassles.
+* NEW: `umxPlotFun` plot functions without hassles. e.g `umxPlotFun("sin(x)")`
 * NEW: `umxModelNames` to get model and submodel names from a model.
 * NEW: `libs` as a short cut for `multiple library()` calls
   * e.g. `libs("x", "y", c("a", "b"))`
 * NEW: `fin_valuation` uses revenue, margin, expenses and PE to compute a market cap.
-  * IMPROVED: `fin_interest` shorter parameter name `dinflate` and other improvements.
+* IMPROVED: `fin_interest` shorter parameter name `dinflate` and other improvements.
 * IMPROVED: `umxACEv` Tables now include markdown-compatible table captions.
 * IMPROVED: `umxAPA` reports R^2 for `lm` (in addition to beta & CI[] for each parameter)
 * IMPROVED: `umxSummary` sorts RAM parameters by type (factor loading etc.) and can filter means and residuals for ease of use.
@@ -14,31 +37,30 @@
 * IMPROVED: `umxCompare` Maintain compatibility with new OpenMx changes to `mxCompare` (esp. for WLS).
 * IMPROVED: `umx_read_lower` accept names for lower diag.
 * IMPROVED: `umxCP` `correlatedACE` leaves the covariances fixed@0.
-* IMPROVED: `umxAPA` pretty printing.
 * IMPROVED: `umxACE` added `A_std` closes #151
+* IMPROVED: `umxAPA` pretty printing.
 * IMPROVED: `umxPlotFun` check for character input.
 * NEW: `xmu_summary_RAM_group_parameters` sort and filter RAM model parameters for ease of understanding.
 * MINOR: `umxFactor` now used in all examples involving factor making.
 
-# Releases
 ## umx 4.3.0
 * January 2021 R 4.0.3 (2020-10-10)
 * NEW `plot` can output to pdf, png, svg!
-* NEW `umx_set_plot_format` can choose between pdf, png, svg plot output (in addition to DiagrammeR and graphviz)
+* NEW `umx_set_plot_format` adds pdf, png, svg plot output (in addition to DiagrammeR and graphviz)
+* NEW: `umx_lower.tri` helper to get lower.tri values in 1 call
+* NEW: `umx_set_plot_use_hrbrthemes` control
+* NEW: `plot.percent` plot support for percent change questions
 * IMPROVED: `umxSummary` now reports algebra values when present in RAM models closes #70
 * IMPROVED: `umxSummary` tables have pandoc captions (see #145)
 * IMPROVED: `umxCompare` table output and plain-English summary printing (cat)
 * IMPROVED: `umxCP` practical workflows for correlated ACE
-* NEW: `umx_lower.tri` helper to get lower.tri values in 1 call
-* HELP: `umxCP` Document that correlatedA works on a, c and e, allowing factors built by these matrices to correlate.
+* IMPROVED: `fin_compound_interest` now outputs a table of annual returns
+* IMPROVED: `umxAPA` uses cat to improve usability of summary data
+* HELP: `umxCP` Document that correlatedA works on a, c and e, allowing factors to correlate.
 * BETA: `umxGxEbiv` lboundACE @ 0 by default
 * FIXED: `umxSimplex` example
 * FIXED: `umxGxEbiv` fix nonfunctional lboundACE and lboundM (thanks @mcneale)
-* FIXED: `umxGxEbiv` selVars order was imposed on expectation dimnames but didn't match the cov matrix due to bespoke nature of expCov algebras...
-* IMPROVED: `fin_compound_interest` now outputs a table of annual returns
-* IMPROVED: `umxAPA` uses cat to improve usability of summary data
-* NEW: `umx_set_plot_use_hrbrthemes` control
-* NEW: `plot.percent` plot support for percent change questions
+* FIXED: `umxGxEbiv` selVars order was imposed on expectation dimnames but didn't match the cov matrix due to bespoke nature of `expCov` algebras...
 
 ## umx 4.2.5
 * December 2020 R 4.0.3 (2020-10-10)

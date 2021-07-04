@@ -302,10 +302,18 @@ xmu_twin_print_means <- function(model, digits = 3, report = c("markdown", "html
 	if(!is.null(int)){
 		# means and betas
 		caption = "Means and (raw) betas from model$top$intercept and model$top$meansBetas"
-		row.names(int) = "intercept"
 		b = model$top$meansBetas$values
-		bvals = b[,1:dim(b)[[2]], drop = FALSE]
-		int = rbind(int, cbind(bvals, bvals))
+		bcols = dim(b)[[2]]
+		bvals = b[,1:bcols, drop = FALSE]
+		interceptsPerSib = dim(int)[[2]]/bcols
+		if(interceptsPerSib==2){
+			int = rbind(int, cbind(bvals, bvals))
+		} else if(interceptsPerSib==3){
+			int = rbind(int, cbind(bvals, bvals, bvals))
+		}else{
+			umx_msg("Polite note: email Tim as this number of means not expected")
+		}
+		row.names(int) = c("intercept", "beta")
 	} else {
 		int = model$top$expMean$values
 		if(!is.null(int)){
@@ -1808,20 +1816,20 @@ xmu_summary_RAM_group_parameters <- function(model, paramTable,  means= FALSE, r
 					if(from == to){
 						paramTable[i, "type"] = "Factor Variances"
 					}else{
-						paramTable[i, "type"] = "Factor Covariances"
+						paramTable[i, "type"] = "Factor Covs"
 					}
 				}else{
-					paramTable[i, "type"] = "Latent-Manifest Covariances"
+					paramTable[i, "type"] = "Latent-Manifest Covs"
 				}
 			} else { # from %in% manifests
 				if(to %in% manifests){
 					if(from == to){
 						paramTable[i, "type"] = "Residuals"
 					}else{
-						paramTable[i, "type"] = "Manifest Covariances"						
+						paramTable[i, "type"] = "Manifest Covs"						
 					}
 				}else{
-					paramTable[i, "type"] = "Latent-Manifest Covariances"
+					paramTable[i, "type"] = "Latent-Manifest Covs"
 				}
 			}
 		} else if(location$matrix == "A"){

@@ -6,26 +6,29 @@
 \usage{
 umx_make(
   what = c("quick_install", "install_full", "spell", "run_examples", "check", "win",
-    "rhub", "release", "travisCI", "sitrep"),
+    "rhub", "lastRhub", "release", "travisCI", "sitrep"),
   pkg = "~/bin/umx",
   check = TRUE,
   run = FALSE,
   start = NULL,
-  spelling = "en_US"
+  spelling = "en_US",
+  which = c("win", "mac", "linux")
 )
 }
 \arguments{
-\item{what}{whether to "install", "release" to CRAN, check on "win", "check", "rhub", "spell" check, or check "examples"))}
+\item{what}{whether to "install", "release" to CRAN, check on "win", "check", "rhub", "spell", or check "examples"))}
 
 \item{pkg}{the local path to your package. Defaults to my path to umx.}
 
 \item{check}{Whether to run check on the package before release (default = TRUE).}
 
-\item{run}{= If what is "examples", whether to also run examples marked don't run. (default FALSE)}
+\item{run}{If what is "examples", whether to also run examples marked don't run. (default FALSE)}
 
 \item{start}{If what is "examples", which function to start from (default (NULL) = beginning).}
 
 \item{spelling}{Whether to check spelling before release (default = "en_US": set NULL to not check).}
+
+\item{which}{What rhub platform to use? c("mac", "linux", "win")}
 }
 \value{
 None
@@ -35,13 +38,15 @@ Easily  run devtools "install", "release", "win", "examples" etc.
 }
 \examples{
 \dontrun{
-umx_make(what = "q"))        # Quick install
-umx_make(what = "install"))  # Just installs the package
-umx_make(what = "examples")) # Run the examples
-umx_make(what = "spell"))    # Spell check the documents
-umx_make(what = "check"))    # Run R CMD check
-umx_make(what = "win"))      # Check on win-builder
-umx_make(what = "release"))  # Release to CRAN
+umx_make(what = "q")        # Quick install
+umx_make(what = "install")  # Just installs the package
+umx_make(what = "examples") # Run the examples
+umx_make(what = "spell")    # Spell check the documents
+umx_make(what = "check")    # Run R CMD check
+umx_make(what = "rhub")     # Check on rhub
+umx_make(what = "win")      # Check on win-builder
+umx_make(what = "release")  # Release to CRAN
+tmp = umx_make(what = "lastRhub") # View rhub result
 }
 }
 \references{
@@ -72,6 +77,7 @@ Other xmu internal not for end user:
 \code{\link{xmuPropagateLabels}()},
 \code{\link{xmuRAM2Ordinal}()},
 \code{\link{xmuTwinSuper_Continuous}()},
+\code{\link{xmuTwinSuper_NoBinary}()},
 \code{\link{xmuTwinUpgradeMeansToCovariateModel}()},
 \code{\link{xmu_CI_merge}()},
 \code{\link{xmu_CI_stash}()},
@@ -121,6 +127,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_twin_add_WeightMatrices}()},
 \code{\link{xmu_twin_check}()},
 \code{\link{xmu_twin_get_var_names}()},
+\code{\link{xmu_twin_make_def_means_mats_and_alg}()},
 \code{\link{xmu_twin_upgrade_selDvs2SelVars}()}
 }
 \concept{xmu internal not for end user}

@@ -36,10 +36,14 @@
 # # PERCY BYSSHE SHELLEY
 # [Ozymandias](https://www.poetryfoundation.org/poems/46565/ozymandias)
 
-# Brevia
 #  * [Invictus](https://en.wikipedia.org/wiki/Invictus)
+# Brevia
 #  * [Abou ben Adhem](https://www.poetryfoundation.org/poems/44433/abou-ben-adhem)
 #  * [Odi et amo](https://en.wikipedia.org/wiki/Catullus_85)
+#      I hate and I love.
+#      Why?, perhaps you ask.
+#      I know not, but I feel it so,
+#      and it tortures me.
 
 # # [Yeats](https://en.wikipedia.org/wiki/W._B._Yeats)
 #  * [The Second Coming](https://en.wikipedia.org/wiki/The_Second_Coming_(poem))
@@ -441,7 +445,7 @@ umx_set_separator <- function( umx_default_separator = NULL, silent = FALSE) {
 #' umx_set_table_format("") # get available options
 #' umx_set_table_format(old)    # reinstate
 umx_set_table_format <- function(knitr.table.format = NULL, silent = FALSE) {
-	legal = c('latex', 'html', 'markdown', 'pandoc', 'rst')
+	legal = c('latex', 'html', 'pipe', 'simple', 'markdown', 'rst')
 	if(is.null(knitr.table.format)) {
 		if(!silent){
 			message("Current format is", omxQuotes(getOption("knitr.table.format")), 
@@ -1579,13 +1583,14 @@ umx_open_CRAN_page <- function(package = "umx", inst=FALSE) {
 
 		# 3. print data on current version and load
 		result = tryCatch({
-		    print(packageVersion(p))
+			ver  = packageVersion(p)
+		    print(ver)
 		    library(p, character.only = TRUE)
 		}, warning = function(x) {
-		    print(paste(p, "Might not be installed locally:\n"))
+		    cat(p, "might not be installed locally:\n")
 			print(x)
 		}, error = function(x) {
-		    print(paste(p, "Might not be installed locally:\n"))
+		    cat(p, "might not be installed locally:\n")
 			print(x)
 		}, finally = {
 			#
@@ -1959,7 +1964,7 @@ umx_grep <- function(df, grepString, output = c("both", "label", "name"), ignore
 #' A great reference is The Food Lab by Kenji Alt Lopez. https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087.
 #'
 #' @export
-#' @family Miscellaneous Utility Functions
+#' @family Miscellaneous Functions
 #' @seealso - [omxBrownie()]
 #' @references - [The Food Lab](https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087)
 #' @examples
@@ -2443,6 +2448,7 @@ fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, sy
 #' @param table Whether to print a table of annual returns (default TRUE)
 #' @param largest_with_cents Default = 0
 #' @param baseYear Default = 0, can set, e.g. to 2020 for printing
+#' @param final if set (default = NULL), returns the rate that turns principal into final after yrs
 #' @return - Value of balance after yrs of investment.
 #' @export
 #' @family Miscellaneous Functions
@@ -2450,35 +2456,43 @@ fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, sy
 #' @references - [tutorials](https://tbates.github.io), [github](https://github.com/tbates/umx)
 #' @md
 #' @examples
-#' # Value of a principal after yrs years at 5% return, compounding monthly.
-#' # Report as a nice table of annual returns and a formatted total:
-#' fin_interest(principal = 5000, interest = 0.05, yrs = 10)
-#'
 #' \dontrun{
-#' # Make a nice table and open in web browser...
+#' # 1. Value of a principal after yrs years at 5% return, compounding monthly.
+#' # Report in browser as a nice table of annual returns and formatted totals.
 #' fin_interest(principal = 5000, interest = 0.05, rep= "html")
 #' }
 #'
-#' # Value of periodic deposit of $100/yr after 10 years at rate 7% return.
+#' # Report as a nice markdown table
+#' fin_interest(principal = 5000, interest = 0.05, yrs = 10)
+#'
+#'
+#' # 2 What rate is needed to increase principal to final value in yrs time?
+#' fin_interest(final = 1.4, yrs=5)
+#' fin_interest(principal = 50, final=200, yrs = 5)
+#'
+#' # 3. What's the value of deposits of $100/yr after 10 years at 7% return?
 #' fin_interest(deposits = 100, interest = 0.07, yrs = 10, n = 12)
 #'
-#' # Annual rather than monthly compounding (n=1)
-#' fin_interest(deposits = 100, interest = 0.07, yrs = 10, n=1)
+#' # 4. What's the value of £20k + £100/yr over 10 years at 7% return?
+#' fin_interest(principal= 20e3, deposits= 100, interest= .07, yrs= 10, symbol="£")
 #'
-#' # Value of principal + deposits of $100/yr over 10 years at 7% return.
-#' fin_interest(principal = 20000, deposits = 100, interest = 0.07, yrs = 10)
-#'
-#' # £20k at 7% once a year for 10 years
-#' fin_interest(deposits=20e3, interest = 0.07, yrs = 10, n=1)
-#' # $295,672
-#'
-#' # manual sum
-#' sum(20e3*(1.07^(10:1))) # 295672
-#'
-#' # $10,000 invested at the end of each year for 5 years at 6%
+#' # 5. What is $10,000 invested at the end of each year for 5 years at 6%?
 #' fin_interest(deposits = 10e3, interest = 0.06, yrs = 5, n=1, when= "end")
 #'
-fin_interest <- function(principal = 0, deposits = 0, dinflate = 0, interest = 0.05, yrs = 10, n = 12, when = "beginning", symbol = "$", largest_with_cents = 0, baseYear= as.numeric(format(Sys.time(), "%Y")), table = TRUE, report= c("markdown", "html")){
+#' # 6. What will £20k be worth after 10 years at 15% annually (n=1)?
+#' fin_interest(deposits=20e3, interest = 0.15, yrs = 10, n=1, baseYear=1)
+#' # $466,986
+#'
+#' # manual equivalent
+#' sum(20e3*(1.15^(10:1))) # 466985.5
+#'
+#' # 7. Annual (rather than monthly) compounding (n=1)
+#' fin_interest(deposits = 100, interest = 0.07, yrs = 10, n=1)
+#' 
+#' # 8 Interest needed to increase principal to final value in yrs time.
+#' fin_interest(principal = 100, final=200, yrs = 5)
+#'
+fin_interest <- function(principal = 0, deposits = 0, dinflate = 0, interest = 0.05, yrs = 10, final=NULL, n = 12, when = "beginning", symbol = "$", largest_with_cents = 0, baseYear= as.numeric(format(Sys.time(), "%Y")), table = TRUE, report= c("markdown", "html")){
 	report = match.arg(report)
 	if(dinflate != 0){
 		deposits = c(deposits, rep(deposits, times = yrs-1) *(1+dinflate)^c(1:(yrs-1)))
@@ -2497,6 +2511,11 @@ fin_interest <- function(principal = 0, deposits = 0, dinflate = 0, interest = 0
 	# £267,672,51					£267,672,51
 	# 							Effective annual rate: 4.06%
 	#
+	if(!is.null(final)){
+		# final = prin*(1+rate)^y
+		return((final/principal)^(1/yrs)-1)
+		# rate is the years root of (final *prin?)
+	}
 
 	# 1. compute compounding rate per unit time n (allowing for zero interest so 1.0)
 	rate = ifelse(interest==0, 1, 1+(interest/n))
@@ -2619,16 +2638,17 @@ fin_percent <- function(percent, value= 100, symbol = "$", digits = 2, plot = TR
 
 
 #' Print a money object
+#'
+#' @description Print function for "money" objects, e.g. [fin_interest()].
+#'
 #' @aliases bucks print
-#'
-#' Print method for, class()= "money" objects: e.g. [umx::fin_interest()]. 
-#'
 #' @param x money object.
 #' @param symbol Default prefix if not set.
 #' @param ... further arguments passed to or from other methods.
 #' @return - invisible
-#' @seealso - [umx::fin_percent()], [print()]
+#' @seealso - [umx::fin_percent()], [umx::fin_interest()]
 #' @md
+# #' @family print
 #' @export
 #' @examples
 #' bucks(100 * 1.05^32)
@@ -2656,12 +2676,12 @@ print.money <- bucks
 
 #' Print a percent object
 #'
-#' Print method for, class()= "percent" objects: e.g. [umx::fin_percent()]. 
+#' Print method for "percent" objects: e.g. [umx::fin_percent()]. 
 #'
 #' @param x percent object.
 #' @param ... further arguments passed to or from other methods.
 #' @return - invisible
-#' @seealso - [umx::fin_percent()], [print()]
+#' @seealso - [umx::fin_percent()]
 #' @md
 #' @method print percent
 #' @export
@@ -2689,12 +2709,12 @@ print.percent <- function(x, ...) {
 
 #' Plot a percent change graph
 #'
-#' Plot method for, class()= "percent" objects: e.g. [umx::fin_percent()]. 
+#' Plot method for "percent" objects: e.g. [umx::fin_percent()]. 
 #'
 #' @param x percent object.
 #' @param ... further arguments passed to or from other methods.
 #' @return - invisible
-#' @seealso - [umx::fin_percent()], [print()]
+#' @seealso - [umx::fin_percent()]
 #' @md
 #' @method plot percent
 #' @export
@@ -3344,12 +3364,13 @@ umx_update_OpenMx <- install.OpenMx
 #' @description
 #' Easily  run devtools "install", "release", "win", "examples" etc.
 #'
-#' @param what whether to "install", "release" to CRAN, check on "win", "check", "rhub", "spell" check, or check "examples"))
+#' @param what whether to "install", "release" to CRAN, check on "win", "check", "rhub", "spell", or check "examples"))
 #' @param pkg the local path to your package. Defaults to my path to umx.
 #' @param check Whether to run check on the package before release (default = TRUE).
-#' @param run = If what is "examples", whether to also run examples marked don't run. (default FALSE)
+#' @param run If what is "examples", whether to also run examples marked don't run. (default FALSE)
 #' @param start If what is "examples", which function to start from (default (NULL) = beginning).
 #' @param spelling Whether to check spelling before release (default = "en_US": set NULL to not check).
+#' @param which What rhub platform to use? c("mac", "linux", "win")
 #' @return None
 #' @export
 #' @family xmu internal not for end user
@@ -3357,17 +3378,24 @@ umx_update_OpenMx <- install.OpenMx
 #' @md
 #' @examples
 #' \dontrun{
-#' umx_make(what = "q"))        # Quick install
-#' umx_make(what = "install"))  # Just installs the package
-#' umx_make(what = "examples")) # Run the examples
-#' umx_make(what = "spell"))    # Spell check the documents
-#' umx_make(what = "check"))    # Run R CMD check
-#' umx_make(what = "win"))      # Check on win-builder
-#' umx_make(what = "release"))  # Release to CRAN
+#' umx_make(what = "q")        # Quick install
+#' umx_make(what = "install")  # Just installs the package
+#' umx_make(what = "examples") # Run the examples
+#' umx_make(what = "spell")    # Spell check the documents
+#' umx_make(what = "check")    # Run R CMD check
+#' umx_make(what = "rhub")     # Check on rhub
+#' umx_make(what = "win")      # Check on win-builder
+#' umx_make(what = "release")  # Release to CRAN
+#' tmp = umx_make(what = "lastRhub") # View rhub result
 #' }
-umx_make <- function(what = c("quick_install", "install_full", "spell", "run_examples", "check", "win", "rhub", "release", "travisCI", "sitrep"), pkg = "~/bin/umx", check = TRUE, run=FALSE, start = NULL, spelling = "en_US") {
+umx_make <- function(what = c("quick_install", "install_full", "spell", "run_examples", "check", "win", "rhub", "lastRhub", "release", "travisCI", "sitrep"), pkg = "~/bin/umx", check = TRUE, run=FALSE, start = NULL, spelling = "en_US", which = c("win", "mac", "linux")) {
 	what = match.arg(what)
-	if(what == "install_full"){
+	which = match.arg(which)
+	if(what == "lastRhub"){
+		prev = rhub::list_package_checks(package = pkg, howmany = 4)
+		check_id = prev$id[1]
+		return(rhub::get_check(check_id))
+	}else if(what == "install_full"){
 		devtools::document(pkg = pkg); devtools::install(pkg = pkg);
 		# system("sleep 5; open /Applications/R.app &")
 		
@@ -3384,7 +3412,20 @@ umx_make <- function(what = c("quick_install", "install_full", "spell", "run_exa
 		# new =
 		devtools::check_win_devel(pkg = pkg)
 	} else if (what =="rhub"){
-		devtools::check_rhub(pkg = pkg)
+		if(which == "mac"){
+			plat = "macos-highsierra-release-cran"
+		} else if(which=="linux") {
+			plat = "debian-gcc-patched"
+			# plat = "debian-clang-devel"
+		} else if(which=="win") {
+			plat = "windows-x86_64-patched" 
+			# plat = "windows-x86_64-devel" # broken 2021-06-12
+		}
+
+		cat("checking ", omxQuotes(pkg), "on", omxQuotes(plat))
+		devtools::check_rhub(pkg = pkg, platforms = plat, interactive = FALSE, env_vars = c(`_R_CHECK_FORCE_SUGGESTS_` = "true", `_R_CHECK_CRAN_INCOMING_USE_ASPELL_` = "false"))
+		# devtools::check_rhub(pkg = pkg, platforms = plat, interactive = FALSE)
+
 	} else if (what == "release"){
 		oldDir = getwd()
 		setwd(dir= pkg)
@@ -3930,12 +3971,13 @@ umx_print <- function (x, digits = getOption("digits"), caption = NULL, report =
 	        print(x, quote = quote, right = TRUE, ...)
 		} else if(report == "html"){
 			# From report = "html"
-			if(both){ print(knitr::kable(x, caption= caption)) }
+			if(both){ print(kable(x, caption= caption, format="pipe")) }
 			if(kableExtra){
 				# default html output
-				x = kbl(x,  caption = caption)
+				x = kbl(x,  caption = caption, format=report)
 				if(zero.print != "0"){
-					x = add_footnote(x, label = paste0("zero printed as ", omxQuotes(zero.print)))
+					# x = add_footnote(x, label = paste0("zero printed as ", omxQuotes(zero.print)))
+					x = footnote(kable_input= x, general = paste0("zero printed as ", omxQuotes(zero.print)))
 				}
 				x = xmu_style_kable(x, html_font = html_font, style = style, bootstrap_options= bootstrap_options, lightable_options = lightable_options, full_width = FALSE)
 				print(x)
@@ -3945,8 +3987,9 @@ umx_print <- function (x, digits = getOption("digits"), caption = NULL, report =
 				system(paste0("open ", file))
 			}
 	    }else{
-			print(knitr::kable(x, caption = caption))
-			# print(kbl(x, caption = caption, format = umx_set_table_format(silent=TRUE)))
+			# markdown/latex
+			x = kbl(x, caption = caption, format=report)
+			print(x)
 	    }
 	    invisible(x)
 	}
@@ -6209,7 +6252,7 @@ umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumeric
 #' 
 #' **Shortcuts**
 #' 
-#' You can omit nDZpairs. You can also give any two of A, C, or E and the function produce the missing parameter that makes `A+C+E == 1`.
+#' You can omit nDZpairs. You can also give any two of A, C, or E and the function deduces the missing parameter so `A+C+E == 1`.
 #' 
 #' **Moderation**
 #' 
@@ -6238,6 +6281,7 @@ umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumeric
 #' @param DD value for E variance.
 #' @param MZr If MZr and DZr are set (default = NULL), the function returns dataframes of the request n and correlation.
 #' @param DZr Set to return dataframe using MZr and Dzr (Default NULL)
+#' @param nSib Number of siblings in a family (default - 2). "3" = extra sib.
 #' @param dzAr DZ Ar (default .5)
 #' @param scale Whether to scale output to var=1 mean=0 (Default FALSE)
 #' @param bivAmod Used for Bivariate GxE data: list(Beta_a1 = .025, Beta_a2 = .025)
@@ -6311,7 +6355,7 @@ umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumeric
 #' tmp = umx_make_TwinData(100, AA = 3, CC = 2, EE = 3, sum2one = FALSE) 
 #' cov(tmp[tmp$zygosity == "MZ", c("var_T1","var_T2")])
 #'
-#' # Output can be scaled
+#' # Output can be scaled (mean=0, std=1)
 #' tmp = umx_make_TwinData(100, AA = .7, CC = .1, scale = TRUE) 
 #' cov(tmp[tmp$zygosity == "MZ", c("var_T1","var_T2")])
 #'
@@ -6339,13 +6383,14 @@ umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumeric
 #' # var_T2 0.7435457 1.0000000
 #'
 #'
-#' # ========================
-#' # = Just use MZr and DZr =
-#' # ========================
-#' tmp = umx_make_TwinData(100, MZr = .86, DZr = .60, varNames = "IQ")
-#' umxAPA(subset(tmp, zygosity == "MZ", c("IQ_T1", "IQ_T2")))
-#' umxAPA(subset(tmp, zygosity == "DZ", c("IQ_T1", "IQ_T2")))
+#' # =================================================
+#' # = Just use MZr and DZr (also works with nSib>2) =
+#' # =================================================
+#' tmp = umx_make_TwinData(100, MZr = .86, DZr = .60, nSib= 3, varNames = "IQ")
+#' umxAPA(subset(tmp, zygosity == "MZ", paste0("IQ_T", 1:2)))
+#' umxAPA(subset(tmp, zygosity == "DZ", paste0("IQ_T", 1:2)))
 #' m1 = umxACE(selDVs= "IQ", data = tmp)
+#' m1 = umxACE(selDVs= "IQ", data = tmp, nSib=3)
 #' # TODO tmx_ examples of unmodeled D etc.
 #' 
 #' # Bivariate GxSES example (see umxGxEbiv)
@@ -6374,7 +6419,7 @@ umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumeric
 #' # x = rbind(tmp[[1]], tmp[[2]])
 #' # plot(residuals(m1)~ x$M_T1, data=x)
 #' }
-umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL, EE = NULL,  DD = NULL,  varNames = "var", MZr= NULL, DZr= MZr, dzAr= .5, scale = FALSE, mean=0, sd=1, nThresh = NULL, sum2one = TRUE, bivAmod = NULL, bivCmod = NULL, bivEmod = NULL, seed = NULL, empirical = FALSE) {
+umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NULL, EE = NULL,  DD = NULL,  varNames = "var", MZr= NULL, DZr= MZr, nSib= 2, dzAr= .5, scale = FALSE, mean=0, sd=1, nThresh = NULL, sum2one = TRUE, bivAmod = NULL, bivCmod = NULL, bivEmod = NULL, seed = NULL, empirical = FALSE) {
 	if(!is.null(seed)){
 		set.seed(seed = seed)
 	}
@@ -6383,28 +6428,39 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		if(is.null(DZr)){
 			stop("Both MZr and DZr must be set if you want to generate data matching MZ and DZ correlations.")
 		}
-		mzCov = matrix(nrow = 2, byrow = TRUE, c(
-			1, MZr,
-			MZr, 1)
-		);
-		dzCov = matrix(nrow = 2, byrow = TRUE, c(
-			1, DZr,
-			DZr, 1)
-		);
-		sdMat = diag(rep(sd, 2))
+		if(nSib==2){
+			mzCov = matrix(nrow = nSib, byrow = TRUE, c(1, MZr, MZr, 1))
+			dzCov = matrix(nrow = nSib, byrow = TRUE, c(1, DZr, DZr, 1))
+			means = c(mean, mean)
+		} else if(nSib==3){
+			mzCov = matrix(nrow = nSib, byrow = TRUE, c(
+				1  , MZr, DZr,
+				MZr, 1  , DZr,
+				DZr, DZr , 1)
+			)
+			dzCov = matrix(nrow = nSib, byrow = TRUE, c(
+				1  , DZr, DZr,
+				DZr, 1  , DZr,
+				DZr, DZr , 1)
+			)
+			means = c(mean, mean, mean)
+		}
+		sdMat = diag(rep(sd, nSib))
 		mzCov = sdMat %*% mzCov %*% sdMat
 		dzCov = sdMat %*% dzCov %*% sdMat
 		# MASS::mvrnorm
-		mzData = mvrnorm(n = nMZpairs, mu = c(mean, mean), Sigma = mzCov, empirical = empirical);
-		dzData = mvrnorm(n = nDZpairs, mu = c(mean, mean), Sigma = dzCov, empirical = empirical);
+		mzData = mvrnorm(n = nMZpairs, mu = means, Sigma = mzCov, empirical = empirical);
+		dzData = mvrnorm(n = nDZpairs, mu = means, Sigma = dzCov, empirical = empirical);
 		mzData = data.frame(mzData)
 		dzData = data.frame(dzData)
 		if(length(varNames) > 1){
 			names(mzData) = names(dzData) = varNames
 		} else {
-			names(mzData) = names(dzData) = umx_paste_names(varNames, "_T")
+			names(mzData) = names(dzData) = umx_paste_names(varNames, "_T", suffixes = 1:nSib)
 		}
 	}else if(length(AA) == 1){
+		umx_check(nSib==2, "stop", "nSib >2 only supported for MZr currently, you gave me ", nSib)
+			
 		# Standard ACE, no moderation
 		if(sum2one){
 			if(sum(c(is.null(AA), is.null(CC), is.null(EE))) > 1){

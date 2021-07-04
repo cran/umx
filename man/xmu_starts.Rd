@@ -10,7 +10,7 @@ xmu_starts(
   selVars = selVars,
   sep = NULL,
   equateMeans = NULL,
-  nSib = 2,
+  nSib,
   varForm = c("Cholesky"),
   SD = TRUE,
   divideBy = 3
@@ -51,27 +51,22 @@ mzData = twinData[twinData$zygosity \%in\%  "MZFF", ]
 dzData = twinData[twinData$zygosity \%in\%  "DZFF", ]
 
 round(sqrt(var(dzData[,tvars(selDVs, "")], na.rm=TRUE)/3),3)
+xmu_starts(mzData, dzData, selVars=selDVs, nSib= 2, sep="", equateMeans=TRUE, varForm="Cholesky")
 
-tmp = xmu_starts(mzData, dzData, selVars = selDVs, sep= "", 
-	equateMeans = TRUE, varForm = "Cholesky")
-tmp
-
+# Variance instead of SD
 round(var(dzData[,tvars(selDVs, "")], na.rm=TRUE)/3,3)
-tmp = xmu_starts(mzData, dzData, selVars = selDVs, sep= "", 
-	equateMeans = TRUE, varForm = "Cholesky", SD= FALSE)
-
-tmp
+xmu_starts(mzData, dzData, selVars = selDVs, nSib = 2, sep= "", 
+	equateMeans= TRUE, varForm= "Cholesky", SD= FALSE)
 
 # one variable
-tmp = xmu_starts(mzData, dzData, selVars = "wt", sep= "", 
-	equateMeans = TRUE, varForm = "Cholesky", SD= FALSE)
+xmu_starts(mzData, dzData, selVars= "wt", nSib = 2, sep="", equateMeans = TRUE)
 
 # Ordinal/continuous mix
 data(twinData)
 twinData= umx_scale_wide_twin_data(data=twinData,varsToScale="wt",sep= "")
 # Cut BMI column to form ordinal obesity variables
-obLevels = c('normal', 'overweight', 'obese')
 cuts     = quantile(twinData[, "bmi1"], probs = c(.5, .8), na.rm = TRUE)
+obLevels = c('normal', 'overweight', 'obese')
 twinData$obese1= cut(twinData$bmi1,breaks=c(-Inf,cuts,Inf),labels=obLevels)
 twinData$obese2= cut(twinData$bmi2,breaks=c(-Inf,cuts,Inf),labels=obLevels)
 # Make the ordinal variables into mxFactors
@@ -79,13 +74,24 @@ ordDVs = c("obese1", "obese2")
 twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 mzData = twinData[twinData$zygosity \%in\% "MZFF",] 
 dzData = twinData[twinData$zygosity \%in\% "DZFF",]
-tmp = xmu_starts(mzData, dzData, selVars = c("wt","obese"), sep= "", 
- nSib= 2, equateMeans = TRUE, varForm = "Cholesky", SD= FALSE)
+xmu_starts(mzData, dzData, selVars = c("wt","obese"), sep= "", 
+ nSib= 2, equateMeans = TRUE, SD= FALSE)
 
-tmp = xmu_starts(mxData(mzData, type="raw"), mxData(mzData, type="raw"), 
-   selVars = c("wt","obese"), sep= "", nSib= 2, equateMeans = TRUE, 
-  varForm = "Cholesky", SD= FALSE)
+xmu_starts(mxData(mzData, type="raw"), mxData(mzData, type="raw"), 
+   selVars = c("wt","obese"), sep= "", nSib= 2, equateMeans = TRUE, SD= FALSE)
 
+# ==============
+# = Three sibs =
+# ==============
+data(twinData)
+twinData$wt3 = twinData$wt2
+twinData$ht3 = twinData$ht2
+selDVs = c("wt", "ht")
+mzData = twinData[twinData$zygosity \%in\%  "MZFF", ] 
+dzData = twinData[twinData$zygosity \%in\%  "DZFF", ]
+
+xmu_starts(mzData, dzData, selVars=selDVs, sep="", nSib=3, equateMeans=TRUE)
+xmu_starts(mzData, dzData, selVars=selDVs, sep="", nSib=3, equateMeans=FALSE)
 }
 \seealso{
 Other xmu internal not for end user: 
@@ -111,6 +117,7 @@ Other xmu internal not for end user:
 \code{\link{xmuPropagateLabels}()},
 \code{\link{xmuRAM2Ordinal}()},
 \code{\link{xmuTwinSuper_Continuous}()},
+\code{\link{xmuTwinSuper_NoBinary}()},
 \code{\link{xmuTwinUpgradeMeansToCovariateModel}()},
 \code{\link{xmu_CI_merge}()},
 \code{\link{xmu_CI_stash}()},
@@ -159,6 +166,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_twin_add_WeightMatrices}()},
 \code{\link{xmu_twin_check}()},
 \code{\link{xmu_twin_get_var_names}()},
+\code{\link{xmu_twin_make_def_means_mats_and_alg}()},
 \code{\link{xmu_twin_upgrade_selDvs2SelVars}()}
 }
 \concept{xmu internal not for end user}

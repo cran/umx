@@ -189,8 +189,8 @@ xmu_make_TwinSuperModel <- function(name="twin_super", mzData, dzData, selDVs, s
 	# TODO: 2. xmu_make_TwinSuperModel Add beta matrix for fixed covariates in means.
 	# TODO: 4. xmu_make_TwinSuperModel more tests in a test page
 
-	# *Note*: If dropping this into an existing model, it replaces all code setting: nVar, selVars, used, 
-	# Also any code figuring out data-type
+	# *Note*: If dropping this into an existing model, all your code setting: nVar, selVars, used
+	# any code figuring out data-type, is  not needed!
 
 	# ===================
 	# = match arguments =
@@ -207,7 +207,7 @@ xmu_make_TwinSuperModel <- function(name="twin_super", mzData, dzData, selDVs, s
 		message("Polite note: It's better to use 'sep'. This might become compulsory as it helps umx manage variable names in twin models.")
 		# stop("You MUST set 'sep'. Otherwise xmu_make_top can't reliably expand selDVs into full variable names")
 	}else{
-		fullVars = tvars(selDVs  , sep = sep, suffixes= 1:nSib)
+		fullVars = tvars(selDVs , sep = sep, suffixes= 1:nSib)
 		fullCovs = tvars(selCovs, sep = sep, suffixes= 1:nSib)
 	}
 
@@ -319,10 +319,11 @@ xmu_make_TwinSuperModel <- function(name="twin_super", mzData, dzData, selDVs, s
 #' @seealso - [xmu_make_TwinSuperModel()]
 #' @md
 #' @examples
-#' # xmuTwinSuper_Continuous(name="twin_super", selVars = selVars, selCovs = selCovs, 
-#' #    mzData = mzData, dzData = dzData, equateMeans = TRUE, type = type, 
-#' #    allContinuousMethod = allContinuousMethod, nSib= nSib, sep = "_T"
-#' # )
+#' \dontrun{
+#'  xmuTwinSuper_Continuous(name="twin_super", selVars = selVars, selCovs = selCovs, 
+#'     mzData = mzData, dzData = dzData, equateMeans = TRUE, type = type, 
+#'     allContinuousMethod = allContinuousMethod, nSib= nSib, sep = "_T" )
+#' }
 xmuTwinSuper_Continuous <- function(name= NULL, fullVars, fullCovs = NULL, sep, mzData, dzData, equateMeans, type, allContinuousMethod, nSib){
 	# ==============================
 	# = Handle all continuous case =
@@ -357,30 +358,44 @@ xmuTwinSuper_Continuous <- function(name= NULL, fullVars, fullCovs = NULL, sep, 
 			mxModel("DZ", dzData, mxExpectationNormal("top.expCovDZ", "top.expMean") ),			
 			mxFitFunctionMultigroup(c("MZ", "DZ"))
 		)
-		if(!is.null(fullCovs)){			
-			model = xmuTwinUpgradeMeansToCovariateModel(model, fullVars = fullVars, fullCovs = fullCovs, sep = sep)
+		if(!is.null(fullCovs)){
+			model = xmuTwinUpgradeMeansToCovariateModel(model, fullVars = fullVars, fullCovs = fullCovs, nSib = nSib, sep = sep)
 		}
 	}
 	return(model)
 }
 
-# xmuTwinSuper_NoBinary(name=name, fullVars = fullVars, fullCovs = fullCovs, mzData = mzData, dzData = dzData, equateMeans= equateMeans, nSib=2)
+#' xmuTwinSuper_NoBinary
+#'
+#' @description
+#'  # Handle 1 or more ordinal variables (no binary)
+#'  Means ordinal, but no binary
+#'  Means: all free, start cont at the measured value, ordinals @0
+#' 
+#'  Notes: Ordinal requires:
+#'  1. Variable set to mxFactor
+#'  2. For Binary variables:
+#'    1. Latent means of binary variables fixedAt 0 (or by data.def?)
+#'    2. Latent variance (A + C + E) constrained == 1 
+#'  3. For Ordinal variables, first 2 thresholds fixed
+#'
+#' @param name = NULL
+#' @param fullVars full names of variables
+#' @param fullCovs full names of covariates
+#' @param mzData mzData
+#' @param dzData dzData
+#' @param sep sep
+#' @param nSib nSib
+#' @param equateMeans T/F
+#' @param verbose (Default FALSE)
+#' @return - twin model
+#' @export
+#' @family xmu internal not for end user
+#' @md
+#' @examples
+#' #
 xmuTwinSuper_NoBinary <- function(name = NULL, fullVars, fullCovs = NULL, mzData, dzData, sep, nSib, equateMeans= TRUE, verbose=FALSE){
 	umx_check(!is.null(name), "stop", "I need a name for the super model")
-	# ==================================================
-	# = Handle 1 or more ordinal variables (no binary) =
-	# ==================================================
-	# Means ordinal, but no binary
-	# Means: all free, start cont at the measured value, ordinals @0
-
-	# ============================
-	# = Notes: Ordinal requires: =
-	# ============================
-	# 1. Variable set to mxFactor
-	# 2. For Binary variables:
-	#   1. Latent means of binary variables fixedAt 0 (or by data.def?)
-	#   2. Latent variance (A + C + E) constrained == 1 
-	# 3. For Ordinal variables, first 2 thresholds fixed
 
 	nVar = length(fullVars)/nSib; # Number of dependent variables ** per INDIVIDUAL ( so times-2 for a family)**
 	colTypes = umx_is_ordered(xmu_extract_column(mzData, fullVars), summaryObject= TRUE)
@@ -409,7 +424,8 @@ xmuTwinSuper_NoBinary <- function(name = NULL, fullVars, fullCovs = NULL, mzData
 		mxFitFunctionMultigroup(c("MZ", "DZ"))
 	)
 	if(!is.null(fullCovs)){
-		model = xmuTwinUpgradeMeansToCovariateModel(model, fullVars = fullVars, fullCovs = fullCovs, sep = sep)
+		model = xmuTwinUpgradeMeansToCovariateModel(model, fullVars = fullVars, fullCovs = fullCovs, nSib = nSib, sep = sep)
+
 	}
 	
 	return(model)
@@ -480,7 +496,7 @@ xmuTwinSuper_SomeBinary <- function(name=NULL, fullVars, fullCovs = NULL, mzData
 	)
 
 	if(!is.null(fullCovs)){
-		model = xmuTwinUpgradeMeansToCovariateModel(model, fullVars = fullVars, fullCovs = fullCovs, sep = sep)
+		model = xmuTwinUpgradeMeansToCovariateModel(model, fullVars = fullVars, fullCovs = fullCovs, nSib = nSib, sep = sep)
 	}
 	return(model)
 }
@@ -521,6 +537,7 @@ xmuTwinSuper_CovCor <- function(name=NULL, fullVars, mzData, dzData, type, numOb
 #' @param model The [umxSuperModel()] we are modifying (must have `MZ` `DZ` and `top` submodels)
 #' @param fullVars the FULL names of manifest variables
 #' @param fullCovs the FULL names of definition variables
+#' @param nSib How many siblings
 #' @param sep How twin variable names have been expanded, e.g. "_T".
 #' @return - model, now with means model extended to covariates.
 #' @export
@@ -540,7 +557,7 @@ xmuTwinSuper_CovCor <- function(name=NULL, fullVars, mzData, dzData, type, numOb
 #'
 #' }
 #'
-xmuTwinUpgradeMeansToCovariateModel <- function(model, fullVars, fullCovs, sep) {
+xmuTwinUpgradeMeansToCovariateModel <- function(model, fullVars, fullCovs, nSib, sep) {
 	# TODO Check the def vars are still in the dataset at this point...
 	umx_check(all(c("MZ", "DZ", "top") %in% names(model)), "stop", message= "need a model with top, MZ and DZ sub-models")	
 	umx_check(!is.null(model$top$expMean), "stop", "Model must have $top$expMean for xmuTwinUpgradeMeansToCovariateModel to work.")
@@ -578,24 +595,52 @@ xmuTwinUpgradeMeansToCovariateModel <- function(model, fullVars, fullCovs, sep) 
 	}
 
 	# 2. Upgrade MZ and DZ groups with local Def Vars and new expMean algebra
-	MZ = mxModel(model$MZ, 
-		mxMatrix(name= "T1DefVars", type= "Full", nrow= 1, ncol= nCov, free= FALSE, labels= paste0("data.", baseCovs, sep, 1)),
-		mxMatrix(name= "T2DefVars", type= "Full", nrow= 1, ncol= nCov, free= FALSE, labels= paste0("data.", baseCovs, sep, 2)),
-		# note: intercept is full width
-		mxAlgebra(name= "expMean", top.intercept + cbind(T1DefVars %*% top.meansBetas, T2DefVars %*% top.meansBetas), dimnames= list("means", fullVars) ),
-		MZexpectation
-	)
-
-	# c(sex_T1, sex_T2) %x% beta_Sex == c(sex_T1, sex_T2) * c(beta_Sex, beta_Sex)
-	
-	DZ = mxModel(model$DZ, 
-		mxMatrix(name= "T1DefVars", type= "Full", nrow= 1, ncol= nCov, free= FALSE, labels= paste0("data.", baseCovs, sep, 1)),
-		mxMatrix(name= "T2DefVars", type= "Full", nrow= 1, ncol= nCov, free= FALSE, labels= paste0("data.", baseCovs, sep, 2)),
-		mxAlgebra(name= "expMean", top.intercept + cbind(T1DefVars %*% top.meansBetas, T2DefVars %*% top.meansBetas), dimnames= list("means", fullVars) ),
-		DZexpectation
-	)
+	matsAndAlg = xmu_twin_make_def_means_mats_and_alg(baseCovs= baseCovs, fullVars = fullVars, nSib = nSib, sep= sep) # "T1DefVars", "T2DefVars"... + "expMean" algebra
+	MZ = mxModel(model$MZ, MZexpectation, matsAndAlg)
+	DZ = mxModel(model$DZ, DZexpectation, matsAndAlg)
 	return(mxModel(model, top, MZ, DZ))
 }
+
+#' Make the matrices and algebras for definition-based means models
+#'
+#' @description
+#' not-for-end-user helper for means in twin models. Returns matrices for 
+#' each definition variable, and an algebra to compute means.
+#'
+#' @param baseCovs base names of the DVs, e.g. "age"
+#' @param fullVars full names of the DVs, e.g. "E_T1"
+#' @param nSib how many siblings - typically 2
+#' @param sep in twin variable, i.e., "_T"
+#' @return  matrices and an algebra
+#' @export
+#' @family xmu internal not for end user
+#' @seealso - [xmuTwinUpgradeMeansToCovariateModel()]
+#' @md
+#' @examples
+#' # xmu_twin_make_def_means_mats_and_alg(baseCovs= baseCovs, 
+#' #   fullVars = fullVars, nSib = nSib, sep= sep)
+xmu_twin_make_def_means_mats_and_alg <- function(baseCovs, fullVars, nSib, sep) {
+	nCov    = length(baseCovs)
+	defMats = list()
+	for (i in 1:nSib) {
+		tmp = umxMatrix(paste0("T", i, "DefVars"), type= "Full", nrow= 1, ncol= nCov, free= FALSE, labels= paste0("data.", baseCovs, sep, i))
+		defMats[[i]] = tmp
+	}
+	# note: intercept is full width
+	if(nSib == 2){
+		tmpAlg = mxAlgebra(name= "expMean", top.intercept + cbind(T1DefVars %*% top.meansBetas, T2DefVars %*% top.meansBetas), dimnames= list("means", fullVars) )
+	} else if (nSib == 3){
+		tmpAlg = mxAlgebra(name= "expMean", top.intercept + cbind(
+			T1DefVars %*% top.meansBetas, 
+			T2DefVars %*% top.meansBetas,
+			T3DefVars %*% top.meansBetas), dimnames= list("means", fullVars)
+		)
+	}else{
+		stop("I can't handle nSib = ", nSib, ", only 2 or 3 so far. post as an issue on github if you need this")
+	}
+	return(append(defMats, tmpAlg))
+}
+
 
 
 
@@ -625,27 +670,22 @@ xmuTwinUpgradeMeansToCovariateModel <- function(model, fullVars, fullCovs, sep) 
 #' dzData = twinData[twinData$zygosity %in%  "DZFF", ]
 #' 
 #' round(sqrt(var(dzData[,tvars(selDVs, "")], na.rm=TRUE)/3),3)
+#' xmu_starts(mzData, dzData, selVars=selDVs, nSib= 2, sep="", equateMeans=TRUE, varForm="Cholesky")
 #' 
-#' tmp = xmu_starts(mzData, dzData, selVars = selDVs, sep= "", 
-#'		equateMeans = TRUE, varForm = "Cholesky")
-#' tmp
-#' 
+#' # Variance instead of SD
 #' round(var(dzData[,tvars(selDVs, "")], na.rm=TRUE)/3,3)
-#' tmp = xmu_starts(mzData, dzData, selVars = selDVs, sep= "", 
-#'		equateMeans = TRUE, varForm = "Cholesky", SD= FALSE)
-#' 
-#' tmp
+#' xmu_starts(mzData, dzData, selVars = selDVs, nSib = 2, sep= "", 
+#'		equateMeans= TRUE, varForm= "Cholesky", SD= FALSE)
 #' 
 #' # one variable
-#' tmp = xmu_starts(mzData, dzData, selVars = "wt", sep= "", 
-#'		equateMeans = TRUE, varForm = "Cholesky", SD= FALSE)
+#' xmu_starts(mzData, dzData, selVars= "wt", nSib = 2, sep="", equateMeans = TRUE)
 #' 
 #' # Ordinal/continuous mix
 #' data(twinData)
 #' twinData= umx_scale_wide_twin_data(data=twinData,varsToScale="wt",sep= "")
 #' # Cut BMI column to form ordinal obesity variables
-#' obLevels = c('normal', 'overweight', 'obese')
 #' cuts     = quantile(twinData[, "bmi1"], probs = c(.5, .8), na.rm = TRUE)
+#' obLevels = c('normal', 'overweight', 'obese')
 #' twinData$obese1= cut(twinData$bmi1,breaks=c(-Inf,cuts,Inf),labels=obLevels)
 #' twinData$obese2= cut(twinData$bmi2,breaks=c(-Inf,cuts,Inf),labels=obLevels)
 #' # Make the ordinal variables into mxFactors
@@ -653,17 +693,26 @@ xmuTwinUpgradeMeansToCovariateModel <- function(model, fullVars, fullCovs, sep) 
 #' twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 #' mzData = twinData[twinData$zygosity %in% "MZFF",] 
 #' dzData = twinData[twinData$zygosity %in% "DZFF",]
-#' tmp = xmu_starts(mzData, dzData, selVars = c("wt","obese"), sep= "", 
-#'	 nSib= 2, equateMeans = TRUE, varForm = "Cholesky", SD= FALSE)
+#' xmu_starts(mzData, dzData, selVars = c("wt","obese"), sep= "", 
+#'	 nSib= 2, equateMeans = TRUE, SD= FALSE)
 #' 
-#' tmp = xmu_starts(mxData(mzData, type="raw"), mxData(mzData, type="raw"), 
-#'    selVars = c("wt","obese"), sep= "", nSib= 2, equateMeans = TRUE, 
-#'	  varForm = "Cholesky", SD= FALSE)
+#' xmu_starts(mxData(mzData, type="raw"), mxData(mzData, type="raw"), 
+#'    selVars = c("wt","obese"), sep= "", nSib= 2, equateMeans = TRUE, SD= FALSE)
 #'
-xmu_starts <- function(mzData, dzData, selVars = selVars, sep = NULL, equateMeans= NULL, nSib = 2, varForm = c("Cholesky"), SD= TRUE, divideBy = 3) {
-	# Make mxData, dropping any unused columns
+#' # ==============
+#' # = Three sibs =
+#' # ==============
+#' data(twinData)
+#' twinData$wt3 = twinData$wt2
+#' twinData$ht3 = twinData$ht2
+#' selDVs = c("wt", "ht")
+#' mzData = twinData[twinData$zygosity %in%  "MZFF", ] 
+#' dzData = twinData[twinData$zygosity %in%  "DZFF", ]
+#' 
+#' xmu_starts(mzData, dzData, selVars=selDVs, sep="", nSib=3, equateMeans=TRUE)
+#' xmu_starts(mzData, dzData, selVars=selDVs, sep="", nSib=3, equateMeans=FALSE)
+xmu_starts <- function(mzData, dzData, selVars = selVars, sep = NULL, equateMeans= NULL, nSib, varForm = c("Cholesky"), SD= TRUE, divideBy = 3) {
 	if(!is.null(sep)){
-		# sep = ""; nSib = 2; selVars = c("wt", "ht")
 		selVars = umx_paste_names(selVars, sep = sep, suffixes = 1:nSib)
 	}
 	nVar = length(selVars)/nSib
@@ -677,19 +726,19 @@ xmu_starts <- function(mzData, dzData, selVars = selVars, sep = NULL, equateMean
 		}else{
 			allData = rbind(mzData, dzData)[,selVars]
 		}
-
+		# Uses sib 1 and 2 irrespective of nSib (doesn't matter here)
 		T1 = allData[, 1:nVar, drop = FALSE]
 		T2 = allData[, (nVar+1):(nVar*2), drop = FALSE];
 		names(T2) = names(T1)
 		longData = rbind(T1, T2)[, selVars[1:nVar], drop = FALSE]
-		# Mean starts (used across all raw solutions
+		# Mean starts (1 per variable)
 		meanStarts = umx_means(longData, ordVar = 0, na.rm = TRUE)
 
-		# Make wide again
-		meanStarts = c(meanStarts, meanStarts)
+		# Make nSib wide
+		meanStarts = rep(meanStarts, times = nSib)
 		if(equateMeans){
-			meanLabels = paste0("expMean_", selVars[1:nVar]) # Names recycled for twin 2
-			meanLabels = c(meanLabels, meanLabels)
+			# e.g. "expMean_ht1" "expMean_wt1" "expMean_ht1"
+			meanLabels = rep(paste0("expMean_", selVars[1:nVar]), times = nSib)
 		} else {
 			meanLabels = paste0("expMean_", selVars)
 		}
@@ -754,10 +803,9 @@ xmu_starts <- function(mzData, dzData, selVars = selVars, sep = NULL, equateMean
 #' tmp = xmu_twin_add_WeightMatrices(m1,
 #'		mzWeights= rnorm(nrow(m1$MZ$data$observed)), 
 #'		dzWeights= rnorm(nrow(m1$DZ$data$observed))
-#'  )
+#' )
 #' 
 xmu_twin_add_WeightMatrices <- function(model, mzWeights = NULL, dzWeights = NULL) {
-
 	umx_check(model$MZ$fitfunction$vector, "stop", "xmu_twin_add_WeightMatrix: You need to set the fitFunction to vector mode... but it appears I haven't")
 	
 	if(umx_is_MxMatrix(mzWeights)){
