@@ -20,6 +20,7 @@
 Print method for "RMSEA" objects: e.g. \code{\link[=RMSEA]{RMSEA()}}.
 }
 \examples{
+\dontrun{
 data(demoOneFactor)
 manifests = names(demoOneFactor)
 
@@ -30,6 +31,7 @@ m1 = umxRAM("One Factor", data = demoOneFactor, type= "cov",
 )
 tmp = summary(m1)
 RMSEA(tmp)
+}
 
 }
 \seealso{

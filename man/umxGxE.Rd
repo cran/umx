@@ -73,7 +73,7 @@ testing, and visualizing  G xE (or C or E x E) interaction forms.
 \details{
 The following figure the GxE model as a path diagram:
 
-\if{html}{\figure{GxE.png}{options: width="50\%" alt="Figure: GxE.png"}}
+\if{html}{\figure{GxE.png}{options: width=50\% alt="Figure: GxE.png"}}
 \if{latex}{\figure{GxE.pdf}{options: width=7cm}}
 }
 \examples{
@@ -120,7 +120,7 @@ umxReduce(m1)
 \references{
 \itemize{
 \item Purcell, S. (2002). Variance components models for gene-environment interaction in twin analysis. \emph{Twin Research},
-\strong{6}, 554-571. DOI: \doi{10.1375/twin.5.6.554}
+\strong{6}, 554-571. \doi{10.1375/twin.5.6.554}
 }
 }
 \seealso{

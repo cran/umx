@@ -25,6 +25,7 @@ Returns the AIC for an OpenMx model.
 Original Author: Brandmaier
 }
 \examples{
+\dontrun{
 require(umx)
 data(demoOneFactor)
 manifests = names(demoOneFactor)
@@ -36,6 +37,7 @@ m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
 extractAIC(m1)
 # -2.615998
 AIC(m1)
+}
 }
 \references{
 \itemize{
@@ -53,6 +55,8 @@ Other Reporting functions:
 \code{\link{RMSEA}()},
 \code{\link{loadings}()},
 \code{\link{residuals.MxModel}()},
+\code{\link{tmx_show.MxMatrix}()},
+\code{\link{tmx_show}()},
 \code{\link{umxCI_boot}()},
 \code{\link{umxCI}()},
 \code{\link{umxConfint}()},

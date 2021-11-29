@@ -74,11 +74,12 @@ The umxACEcov 'random' option models the covariates in the expected covariance m
 all data to be preserved. The downside is that this method has a strong assumption
 of multivariate normality. Covariates like age, which are perfectly correlated in twins cannot be used.
 Covariates like sex, which are ordinal, violate the normality assumption.
+Binary and ordinal covariates like sex also violate the normality assumption. Which is most of the use cases :-(.
 }
 \details{
 The following figure shows how the ACE model with random covariates appears as a path diagram:
 
-\if{html}{\figure{ACEcovVarianceModel.png}{options: width="50\%" alt="Figure: ACEcovVarianceModel.png"}}
+\if{html}{\figure{ACEcovVarianceModel.png}{options: width=50\% alt="Figure: ACEcovVarianceModel.png"}}
 \if{latex}{\figure{ACEcovVarianceModel.pdf}{options: width=7cm}}
 }
 \examples{
@@ -129,11 +130,11 @@ m1 = umxACEcov(selDVs = selDVs, selCovs = selCovs,
 \references{
 Neale, M. C., & Martin, N. G. (1989). The effects of age, sex,
 and genotype on self-report drunkenness following a challenge dose of alcohol.
-\emph{Behavior Genetics}, \strong{19}, 63-78. doi:\doi{10.1007/BF01065884}.
+\emph{Behavior Genetics}, \strong{19}, 63-78. doi{10.1007/BF01065884}.
 
 Schwabe, I., Boomsma, D. I., Zeeuw, E. L., & Berg, S. M. (2015). A New Approach
 to Handle Missing Covariate Data in Twin Research : With an Application to
-Educational Achievement Data. \emph{Behavior Genetics}, \strong{46}, 583-95. doi:\doi{10.1007/s10519-015-9771-1}.
+Educational Achievement Data. \emph{Behavior Genetics}, \strong{46}, 583-95. doi{10.1007/s10519-015-9771-1}.
 }
 \seealso{
 Other Twin Modeling Functions: 

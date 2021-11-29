@@ -25,17 +25,20 @@ Compute the confidence interval on RMSEA and print it out.
 \emph{note}: If your goal is to extract the RMSEA from a model, use \code{RMSEA(m1)$RMSEA}
 }
 \examples{
+
+\dontrun{
 require(umx)
 data(demoOneFactor)
 manifests = names(demoOneFactor)
 
-m1 = umxRAM("One Factor", data = demoOneFactor, type = "cov",
+m1 = umxRAM("One Factor", data = demoOneFactor[1:100,], type = "cov",
 	umxPath("G", to = manifests),
 	umxPath(var = manifests),
 	umxPath(var = "G", fixedAt = 1.0)
 )
 tmp = summary(m1)
 RMSEA(tmp)
+}
 }
 \references{
 \itemize{
@@ -49,6 +52,8 @@ Other Reporting functions:
 \code{\link{extractAIC.MxModel}()},
 \code{\link{loadings}()},
 \code{\link{residuals.MxModel}()},
+\code{\link{tmx_show.MxMatrix}()},
+\code{\link{tmx_show}()},
 \code{\link{umxCI_boot}()},
 \code{\link{umxCI}()},
 \code{\link{umxConfint}()},

@@ -7,19 +7,25 @@
 umxReduceGxE(
   model,
   report = c("markdown", "inline", "html", "report"),
+  intervals = TRUE,
   baseFileName = "tmp_gxe",
-  tryHard = c("no", "yes", "ordinal", "search"),
+  tryHard = c("yes", "no", "ordinal", "search"),
+  silent = FALSE,
   ...
 )
 }
 \arguments{
-\item{model}{An \code{\link[=mxModel]{mxModel()}} to reduce.}
+\item{model}{A \code{\link[=umxGxE]{umxGxE()}} to reduce.}
 
-\item{report}{How to report the results. "html" = open in browser.}
+\item{report}{How to report the results. default = "markdown". "html" = open in browser.}
 
-\item{baseFileName}{(optional) custom filename for html output (defaults to "tmp").}
+\item{intervals}{Recompute CIs (if any included) on the best model (default = TRUE)}
+
+\item{baseFileName}{(optional) custom filename for html output (default = "tmp").}
 
 \item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"}
+
+\item{silent}{Default (FALSE)}
 
 \item{...}{Other parameters to control model summary.}
 }

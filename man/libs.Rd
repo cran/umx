@@ -21,11 +21,12 @@ libs(...)
 \dontrun{
 libs("umx", "OpenMx", "car")
 libs("umx", c("OpenMx", "car"))
+remove.packages()
 }
 }
 \seealso{
 \itemize{
-\item \code{\link[=library]{library()}}
+\item \code{\link[=library]{library()}}. \code{\link[=remove.packages]{remove.packages()}}
 }
 
 Other Miscellaneous Utility Functions: 

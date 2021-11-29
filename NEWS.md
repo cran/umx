@@ -1,4 +1,46 @@
-## dev umx 4.9.0
+## dev umx 4.11.0
+
+## dev umx 4.10.10
+* November 2021 R 4.1.1 (2021/11/30)
+* NEW: `umxPower` can plot power search space! (beta!)
+* NEW: `noNAs()` helper returning complete rows of a data.frame.
+* NEW: `umxThresholdMatrix` can handle one value columns
+* IMPROVED: `umxPath` gains `v0m.`
+* IMPROVED: `umxPower` parameters ==1 for power search with fixed n
+* IMPROVED: `umxPower` ref
+* IMPROVED: `power.ACE.test` can run ADE model
+* IMPROVED: `power.ACE.test` Clarify which of power, effect, and n are fixed or being estimated.
+* IMPROVED: `umxReduce.ACE` gains tryHard  (compute ACE/ADE/CE/AE, outputs a table an also AIC-based probability weights for which is the preferable model)
+* IMPROVED: `umxReduce` tests familiality (E model)
+* IMPROVED: `umxReduce(ACE)` includes the parameters of the reduced models. #ht @nick martin
+* IMPROVED: `umxSummarizeTwinData` takes an age column and notes when it can’t be found
+* IMPROVED: `umx_score_scale` can score items with character labels
+* IMPROVED: `umx_score_scale` gains the ability to report Cronbach alpha
+* IMPROVED: `umxAPA` gains OR output for logit models
+* IMPROVED: `tmx_show` handles matrices
+* IMPROVED: `umx_rename` better names for deprecated parameters
+* IMPROVED: `umxRun` has tryHard (not a very useful function)
+* IMPROVED: `umxCompare` can silently return a data.frame for further modification
+* IMPROVED: `umxCP` warning to not use `correlatedACE`
+* IMPROVED: `umxAPA` (invisibly) returns the standardized model for lm
+* IMPROVED: `bucks` more control for formatting money
+* IMPROVED: `libs` now install.packages() if not found
+* IMPROVED: `umx_make_TwinData` shifts data to be positive if it not being scaled
+* IMPROVED: `grViz()` in place of print(DiagrammR())` (should work better with knitr)
+* CHANGE: `fin_interest` more memo/type-able parameter name for inflation
+* CHANGE: `umxRun` defaults to tryHard= "yes"
+* FIX: `umxPower` supports multiple path drop.
+* HELP: `FishersMethod` Rd ref
+* HELP: `umxCP` ref Martin, N. G., & Eaves, L. J. (1977). The Genetical Analysis of Covariance Structure. *Heredity*, **38**, 79-95.
+* HELP: `deg2rad` Rd better in html
+* HELP: `umxRAM` sketch mode help
+* HELP: `umxCP` more refs for Rd
+* HELP: improvements
+
+# Releases
+
+## umx 4.9.0
+* July 2021 R 4.1.0 (2021-06-27)
 * NEW: `umxACEv` and `umxACE` work with `nSib = 3`!
 * BETA: `umxCP` `correlatedACE` was not being filtered out of the expectation #hat-tip @micanzach But still working on what the right choices are here...
 * CHANGED:  `umxCP` defaults to tryHard = "yes"
@@ -19,7 +61,6 @@
 * xmu: `xmu_twin_make_def_means_mats_and_alg` helper
 * xmu: `xmu_start` improved closes #158
 
-# Releases
 ## umx 4.8.0
 * June 2021 R 4.1.0 (2021-06-01)
 * NEW: `umxPlot` now detects and plots Pearson-Aitken selection paths (solid red headless).

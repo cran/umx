@@ -11,6 +11,7 @@ umxCompare(
   digits = 3,
   report = c("markdown", "html", "inline"),
   compareWeightedAIC = FALSE,
+  silent = FALSE,
   file = "tmp.html"
 )
 }
@@ -28,6 +29,8 @@ create a web table and open your default browser.
 (handy for getting tables into Word, and other text systems!)}
 
 \item{compareWeightedAIC}{Show the Wagenmakers AIC weighted comparison (default = FALSE)}
+
+\item{silent}{(don't print, just return the table as a dataframe (default = FALSE)}
 
 \item{file}{file to write html too if report = "html" (defaults to "tmp.html")}
 }
@@ -89,7 +92,7 @@ umxCompare(m1, m2, report = "html") # Open table in browser
 }
 \seealso{
 \itemize{
-\item \code{\link[=mxCompare]{mxCompare()}}, \code{\link[=umxSummary]{umxSummary()}}, \code{\link[=umxRAM]{umxRAM()}},
+\item \code{\link[=umxSummary]{umxSummary()}}, \code{\link[=umxRAM]{umxRAM()}},\code{\link[=mxCompare]{mxCompare()}}
 }
 
 Other Model Summary and Comparison: 
@@ -99,14 +102,5 @@ Other Model Summary and Comparison:
 \code{\link{umxSetParameters}()},
 \code{\link{umxSummary}()},
 \code{\link{umx}}
-
-Other Summary functions: 
-\code{\link{umxSummary.MxModel}()},
-\code{\link{umxSummaryACEcov}()},
-\code{\link{umxSummaryCP}()},
-\code{\link{umxSummaryGxE}()},
-\code{\link{umxSummaryIP}()}
 }
-\concept{Core Modelling Functions}
 \concept{Model Summary and Comparison}
-\concept{Summary functions}

@@ -23,20 +23,21 @@ Returns the odds in each group, and the odds ratio. Takes the cases (n) and tota
 of two numbers for each of two groups.
 }
 \details{
-Returns a list of odds1, odds2, and OR + CI. Has a pretty-printing method so displays as:\if{html}{\out{<div class="R">}}\preformatted{Group 1 odds = 0.43
+Returns a list of odds1, odds2, and OR + CI. Has a pretty-printing method so displays as:\if{html}{\out{<div class="sourceCode R">}}\preformatted{Group 1 odds = 0.43
 Group 2 odds = 0.11
           OR = 3.86 CI95[0.160, 3.64]
 }\if{html}{\out{</div>}}
 }
 \examples{
 oddsratio(grp1 = c(1, 10), grp2 = c(3, 10))
+oddsratio(grp1 = 0.111, grp2 = 0.429)
 oddsratio(grp1 = c(3, 10), grp2 = c(1, 10))
 oddsratio(grp1 = c(3, 10), grp2 = c(1, 10), alpha = .01)
 
 }
 \references{
 \itemize{
-\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\item \url{https://stats.idre.ucla.edu/r/dae/logit-regression/}, \url{https://tbates.github.io}
 }
 }
 \seealso{
@@ -44,7 +45,7 @@ oddsratio(grp1 = c(3, 10), grp2 = c(1, 10), alpha = .01)
 \item \code{\link[=umx_r_test]{umx_r_test()}}
 }
 
-Other Miscellaneous Stats Helpers: 
+Other Miscellaneous Stats Functions: 
 \code{\link{FishersMethod}()},
 \code{\link{SE_from_p}()},
 \code{\link{geometric_mean}()},
@@ -62,4 +63,4 @@ Other Miscellaneous Stats Helpers:
 \code{\link{umx_var}()},
 \code{\link{umx}}
 }
-\concept{Miscellaneous Stats Helpers}
+\concept{Miscellaneous Stats Functions}

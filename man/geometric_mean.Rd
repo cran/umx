@@ -17,8 +17,9 @@ geometric_mean(x, na.rm = c(TRUE, FALSE))
 }
 }
 \description{
-\verb{Geometric means} are the nth-root of the product of the input values.
-Common uses include computing economic utility.
+The Geometric mean is the nth-root of the product of \code{n} input values.
+Common uses include computing economic utility.  That is to say, the utility of
+\code{c(1, 2, 10)} is \deqn{(1 * 2 * 10)/3} = 6.6 not 6.3 (the arithmetic mean).
 }
 \examples{
 geometric_mean(c(50, 100))
@@ -45,7 +46,7 @@ geometric_mean(c(1/100, 1/50))
 }
 }
 \seealso{
-Other Miscellaneous Stats Helpers: 
+Other Miscellaneous Stats Functions: 
 \code{\link{FishersMethod}()},
 \code{\link{SE_from_p}()},
 \code{\link{harmonic_mean}()},
@@ -63,4 +64,4 @@ Other Miscellaneous Stats Helpers:
 \code{\link{umx_var}()},
 \code{\link{umx}}
 }
-\concept{Miscellaneous Stats Helpers}
+\concept{Miscellaneous Stats Functions}

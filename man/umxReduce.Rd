@@ -7,7 +7,10 @@
 umxReduce(
   model,
   report = c("markdown", "inline", "html"),
+  intervals = TRUE,
   baseFileName = "tmp",
+  tryHard = "yes",
+  silent = FALSE,
   ...
 )
 }
@@ -16,7 +19,13 @@ umxReduce(
 
 \item{report}{How to report the results. "html" = open in browser}
 
+\item{intervals}{Recompute CIs (if any included) on the best model (default = TRUE)}
+
 \item{baseFileName}{(optional) custom filename for html output (defaults to "tmp")}
+
+\item{tryHard}{Default = "yes"}
+
+\item{silent}{Default = FALSE}
 
 \item{...}{Other parameters to control model summary}
 }
@@ -40,7 +49,8 @@ I am thinking for RAM models to drop NS paths, and report that test.
 }
 \references{
 \itemize{
-\item Wagenmakers, E.J., & Farrell, S. (2004). AIC model selection using Akaike weights. \emph{Psychonomic Bulletin and Review}, \strong{11}, 192-196. \doi{10.3758/BF03206482}
+\item Wagenmakers, E.J., & Farrell, S. (2004). AIC model selection using Akaike weights.
+\emph{Psychonomic Bulletin and Review}, \strong{11}, 192-196. \doi{10.3758/BF03206482}
 }
 }
 \seealso{

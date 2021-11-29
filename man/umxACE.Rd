@@ -2,7 +2,7 @@
 % Please edit documentation in R/build_run_modify.R
 \name{umxACE}
 \alias{umxACE}
-\title{Build and run a 2-group Cholesky twin model (uni-variate or multi-variate)}
+\title{Build and run a 2-group Cholesky ACE twin model (univariate or multivariate)}
 \usage{
 umxACE(
   name = "ACE",
@@ -100,31 +100,30 @@ among pairs of mono-zygotic (MZ) and di-zygotic (DZ) twins reared together.
 unique environmental (E) and, optionally, either common or shared-environment (C) or
 non-additive genetic effects (D).
 
-The following figure shows how the ACE model appears as a path diagram (for one variable):
+The following figure shows the ACE model for one variable "x" as a path diagram:
 
-\if{html}{\figure{ACEunivariate.png}{options: width="50\%" alt="Figure: ACE univariate.png"}}
+\if{html}{\figure{ACEunivariate.png}{options: width=50\% alt="Figure: ACE univariate.png"}}
 \if{latex}{\figure{ACEunivariate.pdf}{options: width=7cm}}
 
 \code{umxACE} allows multivariate analyses, and this brings us to the Cholesky part of the model.
 
-This model creates as many latent A C and E variables as there are phenotypes, and, moving
-from left to right, decomposes the variance in each manifest into successively restricted
-factors. The following figure shows how the ACE model appears as a path diagram:
+The Cholesky decomposition creates as many latent A (and C and E) latent variables as there are phenotypes, and, moving
+from left to right, decomposes the variance in each phenotype into successively restricted
+factors. The following figure shows the multivariate ACE model for three variables:
 
-\if{html}{\figure{ACEmatrix.png}{options: width="50\%" alt="Figure: ACE matrix.png"}}
+\if{html}{\figure{ACEmatrix.png}{options: width=50\% alt="Figure: ACE matrix.png"}}
 \if{latex}{\figure{ACEmatrix.pdf}{options: width=7cm}}
 
-In this model, the variance-covariance matrix of the raw data
-is recovered as the product of the lower Cholesky and its transform.
+In this ACE model of three phenotypes, the expected variance-covariance matrix of the original data
+is the product of each lower Cholesky and its transform (i.e., \code{A = a \%*\% t(a)} summed for \code{A+C+E}.
 
-This Cholesky or lower-triangle decomposition allows a model which is both sure to be
-solvable, and also to account for all the variance (with some restrictions) in the data.
+This lower-triangle decomposition feature of the Cholesky yields a model which is certain to both
+account for all the variance (with some restrictions) in the data and be solvable.
 
-This figure also contains the key to understanding how to modify models that \code{umxACE} produces.
-read the "Matrices and Labels in ACE model" section in details below...
+This figure also contains the key to understanding how to modify models that \code{umxACE} produces
+using \code{umxModify()} to drop paths  by label like \code{"a_r1c1"}. \strong{nb}: Read the "Matrices and Labels in ACE model" section in details below...
 
-\strong{NOTE}: Scroll down to details for how to use the function, a figure
-and multiple examples.
+\strong{NOTE}: Scroll down to details for how to use the function, a figure and multiple examples.
 }
 \details{
 \strong{Covariates}
@@ -211,6 +210,12 @@ umxSummary(m1, std = FALSE) # un-standardized
 # plot(m1) # Also, look at the options for ?plot.MxModel.
 
 \donttest{
+# ===========================================
+# = Test ADE, AE, CE, E, and generate table =
+# ===========================================
+
+umxReduce(m1, report="html", silent= TRUE)
+
 # ============================
 # = Model, with 2 covariates =
 # ============================

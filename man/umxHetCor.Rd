@@ -47,6 +47,7 @@ umxHetCor(mtcars[,c("mpg", "am")], treatAllAsFactor = TRUE, verbose = TRUE)
 }
 \seealso{
 Other Data Functions: 
+\code{\link{noNAs}()},
 \code{\link{umxFactor}()},
 \code{\link{umx_as_numeric}()},
 \code{\link{umx_cont_2_quantiles}()},
@@ -67,7 +68,7 @@ Other Data Functions:
 \code{\link{umx_stack}()},
 \code{\link{umx}}
 
-Other Miscellaneous Stats Helpers: 
+Other Miscellaneous Stats Functions: 
 \code{\link{FishersMethod}()},
 \code{\link{SE_from_p}()},
 \code{\link{geometric_mean}()},
@@ -86,4 +87,4 @@ Other Miscellaneous Stats Helpers:
 \code{\link{umx}}
 }
 \concept{Data Functions}
-\concept{Miscellaneous Stats Helpers}
+\concept{Miscellaneous Stats Functions}

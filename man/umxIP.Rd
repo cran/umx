@@ -2,7 +2,7 @@
 % Please edit documentation in R/build_run_modify.R
 \name{umxIP}
 \alias{umxIP}
-\title{umxIP: Build and run an Independent pathway twin model}
+\title{umxIP: Build and run an Independent Pathway twin model}
 \usage{
 umxIP(
   name = "IP",
@@ -89,10 +89,16 @@ umxIP(
 }
 }
 \description{
-Make a 2-group Independent Pathway twin model (Common-factor independent-pathway multivariate model).
+Make a 2-group Independent Pathway twin model.
+
+The independent-pathway model  (aka "biometric model" (McArdle and Goldsmith, 1990) proposes that \code{A},
+\code{C}, and \code{E} components act directly on the manifest or measured phenotypes. This contrasts with
+the \code{\link[=umxCP]{umxCP()}} model, in which these influences are collected on a hypothesized or latent causal
+variable, which is manifested in the measured phenotypes.
+
 The following figure shows the IP model diagrammatically:
 
-\if{html}{\figure{IP.png}{options: width="50\%" alt="Figure: IP.png"}}
+\if{html}{\figure{IP.png}{options: width=50\% alt="Figure: IP.png"}}
 \if{latex}{\figure{IP.pdf}{options: width=7cm}}
 
 As can be seen, each phenotype also by default has A, C, and E influences specific to that phenotype.
@@ -187,12 +193,16 @@ umxCompare(m1, m2)
 }
 \references{
 \itemize{
+\item Kendler, K. S., Heath, A. C., Martin, N. G., & Eaves, L. J. (1987). Symptoms of anxiety and symptoms of depression.
+Same genes, different environments? \emph{Archives of General Psychiatry}, \strong{44}, 451-457. \doi{10.1001/archpsyc.1987.01800170073010}.
+\item McArdle, J. J., & Goldsmith, H. H. (1990). Alternative common factor models for multivariate biometric analyses.
+\emph{Behavior Genetics}, \strong{20}, 569-608. \doi{10.1007/BF01065873}.
 \item \url{https://github.com/tbates/umx}
 }
 }
 \seealso{
 \itemize{
-\item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}} work for IP, CP, GxE, SAT, and ACE models.
+\item \code{\link[=plot]{plot()}}, \code{\link[=umxSummary]{umxSummary()}}, \code{\link[=umxCP]{umxCP()}}
 }
 
 Other Twin Modeling Functions: 

@@ -7,7 +7,7 @@
 fin_interest(
   principal = 0,
   deposits = 0,
-  dinflate = 0,
+  inflate = 0,
   interest = 0.05,
   yrs = 10,
   final = NULL,
@@ -25,13 +25,13 @@ fin_interest(
 
 \item{deposits}{Optional periodic additional investment each \emph{year}.}
 
-\item{dinflate}{How much to inflate deposits over time (default = 0)}
+\item{inflate}{How much to inflate deposits over time (default = 0)}
 
 \item{interest}{Annual interest rate (default = .05)}
 
 \item{yrs}{Duration of the investment (default = 10).}
 
-\item{final}{if set (default = NULL), returns the rate that turns principal into final after yrs}
+\item{final}{if set (default = NULL), returns the rate required to turn principal into final after yrs (principal defaults to 1)}
 
 \item{n}{Compounding intervals per year (default = 12 (monthly), 365 for daily)}
 
@@ -41,7 +41,7 @@ fin_interest(
 
 \item{largest_with_cents}{Default = 0}
 
-\item{baseYear}{Default = 0, can set, e.g. to 2020 for printing}
+\item{baseYear}{Default = current year (for table row labels)}
 
 \item{table}{Whether to print a table of annual returns (default TRUE)}
 
@@ -76,13 +76,13 @@ fin_interest(principal = 50, final=200, yrs = 5)
 # 3. What's the value of deposits of $100/yr after 10 years at 7\% return?
 fin_interest(deposits = 100, interest = 0.07, yrs = 10, n = 12)
 
-# 4. What's the value of £20k + £100/yr over 10 years at 7\% return?
-fin_interest(principal= 20e3, deposits= 100, interest= .07, yrs= 10, symbol="£")
+# 4. What's the value of $20k + $100/yr over 10 years at 7\% return?
+fin_interest(principal= 20e3, deposits= 100, interest= .07, yrs= 10, symbol="$")
 
 # 5. What is $10,000 invested at the end of each year for 5 years at 6\%?
 fin_interest(deposits = 10e3, interest = 0.06, yrs = 5, n=1, when= "end")
 
-# 6. What will £20k be worth after 10 years at 15\% annually (n=1)?
+# 6. What will $20k be worth after 10 years at 15\% annually (n=1)?
 fin_interest(deposits=20e3, interest = 0.15, yrs = 10, n=1, baseYear=1)
 # $466,986
 
@@ -98,7 +98,7 @@ fin_interest(principal = 100, final=200, yrs = 5)
 }
 \references{
 \itemize{
-\item \href{https://tbates.github.io}{tutorials}, \href{https://github.com/tbates/umx}{github}
+\item \url{https://en.wikipedia.org/wiki/Compound_interest}
 }
 }
 \seealso{
@@ -108,6 +108,7 @@ fin_interest(principal = 100, final=200, yrs = 5)
 
 Other Miscellaneous Functions: 
 \code{\link{deg2rad}()},
+\code{\link{fin_NI}()},
 \code{\link{fin_percent}()},
 \code{\link{fin_valuation}()},
 \code{\link{loadings.MxModel}()},

@@ -14,7 +14,9 @@ umx_score_scale(
   score = c("total", "mean", "max", "factor"),
   name = NULL,
   na.rm = FALSE,
-  minManifests = NA
+  minManifests = NA,
+  alpha = FALSE,
+  mapStrings = NULL
 )
 }
 \arguments{
@@ -37,6 +39,10 @@ umx_score_scale(
 \item{na.rm}{Whether to delete NAs when computing scores (Default = TRUE) Note: Choice affects mean!}
 
 \item{minManifests}{If score = factor, how many missing items to tolerate for an individual?}
+
+\item{alpha}{print Cronbach's alpha? (TRUE)}
+
+\item{mapStrings}{For input like True/False can map to 0,1 NULL}
 }
 \value{
 \itemize{
@@ -125,6 +131,7 @@ all(RevelleE == tmp[,"E_score"], na.rm = TRUE)
 }
 \seealso{
 Other Data Functions: 
+\code{\link{noNAs}()},
 \code{\link{umxFactor}()},
 \code{\link{umxHetCor}()},
 \code{\link{umx_as_numeric}()},

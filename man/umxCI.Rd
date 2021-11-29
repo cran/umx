@@ -56,6 +56,7 @@ runs these CIs if necessary, and reports them in a neat summary.
 If \code{run = "no"}, the function simply adds the CI requests, but returns the model without running them.
 }
 \examples{
+\dontrun{
 require(umx)
 data(demoOneFactor)
 manifests = names(demoOneFactor)
@@ -86,7 +87,6 @@ data(twinData)
 mzData = subset(twinData, zygosity == "MZFF")
 dzData = subset(twinData, zygosity == "DZFF")
 m1 = umxACE(selDVs = c("bmi1","bmi2"), dzData = dzData, mzData = mzData)
-\dontrun{
 umxCI(m1, run = "show") # show what will be requested
 umxCI(m1, run = "yes") # actually compute the CIs
 # Don't force update of CIs, but if they were just added, then calculate them
@@ -116,6 +116,8 @@ Other Reporting functions:
 \code{\link{extractAIC.MxModel}()},
 \code{\link{loadings}()},
 \code{\link{residuals.MxModel}()},
+\code{\link{tmx_show.MxMatrix}()},
+\code{\link{tmx_show}()},
 \code{\link{umxCI_boot}()},
 \code{\link{umxConfint}()},
 \code{\link{umxExpCov}()},

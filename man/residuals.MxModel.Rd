@@ -26,6 +26,7 @@
 Return the \code{\link[=residuals]{residuals()}} from an OpenMx RAM model. You can format these (with digits), and suppress small values.
 }
 \examples{
+\dontrun{
 require(umx)
 data(demoOneFactor)
 manifests = names(demoOneFactor)
@@ -55,6 +56,8 @@ residuals(m1, digits = 3, suppress = .005)
 # residuals are returned as an invisible object you can capture in a variable
 a = residuals(m1); a
 }
+
+}
 \references{
 \itemize{
 \item \url{https://tbates.github.io},  \url{https://github.com/tbates/umx}
@@ -67,6 +70,8 @@ Other Reporting functions:
 \code{\link{RMSEA}()},
 \code{\link{extractAIC.MxModel}()},
 \code{\link{loadings}()},
+\code{\link{tmx_show.MxMatrix}()},
+\code{\link{tmx_show}()},
 \code{\link{umxCI_boot}()},
 \code{\link{umxCI}()},
 \code{\link{umxConfint}()},

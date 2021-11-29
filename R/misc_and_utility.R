@@ -30,7 +30,7 @@
 #    And so all yours."
 #  * If to do were as easy as to know what were good to do,
 #    chapels had been churches, 
-#    and poor men's cottages princes’ palaces.
+#    and poor men's cottages princes' palaces.
 #  * This above all: to thine own self be true,
 
 # # PERCY BYSSHE SHELLEY
@@ -45,8 +45,8 @@
 #      I know not, but I feel it so,
 #      and it tortures me.
 
-# # [Yeats](https://en.wikipedia.org/wiki/W._B._Yeats)
-#  * [The Second Coming](https://en.wikipedia.org/wiki/The_Second_Coming_(poem))
+# [Yeats](https://en.wikipedia.org/wiki/W._B._Yeats)
+# * [The Second Coming](https://en.wikipedia.org/wiki/The_Second_Coming_(poem))
 
 
 #' load libraries
@@ -58,18 +58,71 @@
 #' @return - [libs()]
 #' @export
 #' @family Miscellaneous Utility Functions
-#' @seealso - [library()]
+#' @seealso - [library()]. [remove.packages()]
 #' @md
 #' @examples
 #' \dontrun{
 #' libs("umx", "OpenMx", "car")
 #' libs("umx", c("OpenMx", "car"))
+#' remove.packages()
 #' }
 libs <- function(...) {
 	dot.items = list(...) # grab all the dot items
 	dot.items = unlist(dot.items) # In case any dot items are lists
 	for (pack in dot.items) {
-		library(pack, character.only = TRUE)		
+		result = tryCatch({
+			library(pack, character.only = TRUE)
+		}, warning = function(warn) {
+			umx_msg("Who's, Z?")
+		}, error = function(err) {
+			cat(paste0("I'll try and install.packages(", omxQuotes(pack), ") for you"))
+		    install.packages(pack)
+			library(pack, character.only = TRUE)
+		}, finally={
+
+		})
+	}
+}
+
+#' Succinctly select complete rows from a dataframe
+#'
+#' @description
+#' Succinctly select complete rows from a dataframe.
+#'
+#' @param df an [data.frame()] to select on
+#' @param rows Rows to keep (optional, incomplete rows still discarded)
+#' @param cols Cols to keep
+#' @param drop Whether to return a vector when only 1 column is selected (default TRUE)
+#' @return - Complete rows and (optionally) selected columns
+#' @export
+#' @family Data Functions
+#' @md
+#' @examples
+#' tmp = mtcars
+#' tmp[2,1] = NA
+#' noNAs(tmp, cols="mpg")
+#' noNAs(tmp, cols="mpg", drop = FALSE)
+#' noNAs(tmp) # no Mazda RX4 Wag
+#'
+noNAs <- function(df, rows = NULL, cols = NULL, drop = TRUE) {
+	if(is.null(rows)){
+		if(is.null(cols)){
+			# every complete row, all cols
+			df[complete.cases(df), , drop = drop]
+		}else{
+			# every complete row, selected cols
+			df[complete.cases(df[, cols]), cols, drop = drop]
+		}
+	} else {
+		# remove discluded rows
+		df = df[rows, ]
+		if(is.null(cols)){
+			# every remaining complete row, all cols
+			df[complete.cases(df), , drop = drop]
+		}else{
+			# every remaining complete row, selected cols
+			df[complete.cases(df[, cols]), cols, drop = drop]
+		}
 	}
 }
 
@@ -775,14 +828,14 @@ umx_set_optimizer <- function(opt = NA, model = NULL, silent = FALSE) {
 #' @examples
 #' library(umx)
 #' manifests = c("mpg", "disp", "gear")
-#' m1 <- mxModel("ind", type = "RAM",
+#' m1 = mxModel("ind", type = "RAM",
 #' 	manifestVars = manifests,
 #' 	mxPath(from = manifests, arrows = 2),
 #' 	mxPath(from = "one", to = manifests),
 #' 	mxData(mtcars[, manifests], type = "raw")
 #' )
 #' umx_set_cores() # print current value
-#' oldCores <- umx_set_cores(silent = TRUE)  # store existing value
+#' oldCores = umx_set_cores(silent = TRUE)  # store existing value
 #' umx_set_cores(omxDetectCores()) # set to max
 #' umx_set_cores(-1); umx_set_cores() # set to max
 #' m1 = umx_set_cores(1, m1)  # set m1 usage to 1 core
@@ -923,26 +976,30 @@ umx_get_checkpoint <- function(model = NULL) {
 #' Shows how many cores you are using, and runs a test script so user can check CPU usage.
 #'
 #' @details
-#' Some historical (starting 2017-09-06) speeds on my late 2015 iMac, 3.3 GHz Quad-core i7 desktop.
+#' Some historical (starting 2017-09-06) speeds on my late 2015 iMac, 3.3 GHz
+#' Quad-core i7 desktop and then a quad i7 2018 MacBook Pro
 #' 
 #' \tabular{rllll}{
-#'	2020-08-09 \tab 2.17.3 (OpenMP git)  \tab 1 core  \tab 01 52    \tab     (CSOLNP on laptop)                   \cr
-#'	2020-08-09 \tab 2.17.3 (OpenMP git)  \tab 4 core  \tab 40.184    \tab     (CSOLNP on laptop)                   \cr
-#'	2019-06-13 \tab v2.13.2 (OpenMP git)  \tab 1 core  \tab 01 min, 11 sec    \tab     (NPSOL)                   \cr
-#'	2019-06-13 \tab v2.13.2 (OpenMP git)  \tab 4 core  \tab 00 min, 22 sec    \tab     (NPSOL)                   \cr
-#'	2019-06-13 \tab v2.13.2 (OpenMP git)  \tab 6 core  \tab 00 min, 21 sec    \tab     (NPSOL)                   \cr
-#'	2018-10-14 \tab v2.11.5 (OpenMP on CRAN)  \tab 4 cores  \tab 00 min, 36 sec    \tab \eqn{\Delta}:-39.598) \cr
-#'	2018-09-17 \tab v2.11.3         \tab 1    \tab 01 min, 31 sec    \tab                                 \cr
-#'	2018-09-17 \tab v2.11.3         \tab 4    \tab 00 min, 30.6 sec  \tab \eqn{\Delta}: -61.49) \cr
-#'	2017-10-16 \tab v2.7.18-9       \tab 1    \tab 01 min, 07.30 sec \tab                                 \cr                  
-#'	2017-10-16 \tab v2.7.18-9       \tab 4    \tab 00 min, 22.63 sec \tab \eqn{\Delta}: -44.68) \cr
-#'	2017-10-16 \tab Clang OpenMP    \tab 1    \tab 01 min, 08.38 sec \tab                                 \cr                  
-#'	2017-10-16 \tab Clang OpenMP    \tab 4    \tab 00 min, 24.89 sec \tab \eqn{\Delta}: -43.49) \cr
-#'	2017-09-07 \tab Clang OpenMP    \tab 1    \tab 01 min, 12.90 sec \tab                                 \cr
-#'	2017-09-07 \tab Clang OpenMP    \tab 4    \tab 00 min, 32.20 sec \tab \eqn{\Delta}: -40.70   \cr
-#'	2017-09-07 \tab Clang notOpenMP \tab 1    \tab 01 min, 09.90 sec \tab                                 \cr
-#'	2017-09-07 \tab TRAVIS          \tab 1    \tab 01 min, 06.20 sec \tab                                 \cr
-#'	2017-09-07 \tab TRAVIS          \tab 4    \tab 00 min, 21.10 sec \tab \eqn{\Delta}: -45.00   \cr
+#'	Date       \tab Version         \tab Cores \tab Time              \tab     Notes               \cr
+#'	2021-07-28 \tab 2.19.6.19 (git) \tab 8     \tab 00 min 42.98 sec  \tab \eqn{\Delta}:-80 (SLSQP laptop (55 sec under NPSOL))  \cr
+#'	2021-07-28 \tab 2.19.6.19 (git) \tab 1     \tab 02 min 03 sec     \tab (SLSQP on laptop)       \cr
+#'	2020-08-09 \tab 2.17.3  (git)   \tab 1     \tab 01 min 52 sec     \tab (CSOLNP on laptop)      \cr
+#'	2020-08-09 \tab 2.17.3  (git)   \tab 4     \tab 00 min 40.18 sec  \tab (CSOLNP on laptop)      \cr
+#'	2019-06-13 \tab v2.13.2 (git)   \tab 1     \tab 01 min, 11 sec    \tab (NPSOL)                 \cr
+#'	2019-06-13 \tab v2.13.2 (git)   \tab 4     \tab 00 min, 22 sec    \tab (NPSOL)                 \cr
+#'	2019-06-13 \tab v2.13.2 (git)   \tab 6     \tab 00 min, 21 sec    \tab (NPSOL)                 \cr
+#'	2018-10-14 \tab v2.11.5 (CRAN)  \tab 4     \tab 00 min, 36 sec    \tab \eqn{\Delta}:-39.598)   \cr
+#'	2018-09-17 \tab v2.11.3         \tab 1     \tab 01 min, 31 sec    \tab                         \cr
+#'	2018-09-17 \tab v2.11.3         \tab 4     \tab 00 min, 30.6 sec  \tab \eqn{\Delta}: -61.49)   \cr
+#'	2017-10-16 \tab v2.7.18-9       \tab 1     \tab 01 min, 07.30 sec \tab                         \cr                  
+#'	2017-10-16 \tab v2.7.18-9       \tab 4     \tab 00 min, 22.63 sec \tab \eqn{\Delta}: -44.68)   \cr
+#'	2017-10-16 \tab Clang OpenMP    \tab 1     \tab 01 min, 08.38 sec \tab                         \cr                  
+#'	2017-10-16 \tab Clang OpenMP    \tab 4     \tab 00 min, 24.89 sec \tab \eqn{\Delta}: -43.49)   \cr
+#'	2017-09-07 \tab Clang OpenMP    \tab 1     \tab 01 min, 12.90 sec \tab                         \cr
+#'	2017-09-07 \tab Clang OpenMP    \tab 4     \tab 00 min, 32.20 sec \tab \eqn{\Delta}: -40.70    \cr
+#'	2017-09-07 \tab Clang notOpenMP \tab 1     \tab 01 min, 09.90 sec \tab                         \cr
+#'	2017-09-07 \tab TRAVIS          \tab 1     \tab 01 min, 06.20 sec \tab                         \cr
+#'	2017-09-07 \tab TRAVIS          \tab 4     \tab 00 min, 21.10 sec \tab \eqn{\Delta}: -45.00    \cr
 #' }
 #' 
 #' @param nCores How many cores to run (defaults to c(1, max). -1 = all available.
@@ -1009,7 +1066,7 @@ umx_check_parallel <- function(nCores = c(1, omxDetectCores()), testScript = NUL
 	indicators3    = indicators[9:12]
 
 	# Create model with both direct and moderated paths
-	test1 <- mxModel("threeLatentWithModerator", type = "RAM",
+	test1 = mxModel("threeLatentWithModerator", type = "RAM",
 	  manifestVars = c(indicators),
 	  latentVars   = c(latents, "dummy1"),
 	  umxPath(latents1 , to = indicators1, connect = "all.pairs", values = .2),
@@ -1379,6 +1436,8 @@ umx_factor <- umxFactor
 #' @param name = name of the scale to be returned. Defaults to "base_score"
 #' @param na.rm Whether to delete NAs when computing scores (Default = TRUE) Note: Choice affects mean!
 #' @param minManifests If score = factor, how many missing items to tolerate for an individual?
+#' @param alpha print Cronbach's alpha? (TRUE)
+#' @param mapStrings For input like True/False can map to 0,1 NULL
 #' @return - scores
 #' @export
 #' @family Data Functions
@@ -1447,11 +1506,33 @@ umx_factor <- umxFactor
 #' RevelleE = as.numeric(scores$scores[,"E"]) * 5
 #' all(RevelleE == tmp[,"E_score"], na.rm = TRUE)
 #'
-umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL, score = c("total", "mean", "max", "factor"), name = NULL, na.rm=FALSE, minManifests = NA) {
+umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL, score = c("total", "mean", "max", "factor"), name = NULL, na.rm=FALSE, minManifests = NA, alpha = FALSE, mapStrings= NULL) {
 	score = match.arg(score)
-	
 	if(is.null(name)){ name = paste0(base, "_score") }
+	oldData = data
 
+	if(!is.null(mapStrings)){
+		if(!is.null(max)){
+			# check min max matches mapstrings
+			if(!(length(mapStrings) == length(min:max))){
+				stop(paste0("polite note: You set the max and min, but ", min, " to ", max, " must equal the number of map strings: ", length(mapStrings)))
+			}
+		}else{
+			min = 1
+			max = length(mapStrings)
+		}
+		relevantColumns = paste0(base, c(pos, rev))
+		for (thisCol in relevantColumns){
+			unique_values = unique(data[, thisCol, drop = TRUE])
+			unique_values = unique_values[!is.na(unique_values)]
+			if(any(!(unique_values %in% mapStrings))){
+				notFound = unique_values[which(!(unique_values %in% mapStrings))]
+				stop("Some values in column ", omxQuotes(thisCol), " not in mapStrings, e.g.. :", omxQuotes(notFound))
+			}
+			data[, thisCol] = factor(data[, thisCol, drop=TRUE], labels = mapStrings, levels= mapStrings)
+			data[, thisCol] = as.numeric(data[, thisCol, drop=TRUE])
+		}
+	}
 	mins = umx_apply("min", data[ , paste0(base, c(pos, rev)), drop = FALSE], by = "columns", na.rm=TRUE)
 	maxs = umx_apply("max", data[ , paste0(base, c(pos, rev)), drop = FALSE], by = "columns", na.rm=TRUE)
 	if(any(mins < min)){
@@ -1463,7 +1544,6 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 		umx_msg(msg)
 	}
 
-	oldData = data
 	# ==================================
 	# = Reverse any items needing this =
 	# ==================================
@@ -1482,6 +1562,11 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 	allColNames = paste0(base, c(pos, rev))
 	df = data[ , allColNames, drop = FALSE]
 
+	if(alpha){
+		print(str(df))
+		print(reliability(cov(df, use= "pairwise.complete.obs")))
+	}
+
 	if(score == "max"){
 		scaleScore = rep(NA, nrow(df))
 		for (i in 1:nrow(df)) {
@@ -1489,16 +1574,14 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 		}
 	}else if(score == "total"){
 		if(any(is.na(df))){
-			message("Polite note: you asked for scale totals, but some subjects have missing data: I just ignored that. You might want means...")
+			message("Polite note: You asked for scale totals, but some subjects have missing data: Pay attention to na.rm, or perhaps use means?...")
 		}
 		scaleScore = rowSums(df, na.rm = na.rm)
 	}else if(score == "mean"){
 		scaleScore = rowMeans(df, na.rm = na.rm)
 	}else if(score == "factor"){
-		x = umxEFA(name = "score", factors = "g", data = df, scores= "Regression", minManifests= minManifests)
-		scaleScore = x$g
-	}else{
-		stop("not sure how to handle score = ", omxQuotes(score), ". Legal options are: ", omxQuotes(c("total", "mean", "max", "factor")))
+		tmp = umxEFA(name = "score", factors = "g", data = df, scores= "Regression", minManifests= minManifests)
+		scaleScore = tmp$g
 	}
 	oldData[, name] = scaleScore
 	return(oldData)
@@ -1524,7 +1607,7 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 #' @examples
 #' x = umxVersion(); x
 umxVersion <- function (model = NULL, min = NULL, verbose = TRUE, return = "umx") {
-	umx_vers <- try(packageVersion("umx"))
+	umx_vers = try(packageVersion("umx"))
     if (verbose) {
         msg = paste0("umx version: ", umx_vers)
         message(msg)
@@ -1614,15 +1697,15 @@ umx_open_CRAN_page <- function(package = "umx", inst=FALSE) {
 #' umx_pad(1:3, 3)
 umx_pad <- function(x, n) {
   if (is.data.frame(x)) {
-    nrow <- nrow(x)
-    attr(x, "row.names") <- 1:n
+    nrow = nrow(x)
+    attr(x, "row.names") = 1:n
     for( i in 1:ncol(x) ) {
-      x[[i]] <- c( x[[i]], rep(NA, times = n - nrow) )
+      x[[i]] = c( x[[i]], rep(NA, times = n - nrow) )
     }
     return(x)
   } else if (is.list(x)) {
     if (missing(n)) {
-      max_len <- max( sapply( x, length ) )
+      max_len = max( sapply( x, length ) )
       return( lapply(x, function(xx) {
         return( c(xx, rep(NA, times=max_len-length(xx))) )
       }))
@@ -1659,7 +1742,7 @@ umx_pad <- function(x, n) {
 #' @return - object
 #' @export
 #' @seealso - [umx_aggregate()] 
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
 #' @examples
@@ -1686,10 +1769,11 @@ umx_apply <- function(FUN, of, by = c("columns", "rows"), ...) {
 #' @export
 #' @references - <https://github.com/tbates/umx>
 #' @examples
-#' df = mtcars
 #' # make mpg into string, and cyl into a factor
+#' df = mtcars
 #' df$mpg = as.character(df$mpg)
 #' df$cyl = factor(df$cyl)
+#' df$am = df$am==1
 #' 
 #' df = umx_as_numeric(df); str(df) # mpg not touched
 #' df = umx_as_numeric(df, force=TRUE); str(df) # mpg coerced back to numeric
@@ -1795,12 +1879,12 @@ umx_find_object <- function(pattern = ".*", requiredClass = "MxModel") {
 #' tmp = umx_rename(tmp, regex = "lacement", to = "") # revert to disp
 #' umx_names(tmp, "^d") # all names beginning with a d
 #'
-#' # advanced: checking deprecated format handled...
+#' # dev: check deprecated format handled...
 #' tmp = umx_rename(tmp, old = c("am", "disp", "drat"), replace = new)
-umx_rename <- function(data, from = NULL, to = NULL, regex = NULL, test = FALSE, old = "deprecated", replace= "deprecated") {
+umx_rename <- function(data, from = NULL, to = NULL, regex = NULL, test = FALSE, old = "deprecated_from", replace= "deprecated_to") {
 	# See also gdata::rename.vars(data, from, to)	
-	if(any(old     != "deprecated")){from = old; message("Polite message: Please use 'from' instead of 'old' in umx_rename()") }
-	if(any(replace != "deprecated")){to = replace; message("Polite message: Please use 'to' instead of 'replace' in umx_rename()") }
+	if(any(old     != "deprecated_from")){from = old; message("Polite message: Please use 'from' instead of 'old' in umx_rename()") }
+	if(any(replace != "deprecated_to")){to = replace; message("Polite message: Please use 'to' instead of 'replace' in umx_rename()") }
 
 	if(!is.null(attributes(from)$names)){
 		stop("You gave a list to from in umx_rename(). Lists (old='new') only allowed in to")
@@ -1930,12 +2014,12 @@ umx_grep <- function(df, grepString, output = c("both", "label", "name"), ignore
 			# need to cope with finding nothing
 			findIndex = grep(grepString,vLabels, value=FALSE, ignore.case=ignore.case)
 			if(output=="both") {
-				theResult <- as.matrix(vLabels[findIndex])
+				theResult = as.matrix(vLabels[findIndex])
 			} else if(output=="label"){
 				vLabels= as.vector(vLabels[findIndex])
-				theResult <- (vLabels)
+				theResult = (vLabels)
 			} else if(output=="name"){
-				theResult <- names(vLabels)[findIndex]
+				theResult = names(vLabels)[findIndex]
 			}else{
 				stop(paste("bad choice of output:", output))
 			}
@@ -2188,16 +2272,16 @@ umx_check_OS <- function(target=c("OSX", "SunOS", "Linux", "Windows"), action = 
 	target = match.arg(target)
 	# OSX == Darwin
 	# Solaris == SunOS
-	sysinfo <- Sys.info()
+	sysinfo = Sys.info()
 	if (!is.null(sysinfo)){
-		os <- sysinfo['sysname']
+		os = sysinfo['sysname']
 		if (os == 'Darwin'){
-			os <- "OSX"    	
+			os = "OSX"    	
 		}
 	} else {
-		os <- .Platform$OS.type
+		os = .Platform$OS.type
 		if (grepl("linux-gnu", R.version$os)){
-		  os <- "Linux"	    	
+		  os = "Linux"	    	
 		}
 	}
 	isTarget = (target == os)
@@ -2364,13 +2448,13 @@ umx_write_to_clipboard <- function(x) {
 dl_from_dropbox <- function(x, key=NULL){
 	# depends on RCurl::getBinaryURL
 	if(is.null(key)){
-		bin <- RCurl::getBinaryURL(x, ssl.verifypeer = FALSE)
+		bin = RCurl::getBinaryURL(x, ssl.verifypeer = FALSE)
 		x = sub("^.+/(.*)$", "\\1", x, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
 	} else {
 		# user has provided key and file name, so concatenate with https...
-		bin <- RCurl::getBinaryURL(paste0("https://dl.dropboxusercontent.com/s/", key, "/", x), ssl.verifypeer = FALSE)
+		bin = RCurl::getBinaryURL(paste0("https://dl.dropboxusercontent.com/s/", key, "/", x), ssl.verifypeer = FALSE)
 	}
-	con <- file(x, open = "wb")
+	con = file(x, open = "wb")
 	writeBin(bin, con)
 	close(con)
 	message(noquote(paste(x, "read into", getwd())))
@@ -2420,9 +2504,9 @@ fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, sy
 	operatingIncome = revenue * opmargin
 	netIncome = operatingIncome *(1-expenses)
 	marketCap = netIncome*PE
-	class(marketCap) = 'money'; attr(marketCap, 'symbol') <- symbol
-	class(netIncome) = 'money'; attr(netIncome, 'symbol') <- symbol
-	class(operatingIncome) = 'money'; attr(operatingIncome, 'symbol') <- symbol
+	class(marketCap) = 'money'; attr(marketCap, 'symbol') = symbol
+	class(netIncome) = 'money'; attr(netIncome, 'symbol') = symbol
+	class(operatingIncome) = 'money'; attr(operatingIncome, 'symbol') = symbol
 	
 	cat("Market cap = ", print(marketCap, cat=F))
 	cat("\n(Based on PE= ", PE, ", operating Income of ", print(operatingIncome/divisor, cat=F), " ", use, ", and net income =", print(netIncome/divisor, cat=F), use, "\n", sep = "")
@@ -2439,7 +2523,7 @@ fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, sy
 #' @param principal The initial investment at time 0.
 #' @param deposits Optional periodic additional investment each *year*.
 #' @param interest Annual interest rate (default = .05)
-#' @param dinflate How much to inflate deposits over time (default = 0)
+#' @param inflate How much to inflate deposits over time (default = 0)
 #' @param yrs Duration of the investment (default = 10).
 #' @param n Compounding intervals per year (default = 12 (monthly), 365 for daily)
 #' @param when Deposits made at the "beginning" (of each year) or "end"
@@ -2447,13 +2531,13 @@ fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, sy
 #' @param report "markdown" or "html", 
 #' @param table Whether to print a table of annual returns (default TRUE)
 #' @param largest_with_cents Default = 0
-#' @param baseYear Default = 0, can set, e.g. to 2020 for printing
-#' @param final if set (default = NULL), returns the rate that turns principal into final after yrs
+#' @param baseYear Default = current year (for table row labels)
+#' @param final if set (default = NULL), returns the rate required to turn principal into final after yrs (principal defaults to 1)
 #' @return - Value of balance after yrs of investment.
 #' @export
 #' @family Miscellaneous Functions
 #' @seealso - [fin_percent()]
-#' @references - [tutorials](https://tbates.github.io), [github](https://github.com/tbates/umx)
+#' @references - <https://en.wikipedia.org/wiki/Compound_interest>
 #' @md
 #' @examples
 #' \dontrun{
@@ -2473,13 +2557,13 @@ fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, sy
 #' # 3. What's the value of deposits of $100/yr after 10 years at 7% return?
 #' fin_interest(deposits = 100, interest = 0.07, yrs = 10, n = 12)
 #'
-#' # 4. What's the value of £20k + £100/yr over 10 years at 7% return?
-#' fin_interest(principal= 20e3, deposits= 100, interest= .07, yrs= 10, symbol="£")
+#' # 4. What's the value of $20k + $100/yr over 10 years at 7% return?
+#' fin_interest(principal= 20e3, deposits= 100, interest= .07, yrs= 10, symbol="$")
 #'
 #' # 5. What is $10,000 invested at the end of each year for 5 years at 6%?
 #' fin_interest(deposits = 10e3, interest = 0.06, yrs = 5, n=1, when= "end")
 #'
-#' # 6. What will £20k be worth after 10 years at 15% annually (n=1)?
+#' # 6. What will $20k be worth after 10 years at 15% annually (n=1)?
 #' fin_interest(deposits=20e3, interest = 0.15, yrs = 10, n=1, baseYear=1)
 #' # $466,986
 #'
@@ -2492,28 +2576,17 @@ fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, sy
 #' # 8 Interest needed to increase principal to final value in yrs time.
 #' fin_interest(principal = 100, final=200, yrs = 5)
 #'
-fin_interest <- function(principal = 0, deposits = 0, dinflate = 0, interest = 0.05, yrs = 10, final=NULL, n = 12, when = "beginning", symbol = "$", largest_with_cents = 0, baseYear= as.numeric(format(Sys.time(), "%Y")), table = TRUE, report= c("markdown", "html")){
+fin_interest <- function(principal = 0, deposits = 0, inflate = 0, interest = 0.05, yrs = 10, final= NULL, n = 12, when = "beginning", symbol = "$", largest_with_cents = 0, baseYear= as.numeric(format(Sys.time(), "%Y")), table = TRUE, report= c("markdown", "html")){
 	report = match.arg(report)
-	if(dinflate != 0){
-		deposits = c(deposits, rep(deposits, times = yrs-1) *(1+dinflate)^c(1:(yrs-1)))
+	if(inflate != 0){
+		deposits = c(deposits, rep(deposits, times = yrs-1) *(1+inflate)^c(1:(yrs-1)))
 	}else{
 		deposits = rep(deposits, times = yrs)
 	}
-	# deposits = 100
-	# interest = .05
-	# n        = 12
-	# yrs      = 10
-
-	# TODO add an annual table like this
-	# Final Investment Value		Initial  Balance
-	# £267,672,51					$principal
-	# Total Interest Earned		Total <period> deposits
-	# £267,672,51					£267,672,51
-	# 							Effective annual rate: 4.06%
-	#
 	if(!is.null(final)){
 		# final = prin*(1+rate)^y
-		return((final/principal)^(1/yrs)-1)
+		if(principal==0){ principal=1 }
+		return((final/principal)^(1/(yrs+1))-1)
 		# rate is the years root of (final *prin?)
 	}
 
@@ -2548,17 +2621,6 @@ fin_interest <- function(principal = 0, deposits = 0, dinflate = 0, interest = 0
 		umx_print(tableOut, justify = "right", report=report)
 	}
 
-	# invisible(report)
-	# gray?		green		orange		Blue
-	# | Year| Deposits | Interest | Total Deposits | Tot Interest| Total |
-	# |:----|:---------|:---------|:---------------|:---------|:---------|
-	# | 1   | £19,000  | £1,000   | £40,000        | £1,200   | £100,200 |
-	# | 2   | £10,000  | £1,000   | £65,000        | £1,200   | £100,200 |
-	# | 3   | £19,000  | £1,000   | £65,000        | £1,200   | £100,200 |
-	# | 4   | £19,000  | £1,000   | £65,000        | £1,200   | £200,200 |
-	# | 5   | £19,000  | £1,000   | £65,000        | £1,200   | £300,200 |
-	# | 6   | £19,000  | £1,000   | £65,000        | £1,200   | £400,200 |
-
 	if(length(deposits)==1){
 		# 2. compute compounded value of the principal (initial deposit)
 		Compound_interest_for_principal = principal* rate^(n*yrs)
@@ -2568,8 +2630,8 @@ fin_interest <- function(principal = 0, deposits = 0, dinflate = 0, interest = 0
 		if(interest==0){
 			Future_value_of_a_series = deposits * yrs
 		} else {
-			# beginning: A = PMT × (((1 + r/n)^(nt) - 1) ÷ (r/n))
-			# end      : A = PMT × (((1 + r/n)^(nt) - 1) ÷ (r/n)) × (1+r/n)
+			# beginning: A = PMT * (((1 + r/n)^(nt) - 1) / (r/n))
+			# end      : A = PMT * (((1 + r/n)^(nt) - 1) / (r/n)) * (1+r/n)
 			if(when == "beginning"){
 				# deposits at the beginning of each year
 				periods = (yrs:1)*n
@@ -2586,17 +2648,101 @@ fin_interest <- function(principal = 0, deposits = 0, dinflate = 0, interest = 0
 		Total = balance
 	}
 	class(Total) = 'money'
-	attr(Total, 'symbol') <- symbol
+	attr(Total, 'symbol') = symbol
 	return(Total)
 }
 
+
+#' Compute NI given annual Earnings.
+#'
+#' @description
+#' Employees pay contributions at 12%% on annual earnings between £9,568 and £50,270. Above that you pay at 2%%. 
+#' Employers pay at 13.8%% on all annual earnings of more than £8,840, although there are different thresholds 
+#' for those under the age of 21 and for apprentices under the age of 25.
+#'
+#' @param annualEarnings Employee annual earnings.
+#' @param symbol Currency symbol to embed in the result.
+#' @return - NI
+#' @export
+#' @family Miscellaneous Functions
+#' @seealso - [fin_interest()]
+#' @references - <https://www.telegraph.co.uk/tax/tax-hacks/politicians-running-scared-long-overdue-national-insurance-overhaul/>
+#' @md
+#' @examples
+#' fin_NI(42e3)
+#' fin_NI(142000)
+#'
+fin_NI <- function(annualEarnings, symbol = "\u00A3") {
+	if(annualEarnings < 50270){
+		employee = .12 * max(0, (annualEarnings- 9568))
+	} else {
+		employee = (.12 * (annualEarnings- 9568)) + (.02 * (annualEarnings-50270))
+	}
+	employer = .138 * max((annualEarnings - 8840), 0)
+
+	Total = employer + employee
+	class(Total) = 'money'
+	attr(Total, 'symbol') = symbol
+	cat(paste0("Employer pays ", bucks(employer, symbol = symbol, cat = FALSE), ", and employee pays ", bucks(employee, symbol = symbol, cat=FALSE),
+	 ". So ", round((employer+employee)/annualEarnings*100, 2),	" % total!\n")
+	 )
+	return(Total)
+}
+
+#' Print a money object
+#'
+#' @description Print function for "money" objects, e.g. [fin_interest()].
+#'
+#' @aliases bucks print
+#' @param x money object.
+#' @param symbol Default prefix if not set.
+#' @param big.mark option defaulting to ","
+#' @param decimal.mark option defaulting to "."
+#' @param trim option defaulting to TRUE
+#' @param largest_with_cents option defaulting to 1e+05
+#' @param negative_parens option defaulting to FALSE
+#' @param ... further arguments passed to or from other methods. also cat =F to return string
+#' @return - invisible
+#' @seealso - [umx::fin_percent()], [umx::fin_interest()], [scales::dollar()]
+#' @md
+# #' @family print
+#' @export
+#' @examples
+#' bucks(100 * 1.05^32)
+#' fin_interest(deposits = 20e3, interest = 0.07, yrs = 20)
+#'
+bucks <- function(x, symbol = "$", big.mark = ",", decimal.mark = ".", trim = TRUE, largest_with_cents = 1e+05, negative_parens = FALSE, ...) {
+	dot.items = list(...) # grab all the dot items cat
+	cat = ifelse(is.null(dot.items[["cat"]]), TRUE, dot.items[["cat"]])
+	if(is.null(dot.items[["cat"]])){
+		cat = TRUE
+	} else {
+		cat = FALSE
+		dot.items[["cat"]] = NULL
+	}
+
+	if(!is.null(attr(x, 'symbol')) ){
+		symbol = attr(x, 'symbol')
+	}
+	formatted = scales::dollar(as.numeric(x), prefix = symbol, big.mark = big.mark, decimal.mark = decimal.mark, trim =trim, largest_with_cents = largest_with_cents, negative_parens = negative_parens, ...)
+	if(cat){
+		cat(formatted)
+	} else {
+		formatted
+	}
+}
+
+#' @export
+#' @method print money
+print.money <- bucks
 
 #' Compute the percent change needed to return to the original value after percent off (or on).
 #'
 #' @description
 #' Determine the percent change needed to "undo" an initial percent change. Has a plot function as well.
-#' If an amount of \$100 has 20\% added, what percent do we need to drop it by to return to the original value?
-#' `fin_percent(20)` yields \$100 increased by 20\% = \$120 (Percent to reverse = -17\%)
+#' If an amount of $100 has 20% added, what percent do we need to drop it by to return to the original value?
+#' 
+#' `fin_percent(20)` yields $100 increased by 20% = $120 (Percent to reverse = -17%)
 #' 
 #' @param percent Change in percent (enter 10 for 10%, not 0.1)
 #' @param value Principal
@@ -2635,44 +2781,6 @@ fin_percent <- function(percent, value= 100, symbol = "$", digits = 2, plot = TR
 	}
 }
 
-
-
-#' Print a money object
-#'
-#' @description Print function for "money" objects, e.g. [fin_interest()].
-#'
-#' @aliases bucks print
-#' @param x money object.
-#' @param symbol Default prefix if not set.
-#' @param ... further arguments passed to or from other methods.
-#' @return - invisible
-#' @seealso - [umx::fin_percent()], [umx::fin_interest()]
-#' @md
-# #' @family print
-#' @export
-#' @examples
-#' bucks(100 * 1.05^32)
-#' fin_interest(deposits = 20e3, interest = 0.07, yrs = 20)
-#'
-bucks <- function(x, symbol = "$", ...) {
-	dot.items = list(...) # grab all the dot items cat
-	cat = ifelse(is.null(dot.items[["cat"]]), TRUE, dot.items[["cat"]])
-	
-	if(!is.null(attr(x, 'symbol')) ){
-		symbol = attr(x, 'symbol')
-	}
-	# bucks <- scales::dollar_format(prefix = symbol, suffix = "", largest_with_cents = 1e+05, big.mark = ",", negative_parens = FALSE)
-	formatted = scales::dollar(as.numeric(x), prefix = symbol, big.mark = ",", decimal.mark = ".", trim = TRUE, largest_with_cents = 1e+05, negative_parens = FALSE)
-	if(cat){
-		cat(formatted)
-	} else {
-		formatted
-	}
-}
-
-#' @export
-#' @method print money
-print.money <- bucks
 
 #' Print a percent object
 #'
@@ -2752,6 +2860,7 @@ plot.percent <- function(x, ...) {
 	p = p + ggplot2::scale_y_continuous(n.breaks = 8) + ggplot2::scale_x_continuous(n.breaks = 10) #trans="log")
 	p = p + ggplot2::stat_function(fun = fnReversePercent, color= "lightblue")
 	p = p + labs(x = "Percent change", y = "Percent change to reverse", title = paste0(oldValue, " percent change"))
+	# p = p + ggplot2::geom_area() can't do with stat fun..
 
 	# subtitle = "Subtitle: (1973-74)",
 	# caption  = "Caption: Data from the 1974 Motor Trend US magazine",
@@ -2764,12 +2873,17 @@ plot.percent <- function(x, ...) {
 		# p = p + ggplot2::theme_bw()
 		p = p + cowplot::theme_cowplot(font_size = 11)
 	}
-	lab = paste0(percentChange*100, "% off=", percent_to_reverse * 100, "% on", sep = "")
+	lab = paste0(round(percentChange*100, 2), "% off=", round(percent_to_reverse * 100, 2), "% on", sep = "")
 
 	# Add label to plot, centred on x, top at y} (in data coordinates)
-	p = p + cowplot::draw_label(lab, vjust=1, hjust = .5, x = percentChange*100, y = percent_to_reverse*100, color= "lightgrey")
+	p = p + cowplot::draw_label(lab, vjust=1, hjust = .5, x = -50, y = 700, color= "grey")
 	# Add label to plot in data coordinates, flush-left at x, baseline centred on y.
-	p = p + cowplot::draw_label("\u25CF", hjust=0, vjust=.5, x = percentChange*100, y = percent_to_reverse*100, color = "red")
+	# p = p + cowplot::draw_label("\u2B55", hjust=0, vjust=1, x = percentChange*100, y = percent_to_reverse*100, color = "lightblue")
+	# hor
+	p = p + ggplot2::geom_segment(x = percentChange*100, y=percent_to_reverse*100, xend=-100, yend=percent_to_reverse*100, alpha=.5, color = "lightgrey")
+	# vert
+	p = p + ggplot2::geom_segment(x = percentChange*100, y=-10, xend=percentChange*100, yend=percent_to_reverse*100, alpha=.5, color = "lightgrey")
+	
 	print(p)
 	cat(symbol, oldValue, " ", dir , " by ", percentChange*100, "% = ", symbol, x, " (Percent to reverse = ", percent_to_reverse*100, "%)", sep="")
 	invisible(p)
@@ -2808,22 +2922,11 @@ plot.percent <- function(x, ...) {
 #' }
 #'
 umxPlotFun <- function(fun= dnorm, min= -1, max= 5, xlab = NULL, ylab = NULL, title = NULL, p = NULL) {
-	# umx_msg(ylim)
-	# args <- list(...)
-	# if (length(args)>0){
-	# 	for(i in 1:length(args)) {
-	# 		assign(x = names(args)[i], value = args[[i]])
-	# 	}
-	# 	if(is.null(ylim)){
-	# 		ylim=NA
-	# 	}
-	# }
-	
 	if(class(fun) == "numeric"){
 		stop("If you write a function symbolically, you need to put it in quotes, e.g. 'x^2'")
 	} else if(class(fun) == "character"){
 		make_function <- function(args, body, env = parent.frame()) {
-			args <- as.pairlist(args)
+			args = as.pairlist(args)
 			eval(call("function", args, body), env)
 		}
 		funOut = c()
@@ -2915,12 +3018,13 @@ umxPlotFun <- function(fun= dnorm, min= -1, max= 5, xlab = NULL, ylab = NULL, ti
 #' @param alpha for CI (default = 0.05)
 #' @return - List of odds in group 1 and group2, and the resulting OR and CI
 #' @export
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @seealso - [umx_r_test()]
-#' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
+#' @references - <https://stats.idre.ucla.edu/r/dae/logit-regression/>, <https://tbates.github.io>
 #' @md
 #' @examples
 #' oddsratio(grp1 = c(1, 10), grp2 = c(3, 10))
+#' oddsratio(grp1 = 0.111, grp2 = 0.429)
 #' oddsratio(grp1 = c(3, 10), grp2 = c(1, 10))
 #' oddsratio(grp1 = c(3, 10), grp2 = c(1, 10), alpha = .01)
 #'
@@ -3011,7 +3115,7 @@ print.oddsratio <- function(x, digits = 3, ...) {
 #' @param type Unused argument for future directions
 #' @return - Matrix of correlations and p-values
 #' @seealso umxHetCor
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @export
 #' @references - <https://github.com/tbates/umx>
 #' @md
@@ -3038,13 +3142,13 @@ umx_cor <- function (X, df = nrow(X) - 2, use = c("pairwise.complete.obs", "comp
 		message("dropped ", ncol(X) - sum(numericCols), " non-numeric column(s).")
 	}
 	
-	R <- cor(X[,numericCols], use = use)
-	above <- upper.tri(R)
-	below <- lower.tri(R)
-	r2 <- R[above]^2
-	Fstat <- r2 * df/(1 - r2)
+	R     = cor(X[,numericCols], use = use)
+	above = upper.tri(R)
+	below = lower.tri(R)
+	r2    = R[above]^2
+	Fstat = r2 * df/(1 - r2)
 	R[row(R) == col(R)] <- NA # NA on the diagonal
-	R[above] <- pf(Fstat, 1, df, lower.tail = FALSE)
+	R[above] = pf(Fstat, 1, df, lower.tail = FALSE)
 	R[below] = round(R[below], digits)
 	R[above] = round(R[above], digits)
 	# R[above] = paste("p=",round(R[above], digits))
@@ -3074,7 +3178,7 @@ rowMin <- function(df, na.rm= TRUE) {
 #' @param digits how many digits to round to (defaults to getOption("digits"))
 #' @param coerce whether to make the column numeric if it is not (default = FALSE)
 #' @return - [mxModel()]
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @export
 #' @references - <https://github.com/tbates/umx>
 #' @md
@@ -3126,7 +3230,7 @@ umx_round <- function(df, digits = getOption("digits"), coerce = FALSE) {
 #' @param upper Upper CI
 #' @return - Standard error
 #' @export
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @seealso - [umxAPA()]
 #' @md
 #' @examples
@@ -3142,7 +3246,7 @@ SE_from_p <- function(beta = NULL, p = NULL, SE = NULL, lower = NULL, upper = NU
 		beta_over_SE = -log(p) * (416 * log(p) + 717)/1000
 		SE = abs(beta/beta_over_SE) # 3 = 5/(5/3) a/(a/b) = b
 		return(c(SE = SE))
-		# p = exp(−0.717×(beta/SE) − 0.416×(beta/SE)^2)
+		# p = exp(-0.717*(beta/SE) - 0.416*(beta/SE)^2)
 		# p = .780
 		# x = log(p)
 
@@ -3173,7 +3277,7 @@ specify_decimal <- function(x, k){
 #' @param S A square, symmetric, numeric covariance matrix
 #' @return None 
 #' @export
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @seealso - [umx::print.reliability()], 
 #' @references - <https://cran.r-project.org/package=Rcmdr>
 #' @examples
@@ -3182,42 +3286,42 @@ specify_decimal <- function(x, k){
 #' reliability(cov(mtcars))
 reliability <-function (S){
      reliab <- function(S, R) {
-         k <- dim(S)[1]
-         ones <- rep(1, k)
-         v <- as.vector(ones %*% S %*% ones)
-         alpha <- (k/(k - 1)) * (1 - (1/v) * sum(diag(S)))
-         rbar <- mean(R[lower.tri(R)])
-         std.alpha <- k * rbar/(1 + (k - 1) * rbar)
+         k         = dim(S)[1]
+         ones      = rep(1, k)
+         v         = as.vector(ones %*% S %*% ones)
+         alpha     = (k/(k - 1)) * (1 - (1/v) * sum(diag(S)))
+         rbar      = mean(R[lower.tri(R)])
+         std.alpha = k * rbar/(1 + (k - 1) * rbar)
          c(alpha = alpha, std.alpha = std.alpha)
      }
-     result <- list()
+     result = list()
      if ((!is.numeric(S)) || !is.matrix(S) || (nrow(S) != ncol(S)) || any(abs(S - t(S)) > max(abs(S)) * 1e-10) || nrow(S) < 2)
          stop("argument must be a square, symmetric, numeric covariance matrix")
-     k <- dim(S)[1]
-     s <- sqrt(diag(S))
-     R <- S/(s %o% s)
-     rel <- reliab(S, R)
-     result$alpha <- rel[1]
-     result$st.alpha <- rel[2]
+     k = dim(S)[1]
+     s = sqrt(diag(S))
+     R = S/(s %o% s)
+     rel = reliab(S, R)
+     result$alpha = rel[1]
+     result$st.alpha = rel[2]
      if (k < 3) {
          warning("there are fewer than 3 items in the scale")
          return(invisible(NULL))
      }
-     rel <- matrix(0, k, 3)
+     rel = matrix(0, k, 3)
      for (i in 1:k) {
-         rel[i, c(1, 2)] <- reliab(S[-i, -i], R[-i, -i])
-         a <- rep(0, k)
-         b <- rep(1, k)
-         a[i] <- 1
-         b[i] <- 0
-         cov <- a %*% S %*% b
-         var <- b %*% S %*% b
-         rel[i, 3] <- cov/(sqrt(var * S[i, i]))
+         rel[i, c(1, 2)] = reliab(S[-i, -i], R[-i, -i])
+         a = rep(0, k)
+         b = rep(1, k)
+         a[i] = 1
+         b[i] = 0
+         cov = a %*% S %*% b
+         var = b %*% S %*% b
+         rel[i, 3] = cov/(sqrt(var * S[i, i]))
      }
-     rownames(rel) <- rownames(S)
-     colnames(rel) <- c("Alpha", "Std.Alpha", "r(item, total)")
-     result$rel.matrix <- rel
-     class(result) <- "reliability"
+     rownames(rel) = rownames(S)
+     colnames(rel) = c("Alpha", "Std.Alpha", "r(item, total)")
+     result$rel.matrix = rel
+     class(result) = "reliability"
      result
 }
 
@@ -3250,7 +3354,7 @@ print.reliability <- function (x, digits = 4, ...){
 #' @description Just a helper to multiply radians by 180 and divide by \eqn{\pi} to get degrees.
 #' 
 #' *note*: R's trig functions, e.g. [sin()] use Radians for input! There are \eqn{2\pi} 
-#' radians in a circle. 1 Rad = \eqn{180/\pi} degrees (~ 57.296\eqn{^{\circ}})
+#' radians in a circle. 1 Rad = \eqn{180/\pi} degrees = ~ 57.296 degrees.
 #'
 #' @param rad The value in Radians you wish to convert
 #' @return - value in degrees
@@ -3265,11 +3369,12 @@ rad2deg <- function(rad) { rad * 180/pi }
 
 #' Convert Degrees to Degrees 
 #'
-#' @description A helper to convert degrees (360 in  a circle) to Rad (\eqn{2\pi} in a circle, so \eqn{deg x 180/\pi} to get radians.
+#' @description A helper to convert degrees (360 in  a circle) to Rad (\eqn{2\pi}
+#' in a circle), so \eqn{deg x 180/\pi} to get radians.
 #' 
 #' *note*: R's trig functions, e.g. [sin()] use Radians for input! 
 #' 
-#' 180 Degrees is equal to \eqn{\pi} radians. 1 Rad = \eqn{180/\pi} degrees	 (\eqn{\approx 57.296^{\circ}})
+#' 180 Degrees is equal to \eqn{\pi} radians. 1 Rad = \eqn{180/\pi} degrees = ~ 57.296 degrees.
 #'
 #' @param deg The value in degrees you wish to convert to radians
 #' @return - value in radians
@@ -3371,6 +3476,7 @@ umx_update_OpenMx <- install.OpenMx
 #' @param start If what is "examples", which function to start from (default (NULL) = beginning).
 #' @param spelling Whether to check spelling before release (default = "en_US": set NULL to not check).
 #' @param which What rhub platform to use? c("mac", "linux", "win")
+#' @param spell for rhub, check spelling? TRUE
 #' @return None
 #' @export
 #' @family xmu internal not for end user
@@ -3388,7 +3494,7 @@ umx_update_OpenMx <- install.OpenMx
 #' umx_make(what = "release")  # Release to CRAN
 #' tmp = umx_make(what = "lastRhub") # View rhub result
 #' }
-umx_make <- function(what = c("quick_install", "install_full", "spell", "run_examples", "check", "win", "rhub", "lastRhub", "release", "travisCI", "sitrep"), pkg = "~/bin/umx", check = TRUE, run=FALSE, start = NULL, spelling = "en_US", which = c("win", "mac", "linux")) {
+umx_make <- function(what = c("quick_install", "install_full", "spell", "run_examples", "check", "win", "rhub", "lastRhub", "release", "travisCI", "sitrep"), pkg = "~/bin/umx", check = TRUE, run=FALSE, start = NULL, spelling = "en_US", which = c("win", "mac", "linux", "solaris"), spell=TRUE) {
 	what = match.arg(what)
 	which = match.arg(which)
 	if(what == "lastRhub"){
@@ -3397,10 +3503,10 @@ umx_make <- function(what = c("quick_install", "install_full", "spell", "run_exa
 		return(rhub::get_check(check_id))
 	}else if(what == "install_full"){
 		devtools::document(pkg = pkg); devtools::install(pkg = pkg);
-		# system("sleep 5; open /Applications/R.app &")
-		
+		devtools::load_all(path = pkg)
 	} else if(what == "quick_install"){
-		devtools::document(pkg = pkg); devtools::install(pkg = pkg, quick = TRUE, dependencies= FALSE, upgrade= FALSE, build_vignettes = FALSE);				
+		devtools::document(pkg = pkg); devtools::install(pkg = pkg, quick = TRUE, dependencies= FALSE, upgrade= FALSE, build_vignettes = FALSE);
+		devtools::load_all(path = pkg)
 	} else if(what == "run_examples"){
 		devtools::run_examples(pkg = pkg, run = run, start = start)
 	} else if(what == "check"){
@@ -3414,18 +3520,23 @@ umx_make <- function(what = c("quick_install", "install_full", "spell", "run_exa
 	} else if (what =="rhub"){
 		if(which == "mac"){
 			plat = "macos-highsierra-release-cran"
+			plat = "macos-m1-bigsur-release"
 		} else if(which=="linux") {
 			plat = "debian-gcc-patched"
 			# plat = "debian-clang-devel"
 		} else if(which=="win") {
-			plat = "windows-x86_64-patched" 
+			plat = "windows-x86_64-devel" #"windows-x86_64-patched" 
 			# plat = "windows-x86_64-devel" # broken 2021-06-12
+		} else if (which=="solaris"){
+			plat = "solaris-x86-patched-ods"
 		}
 
 		cat("checking ", omxQuotes(pkg), "on", omxQuotes(plat))
-		devtools::check_rhub(pkg = pkg, platforms = plat, interactive = FALSE, env_vars = c(`_R_CHECK_FORCE_SUGGESTS_` = "true", `_R_CHECK_CRAN_INCOMING_USE_ASPELL_` = "false"))
-		# devtools::check_rhub(pkg = pkg, platforms = plat, interactive = FALSE)
-
+		if(spell){
+			devtools::check_rhub(pkg = pkg, platforms = plat, interactive = FALSE, env_vars = c(`_R_CHECK_FORCE_SUGGESTS_` = "true", `_R_CHECK_CRAN_INCOMING_USE_ASPELL_` = "false"))
+		}else{
+			devtools::check_rhub(pkg = pkg, platforms = plat, interactive = FALSE)
+		}
 	} else if (what == "release"){
 		oldDir = getwd()
 		setwd(dir= pkg)
@@ -3795,7 +3906,7 @@ xmu_dot_mat2dot <- function(x, cells = c("diag", "lower", "lower_inc", "upper", 
 #' umx_time('stop') # report the time since timer was restarted.
 #'
 umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3"), tz = "GMT", autoRun = TRUE){
-	commaSep = paste0(umx_set_separator(silent=TRUE), " ")
+	commaSep = paste0(umx_set_separator(silent = TRUE), " ")
 	formatStr = xmu_match.arg(formatStr, c("simple", "std", "custom %H %M %OS3"), check = FALSE)
 	if(is.list(x)){
 		# check each item is a model
@@ -3811,10 +3922,11 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 		umx_check(x %in% c('start', 'stop', "lap", "now"), "stop", "Valid time strings are 'start', 'stop', 'lap', (or a model or list of models). Leave blank for 'now'")
 	}else if(is.na(x)){
 		cat("Current time is ", format(Sys.time(), "%X, %a %d %b %Y"), "\nTry me with a list of models, or 'start', 'stop'")
-		return()
+		invisible()
 	}else{
 		stop("You must set the first parameter to 'start', 'stop', 'now', a model, or a list of models.\nYou offered up a", class(x))
 	}
+
 	for(i in 1:length(x)) {			
 		if(length(x) > 1) {
 			thisX = x[[i]]
@@ -3828,13 +3940,15 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 		if(class(thisX) == "character"){
 			if(thisX == "start"){
 				options("umx_last_time" = proc.time())
-				return(invisible())
+				thisTime = (proc.time()["elapsed"] - getOption("umx_last_time")["elapsed"])
+				# invisible()
 			} else if (thisX == "stop" || thisX == "lap" ) {
 					tmp = getOption("umx_last_time")
 					if(is.null(tmp)){
 						message("Timer was not yet started: I started it now...")
 						options("umx_last_time" = proc.time())
-						return(invisible())
+						thisTime = (proc.time()["elapsed"] - getOption("umx_last_time")["elapsed"])
+						# invisible()
 					} else {
 						thisTime = (proc.time()["elapsed"] - getOption("umx_last_time")["elapsed"])
 						if(thisX =="stop"){
@@ -3842,10 +3956,10 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 						}
 					}
 			}else if(thisX == "now"){
-				return(format(Sys.time(), "%X, %a %d %b %Y"))				
+				return(format(Sys.time(), "%X, %a %d %b %Y"))
 			}
 		} else {
-			# handle model
+			# Handle model
 			if(!umx_has_been_run(thisX) && autoRun){
 				thisX = mxRun(thisX)
 				# message("You must run the model before asking for the elapsed run time")
@@ -3884,8 +3998,6 @@ umx_time <- function(x = NA, formatStr = c("simple", "std", "custom %H %M %OS3")
 	}
 	invisible(thisTime)
 }
-
-
 
 #' Print tables in a range of formats (markdown default, see [umx_set_table_format()] for other formats)
 #' or as a web browser table.
@@ -4188,7 +4300,7 @@ umx_check_names <- function(namesNeeded, data = NA, die = TRUE, no_others = FALS
 #' @param allowCorForFactorCovs When ordinal data are present, use heterochoric correlations in affected cells, in place of covariances. 
 #' @return - [mxModel()]
 #' @export
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @references - <https://tbates.github.io>
 #' @md
 #' @examples
@@ -4318,7 +4430,7 @@ umx_lower.tri <- function(x, diag=FALSE){
 #' @param na.rm passed to mean - defaults to "na.rm"
 #' @return - frame of means
 #' @export
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @examples
 #' tmp = mtcars[,1:4]
 #' tmp$cyl = ordered(mtcars$cyl) # ordered factor
@@ -4687,7 +4799,7 @@ umx_is_cov <- function(data = NULL, boolean = FALSE, verbose = FALSE) {
 #' 	umxPath(var = "G", fixedAt = 1)
 #' )#'
 #' umx_has_means(m1)
-#' m1 <- mxModel(m1,
+#' m1 = mxModel(m1,
 #' 	mxPath(from = "one", to = manifests),
 #' 	mxData(demoOneFactor[1:100,], type = "raw")
 #' )
@@ -4865,7 +4977,7 @@ umx_reorder <- function(old, newOrder, force=FALSE) {
 	dimnames(new) = list(newOrder, newOrder)
 	for(r in newOrder) {
 		for(c in newOrder) {
-			new[r, c] <- old[r, c]
+			new[r, c] = old[r, c]
 		}
 	}
 	return(new)
@@ -4981,8 +5093,8 @@ umx2ord <- umx_cont_2_quantiles
 #' umx_has_square_brackets("[hello]")
 #' umx_has_square_brackets("goodbye")
 umx_has_square_brackets <- function (input) {
-    match1 <- grep("[", input, fixed = TRUE)
-    match2 <- grep("]", input, fixed = TRUE)
+    match1 = grep("[", input, fixed = TRUE)
+    match2 = grep("]", input, fixed = TRUE)
     return(length(match1) > 0 && length(match2) > 0)
 }
 
@@ -5031,7 +5143,7 @@ umx_string_to_algebra <- function(algString, name = NA, dimnames = NA) {
 #' @return - new dataframe with scaled variables
 #' @export
 #' @seealso umx_scale_wide_twin_data scale
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
@@ -5178,7 +5290,7 @@ umx_is_numeric <- function(df, all = TRUE){
 #' 
 #' @details In R, residuals for a variable can be found with the following statement:
 #' 
-#' \code{tmp <- residuals(lm(var ~ cov1 + cov2, data = data, na.action = na.exclude))}
+#' \code{tmp = residuals(lm(var ~ cov1 + cov2, data = data, na.action = na.exclude))}
 #'
 #' This tmp variable could then be written over the old data:
 #' 
@@ -5242,7 +5354,7 @@ umx_residualize <- function(var, covs = NULL, suffixes = NULL, data){
 	} else {
 		if(class(var) == "formula"){
 			umx_check(is.null(covs), "stop", "when using formula, leave covs empty")
-			form <- var
+			form = var
 			var  = all.vars(terms(form))[1]
 			covs = all.vars(delete.response(terms(form)))
 		} else {
@@ -5759,7 +5871,7 @@ umx_rot <- function(vec, na.last=FALSE){
 #' @param x something that cov2cor can work on (matrix, df, etc.)
 #' @return - A correlation matrix
 #' @export
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @seealso [cov2cor()]
 #' @references - <https://github.com/tbates/umx>
 #' @examples
@@ -5767,7 +5879,7 @@ umx_rot <- function(vec, na.last=FALSE){
 #' @md
 umxCov2cor <- function(x) {
 	x = cov2cor(x)
-	x[lower.tri(x)] <- t(x)[lower.tri(t(x))]
+	x[lower.tri(x)] = t(x)[lower.tri(t(x))]
 	return(x)
 }
 
@@ -5972,6 +6084,7 @@ umx_long2wide <- function(data, famID = NA, twinID = NA, zygosity = NA, vars2kee
 #' @return - long-format dataframe
 #' @export
 #' @family Twin Data functions
+#' @seealso [reshape()]
 #' @examples
 #' long = umx_wide2long(data = twinData, sep = "")
 #' long = umx_wide2long(data = twinData, sep = "", verbose = TRUE)
@@ -6020,9 +6133,9 @@ umx_wide2long <- function(data, sep = "_T", verbose = FALSE) {
 	T1base = T1
 	T2base = T2
 	m = regexpr(paste0(sep, "1$"), T1base)
-	regmatches(T1base, m) <- ""
+	regmatches(T1base, m) = ""
 	m = regexpr(paste0(sep, "2$"), T2base)
-	regmatches(T2base, m) <- ""
+	regmatches(T2base, m) = ""
 	
 	# Check they're the same
 	if(!setequal(T1base, T2base)){
@@ -6138,8 +6251,8 @@ xmu_data_swap_a_block <- function(theData, rowSelector, T1Names, T2Names) {
 	theRows = theData[rowSelector,]
 	old_BlockTwo = theRows[,T2Names]
 	theRows[,T1Names] -> theRows[, T2Names]
-	theRows[,T1Names] <- old_BlockTwo
-	theData[rowSelector,] <- theRows
+	theRows[,T1Names] = old_BlockTwo
+	theData[rowSelector,] = theRows
 	return(theData)
 }
 
@@ -6213,12 +6326,14 @@ umx_select_valid <- function(col1, col2, bothways = FALSE, data) {
 #' @examples
 #' data(twinData)
 #' tmp = twinData
+#' tmp2 = umx_make_twin_data_nice(twinData, sep="", numbering = 1:5, zygosity="zygosity")
 #' tmp$zygosity=NULL
-#' tmp = umx_make_twin_data_nice(twinData, sep="", numbering = 1:5, zyg="zygosity")
+#' tmp = umx_make_twin_data_nice(twinData, sep="", numbering = 1:5, zygosity="zygosity")
 #' namez(tmp, "zyg")
 #' levels(tmp$zygosity)
 #'
-umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumericZygosity = FALSE, levels = 1:5, labels = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")){
+umx_make_twin_data_nice <- function(data, sep = "", zygosity = "zygosity", numbering, labelNumericZygosity = FALSE, levels = 1:5, labels = c("MZFF", "MZMM", "DZFF", "DZMM", "DZOS")){
+	# 1. rename existing zygosity column to "zygosity" if not already
 	if(zygosity != "zygosity"){
 		if(!is.null(data$zygosity)){
 			stop("A column called 'zygosity' already exists. please rename that column first, e.g. with\n",
@@ -6228,7 +6343,7 @@ umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumeric
 			# data$zygosity = data[, zygosity]
 		}
 	}
-	# Update twin names with new separator.
+	# Update twin names (ending in "sep1" etc.) with new separator ("_T1" etc).
 	oldNames = namez(data, paste0(sep, "[0-9]$"))
 	newNames = namez(oldNames, pattern = paste0(sep, "([0-9])$"), replacement = "_T\\1")
 	data = umx_rename(data=data, from = oldNames, to = newNames)
@@ -6348,7 +6463,7 @@ umx_make_twin_data_nice <- function(data, sep, zygosity, numbering, labelNumeric
 #' # =============
 #'
 #' # Omit nDZpairs (equal numbers of both by default)
-#' tmp = umx_make_TwinData(nMZpairs = 100, AA = 0.5, CC = 0.3) # omit any one of A, C, or E (sums to 1)
+#' tmp = umx_make_TwinData(100, AA = 0.5, CC = 0.3) # omit any one of A, C, or E (sums to 1)
 #' cov(tmp[tmp$zygosity == "DZ", c("var_T1","var_T2")])
 #'
 #' # Not limited to unit variance
@@ -6715,8 +6830,13 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 	dzData$zygosity = "DZ"
 	twinData = rbind(mzData, dzData)
 	twinData$zygosity = factor(twinData$zygosity, levels = c("MZ", "DZ"), labels = c("MZ", "DZ"))
+	
 	if(scale){
 		twinData = umx_scale_wide_twin_data(varNames, sep = "_T", data = twinData)
+	}else{
+		shift = min(min(twinData$var_T1), min(twinData$var_T2))
+		twinData$var_T1 = twinData$var_T1 - shift
+		twinData$var_T2 = twinData$var_T2 - shift
 	}
 	return(twinData)
 	# return(list(mzData = mzData, dzData = dzData))
@@ -6758,22 +6878,22 @@ umx_make_MR_data <- function(nSubjects = 1000, Vqtl = .02, bXY = 0.1, bUX = 0.5,
 	q = 1 - pQTL # Increaser allele frequency
 	a = sqrt(1/(2 * pQTL * q)) # Genotypic value for genetic variable of variance 1.0
 	# Residual variance in variable X (so variance adds up to one)
-	Vex  <- (1- Vqtl - bUX^2)
-	sdex <- sqrt(Vex) # Residual standard error in variable X
+	Vex  = (1- Vqtl - bUX^2)
+	sdex = sqrt(Vex) # Residual standard error in variable X
 	
 	# Residual variance for Y variable (so var sums to 1)
 	Vey = 1 - (bXY^2 + 2*bXY*bUX*bUY + bUY^2) 
-	sdey <- sqrt(Vey) # Residual standard error in variable Y
+	sdey = sqrt(Vey) # Residual standard error in variable Y
  
 	# Simulate individual genotypic and phenotypic values
-	qtl <- sample(c(-a, 0, a), nSubjects, replace = TRUE, prob = c(pQTL^2, 2 * pQTL * q, q^2)) 
-	U <- rnorm(nSubjects, 0, 1) #Confounding variables
-	X <- b_qtl_x * qtl + bUX * U + rnorm(nSubjects, 0, sdex) # X variable
-	Y <- bXY * X + bUY * U + rnorm(nSubjects, 0, sdey) # Y variable
+	qtl = sample(c(-a, 0, a), nSubjects, replace = TRUE, prob = c(pQTL^2, 2 * pQTL * q, q^2)) 
+	U   = rnorm(nSubjects, 0, 1) #Confounding variables
+	X   = b_qtl_x * qtl + bUX * U + rnorm(nSubjects, 0, sdex) # X variable
+	Y   = bXY * X + bUY * U + rnorm(nSubjects, 0, sdey) # Y variable
 	# Recode SNP qtl using traditional 0, 1, 2 coding
-	qtl <- replace(qtl, qtl ==  a, 2)
-	qtl <- replace(qtl, qtl ==  0, 1)
-	qtl <- replace(qtl, qtl == -a, 0)
+	qtl = replace(qtl, qtl ==  a, 2)
+	qtl = replace(qtl, qtl ==  0, 1)
+	qtl = replace(qtl, qtl == -a, 0)
 	MR_data = data.frame(X = X, Y = Y, U = U, qtl = qtl)
 	# save(MR_data, file = "~/bin/umx/data/MR_data.rda")
 }
@@ -6813,26 +6933,26 @@ umx_make_fake_data <- function(dataset, digits = 2, n = NA, use.names = TRUE, us
     warning("Data must be a data frame or matrix")
   }
   # organization
-  row <- dim(dataset)[1] # number of rows
-  if(is.na(n))(n <- row) # sets unspecified sample size to num rows
-  col <- dim(dataset)[2] # number of columns
-  del <- is.na(dataset)  # records position of NAs in dataset
+  row = dim(dataset)[1] # number of rows
+  if(is.na(n))(n = row) # sets unspecified sample size to num rows
+  col = dim(dataset)[2] # number of columns
+  del = is.na(dataset)  # records position of NAs in dataset
   if(n != row){
-    select <- round(runif(n, 0.5, row+.49),0)
-    del    <- del[select,]
+    select = round(runif(n, 0.5, row+.49),0)
+    del    = del[select,]
   }
-  num <- rep(NA, col)    # see what's not a factor
-  ord <- rep(NA, col)    # see what's an ordered factor
+  num = rep(NA, col)    # see what's not a factor
+  ord = rep(NA, col)    # see what's an ordered factor
 
   # which columns are numeric (the others are factors)?
   for (i in 1:col){
-    num[i] <- is.numeric(dataset[,i])
-    ord[i] <- is.ordered(dataset[,i])
+    num[i] = is.numeric(dataset[,i])
+    ord[i] = is.ordered(dataset[,i])
   }
 
   # check for unordered factors
-  location <- !(num|ord)
-  unorder  <- sum(location)
+  location = !(num|ord)
+  unorder  = sum(location)
 
   if(unorder>0)warning(
     paste("Unordered factor detected in variable(s):", 
@@ -6844,8 +6964,7 @@ umx_make_fake_data <- function(dataset, digits = 2, n = NA, use.names = TRUE, us
   if(sum(!num) == 0){
     # generate data with rmvnorm
 	# depends on mvtnorm::rmvnorm
-    fake <- mvtnorm::rmvnorm(n, apply(dataset, 2, mean, na.rm = TRUE),
-		cov(dataset, use = "pairwise.complete.obs"), mvt.method)
+    fake = mvtnorm::rmvnorm(n, apply(dataset, 2, mean, na.rm = TRUE), cov(dataset, use = "pairwise.complete.obs"), mvt.method)
 
     # round the data to the requested digits
     fake <- round(fake, digits)
@@ -7344,7 +7463,7 @@ xmu_make_bin_cont_pair_data <- function(data, vars = NULL, suffixes=NULL){
 #' @param std.err Compute the SEs? (default = FALSE)
 #' @return - A matrix of correlations
 #' @family Data Functions
-#' @family Miscellaneous Stats Helpers
+#' @family Miscellaneous Stats Functions
 #' @export
 #' @md
 #' @examples
@@ -7360,14 +7479,22 @@ umxHetCor <- function(data, ML = FALSE, use = c("pairwise.complete.obs", "comple
 			data[,i] = factor(data[,i])
 		}
 	}
-	hetc = hetcor(data, ML = ML, use = use, std.err = std.err)
-	if(verbose){
-		print(hetc)
-	}
-	if(return == "correlations"){
-		return(hetc$correlations)
+	if(is.null(dim(data)) || dim(data)[2]==1){
+		if(is.null(dim(data))){
+			return(var(as.numeric(data), na.rm = TRUE))
+		} else {
+			return(var(as.numeric(data[,1]), na.rm = TRUE))
+		}
 	} else {
-		return(hetc)
+		hetc = hetcor(data, ML = ML, use = use, std.err = std.err)
+		if(verbose){
+			print(hetc)
+		}
+		if(return == "correlations"){
+			return(hetc$correlations)
+		} else {
+			return(hetc)
+		}
 	}
 }
 
@@ -7661,7 +7788,6 @@ umx_str2Algebra <- function(algString, name = NA, dimnames = NA) {
 #' @param rowMarker mark the end of each row
 #' @return - matrix
 #' @family Miscellaneous Utility Functions
-#' @references \url{http://www.sumsar.net/blog/2014/03/a-hack-to-create-matrices-in-R-matlab-style/}
 #' @export
 #' @examples
 #' # simple example
