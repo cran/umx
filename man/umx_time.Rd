@@ -41,6 +41,7 @@ time since "start" was called (and clears the timer)
 If a model has not been run, umx_time will run it for you.
 }
 \examples{
+\dontrun{
 require(umx)
 umx_time('stop') # alert user stop called when not yet started... 
 umx_time('stop')
@@ -59,6 +60,7 @@ m2 = umxRun(m1)
 umx_time(c(m1, m2)) # print comparison table
 umx_time('stop') # report the time since timer last started, and restart
 umx_time('stop') # report the time since timer was restarted.
+}
 
 }
 \references{
@@ -70,6 +72,9 @@ umx_time('stop') # report the time since timer was restarted.
 Other Reporting Functions: 
 \code{\link{umxAPA}()},
 \code{\link{umxFactorScores}()},
+\code{\link{umxGetLatents}()},
+\code{\link{umxGetManifests}()},
+\code{\link{umxGetModel}()},
 \code{\link{umxGetParameters}()},
 \code{\link{umxParameters}()},
 \code{\link{umx_aggregate}()},

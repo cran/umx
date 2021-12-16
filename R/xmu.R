@@ -57,6 +57,7 @@ xmu_extract_column <- function(data, col, drop= FALSE) {
 #' @family xmu internal not for end user
 #' @md
 #' @examples
+#' \dontrun{
 #' data(twinData) # ?twinData from Australian twins.
 #' twinData[, c("ht1", "ht2")] = twinData[, c("ht1", "ht2")] * 10
 #' mzData = twinData[twinData$zygosity %in% "MZFF", ]
@@ -64,10 +65,11 @@ xmu_extract_column <- function(data, col, drop= FALSE) {
 #' m1 = umxACE(selDVs= "ht", sep= "", dzData= dzData, mzData= mzData, autoRun= FALSE)
 #' selVars = xmu_twin_get_var_names(m1, source = "expCovMZ", trim = TRUE, twinOneOnly = TRUE) # "ht"
 #' umx_check(selVars == "ht")
-#' xmu_twin_get_var_names(m1, source= "expCovMZ", trim= FALSE, twinOneOnly= FALSE) #"ht1" "ht2"
+#' xmu_twin_get_var_names(m1, source= "expCovMZ", trim= FALSE, twinOneOnly= FALSE) # "ht1" "ht2"
 #' selVars = xmu_twin_get_var_names(m1, source= "observed", trim= TRUE, twinOneOnly= TRUE)# "ht"
 #' nVar = length(selVars)
-#' umx_check(nVar==1)
+#' umx_check(nVar == 1)
+#' }
 #' 
 xmu_twin_get_var_names <- function(model, source = c("expCovMZ", "observed"), trim = TRUE, twinOneOnly = TRUE) {
 	# TODO if a model has covariates, we should exclude these from the list: they will be included in observed
@@ -171,6 +173,7 @@ xmu_show_fit_or_comparison <- function(model, comparison = NULL, digits = 2) {
 #' @param comparison Toggle to allow not making comparison, even if second model is provided (more flexible in programming).
 #' @param digits Rounding precision in tables and plots
 #' @param returning What to return (default, the run model)
+#' @param intervals whether to run intervals or not (default = FALSE)
 #' @return - [mxModel()]
 #' @export
 #' @family xmu internal not for end user
@@ -178,7 +181,9 @@ xmu_show_fit_or_comparison <- function(model, comparison = NULL, digits = 2) {
 #' @md
 #' @examples
 #' \dontrun{
-#' m1 = umxRAM("tim", data = mtcars,
+#' tmp = mtcars
+#' tmp$disp = tmp$disp/100
+#' m1 = umxRAM("tim", data = tmp,
 #' 	umxPath(c("wt", "disp"), to = "mpg"),
 #' 	umxPath("wt", with = "disp"),
 #' 	umxPath(v.m. = c("wt", "disp", "mpg"))
@@ -194,13 +199,13 @@ xmu_show_fit_or_comparison <- function(model, comparison = NULL, digits = 2) {
 #' # Show std parameters
 #' xmu_safe_run_summary(m1, autoRun = TRUE, summary = TRUE, std = TRUE)
 #' # Run + Summary + comparison
-#' xmu_safe_run_summary(m1, m2, autoRun = TRUE, summary = TRUE)
+#' xmu_safe_run_summary(m1, m2, autoRun = TRUE, summary = TRUE, intervals = TRUE)
 #' # Run + Summary + no comparison
 #' xmu_safe_run_summary(m1, m2, autoRun = TRUE, summary = TRUE, std = TRUE, comparison= FALSE)
 #' 
 #' }
 #'
-xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard = c("no", "yes", "ordinal", "search"), summary = !umx_set_silent(silent=TRUE), std = "default", comparison = TRUE, digits = 3, returning = c("model", "summary")) {
+xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard = c("no", "yes", "ordinal", "search"), summary = !umx_set_silent(silent=TRUE), std = "default", comparison = TRUE, digits = 3, intervals = FALSE, returning = c("model", "summary")) {
 	# TODO xmu_safe_run_summary: Activate test examples
 	tryHard   = match.arg(tryHard)
 	returning = match.arg(returning)
@@ -225,13 +230,13 @@ xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard 
 	if(autoRun){
 		tryCatch({
 			if(tryHard == "no"){
-				model1 = mxRun(model1, beginMessage = !umx_set_silent(silent = TRUE), silent = umx_set_silent(silent = TRUE))
+				model1 = mxRun(model1, beginMessage = !umx_set_silent(silent = TRUE), silent = umx_set_silent(silent = TRUE), intervals = intervals)
 			} else if (tryHard == "mxTryHard"){
-				model1 = mxTryHard(model1)
+				model1 = mxTryHard(model1, intervals = intervals)
 			} else if (tryHard == "mxTryHardOrdinal"){
-				model1 = mxTryHardOrdinal(model1)
+				model1 = mxTryHardOrdinal(model1, intervals = intervals)
 			} else if (tryHard == "mxTryHardWideSearch"){
-				model1 = mxTryHardWideSearch(model1)
+				model1 = mxTryHardWideSearch(model1, intervals = intervals)
 			}
 		# }, warning = function(w){
 		# 	if(tryHard == "no"){
@@ -352,7 +357,6 @@ xmu_twin_print_means <- function(model, digits = 3, report = c("markdown", "html
 #' @seealso - [umxSummary()]
 #' @md
 #' @examples
-#' 
 #' \dontrun{
 #' library(mlbench)
 #' data(BostonHousing2)
@@ -671,6 +675,7 @@ xmu_describe_data_WLS <- function(data, allContinuousMethod = c("cumulants", "ma
 #' tmp = mtcars; tmp[1, "mpg"] = NA # add NA
 #' tmp = xmu_make_mxData(data= tmp, type = "WLS", manifests = manVars, verbose= TRUE)
 #'
+#' \dontrun{
 #' # ==========================
 #' # = already mxData example =
 #' # ==========================
@@ -678,6 +683,8 @@ xmu_describe_data_WLS <- function(data, allContinuousMethod = c("cumulants", "ma
 #'	umxPath(var= "wt"),
 #'	umxPath(mean=  "wt")
 #' )
+#' 
+#' }
 #'
 #' # ========================
 #' # = Cov and cor examples =
@@ -1409,6 +1416,90 @@ xmuLabel_Matrix <- function(mx_matrix = NA, baseName = NA, setfree = FALSE, drop
 	return(mx_matrix)
 }
 
+#' Return whether a cell is in a set location of a matrix
+#'
+#' @description
+#' Helper to determine is a cell is in a set location of a matrix or not.
+#' Left is useful for, e.g. twin means matrices.
+#' @param r which row the cell is on.
+#' @param c which column the cell is in.
+#' @param where the location (any, diag, lower or upper (or _inc) or left).
+#' @param mat (optionally) provide matrix to check dimensions against r and c.
+#' @return - [mxModel()]
+#' @export
+#' @family xmu internal not for end user
+#' @seealso - [xmuLabel()]
+#' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
+#' @md
+#' @examples
+#' xmu_cell_is_on(r = 3, c = 3, "lower")
+#' xmu_cell_is_on(r = 3, c = 3, "lower_inc")
+#' xmu_cell_is_on(r = 3, c = 3, "upper")
+#' xmu_cell_is_on(r = 3, c = 3, "upper_inc")
+#' xmu_cell_is_on(r = 3, c = 3, "diag")
+#' xmu_cell_is_on(r = 2, c = 3, "diag")
+#' xmu_cell_is_on(r = 3, c = 3, "any")
+#' a_cp = umxMatrix("a_cp", "Lower", 3, 3, free = TRUE, values = 1:6)
+#' xmu_cell_is_on(r = 3, c = 3, "left", mat = a_cp)
+xmu_cell_is_on <- function(r, c, where=c("diag", "lower", "lower_inc", "upper", "upper_inc", "any", "left"), mat= NULL) {
+	where = match.arg(where)
+	if(!is.null(mat)){
+		# check r and c in bounds.
+		if(r > dim(mat)[1]){
+			stop("r is greater than size of matrix: ", dim(mat)[1])
+		}
+		if(c > dim(mat)[2]){
+			stop("c is greater than size of matrix: ", dim(mat)[2])
+		}
+	}
+	if(where =="any"){
+		valid = TRUE
+	} else if(where =="left"){
+		if(is.null(mat)){
+			stop("matrix must be offered up to check for begin on the left")
+		}
+		if(c <= dim(mat)[2]/2){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	} else if(where =="diag"){
+		if(r == c){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	} else if(where =="lower"){
+		if(r > c){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	} else if(where =="lower_inc"){
+		if(r >= c){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	} else if(where =="upper"){
+		if(c > r){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	} else if(where =="upper_inc"){
+		if(c >= r){
+			valid = TRUE
+		} else {
+			valid = FALSE
+		}
+	}else{
+		stop("Where must be one of all, diag, lower, or upper. You gave me:", omxQuotes(where))
+	}
+	return(valid)
+}
+
+
 #' Make a deviation-based mxRAMObjective for ordinal models.
 #'
 #' Purpose: return a mxRAMObjective(A = "A", S = "S", F = "F", M = "M", thresholds = "thresh"), mxData(df, type = "raw")
@@ -1750,18 +1841,6 @@ xmuMinLevels <- function(df, what = c("value", "name")) {
 # = RAM HELPERS =
 # ===============
 
-umxLocateParameters <- function(model, thisName) {
-	mats = model$matrices
-	for (i in 1:length(mats)) {
-		look = which(mats[[i]]$labels == thisName, arr.ind = TRUE)
-		if(dim(look)[1]>0){
-			# found
-			return(data.frame(label = thisName, model = model$name, matrix = mats[[i]]$name, row = look[1,1], col = look[1,2]))
-		}
-	}
-	return(NA)
-}
-
 #' Order and group the parameters in a RAM summary
 #'
 #' @description
@@ -1792,44 +1871,44 @@ umxLocateParameters <- function(model, thisName) {
 xmu_summary_RAM_group_parameters <- function(model, paramTable,  means= FALSE, residuals= FALSE) {
 	# https://github.com/tbates/umx/issues/66
 	umx_is_RAM(model)
-	umx_check("name" %in% namez(paramTable), message="couldn't find name column in parameterTable")
-	# TODO: robust in the model space: look up where each label is in the S A M matrices
-	# Use F to identify labels that involve latents
-
-	latents   = model$latentVars
-	manifests = model$manifestVars
-	Anames    = dimnames(model$A)[[1]]
-	Snames    = dimnames(model$S)[[1]]
+	umx_check("name" %in% namez(paramTable), message="Couldn't find name column in parameterTable")
+	# TODO: Use F to identify labels that involve latents
 
 	paramTable$type = "custom"
 	for (i in 1:dim(paramTable)[1]) {
-		thisName = paramTable[i, "name"]
-		location = umxLocateParameters(model, thisName)
-		
+		thisName  = paramTable[i, "name"]
+		location  = omxLocateParameters(model, labels = thisName, free = NA)[1,]
+		thisModel = umxGetModel(model, targetModel = location$model)
+		latents   = umxGetLatents(thisModel)
+		manifests = umxGetManifests(thisModel)
+		Anames    = dimnames(thisModel$A)[[1]]
+		Snames    = dimnames(thisModel$S)[[1]]
+
+		# Set the type for this path
 		if(location$matrix == "M"){
-			paramTable[i, "type"] = "Means"
+			paramTable[i, "type"] = "Mean"
 		} else if(location$matrix == "S"){ # 2 headed symmetric
 			from = Anames[location$col]
 			to   = Anames[location$row]
 			if(from  %in% latents){
 				if(to  %in% latents){
 					if(from == to){
-						paramTable[i, "type"] = "Factor Variances"
+						paramTable[i, "type"] = "Factor Variance"
 					}else{
-						paramTable[i, "type"] = "Factor Covs"
+						paramTable[i, "type"] = "Factor Cov"
 					}
 				}else{
-					paramTable[i, "type"] = "Latent-Manifest Covs"
+					paramTable[i, "type"] = "Latent-Manifest Cov"
 				}
 			} else { # from %in% manifests
 				if(to %in% manifests){
 					if(from == to){
-						paramTable[i, "type"] = "Residuals"
+						paramTable[i, "type"] = "Residual"
 					}else{
-						paramTable[i, "type"] = "Manifest Covs"						
+						paramTable[i, "type"] = "Manifest Cov"						
 					}
 				}else{
-					paramTable[i, "type"] = "Latent-Manifest Covs"
+					paramTable[i, "type"] = "Latent-Manifest Cov"
 				}
 			}
 		} else if(location$matrix == "A"){
@@ -1839,23 +1918,24 @@ xmu_summary_RAM_group_parameters <- function(model, paramTable,  means= FALSE, r
 				if(to %in% latents){
 					paramTable[i, "type"] = "Factor to factor"
 				}else{
-					paramTable[i, "type"] = "Factor loadings"					
+					paramTable[i, "type"] = "Factor loading"					
 				}
 			} else {
-				paramTable[i, "type"] = "Manifest paths"
+				paramTable[i, "type"] = "Manifest path"
 			}
 		}else{
 			# this was a label that didn't match an expected pattern... shouldn't happen
 		}
 	}
+	
 	# sort by our newly filled-in type column
 	paramTable = paramTable[order(paramTable$type), ]	
 	# filter
 	if(!means){
-		paramTable = paramTable[!(paramTable$type == "Means"), ]	
+		paramTable = paramTable[!(paramTable$type == "Mean"), ]	
 	}
 	if(!residuals){
-		paramTable = paramTable[!(paramTable$type == "Residuals"), ]	
+		paramTable = paramTable[!(paramTable$type == "Residual"), ]	
 	}
 	return(paramTable)
 }
@@ -1965,7 +2045,6 @@ xmu_dot_maker <- function(model, file, digraph, strip_zero= TRUE){
 		# look for (optionally @ or negative) number, with 1 or more digits after the decimal
 		digraph = umx_names(digraph, '(label ?= ?\\"@?-?)(0\\.)([0-9]+)\\"', replacement = "\\1\\3\"", global = TRUE)
 	}
-
 	if(!is.na(file)){
 		if(file == "name"){
 			if (umx_set_plot_format(silent = TRUE) %in% c("DiagrammeR", "pdf", "png")){

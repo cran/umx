@@ -17,7 +17,6 @@ umxSummaryACE(
   returnStd = FALSE,
   extended = FALSE,
   zero.print = ".",
-  show,
   ...
 )
 }
@@ -45,8 +44,6 @@ Defaults to NA = do not create plot output.}
 
 \item{zero.print}{How to show zeros (".")}
 
-\item{show}{std, raw etc. Not implemented for umxACE yet.}
-
 \item{...}{Other parameters to control model summary.}
 }
 \value{
@@ -63,6 +60,7 @@ drawing the tables to a web browser where they may readily be copied into non-ma
 See documentation for other umx models here: \code{\link[=umxSummary]{umxSummary()}}.
 }
 \examples{
+\dontrun{
 require(umx)
 data(twinData)
 selDVs = c("bmi1", "bmi2")
@@ -70,11 +68,11 @@ mzData = subset(twinData, zygosity == "MZFF")
 dzData = subset(twinData, zygosity == "DZFF")
 m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
 umxSummary(m1)
-\dontrun{
 umxSummaryACE(m1, file = NA);
 umxSummaryACE(m1, file = "name", std = TRUE)
 stdFit = umxSummaryACE(m1, returnStd = TRUE);
 }
+
 }
 \references{
 \itemize{

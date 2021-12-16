@@ -94,7 +94,7 @@
 #' @importFrom knitr kable
 #' @importFrom kableExtra kbl add_footnote column_spec footnote
 #' @importFrom kableExtra kable_classic kable_classic_2 kable_minimal kable_material kable_material_dark kable_paper
-
+# pwr.r.test
 
 utils::globalVariables(c(
 	'N',
@@ -400,6 +400,7 @@ umxModel <- function(...) {
 #' @references - <https://tbates.github.io>, <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' 
 #' # ============================================
 #' # = 1. Here's a simple example with raw data =
@@ -425,7 +426,6 @@ umxModel <- function(...) {
 #' # |b1             |         0.89|   0.04|0.89 [0.81, 0.96]    |
 #' # |disp_with_disp |         1.00|   0.00|1 [1, 1]             |
 #' 
-#' \dontrun{
 #' # 3. Of course you can plot the model
 #' plot(m1)
 #' plot(m1, std=TRUE, means=FALSE)
@@ -838,7 +838,6 @@ umxRAM <- function(model = NA, ..., data = NULL, name = NA, group = NULL, group.
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
-#' 
 #' \dontrun{
 #' library(umx)
 #' # Create two sets of data in which X & Y correlate ~ .4 in both datasets.
@@ -1004,8 +1003,8 @@ umxSuperModel <- function(name = 'super', ..., autoRun = getOption("umx_auto_run
 #' @export
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
-#' 
 #' # First we'll just build a 1-factor model
 #' umx_set_optimizer("SLSQP")
 #' data(demoOneFactor)
@@ -1021,7 +1020,6 @@ umxSuperModel <- function(name = 'super', ..., autoRun = getOption("umx_auto_run
 #' #    self-explanatory, and get a fit comparison
 #' m2 = umxModify(m1, update = "G_to_x1", name = "drop_X1", comparison = TRUE)
 #' 
-#' \dontrun{
 #' # 2. Add the path back (setting free = TRUE)
 #' m2 = umxModify(m1, update = "G_to_x1", free= TRUE, name = "addback_X1", comparison = TRUE)
 #' # 3. Fix a value at a non-zero value
@@ -1263,6 +1261,7 @@ umxModify <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value
 #' to the analysis of human behaviour. *Heredity*, **41**, 249-320. <https://www.nature.com/articles/hdy1978101.pdf>
 #' @md
 #' @examples
+#' \donttest{
 #' require(umx)
 #' # ============================
 #' # = How heritable is height? =
@@ -1289,7 +1288,6 @@ umxModify <- function(lastFit, update = NULL, regex = FALSE, free = FALSE, value
 #' # tip 2: plot works for umx: Get a figure of the model and parameters
 #' # plot(m1) # Also, look at the options for ?plot.MxModel.
 #' 
-#' \donttest{
 #' # ===========================================
 #' # = Test ADE, AE, CE, E, and generate table =
 #' # ===========================================
@@ -1604,7 +1602,7 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, dzData= NULL, mzData= N
 	# Trundle through and make sure values with the same label have the same start value... means for instance.
 	model = omxAssignFirstParameters(model)
 	model = as(model, "MxModelACE") # set class so that S3 plot() dispatches
-	model = xmu_safe_run_summary(model, autoRun = autoRun, tryHard = tryHard, std = TRUE)
+	model = xmu_safe_run_summary(model, autoRun = autoRun, tryHard = tryHard, std = TRUE, intervals = intervals)
 	return(model)
 } # end umxACE
 
@@ -1646,6 +1644,7 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, dzData= NULL, mzData= N
 #'  **6**, 554-571. \doi{10.1375/twin.5.6.554}
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(twinData) 
 # twinData = tibble::as_tibble(twinData)
@@ -1656,7 +1655,6 @@ umxACE <- function(name = "ACE", selDVs, selCovs = NULL, dzData= NULL, mzData= N
 #' dzData  = subset(twinData, zygosity == "DZFF")[1:100,]
 #' m1 = umxGxE(selDVs= "bmi", selDefs= "age", sep= "", dzData= dzData, mzData= mzData, tryHard= "yes")
 #' 
-#' \dontrun{
 #' # Select the data on the fly with data= and zygosity levels
 #' m1 = umxGxE(selDVs= "bmi", selDefs= "age", sep="", dzData= "DZFF", mzData= "MZFF", data= twinData)
 #' 
@@ -1965,6 +1963,7 @@ umxGxE <- function(name = "G_by_E", selDVs, selDefs, dzData, mzData, sep = NULL,
 #' *Behavior Genetics*, **45**, 581-96. doi{10.1007/s10519-015-9732-8} <https://link.springer.com/article/10.1007/s10519-015-9732-8>
 #' @md
 #' @examples
+#' \dontrun{
 #' library(umx);
 #' # ==============================
 #' # = 1. Open and clean the data =
@@ -1988,7 +1987,6 @@ umxGxE <- function(name = "G_by_E", selDVs, selDefs, dzData, mzData, sep = NULL,
 #' umxGxE_window(selDVs = selDVs, moderator = mod, mzData = mzData, dzData = dzData, 
 #' 		target = 40, plotWindow = TRUE)
 #' 
-#' \dontrun{
 #' # Run with FIML (default) uses all information
 #' umxGxE_window(selDVs = "bmi", sep="", moderator = "age", mzData = mzData, dzData = dzData)
 #' 
@@ -3158,9 +3156,9 @@ umxRotate.default <- function(model, rotation = c("varimax", "promax"),  tryHard
 #' @seealso - [umxCP()]
 #' @md
 #' @examples
+#' \dontrun{
 #' # Rotate a CP solution(param)
 #' # Common pathway model rotation
-#' \dontrun{
 #' library(umx)
 #' # Fit 3 factor CPM
 #' data(GFF)
@@ -3272,6 +3270,7 @@ xmuRAM2Ordinal <- function(model, verbose = TRUE, name = NULL) {
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' latents = c("G")
@@ -3293,6 +3292,8 @@ xmuRAM2Ordinal <- function(model, verbose = TRUE, name = NULL) {
 #' mxEval(S, m1) # plausible variances
 #' umx_print(mxEval(S,m1), 3, zero.print = ".") # plausible variances
 #' xmuValues(14, sd = 1, n = 10) # Return vector of length 10, with mean 14 and sd 1
+#' 
+#' }
 xmuValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 	if(is.numeric(obj) ) {
 		# Use obj as the mean, return a list of length n, with sd = sd
@@ -3435,6 +3436,7 @@ xmuValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 #' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' # ==============================================================
 #' # = Show how OpenMx models are not labeled, and then add labels =
 #' # ==============================================================
@@ -3473,6 +3475,7 @@ xmuValues <- function(obj = NA, sd = NA, n = 1, onlyTouchZeros = FALSE) {
 #' xmuLabel(a, verbose = TRUE)
 #' xmuLabel(a, verbose = TRUE, overRideExisting = FALSE)
 #' xmuLabel(a, verbose = TRUE, overRideExisting = TRUE)
+#' }
 xmuLabel <- function(obj, suffix = "", baseName = NA, setfree = FALSE, drop = 0, labelFixedCells = TRUE, jiggle = NA, boundDiag = NA, verbose = FALSE, overRideExisting = FALSE, name = NULL) {	
 	# TODO xmuLabel: Change these to an S3 method with three classes...
 	# 	Check that arguments not used by a particular class are not set away from their defaults
@@ -3530,6 +3533,7 @@ xmuLabel <- function(obj, suffix = "", baseName = NA, setfree = FALSE, drop = 0,
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
+#' \dontrun{
 #' # ==================================================================================
 #' # = 1. Showing how name is first parameter, and how cells are labelled by default. =
 #' # ==================================================================================
@@ -3551,6 +3555,8 @@ xmuLabel <- function(obj, suffix = "", baseName = NA, setfree = FALSE, drop = 0,
 #' #      [,1]    [,2]
 #' # [1,] NA      NA  
 #' # [2,] "beta1" NA  
+#' 
+#' }
 #'
 umxMatrix <- function(name = NA, type = "Full", nrow = NA, ncol = NA, free = FALSE, values = NA, labels = TRUE, lbound = NA, ubound = NA, byrow = getOption('mxByrow'), baseName = NA, dimnames = NA, condenseSlots = getOption('mxCondenseMatrixSlots'), ..., joinKey = as.character(NA), joinModel = as.character(NA), jiggle = NA) {
 	legalMatrixTypes = c("Diag", "Full", "Iden", "Lower", "Sdiag", "Stand", "Symm", "Unit",  "Zero")
@@ -3596,11 +3602,12 @@ umxMatrix <- function(name = NA, type = "Full", nrow = NA, ncol = NA, free = FAL
 #' @seealso - [umxMatrix()]
 #' @md
 #' @examples
+#' \dontrun{
 #' x = umxAlgebra("circ", 2 * pi)
 #' class(x$formula)
 #' x = mxAlgebra(name = "circ", 2 * pi)
 #' class(x$formula) # "call"
-#'
+#' }
 umxAlgebra <- function(name = NA, expression, dimnames = NA, ..., joinKey=as.character(NA), joinModel=as.character(NA), verbose=0L, initial=matrix(as.numeric(NA),1,1), recompute=c('always','onDemand'), fixed = "deprecated_use_recompute") {
 	if(class(name) != "character"){
 		stop("In umxAlgebra, name comes first, not expression.")
@@ -3633,6 +3640,7 @@ umxAlgebra <- function(name = NA, expression, dimnames = NA, ..., joinKey=as.cha
 #' @export
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' latents  = c("G")
@@ -3645,7 +3653,6 @@ umxAlgebra <- function(name = NA, expression, dimnames = NA, ..., joinKey=as.cha
 #' )
 #'
 #' m1 = umxRun(m1) # just run: will create saturated model if needed
-#' \dontrun{
 #' m1 = umxRun(m1, setValues = TRUE, setLabels = TRUE) # set start values and label all parameters
 #' umxSummary(m1, std = TRUE)
 #' m1 = mxModel(m1, mxCI("G_to_x1")) # add one CI
@@ -3653,12 +3660,10 @@ umxAlgebra <- function(name = NA, expression, dimnames = NA, ..., joinKey=as.cha
 #' residuals(m1, run = TRUE) # get CIs on all free parameters
 #' confint(m1) # OpenMx's SE-based CIs
 #' umxConfint(m1, run = TRUE) # get likelihood-based CIs on all free parameters
-#' m1 = umxRun(m1, n = 10) # re-run up to 10 times if not green on first run
+#' m1 = umxRun(m1, tryHard = "yes")
 #' }
 #' 
-
 # type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
-
 umxRun <- function(model, tryHard = c( "yes", "no", "ordinal", "search"), calc_sat = TRUE, setValues = FALSE, setLabels = FALSE, intervals = FALSE, optimizer = NULL, comparison = NULL){
 	# TODO: umxRun: Return change in -2LL for models being re-run
 	# TODO: umxRun: Stash saturated model for re-use
@@ -3740,6 +3745,7 @@ umxRun <- function(model, tryHard = c( "yes", "no", "ordinal", "search"), calc_s
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' latents  = c("G")
@@ -3756,6 +3762,8 @@ umxRun <- function(model, tryHard = c( "yes", "no", "ordinal", "search"), calc_s
 #' # Change path to x1 to x2, equating these two paths
 #' m2 = umxSetParameters(m1, "G_to_x1", newlabels= "G_to_x2", test = FALSE)
 #' parameters(m2) 
+#' 
+#' }
 umxSetParameters <- function(model, labels, free = NULL, values = NULL, newlabels = NULL, lbound = NULL, ubound = NULL, indep = FALSE, strict = TRUE, name = NULL, regex = FALSE, test = FALSE) {
 	if(is.character(regex)){
 		labels = regex
@@ -3821,6 +3829,7 @@ umxSetParameters <- function(model, labels, free = NULL, values = NULL, newlabel
 #' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -3842,6 +3851,7 @@ umxSetParameters <- function(model, labels, free = NULL, values = NULL, newlabel
 #' 	     a = "G_to_x1", b = "G_to_x2", newlabels = c("equated")
 #' )
 #' parameters(m2)
+#' }
 umxEquate <- function(model, a, b, newlabels= NULL, free = c(TRUE, FALSE, NA), verbose = FALSE, name = NULL, autoRun = FALSE, tryHard = c("no", "yes", "ordinal", "search"), comparison = TRUE, master= NULL, slave= NULL) {
 	free = xmu_match.arg(free, c(TRUE, FALSE, NA)) # match.arg can't handle Boolean as options?
 	tryHard = match.arg(tryHard)
@@ -3912,6 +3922,7 @@ umxEquate <- function(model, a, b, newlabels= NULL, free = c(TRUE, FALSE, NA), v
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -3923,6 +3934,8 @@ umxEquate <- function(model, a, b, newlabels= NULL, free = c(TRUE, FALSE, NA), v
 #' )
 #' m2 = umxFixAll(m1, run = TRUE, verbose = TRUE)
 #' mxCompare(m1, m2)
+#' 
+#' }
 umxFixAll <- function(model, name = "_fixed", run = FALSE, verbose= FALSE){
 	if(!umx_is_MxModel(model)){
 		message("ERROR in umxFixAll: model must be a model, you gave me a ", class(model)[1])

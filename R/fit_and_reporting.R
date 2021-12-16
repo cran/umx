@@ -44,6 +44,7 @@
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -56,6 +57,7 @@
 #' m1 = mxRun(m1)
 #' umxSummary(m1, std = TRUE)
 #' umxDiagnose(m1)
+#' }
 umxDiagnose <- function(model, tryHard = FALSE, diagonalizeExpCov = FALSE){
 	# 1. First thing to check is whether the covariance matrix is positive definite.
 	minEigen = min(eigen(umxExpCov(model))$values)
@@ -483,9 +485,11 @@ loadings.default <- function(x, ...) stats::loadings(x, ...)
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
+#' \dontrun{
 #' myVars = c("mpg", "disp", "hp", "wt", "qsec")
 #' m1 = umxEFA(name = "test", factors = 2, data = mtcars[, myVars])
 #' loadings(m1)
+#' }
 #'
 loadings.MxModel <- function(x, ...) {
 	x$A$values[x@manifestVars, x@latentVars, drop = FALSE]
@@ -519,6 +523,7 @@ loadings.MxModel <- function(x, ...) {
 #' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' 
@@ -531,7 +536,6 @@ loadings.MxModel <- function(x, ...) {
 #' 
 #' m1 = umxConfint(m1, run = TRUE) # There are no existing CI requests...
 #' 
-#' \dontrun{
 #' # Add a CI request for "G_to_x1", run, and report. Save with this CI computed
 #' m2 = umxConfint(m1, parm = "G_to_x1", run = TRUE) 
 #' 
@@ -914,6 +918,7 @@ umxSummary.default <- function(model, ...){
 #' @return - parameterTable returned invisibly, if estimates requested
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -937,6 +942,8 @@ umxSummary.default <- function(model, ...){
 #' 	umxPath(v1m0 = "G")
 #' )
 #' umxSummary(m1, std = TRUE, filter = "NS")
+#' }
+#' 
 umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2, report = c("markdown", "html"), means= TRUE, residuals= TRUE, SE = TRUE, filter = c("ALL", "NS", "SIG"), RMSEA_CI = FALSE, ..., matrixAddresses = FALSE){
 	# TODO make table take lists of models...
 	commaSep = paste0(umx_set_separator(silent = TRUE), " ")
@@ -1142,7 +1149,6 @@ umxSummary.MxRAMModel <- umxSummary.MxModel
 #' @param extended how much to report (FALSE).
 #' @param zero.print How to show zeros (".")
 #' @param ... Other parameters to control model summary.
-#' @param show std, raw etc. Not implemented for umxACE yet.
 #' @return - optional [mxModel()]
 #' @export
 #' @family Twin Modeling Functions
@@ -1150,6 +1156,7 @@ umxSummary.MxRAMModel <- umxSummary.MxModel
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(twinData)
 #' selDVs = c("bmi1", "bmi2")
@@ -1157,12 +1164,12 @@ umxSummary.MxRAMModel <- umxSummary.MxModel
 #' dzData = subset(twinData, zygosity == "DZFF")
 #' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
 #' umxSummary(m1)
-#' \dontrun{
 #' umxSummaryACE(m1, file = NA);
 #' umxSummaryACE(m1, file = "name", std = TRUE)
 #' stdFit = umxSummaryACE(m1, returnStd = TRUE);
 #' }
-umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", show, ...) {
+#' 
+umxSummaryACE <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", ...) {
 	report = match.arg(report)
 	commaSep = paste0(umx_set_separator(silent=TRUE), " ")
 
@@ -1370,18 +1377,18 @@ umxSummary.MxModelACE <- umxSummaryACE
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(twinData)
-#' selDVs = c("bmi1", "bmi2")
 #' mzData = subset(twinData, zygosity == "MZFF")
 #' dzData = subset(twinData, zygosity == "DZFF")
-#' m1 = umxACE(selDVs = selDVs, dzData = dzData, mzData = mzData)
-#' \dontrun{
+#' m1 = umxACEcov(selDVs = "bmi", selCovs = "wt", dzData = dzData, mzData = mzData, sep="")
 #' umxSummaryACE(m1, file = NA)
 #' umxSummaryACE(m1, file = "name", std = TRUE)
 #' stdFit = umxSummaryACE(m1, returnStd = TRUE)
 #' }
 umxSummaryACEcov <- function(model, digits = 2, showRg = FALSE, std = TRUE, comparison = NULL, CIs = TRUE, zero.print = ".", report = c("markdown", "html"), file = getOption("umx_auto_plot"), returnStd = FALSE, extended = FALSE, ...) {
+	umx_msg("beta function!! Better to use umxACE with covariates in the meaans, IMHO.")
 	report   = match.arg(report)
 	commaSep = paste0(umx_set_separator(silent=TRUE), " ")
 	
@@ -1708,6 +1715,7 @@ umxSummary.MxModelCP <- umxSummaryCP
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(GFF) # family function and well-being data
 #' mzData = subset(GFF, zyg_2grp == "MZ")
@@ -1716,7 +1724,6 @@ umxSummary.MxModelCP <- umxSummaryCP
 #' m1 = umxIP(selDVs = selDVs, sep = "_T", dzData = dzData, mzData = mzData)
 #' umxSummaryIP(m1)
 #' plot(m1)
-#' \dontrun{
 #' umxSummaryIP(m1, digits = 2, file = "Figure3", showRg = FALSE, CIs = TRUE);
 #' }
 umxSummaryIP <- function(model, digits = 2, file = getOption("umx_auto_plot"), std = TRUE, showRg = FALSE, comparison = NULL, CIs = FALSE, returnStd = FALSE, report = c("markdown", "html"), ...) {
@@ -1833,6 +1840,7 @@ umxSummary.MxModelIP <- umxSummaryIP
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
+#' \dontrun{
 #' # The total sample has been subdivided into a young cohort, 
 #' # aged 18-30 years, and an older cohort aged 31 and above.
 #' # Cohort 1 Zygosity is coded as follows 1 == MZ females 2 == MZ males 
@@ -1849,7 +1857,6 @@ umxSummary.MxModelIP <- umxSummaryIP
 #' # Exclude cases with missing Def
 #' mzData = mzData[!is.na(mzData[selDefs[1]]) & !is.na(mzData[selDefs[2]]),]
 #' dzData = dzData[!is.na(dzData[selDefs[1]]) & !is.na(dzData[selDefs[2]]),]
-#' \dontrun{
 #' m1 = umxGxE(selDVs = "bmi", selDefs = "age", sep="", dzData = dzData, mzData = mzData)
 #' # Plot Moderation
 #' umxSummaryGxE(m1)
@@ -1925,6 +1932,7 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' @export
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -1938,9 +1946,7 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' m2 = umxModify(m1, update = "G_to_x2", name = "drop_path_2_x2")
 #' umxCompare(m1, m2)
 #' umxCompare(m1, m2, report = "inline") # Add English-sentence descriptions
-#' \dontrun{
 #' umxCompare(m1, m2, report = "html") # Open table in browser
-#' }
 #'
 #' # Two comparison models
 #' m3 = umxModify(m2, update = "G_to_x3", name = "drop_path_2_x2_and_3")
@@ -1949,7 +1955,6 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' umxCompare(m1, c(m2, m3), compareWeightedAIC = TRUE)
 #' umxCompare(c(m1, m2), c(m2, m3), all = TRUE)
 #'
-#' \dontrun{
 #' manifests = names(demoOneFactor)
 #' m1 = umxRAM("WLS", data = demoOneFactor, type = "DWLS",
 #' 	umxPath("G", to = manifests),
@@ -2100,6 +2105,175 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 	}
 	invisible(tablePub)
 }
+
+#' umxGetLatents
+#'
+#' @description
+#' Get the latentVars from a RAM model, optionally targeting a submodel.
+#'
+#' @param model a [umxRAM()]
+#' @param targetModel name of the model to extract from
+#' @return - variables
+#' @export
+#' @family Reporting Functions
+#' @seealso - [umxGetManifests()], [umxRAM()], [umxSuperModel()]
+#' @md
+#' @examples
+#' \dontrun{
+#' library(umx)
+#' # Create two sets of data in which X & Y correlate ~ .4 in both datasets.
+#' manifests = c("x", "y")
+#' tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 150, 
+#' 		AA = 0, CC = .4, EE = .6, varNames = manifests)
+#' 
+# Group 1
+#' grp1   = tmp[tmp$zygosity == "MZ", manifests]
+#' g1Data = mxData(cov(grp1), type = "cov", numObs = nrow(grp1), means=umx_means(grp1))
+#' 
+# Group 2
+#' grp2   = tmp[tmp$zygosity == "DZ", manifests]
+#' g2Data = mxData(cov(grp2), type = "cov", numObs = nrow(grp2), means=umx_means(grp2))
+
+#' # Model 1 (could add autoRun = FALSE if you don't want to run this as it is being built)
+#' m1 = umxRAM("m1", data = g1Data,
+#' 	umxPath("x", to = "y", labels = "beta"),
+#' 	umxPath(var = manifests, labels = c("Var_x", "Resid_y_grp1")),
+#' 	umxPath(means = manifests, labels = c("Mean_x", "Mean_y"))
+#' )
+#' 
+#' # Model 2
+#' m2 = umxRAM("m2", data = g2Data,
+#' 	umxPath("x", to = "y", labels = "beta"),
+#' 	umxPath(var = manifests, labels=c("Var_x", "Resid_y_grp2")),
+#' 	umxPath(means = manifests, labels=c("Mean_x", "Mean_y"))
+#' )
+#' 
+#' m3 = umxSuperModel('top', m1, m2)
+#' umxGetLatents(m3)
+#' umxGetLatents(m3, targetModel = "m1")
+#' }
+umxGetLatents <- function(model, targetModel = NULL) {
+	if(is.null(targetModel)){
+		return(model$latentVars)
+	} else if(model$name == targetModel){
+		return(model$latentVars)
+	} else{
+		return(model$submodels[[targetModel]]$latentVars)
+	}
+}
+
+#' umxGetManifests
+#'
+#' @description
+#' Get the latentVars from a RAM model, optionally targeting a submodel.
+#'
+#' @param model a [umxRAM()]
+#' @param targetModel name of the model to extract from
+#' @return - variables
+#' @export
+#' @family Reporting Functions
+#' @seealso - [umxGetManifests()], [umxRAM()], [umxSuperModel()]
+#' @md
+#' @examples
+#' \dontrun{
+#' library(umx)
+#' # Create two sets of data in which X & Y correlate ~ .4 in both datasets.
+#' manifests = c("x", "y")
+#' tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 150, 
+#' 		AA = 0, CC = .4, EE = .6, varNames = manifests)
+#' 
+# Group 1
+#' grp1   = tmp[tmp$zygosity == "MZ", manifests]
+#' g1Data = mxData(cov(grp1), type = "cov", numObs = nrow(grp1), means=umx_means(grp1))
+#' 
+# Group 2
+#' grp2   = tmp[tmp$zygosity == "DZ", manifests]
+#' g2Data = mxData(cov(grp2), type = "cov", numObs = nrow(grp2), means=umx_means(grp2))
+
+#' # Model 1 (could add autoRun = FALSE if you don't want to run this as it is being built)
+#' m1 = umxRAM("m1", data = g1Data,
+#' 	umxPath("x", to = "y", labels = "beta"),
+#' 	umxPath(var = manifests, labels = c("Var_x", "Resid_y_grp1")),
+#' 	umxPath(means = manifests, labels = c("Mean_x", "Mean_y"))
+#' )
+#' 
+#' # Model 2
+#' m2 = umxRAM("m2", data = g2Data,
+#' 	umxPath("x", to = "y", labels = "beta"),
+#' 	umxPath(var = manifests, labels=c("Var_x", "Resid_y_grp2")),
+#' 	umxPath(means = manifests, labels=c("Mean_x", "Mean_y"))
+#' )
+#' 
+#' m3 = umxSuperModel('top', m1, m2)
+#' umxGetManifests(m3)
+#' umxGetManifests(m3, targetModel = "m1")
+#' }
+umxGetManifests <- function(model, targetModel = NULL) {
+	if(is.null(targetModel)){
+		return(model$manifestVars)
+	} else if(model$name == targetModel){
+		return(model$manifestVars)
+	} else {
+		return(model$submodels[[targetModel]]$manifestVars)
+	}
+}
+
+#' umxGetModel
+#'
+#' @description
+#' Get the latentVars from a RAM model, optionally targeting a submodel.
+#'
+#' @param model a [umxRAM()]
+#' @param targetModel name of the model to extract from
+#' @return - variables
+#' @export
+#' @family Reporting Functions
+#' @seealso - [umxGetModel()], [umxRAM()], [umxSuperModel()]
+#' @md
+#' @examples
+#' \dontrun{
+#' library(umx)
+#' # Create two sets of data in which X & Y correlate ~ .4 in both datasets.
+#' manifests = c("x", "y")
+#' tmp = umx_make_TwinData(nMZpairs = 100, nDZpairs = 150, 
+#' 		AA = 0, CC = .4, EE = .6, varNames = manifests)
+#' 
+# Group 1
+#' grp1   = tmp[tmp$zygosity == "MZ", manifests]
+#' g1Data = mxData(cov(grp1), type = "cov", numObs = nrow(grp1), means=umx_means(grp1))
+#' 
+# Group 2
+#' grp2   = tmp[tmp$zygosity == "DZ", manifests]
+#' g2Data = mxData(cov(grp2), type = "cov", numObs = nrow(grp2), means=umx_means(grp2))
+
+#' # Model 1 (could add autoRun = FALSE if you don't want to run this as it is being built)
+#' m1 = umxRAM("m1", data = g1Data,
+#' 	umxPath("x", to = "y", labels = "beta"),
+#' 	umxPath(var = manifests, labels = c("Var_x", "Resid_y_grp1")),
+#' 	umxPath(means = manifests, labels = c("Mean_x", "Mean_y"))
+#' )
+#' 
+#' # Model 2
+#' m2 = umxRAM("m2", data = g2Data,
+#' 	umxPath("x", to = "y", labels = "beta"),
+#' 	umxPath(var = manifests, labels = c("Var_x", "Resid_y_grp2")),
+#' 	umxPath(means = manifests, labels = c("Mean_x", "Mean_y"))
+#' )
+#' 
+#' m3 = umxSuperModel('top', m1, m2)
+#' umxGetModel(m3)
+#' umxGetModel(m3, targetModel = "m1")
+#' }
+umxGetModel <- function(model, targetModel = NULL) {
+	if(is.null(targetModel)){
+		return(model)
+	} else if(model$name == targetModel){
+		return(model)
+	} else {
+		return(model$submodels[[targetModel]])
+	}
+}
+
 
 #' umxCI_boot
 #'
@@ -2504,12 +2678,14 @@ plot.MxRAMModel <- plot.MxModel
 #' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(twinData)
 #' mzData = subset(twinData, zygosity == "MZFF")
 #' dzData = subset(twinData, zygosity == "DZFF")
 #' m1 = umxACE("plotACE example", selDVs = "bmi", dzData = dzData, mzData = mzData, sep = "")
 #' plot(m1, std = FALSE) # don't standardize
+#' }
 umxPlotACE <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, showFixed = FALSE, ...) {
 	model = x # just to be clear that x is a model
 	if(std){model = xmu_standardize_ACE(model)}
@@ -2575,6 +2751,7 @@ plot.MxModelACE <- umxPlotACE
 #' @references - <https://tbates.github.io>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' # BMI ?twinData from Australian twins. 
 #' # Cohort 1 Zygosity 1 == MZ females 3 == DZ females
@@ -2590,6 +2767,7 @@ plot.MxModelACE <- umxPlotACE
 #' m1 = umxACEcov(selDVs= selDVs, selCovs= selCovs, dzData= dzData, mzData= mzData, sep= "")
 #' plot(m1)
 #' plot(m1, std = FALSE) # don't standardize
+#' }
 umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, ...) {
 	model = x # just to be clear that x is a model
 
@@ -2711,8 +2889,8 @@ plot.MxModelACEcov <- umxPlotACEcov
 #' # Directly call umxPlotGxE
 #' umxPlotGxE(m1, xlab = "Age", separateGraphs = TRUE, gg = FALSE)
 #' umxPlotGxE(m1, moderatorValues=18:67)
-#' 
 #' }
+#' 
 umxPlotGxE <- function(x, xlab = NA, location = "topleft", separateGraphs = FALSE, acergb = c("red", "green", "blue", "black"), gg = TRUE, moderatorValues= NULL, ...) {
 	if(!class(x)[[1]] == "MxModelGxE"){
 		stop("The first parameter of umxPlotGxE must be a GxE model, you gave me a ", class(x)[[1]])
@@ -2768,6 +2946,12 @@ umxPlotGxE <- function(x, xlab = NA, location = "topleft", separateGraphs = FALS
 	outStd = as.matrix(cbind(Va = Va/Vt, Vc = Vc/Vt, Ve = Ve/Vt))
 
 	if(gg){
+		if(length(location) == 2){
+		}else if (location == "topleft"){
+			location = c(.1, .9)
+		} else if(!(location %in% c("none", "left", "right", "bottom", "top"))){
+			message('For gg, location of legend must be in "left", "right", "bottom", "top" or, e.g. c(.1, .9)')			
+		}
 		tmp = data.frame(cbind(defVarValues, out))
 		p = ggplot(data = tmp) 
 		p = p + geom_ribbon(aes(x = defVarValues, ymin = VeLower, ymax = VeUpper), alpha = .2, fill = "blue" , show.legend= FALSE, linetype= 0)
@@ -2778,7 +2962,7 @@ umxPlotGxE <- function(x, xlab = NA, location = "topleft", separateGraphs = FALS
 		p = p + geom_line(aes(x=defVarValues, y = Vc, group = 2, colour = 'Vc'))
 		p = p + geom_line(aes(x=defVarValues, y = Ve, group = 3, colour = 'Ve'))
 		p = p + labs(x = xlab, y = 'Raw Variance', title = "Raw Moderation effects")
-		raw = p + theme(legend.title = element_blank() ) + theme(legend.background = element_blank() ) + theme(legend.position = c(.1, .9))
+		raw = p + theme(legend.title = element_blank() ) + theme(legend.background = element_blank() ) + theme(legend.position = location)
 
 
 		tmp = data.frame(cbind(defVarValues, outStd))
@@ -2787,7 +2971,7 @@ umxPlotGxE <- function(x, xlab = NA, location = "topleft", separateGraphs = FALS
 		p = p + geom_line(aes(x=defVarValues, y = Vc, group = 2, colour = 'Vc'))
 		p = p + geom_line(aes(x=defVarValues, y = Ve, group = 3, colour = 'Ve'))
 		p = p + labs(x = xlab, y = 'Standardized Variance', title = "Standardized Moderation effects")
-		std = p + theme(legend.title = element_blank() ) + theme(legend.background = element_blank() ) + theme(legend.position = c(.1, .9))
+		std = p + theme(legend.title = element_blank() ) + theme(legend.background = element_blank() ) + theme(legend.position = location)
 
 		tmp = list(std, raw)
 		if(separateGraphs){
@@ -2803,10 +2987,10 @@ umxPlotGxE <- function(x, xlab = NA, location = "topleft", separateGraphs = FALS
 			graphics::par(mfrow = c(1, 2)) # one row * two columns to hold raw and std plots
 		}
 		graphics::matplot(x = defVarValues, y = out, type = "l", lty = 1:4, col = acergb, xlab = xlab, ylab = "Variance", main= "Raw Moderation Effects")
-		graphics::legend(location, legend = c("genetic", "shared", "unique", "total"), lty = 1:4, col = acergb, bty = "n")
+		graphics::legend(x = location, legend = c("genetic", "shared", "unique", "total"), lty = 1:4, col = acergb, bty = "n")
 	
 		graphics::matplot(defVarValues, outStd, type = "l", lty = 1:4, col = acergb, ylim = 0:1, xlab = xlab, ylab = "Standardized Variance", main= "Standardized Moderation Effects")
-		graphics::legend(location, legend = c("genetic", "shared", "unique"), lty = 1:4, col = acergb, bty = "n")
+		graphics::legend(x = location, legend = c("genetic", "shared", "unique"), lty = 1:4, col = acergb, bty = "n")
 		graphics::par(mfrow = c(1, 1)) # back to black
 	
 	}
@@ -2912,8 +3096,7 @@ umxPlotCP <- function(x = NA, means = FALSE, std = TRUE, digits = 2, showFixed =
 		'label="', label, '";\n\t',
 		"splines = \"", splines, "\";\n",
 		preOut, 
-		top, 
-		bottom, 
+		top, bottom, 
 		out$str, "\n}"
 	)
 	
@@ -3058,6 +3241,7 @@ plot.MxModelIP <- umxPlotIP
 #' @export
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -3067,7 +3251,8 @@ plot.MxModelIP <- umxPlotIP
 #' 	umxPath(var = manifests),
 #' 	umxPath(var = "G", fixedAt = 1)
 #' )
-#' # umxMI(m1, full=FALSE)
+#' umxMI(m1, full = FALSE)
+#' }
 umxMI <- function(model = NA, matrices = NA, full = TRUE, numInd = NA, typeToShow = "both", decreasing = TRUE) {
 	if(typeToShow != "both"){
 		message("Only showing both add and remove is supported so far")
@@ -3377,6 +3562,7 @@ umxComputeConditionals <- function(sigma, mu, current, onlyMean = FALSE) {
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -3391,6 +3577,8 @@ umxComputeConditionals <- function(sigma, mu, current, onlyMean = FALSE) {
 #' umxParameters(m1, "above", .5)
 #' # Parameters with values below .1 and containing "_to_" in their label
 #' umxParameters(m1, "below", .1, "_to_")
+#' }
+#' 
 umxParameters <- function(x, thresh = c("all", "above", "below", ">", "<", "NS", "sig"), b = NULL, pattern = ".*", std = FALSE, digits = 2) {
 	# TODO clarify when to use parameters vs. umxGetParameters
 	# TODO Add filtering by significance (based on SEs)
@@ -3481,6 +3669,7 @@ parameters <- umxParameters
 #' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -3496,6 +3685,7 @@ parameters <- umxParameters
 #' umxGetParameters(m1, free = FALSE) # Only fixed parameters
 #' # Complex regex pattern
 #' umxGetParameters(m1, regex = "x[1-3]_with_x[2-5]", free = TRUE)
+#' }
 #' 
 umxGetParameters <- function(inputTarget, regex = NA, free = NA, fetch = c("labels", "values", "free", "lbound", "ubound", "all"), verbose = FALSE) {
 	# TODO
@@ -3600,6 +3790,7 @@ extractAIC.MxModel <- function(fit, scale, k, ...) {
 #' @seealso - [umxRun()], [umxCI_boot()]
 #' @md
 #' @examples
+#' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -3611,6 +3802,8 @@ extractAIC.MxModel <- function(fit, scale, k, ...) {
 #' )#'
 #' vcov(m1) # supplied by OpenMx
 #' umxExpCov(m1, digits = 3)
+#' 
+#' }
 umxExpCov <- function(object, latents = FALSE, manifests = TRUE, digits = NULL, ...){
 	# umx_has_been_run(m1)
 	# TODO integrate with mxGetExpected(model, "covariance")
@@ -3672,6 +3865,8 @@ umxExpCov <- function(object, latents = FALSE, manifests = TRUE, digits = NULL, 
 #' @references - <https://openmx.ssri.psu.edu/thread/2598>
 #' @md
 #' @examples
+#' \dontrun{
+#' 
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -3684,6 +3879,7 @@ umxExpCov <- function(object, latents = FALSE, manifests = TRUE, digits = NULL, 
 #'
 #' umxExpMeans(m1)
 #' umxExpMeans(m1, digits = 3)
+#' }
 umxExpMeans <- function(model, manifests = TRUE, latents = NULL, digits = NULL){
 	umx_check_model(model, beenRun = TRUE)
 	if(!umx_has_means(model)){
@@ -3807,7 +4003,6 @@ RMSEA.MxModel <- function(x, ci.lower = .05, ci.upper = .95, digits = 3) {
 #' @references - <https://github.com/simsem/semTools/wiki/Functions>, <https://github.com/tbates/umx>
 #' @md
 #' @examples
-#' 
 #' \dontrun{
 #' require(umx)
 #' data(demoOneFactor)

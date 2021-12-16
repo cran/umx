@@ -13,6 +13,7 @@ xmu_safe_run_summary(
   std = "default",
   comparison = TRUE,
   digits = 3,
+  intervals = FALSE,
   returning = c("model", "summary")
 )
 }
@@ -33,6 +34,8 @@ xmu_safe_run_summary(
 
 \item{digits}{Rounding precision in tables and plots}
 
+\item{intervals}{whether to run intervals or not (default = FALSE)}
+
 \item{returning}{What to return (default, the run model)}
 }
 \value{
@@ -50,7 +53,9 @@ If summary = TRUE then \code{\link[=umxSummary]{umxSummary()}} is requested (aga
 }
 \examples{
 \dontrun{
-m1 = umxRAM("tim", data = mtcars,
+tmp = mtcars
+tmp$disp = tmp$disp/100
+m1 = umxRAM("tim", data = tmp,
 	umxPath(c("wt", "disp"), to = "mpg"),
 	umxPath("wt", with = "disp"),
 	umxPath(v.m. = c("wt", "disp", "mpg"))
@@ -66,7 +71,7 @@ xmu_safe_run_summary(m1, autoRun = TRUE, summary = TRUE)
 # Show std parameters
 xmu_safe_run_summary(m1, autoRun = TRUE, summary = TRUE, std = TRUE)
 # Run + Summary + comparison
-xmu_safe_run_summary(m1, m2, autoRun = TRUE, summary = TRUE)
+xmu_safe_run_summary(m1, m2, autoRun = TRUE, summary = TRUE, intervals = TRUE)
 # Run + Summary + no comparison
 xmu_safe_run_summary(m1, m2, autoRun = TRUE, summary = TRUE, std = TRUE, comparison= FALSE)
 
