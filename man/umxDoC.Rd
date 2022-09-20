@@ -53,12 +53,15 @@ umxDoC(
 }
 }
 \description{
-Testing causal claims is often difficult due to an inability to conduct experimental randomization of traits and situations to people.
-When twins are available, even when measured on a single occasion, the pattern of cross-twin cross-trait correlations
-can (given distinguishable modes of inheritance for the two traits) falsify causal hypotheses.
+Testing causal claims is often difficult due to an inability to conduct experimental randomization of traits and
+situations to people. When twins are available, even when measured on a single occasion, the pattern of cross-twin
+cross-trait correlations can (given distinguishable modes of inheritance for the two traits) falsify causal hypotheses.
 
 \code{umxDoC} implements a 2-group model to form latent variables for each of two traits, and allows testing whether
 trait 1 causes trait 2, vice-versa, or even reciprocal causation.
+
+Using latent variables instead of a manifest measure for testing causation, avoids the bias created by differences in
+measurement error in which the more reliable measure appears to "cause" the less reliable one (Gillespie and Martin, 2005).
 
 The following figure shows how the DoC model appears as a path diagram (for two latent variables X and Y,
 each with three indicators). Note: For pedagogical reasons, only the model for 1 twin is shown, and only one DoC pathway drawn.
@@ -66,20 +69,12 @@ each with three indicators). Note: For pedagogical reasons, only the model for 1
 \if{html}{\figure{DoC.png}{options: width=50\% alt="Figure: Direction of Causation"}}
 \if{latex}{\figure{DoC.pdf}{options: width=7cm}}
 }
-\details{
-To be added.
-}
 \examples{
 \dontrun{
+
 # ========================
 # = Does Rain cause Mud? =
 # ========================
-
-# =======================================
-# = 2. Define manifests for var 1 and 2 =
-# =======================================
-var1 = paste0("varA", 1:3)
-var2 = paste0("varB", 1:3)
 
 # ================
 # = 1. Load Data =
@@ -89,49 +84,47 @@ docData = umx_scale_wide_twin_data(c(var1, var2), docData, sep= "_T")
 mzData  = subset(docData, zygosity \%in\% c("MZFF", "MZMM"))
 dzData  = subset(docData, zygosity \%in\% c("DZFF", "DZMM"))
 
+# =======================================
+# = 2. Define manifests for var 1 and 2 =
+# =======================================
+var1 = paste0("varA", 1:3)
+var2 = paste0("varB", 1:3)
+
 # =======================================================
-# = 2. Make the non-causal (Cholesky) and causal models =
+# = 3. Make the non-causal (Cholesky) and causal models =
 # =======================================================
 Chol = umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= FALSE)
+# nb: DoC initially has causal paths fixed @0
 DoC  = umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= TRUE)
-
-# ================================================
-# = Make the directional models by modifying DoC =
-# ================================================
 a2b   = umxModify(DoC, "a2b", free = TRUE, name = "a2b"); summary(a2b)
 b2a   = umxModify(DoC, "b2a", free = TRUE, name = "b2a"); summary(b2a)
 Recip = umxModify(DoC, c("a2b", "b2a"), free = TRUE, name = "Recip"); summary(Recip)
+
+# Compare fits
+umxCompare(Chol, c(a2b, b2a, Recip))
 
 # ==========================================
 # = Alternative call with data in one file =
 # ==========================================
 data(docData)
 docData = umx_scale_wide_twin_data(c(var1, var2), docData, sep= "_T")
-DoC  = umxDoC(var1= paste0("varA", 1:3), var2= paste0("varB", 1:3),
+DoC = umxDoC(var1= paste0("varA", 1:3), var2= paste0("varB", 1:3),
 	  mzData= c("MZFF", "MZMM"), dzData= c("DZFF", "DZMM"), data = docData
 )
-
-# Usage example (won\t run)
-var1 = paste0("SOS", 1:8)
-var2 = paste0("Vocab", 1:10)
-Chol = umxDoC(var1= var1, var2= var2,mzData= mzData, dzData= dzData, causal= FALSE)
-DoC  = umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= TRUE)
-a2b  = umxModify(DoC, "a2b", free = TRUE, name = "a2b")
-b2a  = umxModify(DoC, "b2a", free = TRUE, name = "b2a")
-Recip= umxModify(DoC, c("a2b", "b2a"), free = TRUE, name = "Recip")
-umxCompare(Chol, c(a2b, b2a, Recip))
 }
-
 }
 \references{
 \itemize{
-\item N.A. Gillespie and N.G. Martin (2005). Direction of Causation Models.
-In \emph{Encyclopedia of Statistics in Behavioral Science}, \strong{1}. 496–499. Eds. Brian S. Everitt & David C. Howell.
+\item N.A. Gillespie and N.G. Martin (2005). Direction of Causation Models. In \emph{Encyclopedia of Statistics in Behavioral Science}, \strong{1}. 496–499. Eds. Brian S. Everitt & David C. Howell.
+}
+\itemize{
+\item McGue, M., Osler, M., & Christensen, K. (2010). Causal Inference and Observational Research: The Utility of Twins. \emph{Perspectives on Psychological Science}, \strong{5}, 546-556. \doi{10.1177/1745691610383511}
+\item Rasmussen, S. H. R., Ludeke, S., & Hjelmborg, J. V. B. (2019). A major limitation of the direction of causation model: non-shared environmental confounding. \emph{Twin Res Hum Genet}, \strong{22}, 1-13. \doi{10.1017/thg.2018.67}
 }
 }
 \seealso{
 \itemize{
-\item \code{\link[=plot.MxModelDoC]{plot.MxModelDoC()}}, \code{\link[=umxSummary.MxModelDoC]{umxSummary.MxModelDoC()}}, \code{\link[=umxModify]{umxModify()}}
+\item \code{\link[=umxDiscTwin]{umxDiscTwin()}}
 }
 
 Other Twin Modeling Functions: 
@@ -140,6 +133,8 @@ Other Twin Modeling Functions:
 \code{\link{umxACEv}()},
 \code{\link{umxACE}()},
 \code{\link{umxCP}()},
+\code{\link{umxDiffMZ}()},
+\code{\link{umxDiscTwin}()},
 \code{\link{umxDoCp}()},
 \code{\link{umxGxE_window}()},
 \code{\link{umxGxEbiv}()},

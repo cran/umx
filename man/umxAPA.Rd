@@ -14,11 +14,12 @@ umxAPA(
   use = "complete",
   min = 0.001,
   addComparison = NA,
-  report = c("markdown", "html"),
+  report = c("markdown", "html", "none", "expression"),
   lower = TRUE,
   test = c("Chisq", "LRT", "Rao", "F", "Cp"),
   SEs = TRUE,
-  means = TRUE
+  means = TRUE,
+  suffix = ""
 )
 }
 \arguments{
@@ -40,7 +41,7 @@ Finally, set se to the CI c(lower, upper), to back out the SE.}
 
 \item{addComparison}{For a p-value, whether to add "</=" default (NA) adds "<" if necessary}
 
-\item{report}{What to return (default = 'markdown'). Use 'html' to open a web table.}
+\item{report}{What to return (default = 'markdown'). Use 'html' to open a web table. none doesn't print. expression can contain \code{\link[=plotmath]{plotmath()}}}
 
 \item{lower}{Whether to not show the lower triangle of correlations for a data.frame (Default TRUE)}
 
@@ -49,6 +50,8 @@ Finally, set se to the CI c(lower, upper), to back out the SE.}
 \item{SEs}{Whether or not to show correlations with their SE (Default TRUE)}
 
 \item{means}{Whether or not to show means in a correlation table (Default TRUE)}
+
+\item{suffix}{A string to append to the result. Mostly used with report = "expression"}
 }
 \value{
 \itemize{
@@ -56,7 +59,11 @@ Finally, set se to the CI c(lower, upper), to back out the SE.}
 }
 }
 \description{
-\code{umxAPA} creates APA-style reports from a range of statistical models, or to summarize data.
+\code{umxAPA} creates APA-style reports from a range of statistical models, or to summarize data. I wrote it to suit me.
+
+Nice alternatives include jtools's \code{summ} function.
+
+Example functionality includes:
 \enumerate{
 \item Given an \code{\link[stats:lm]{stats::lm()}} model, \code{umxAPA} will return a formatted effect, including 95\% CI.
 e.g.: \code{umxAPA(lm(mpg~wt, data=mtcars), "wt")} yields: \eqn{\beta} = -5.34 [-6.48, -4.20], p < 0.001. here "wt"
@@ -138,7 +145,7 @@ umxAPA(m1)
 }
 \references{
 \itemize{
-\item \url{https://stats.idre.ucla.edu/r/dae/logit-regression/}, \url{https://github.com/tbates/umx}, \url{https://www.shengdongzhao.com/?p=1501}
+\item \url{https://stats.oarc.ucla.edu/r/dae/logit-regression/}, \url{https://github.com/tbates/umx}, \url{https://www.shengdongzhao.com/?p=1501}
 }
 }
 \seealso{

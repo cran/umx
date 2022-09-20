@@ -10,6 +10,7 @@ umxRun(
   calc_sat = TRUE,
   setValues = FALSE,
   setLabels = FALSE,
+  summary = !umx_set_silent(silent = TRUE),
   intervals = FALSE,
   optimizer = NULL,
   comparison = NULL
@@ -25,6 +26,8 @@ umxRun(
 \item{setValues}{Whether to set the starting values of free parameters (default = FALSE)}
 
 \item{setLabels}{Whether to set the labels (default =  FALSE)}
+
+\item{summary}{Whether to print summary or not (default = !umx_set_silent() )}
 
 \item{intervals}{Whether to run mxCI confidence intervals (default = FALSE) intervals = FALSE}
 

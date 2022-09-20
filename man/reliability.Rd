@@ -34,6 +34,7 @@ Other Miscellaneous Stats Functions:
 \code{\link{oddsratio}()},
 \code{\link{umxCov2cor}()},
 \code{\link{umxHetCor}()},
+\code{\link{umxParan}()},
 \code{\link{umxWeightedAIC}()},
 \code{\link{umx_apply}()},
 \code{\link{umx_cor}()},

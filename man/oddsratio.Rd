@@ -23,7 +23,9 @@ Returns the odds in each group, and the odds ratio. Takes the cases (n) and tota
 of two numbers for each of two groups.
 }
 \details{
-Returns a list of odds1, odds2, and OR + CI. Has a pretty-printing method so displays as:\if{html}{\out{<div class="sourceCode R">}}\preformatted{Group 1 odds = 0.43
+Returns a list of odds1, odds2, and OR + CI. Has a pretty-printing method so displays as:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{Group 1 odds = 0.43
 Group 2 odds = 0.11
           OR = 3.86 CI95[0.160, 3.64]
 }\if{html}{\out{</div>}}
@@ -37,7 +39,7 @@ oddsratio(grp1 = c(3, 10), grp2 = c(1, 10), alpha = .01)
 }
 \references{
 \itemize{
-\item \url{https://stats.idre.ucla.edu/r/dae/logit-regression/}, \url{https://tbates.github.io}
+\item \url{https://stats.oarc.ucla.edu/r/dae/logit-regression/}, \url{https://tbates.github.io}
 }
 }
 \seealso{
@@ -53,6 +55,7 @@ Other Miscellaneous Stats Functions:
 \code{\link{reliability}()},
 \code{\link{umxCov2cor}()},
 \code{\link{umxHetCor}()},
+\code{\link{umxParan}()},
 \code{\link{umxWeightedAIC}()},
 \code{\link{umx_apply}()},
 \code{\link{umx_cor}()},

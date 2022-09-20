@@ -1,4 +1,4 @@
-#   Copyright 2007-2020 Timothy C. Bates
+#   Copyright 2007-2022 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -99,6 +99,7 @@
 #' to the analysis of human behaviour. *Heredity*, **41**, 249-320. <https://www.nature.com/articles/hdy1978101.pdf>
 #' @md
 #' @examples
+#' \dontrun{
 #' 
 #' # ==============================
 #' # = Univariate model of weight =
@@ -175,8 +176,6 @@
 #' twinData[,c("ht1", "ht2")]= twinData[,c("ht1", "ht2")]*100
 #' mzData = twinData[twinData$zygosity %in% c("MZFF", "MZMM"), ]
 #' dzData = twinData[twinData$zygosity %in% c("DZFF", "DZMM", "DZOS"), ]
-#' mzData = mzData[1:80, ] # Quicker run to keep CRAN happy
-#' dzData = dzData[1:80, ]
 #' m1 = umxACEv(selDVs = c("ht", "wt"), sep = '', dzData = dzData, mzData = mzData)
 #' 
 #' # ===================
@@ -193,8 +192,8 @@
 #'
 #' # Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
 #' twinData[, c("obese1", "obese2")] = umxFactor(twinData[, c("obese1", "obese2")])
-#' mzData = twinData[twinData$zygosity %in% "MZFF", ][1:80,] # 80 pairs for speed on CRAN
-#' dzData = twinData[twinData$zygosity %in% "DZFF", ][1:80,]
+#' mzData = twinData[twinData$zygosity %in% "MZFF", ]
+#' dzData = twinData[twinData$zygosity %in% "DZFF", ]
 #' m2 = umxACEv(selDVs = "obese", dzData = dzData, mzData = mzData, sep = '')
 #'
 #' # FYI: Show mz, dz, and t1 and t2 have the same levels!
@@ -238,10 +237,9 @@
 #' selDVs = c("wt", "obese")
 #' mzData = twinData[twinData$zygosity %in% "MZFF", ]
 #' dzData = twinData[twinData$zygosity %in% "DZFF", ]
-#' \dontrun{
+
 #' m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 #' umxSummary(m1)
-#' }
 #' 
 #' # ===================================
 #' # Example with covariance data only =
@@ -254,6 +252,7 @@
 #' dz = cov(twinData[twinData$zygosity %in% "DZFF", tvars(selDVs, "")], use = "complete")
 #' m1 = umxACEv(selDVs = selDVs, sep= "", dzData = dz, mzData= mz, numObsDZ= 569, numObsMZ= 351)
 #' umxSummary(m1, std = FALSE)
+#' }
 #' 
 umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, mzData, dzAr = .5, dzCr = 1, type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"), allContinuousMethod = c("cumulants", "marginals"), data = NULL, zyg = "zygosity", weightVar = NULL, numObsDZ = NULL, numObsMZ = NULL, addStd = TRUE, addCI = TRUE, boundDiag = NULL, equateMeans = TRUE, bVector = FALSE, autoRun = getOption("umx_auto_run"), tryHard = c("no", "yes", "ordinal", "search"), optimizer = NULL, nSib = 2) {
 	type                = match.arg(type)
@@ -374,14 +373,14 @@ umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, m
 #' @aliases umxSummary.MxModelACEv
 #' @param model an [mxModel()] to summarize
 #' @param digits round to how many digits (default = 2)
-#' @param file The name of the dot file to write: "name" = use the name of the model.
-#' Defaults to NA = no plot.
 #' @param comparison you can run mxCompare on a comparison model (NULL)
 #' @param std Whether to standardize the output (default = TRUE)
 #' @param showRg = whether to show the genetic correlations (FALSE)
 #' @param CIs Whether to show Confidence intervals if they exist (TRUE)
 #' @param returnStd Whether to return the standardized form of the model (default = FALSE)
 #' @param report If "html", then open an html table of the results
+#' @param file The name of the dot file to write: "name" = use the name of the model.
+#' Defaults to getOption("umx_auto_plot"), which is likely "name".
 #' @param extended how much to report (FALSE)
 #' @param zero.print How to show zeros (".")
 #' @param show Here to support being called from generic xmu_safe_run_summary. User should ignore: can be c("std", "raw")
@@ -404,7 +403,7 @@ umxACEv <- function(name = "ACEv", selDVs, selCovs = NULL, sep = NULL, dzData, m
 #' umxSummary(m1, file = "name", std = TRUE)
 #' stdFit = umxSummary(m1, returnStd = TRUE)
 #' }
-umxSummaryACEv <- function(model, digits = 2, file = getOption("umx_auto_plot"), comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), returnStd = FALSE, extended = FALSE, zero.print = ".", show = c("std", "raw"), ...) {
+umxSummaryACEv <- function(model, digits = 2, comparison = NULL, std = TRUE, showRg = FALSE, CIs = TRUE, report = c("markdown", "html"), file = getOption("umx_auto_plot"), returnStd = FALSE, extended = FALSE, zero.print = ".", show = c("std", "raw"), ...) {
 	show = match.arg(show, c("std", "raw"))
 	if(show != "std"){
 		std = FALSE
@@ -623,6 +622,8 @@ umxSummary.MxModelACEv <- umxSummaryACEv
 #' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' 
+#' \dontrun{
 #' require(umx)
 #' data(twinData)
 #' mzData = subset(twinData, zygosity == "MZFF")
@@ -631,18 +632,12 @@ umxSummary.MxModelACEv <- umxSummaryACEv
 #' umxSummary(m1)
 #' umxPlotACEv(m1, std = FALSE) # Don't standardize
 #' plot(m1, std = FALSE) # don't standardize
+#' }
 umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TRUE, strip_zero = TRUE, ...) {
-	# TODO umxPlotACEv: update to matrix version instead of label hunting
-	# TODO umxPlotACEv: use xmu_dot_define_shapes etc.?
-	# preOut  = xmu_dot_define_shapes(latents = out$latents, manifests = selDVs[1:varCount])
-	# top     = xmu_dot_rank(out$latents, "^[ace]_cp", "min")
-	# bottom  = xmu_dot_rank(out$latents, "^[ace]s[0-9]+$", "max")
-	# digraph = paste0("digraph G {\n	splines=\"FALSE\";\n", preOut, top, bottom, out$str, "\n}");
 	model = x # Just to be clear that x is a model
 	if(std){ model = umx_standardize(model) }
 
 	selDVs = xmu_twin_get_var_names(model)
-	# umx_msg(selDVs)
 	nVar   = length(selDVs) # assumes 2 siblings
 	selDVs = selDVs[1:(nVar)]
 
@@ -652,7 +647,7 @@ umxPlotACEv <- function(x = NA, file = "name", digits = 2, means = FALSE, std = 
 
 	for(thisParam in names(parameterKeyList) ) {
 		value = parameterKeyList[thisParam]
-		if(class(value) == "numeric") {
+		if(inherits(value, "numeric")) {
 			value = round(value, digits)
 		}
 		if (grepl("^[ACE]_r[0-9]+c[0-9]+", thisParam)) { # fires on things like "A_r1c1"
@@ -731,13 +726,15 @@ plot.MxModelACEv <- umxPlotACEv
 #' @references - <https://tbates.github.io>,  <https://github.com/tbates/umx>
 #' @md
 #' @examples
+#' 
+#' \dontrun{
 #' require(umx)
 #' data(twinData)
-#' selDVs = c("bmi")
-#' mzData <- twinData[twinData$zygosity %in% "MZFF",][1:80,] # 80 pairs for speed
-#' dzData <- twinData[twinData$zygosity %in% "DZFF",][1:80,]
-#' m1  = umxACEv(selDVs = selDVs, sep="", dzData = dzData, mzData = mzData)
+#' mzData = twinData[twinData$zygosity %in% "MZFF",]
+#' dzData = twinData[twinData$zygosity %in% "DZFF",]
+#' m1  = umxACEv(selDVs = "bmi", sep="", dzData = dzData, mzData = mzData)
 #' std = umx_standardize(m1)
+#' }
 xmu_standardize_ACEv <- function(model, ...) {
 	# TODO umxSummaryACEv these already exist if a_std exists..
 	message("Standardized variance-based models may yield negative variances...")

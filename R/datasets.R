@@ -1,4 +1,4 @@
-#  Copyright 2007-2020 Timothy C. Bates
+#  Copyright 2007-2022 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ NULL
 #' @references van der Aa, N., Boomsma, D. I., Rebollo-Mesa, I., Hudziak, J. J., & Bartels, 
 #' M. (2010). Moderation of genetic factors by parental divorce in adolescents' 
 #' evaluations of family functioning and subjective wellbeing. Twin Research 
-#' and Human Genetics, **13**, 143-162. doi{10.1375/twin.13.2.143}
+#' and Human Genetics, **13**, 143-162. \doi{10.1375/twin.13.2.143}
 #' @md
 #' @examples
 #' \dontrun{
@@ -274,19 +274,18 @@ NULL
 #'
 #' A dataframe containing correlations of weight for 66 females measured 6 times at 6-month intervals.
 #' 
-#' \itemize{
-#'   \item Weight1: Weight at time 1 (t0)
-#'   \item Weight2: Weight at time 2 (t0 + 6 months)
-#'   \item Weight3: Weight at time 3 (t0 + 12 months)
-#'   \item Weight4: Weight at time 4 (t0 + 18 months)
-#'   \item Weight5: Weight at time 5 (t0 + 24 months)
-#'   \item Weight6: Weight at time 6 (t0 + 32 months)
-#' }
+#' * Weight1: Weight at time 1 (t0)
+#' * Weight2: Weight at time 2 (t0 + 6 months)
+#' * Weight3: Weight at time 3 (t0 + 12 months)
+#' * Weight4: Weight at time 4 (t0 + 18 months)
+#' * Weight5: Weight at time 5 (t0 + 24 months)
+#' * Weight6: Weight at time 6 (t0 + 32 months)
 #' 
+#'
 #' @details
 #' Created as follows:
-#' 
-#' ```R
+#'
+#' ```
 #' Fischbein_wt = umx_read_lower(file = "", diag = TRUE, names = paste0("Weight", 1:6), ensurePD= TRUE)
 #' 1.000
 #' 0.985	1.000
@@ -295,7 +294,7 @@ NULL
 #' 0.932	0.940	0.964	0.975	1.000
 #' 0.890	0.897	0.927	0.949	0.973	1.000
 #' ```
-#' 
+#'
 #' @docType data
 #' @keywords datasets
 #' @family datasets

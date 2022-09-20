@@ -1,4 +1,34 @@
-## dev umx 4.10.50
+## dev umx 4.2.00
+
+## umx 4.15.0
+* NEW: `umx_merge_randomized_columns` wide-2-mingled (rather than wide2long) to unify data from people assigned to different conditions.
+* NEW: `umxDiscTwin` Discordant twin test for causal effects.
+* NEW: `umxDiscTwin` Graphical output for publication.
+* NEW: `umxPlot` ease customized/journal-close, e.g. y~x, -> x y plot, with r^2.
+* IMPROVED: `umxAPA` t-test reporting.
+* IMPROVED: `umx_score_scale` gains error and proportion.
+* IMPROVED: `umx_score_scale` report only omega total when 1 factor extracted.
+* IMPROVED: `umx_read_prolific_demog` gains functionality.
+* IMPROVED: `umxMR`: gained `tryHard'
+* IMPROVED: `umxGxEwindow`: gained `tryHard`, smarter print control.
+* IMPROVED: `umxGxEwindow`: removes un-needed columns.
+* IMPROVED: `umxGxE` checks that `selDefs` are numeric (closes #196, h/t @salvatoj)
+* IMPROVED: `umxRun`: gained `summary` control.
+* IMPROVED: `umx_read_prolific_demog` more control, better defaults, and more reliable summary table.
+* IMPROVED: `umx_score_scale` cleaner output for 1 factor case with omega.
+* FIXED: `xmu_twin_print_means` now takes >1 covariate h/t @Eren Kafadar #201
+* FIXED: `xmu_safe_run_summary` now takes refModels = FALSE h/t @lf-araujo #200
+* FIXED: `umxACEcov` plot and summary working (needed to filter covs from DVs).
+* FIXED: `xmu_twin_print_means` handles more than 1 covariate and improves labeling.
+* FIXED: `umx_score_scale` handles NA correctly.
+* SAFE CODING: `umxPath` stops when `v*m*` is used with `firstAt` or `fixedAt`.
+* SAFE CODING: `umxAlgebra` warns that it isn't functional.
+* MINOR: `umx_print` call fixed where was being called with file.
+* HELP: `umxCP` help `.svg` figure instead of `.png`` (smaller).
+* HELP: `umxMR` Remove unsupported 'weights' parameter.
+* ADMIN: copyright, tests, Rd improvements.
+
+## umx 4.10.50
 * December 2021 R 4.1.1 (2021/11/30)
 * IMPROVED: `umxDoC` can take data (#ht @lf-araujo )
 * IMPROVED: `umxDoC` plot Rd figure includes specifics.
@@ -114,7 +144,7 @@
 * IMPROVED: `fin_compound_interest` now outputs a table of annual returns
 * IMPROVED: `umxAPA` uses cat to improve usability of summary data
 * HELP: `umxCP` Document that correlatedA works on a, c and e, allowing factors to correlate.
-* BETA: `umxGxEbiv` lboundACE @ 0 by default
+* BETA: `umxGxEbiv` "lboundACE" @ 0 by default
 * FIXED: `umxSimplex` example
 * FIXED: `umxGxEbiv` fix nonfunctional lboundACE and lboundM (thanks @mcneale)
 * FIXED: `umxGxEbiv` selVars order was imposed on expectation dimnames but didn't match the cov matrix due to bespoke nature of `expCov` algebras...

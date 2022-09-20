@@ -133,6 +133,8 @@ Other Twin Modeling Functions:
 \code{\link{umxACEv}()},
 \code{\link{umxACE}()},
 \code{\link{umxCP}()},
+\code{\link{umxDiffMZ}()},
+\code{\link{umxDiscTwin}()},
 \code{\link{umxDoCp}()},
 \code{\link{umxDoC}()},
 \code{\link{umxGxE_window}()},
@@ -171,6 +173,7 @@ Other Miscellaneous Stats Functions:
 \code{\link{reliability}()},
 \code{\link{umxCov2cor}()},
 \code{\link{umxHetCor}()},
+\code{\link{umxParan}()},
 \code{\link{umxWeightedAIC}()},
 \code{\link{umx_apply}()},
 \code{\link{umx_cor}()},
@@ -193,6 +196,7 @@ Other Get and set:
 \code{\link{umx_set_condensed_slots}()},
 \code{\link{umx_set_cores}()},
 \code{\link{umx_set_data_variance_check}()},
+\code{\link{umx_set_dollar_symbol}()},
 \code{\link{umx_set_optimization_options}()},
 \code{\link{umx_set_optimizer}()},
 \code{\link{umx_set_plot_file_suffix}()},
@@ -224,10 +228,12 @@ Other Plotting functions:
 \code{\link{umxPlotGxE}()},
 \code{\link{umxPlotIP}()},
 \code{\link{umxPlotSexLim}()},
-\code{\link{umxPlotSimplex}()}
+\code{\link{umxPlotSimplex}()},
+\code{\link{umxPlot}()}
 
 Other Data Functions: 
 \code{\link{noNAs}()},
+\code{\link{prolific_check_ID}()},
 \code{\link{umxFactor}()},
 \code{\link{umxHetCor}()},
 \code{\link{umx_as_numeric}()},
@@ -237,6 +243,7 @@ Other Data Functions:
 \code{\link{umx_make_TwinData}()},
 \code{\link{umx_make_fake_data}()},
 \code{\link{umx_make_raw_from_cov}()},
+\code{\link{umx_merge_randomized_columns}()},
 \code{\link{umx_polychoric}()},
 \code{\link{umx_polypairwise}()},
 \code{\link{umx_polytriowise}()},

@@ -48,6 +48,7 @@ umxHetCor(mtcars[,c("mpg", "am")], treatAllAsFactor = TRUE, verbose = TRUE)
 \seealso{
 Other Data Functions: 
 \code{\link{noNAs}()},
+\code{\link{prolific_check_ID}()},
 \code{\link{umxFactor}()},
 \code{\link{umx_as_numeric}()},
 \code{\link{umx_cont_2_quantiles}()},
@@ -56,6 +57,7 @@ Other Data Functions:
 \code{\link{umx_make_TwinData}()},
 \code{\link{umx_make_fake_data}()},
 \code{\link{umx_make_raw_from_cov}()},
+\code{\link{umx_merge_randomized_columns}()},
 \code{\link{umx_polychoric}()},
 \code{\link{umx_polypairwise}()},
 \code{\link{umx_polytriowise}()},
@@ -76,6 +78,7 @@ Other Miscellaneous Stats Functions:
 \code{\link{oddsratio}()},
 \code{\link{reliability}()},
 \code{\link{umxCov2cor}()},
+\code{\link{umxParan}()},
 \code{\link{umxWeightedAIC}()},
 \code{\link{umx_apply}()},
 \code{\link{umx_cor}()},

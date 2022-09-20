@@ -1,4 +1,4 @@
-#   Copyright 2007-2020 Timothy C. Bates
+#   Copyright 2007-2022 Timothy C. Bates
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -16,6 +16,39 @@
 # = FNS NOT USED DIRECTLY BY USERS SUBJECT TO ARBITRARY CHANGE AND DEPRECATION !!  =
 # ==================================================================================
 
+
+#' Convert a dataframe into a cov mxData object
+#'
+#' `xmu_DF_to_mxData_TypeCov` converts a dataframe into [mxData()] with `type="cov"` and `nrow = numObs`
+#' and optionally adding means.
+#'
+#' @param df the dataframe to covert to an mxData type cov object.
+#' @param columns = Which columns to keep (default is all).
+#' @param use = Default is "complete.obs".
+#' @return - [mxData()] of type = cov
+#' @export
+#' @family xmu internal not for end user
+#' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
+#' @md
+#' @examples
+#' xmu_DF_to_mxData_TypeCov(mtcars, c("mpg", "hp"))
+xmu_DF_to_mxData_TypeCov <- function(df, columns = NA, use = c("complete.obs", "everything", "all.obs", "na.or.complete", "pairwise.complete.obs")) {
+	use = match.arg(use)
+	if(anyNA(columns)){
+		columns = names(df)
+	}
+	df = df[,columns]
+	if(use == "complete.obs"){
+		df = df[complete.cases(df), ]
+	} else {
+		if(anyNA(df)){
+			message("numObs was set to nrow, but if as the data contain NAs, this is too liberal!")
+		}
+	}
+	numObs = nrow(df)
+	umx_check_names(columns, df)
+	return(mxData(cov(df[, columns], use = use), type = "cov", numObs = numObs))
+}
 
 #' Get one or more columns from mzData or regular data.frame
 #'
@@ -95,7 +128,7 @@ xmu_twin_get_var_names <- function(model, source = c("expCovMZ", "observed"), tr
 # = RUN AND REPORT HELPERS =
 # ==========================
 
-#' Upgrade selDvs to SelVars
+#' Upgrade selDVs to selVars
 #'
 #' @description
 #' Just a helper to go from "wt" to "wt_T1" contingent on sep not being null
@@ -142,9 +175,7 @@ xmu_twin_upgrade_selDvs2SelVars <- function(selDVs, sep, nSib) {
 xmu_show_fit_or_comparison <- function(model, comparison = NULL, digits = 2) {
 	if(is.null(comparison)){
 		# \u00d7 = times sign
-		message(paste0(model$name, " -2 \u00d7 log(Likelihood) = ", 
-			round(-2 * logLik(model), digits = digits))
-		)
+		message(paste0(model$name, " -2 \u00d7 log(Likelihood) = ", round(-2 * logLik(model), digits = digits)) )
 	} else {
 		if(!umx_is_MxModel(comparison)){
 			stop("xmu_show_fit_or_comparison: 'comparison' must be a model (or left NULL). You gave me a ", class(comparison)[[1]])
@@ -173,7 +204,8 @@ xmu_show_fit_or_comparison <- function(model, comparison = NULL, digits = 2) {
 #' @param comparison Toggle to allow not making comparison, even if second model is provided (more flexible in programming).
 #' @param digits Rounding precision in tables and plots
 #' @param returning What to return (default, the run model)
-#' @param intervals whether to run intervals or not (default = FALSE)
+#' @param intervals whether to run intervals or not (default FALSE)
+#' @param refModels whether to run refModels or not (default NULL)
 #' @return - [mxModel()]
 #' @export
 #' @family xmu internal not for end user
@@ -205,7 +237,7 @@ xmu_show_fit_or_comparison <- function(model, comparison = NULL, digits = 2) {
 #' 
 #' }
 #'
-xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard = c("no", "yes", "ordinal", "search"), summary = !umx_set_silent(silent=TRUE), std = "default", comparison = TRUE, digits = 3, intervals = FALSE, returning = c("model", "summary")) {
+xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard = c("no", "yes", "ordinal", "search"), summary = !umx_set_silent(silent=TRUE), std = "default", comparison = TRUE, digits = 3, intervals = FALSE, returning = c("model", "summary"), refModels = NULL) {
 	# TODO xmu_safe_run_summary: Activate test examples
 	tryHard   = match.arg(tryHard)
 	returning = match.arg(returning)
@@ -238,13 +270,6 @@ xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard 
 			} else if (tryHard == "mxTryHardWideSearch"){
 				model1 = mxTryHardWideSearch(model1, intervals = intervals)
 			}
-		# }, warning = function(w){
-		# 	if(tryHard == "no"){
-		# 		message("Warning incurred trying to run model: mxTryHard might help?")
-		# 	} else {
-		# 		message("Warning incurred trying to run model")
-		# 	}
-		# 	message(w)
 		}, error = function(e){
 			if(tryHard == "no"){
 				message("Error incurred trying to run model: model = mxTryHard(model) might help?")
@@ -256,20 +281,17 @@ xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard 
 	}
 
 	if(!umx_has_been_run(model1)){
-		# Didn't get run... don't try and summarize it (will error)
+		# Not run, so don't summarise (will error)
 		theSummary = NA
 	} else if(summary){
 		tryCatch({
 			if(is.null(std)) {
-				theSummary = umxSummary(model1, std = NULL, digits = digits)	
+				theSummary = umxSummary(model1, std = NULL, digits = digits, refModels = refModels)	
 			} else if(std == "default"){
-				theSummary = umxSummary(model1, digits = digits)
+				theSummary = umxSummary(model1, digits = digits, refModels = refModels)
 			} else {
-				theSummary = umxSummary(model1, std = std, digits = digits)
+				theSummary = umxSummary(model1, std = std, digits = digits, refModels = refModels)
 			}
-		# }, warning = function(w) {
-		# 	message("Warning incurred trying to run umxSummary")
-		# 	message(w)
 		}, error = function(e) {
 			theSummary = NA
 			message("Error incurred trying to run umxSummary")
@@ -284,16 +306,13 @@ xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard 
 					umxCompare(model1, model2, digits = digits)
 				}
 			}
-		# }, warning = function(w) {
-		# 	message("Warning incurred trying to run umxCompare")
-		# 	message(w)
 		}, error = function(e) {
 			message("Error incurred trying to run umxCompare")
 			message(e)
 		})
 
 	}
-	if(returning=="model"){
+	if(returning == "model"){
 		invisible(model1)
 	} else {
 		invisible(theSummary)
@@ -303,40 +322,46 @@ xmu_safe_run_summary <- function(model1, model2 = NULL, autoRun = TRUE, tryHard 
 # xmu_twin_print_means(model, digits = digits, report = report)
 xmu_twin_print_means <- function(model, digits = 3, report = c("markdown", "html")){
 	report = match.arg(report)
-	int = model$top$intercept$values
-	if(!is.null(int)){
+	# get intercept, e.g. mean T1, T2
+	interceptVals = model$top$intercept$values
+	meanVals = interceptVals
+	if(!is.null(interceptVals)){
 		# means and betas
 		caption = "Means and (raw) betas from model$top$intercept and model$top$meansBetas"
 		b = model$top$meansBetas$values
-		bcols = dim(b)[[2]]
-		bvals = b[,1:bcols, drop = FALSE]
-		interceptsPerSib = dim(int)[[2]]/bcols
-		if(interceptsPerSib==2){
-			int = rbind(int, cbind(bvals, bvals))
-		} else if(interceptsPerSib==3){
-			int = rbind(int, cbind(bvals, bvals, bvals))
+		# e.g.
+		# m1$top$meansBetas$values
+		#                   ht
+		# age    -0.0005409507
+		# cohort -0.0045778153
+
+		bNtraits = dim(b)[[2]]
+		# force this to become a dataframe
+		bVals = b[ ,1:bNtraits, drop = FALSE]
+		nSib = dim(interceptVals)[[2]]/bNtraits
+		if(nSib==2){
+			widebVals = cbind(bVals, bVals)
+		} else if(nSib==3){
+			widebVals = cbind(bVals, bVals, bVals)
 		}else{
-			umx_msg("Polite note: email Tim as this number of means not expected")
+			umx_msg("Polite note: email package maintainer as this number of means not expected")
 		}
-		row.names(int) = c("intercept", "beta")
+		meanVals = rbind(interceptVals, widebVals)
+		# row.names(meanVals) = c("intercept", paste0("beta", 1:bNtraits))
+		row.names(meanVals)[1] = "intercept"
 	} else {
-		int = model$top$expMean$values
-		if(!is.null(int)){
+		meanVals = model$top$expMean$values
+		if(!is.null(meanVals)){
 			# expMeans
 			caption = "Means (from model$top$expMean)"
-			row.names(int) = "intercept"
+			row.names(meanVals) = "intercept"
 		}else{
 			# no means
 		}
 	}
 
-	if(!is.null(int)){
-		umx_print(int, digits = digits, caption = caption, file=report, append = TRUE, sortableDF = TRUE)
-		# if(report == "html"){
-		# 	# depends on R2HTML::HTML
-		# 	R2HTML::HTML(int, file = "tmp.html", Border = 0, append = TRUE, sortableDF = TRUE);
-		# 	umx_open("tmp.html")
-		# }
+	if(!is.null(meanVals)){
+		umx_print(meanVals, digits = digits, caption = caption, report=report, append = TRUE, sortableDF = TRUE)
 	}		
 }
 
@@ -455,7 +480,7 @@ xmu_check_needs_means <- function(data, type = c("Auto", "FIML", "cov", "cor", "
 	allContinuousMethod = match.arg(allContinuousMethod)
 	# data must be mxData
 	
-	if(class(data) == "data.frame"){
+	if(inherits(data, "data.frame")){
 		if(type %in% c("WLS", "DWLS", "ULS")){
 			tmp =xmu_describe_data_WLS(data, allContinuousMethod = allContinuousMethod)
 			return(tmp$hasMeans)
@@ -610,9 +635,9 @@ xmu_data_missing <- function(data, selVars, sep= NULL, dropMissingDef = TRUE, hi
 #' 
 xmu_describe_data_WLS <- function(data, allContinuousMethod = c("cumulants", "marginals"), verbose=FALSE){
 	allContinuousMethod = match.arg(allContinuousMethod)
-	if(class(data) == "data.frame"){
+	if(inherits(data, "data.frame")){
 		# all good
-	} else if(class(data) == "MxDataStatic" && data$type == "raw"){
+	} else if(inherits(data, "MxDataStatic") && data$type == "raw"){
 		data = data$observed
 	}else{
 		message("xmu_describe_data_WLS currently only knows how to process dataframes and mxData of type = 'raw'.\n",
@@ -643,6 +668,7 @@ xmu_describe_data_WLS <- function(data, allContinuousMethod = c("cumulants", "ma
 #' @param data A [data.frame()] or [mxData()]
 #' @param type What data type is wanted out c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS')
 #' @param manifests If set, only these variables will be retained.
+#' @param weight Passes weight values to mxData
 #' @param numObs Only needed if you pass in a cov/cor matrix wanting this to be upgraded to mxData
 #' @param fullCovs Covariate names if any (NULL = none) These are checked by `dropMissingDef`
 #' @param dropMissingDef Whether to automatically drop missing def var rows for the user (default = TRUE). You get a polite note.
@@ -706,7 +732,7 @@ xmu_describe_data_WLS <- function(data, allContinuousMethod = c("cumulants", "ma
 #' # =======================
 #' xmu_make_mxData(data= c("a", "b", "c"), type = "Auto")
 #' 
-xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS'), manifests = NULL, numObs = NULL, fullCovs = NULL, dropMissingDef = TRUE, verbose = FALSE, use = "pairwise.complete.obs") {
+xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", 'WLS', 'DWLS', 'ULS'), manifests = NULL, numObs = NULL, weight = NULL, fullCovs = NULL, dropMissingDef = TRUE, verbose = FALSE, use = "pairwise.complete.obs") {
 	type = match.arg(type)
 	if(is.null(data)){
 		message("You must set data: either data = data.frame or data = mxData(yourData, type = 'raw|cov)', ...) or at least a list of variable names if using umxRAM in sketch mode)")
@@ -744,7 +770,9 @@ xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", '
 
 		if(dropColumns){
 			# Trim down the data to include only the requested columns 
-			data = data[, namesNeeded, drop = FALSE]
+     if (!is.null(weight)) namesNeeded = append(namesNeeded, weight)
+      data = data[, namesNeeded, drop = FALSE]
+ 
 		}
 		if(!is.null(fullCovs)){
 			# drop rows with missing def vars or stop
@@ -753,7 +781,11 @@ xmu_make_mxData <- function(data= NULL, type = c("Auto", "FIML", "cov", "cor", '
 		
 		# Upgrade data.frame to mxData of desired type
 		if(type %in% c("Auto", "FIML")){
-			data = mxData(observed = data, type = "raw")
+      if (!is.null(weight)) {
+        data = mxData(observed = data, type = "raw", weight = weight)
+      } else {
+        data = mxData(observed = data, type = "raw")
+      }
 		}else if(type == "cov"){
 			# TODO xmu_make_mxData: could refuse to do this, as we don't know how to handle missingness...
 			if(use %in% c("everything", "all.obs") && anyNA(data)){

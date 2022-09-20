@@ -136,6 +136,7 @@ to .25 to model dominance effects.
 of degrees of freedom to simultaneously model C and D with only MZ and DZ twin pairs (Eaves et al. 1978 p267).
 }
 \examples{
+\dontrun{
 
 # ==============================
 # = Univariate model of weight =
@@ -212,8 +213,6 @@ data(twinData)
 twinData[,c("ht1", "ht2")]= twinData[,c("ht1", "ht2")]*100
 mzData = twinData[twinData$zygosity \%in\% c("MZFF", "MZMM"), ]
 dzData = twinData[twinData$zygosity \%in\% c("DZFF", "DZMM", "DZOS"), ]
-mzData = mzData[1:80, ] # Quicker run to keep CRAN happy
-dzData = dzData[1:80, ]
 m1 = umxACEv(selDVs = c("ht", "wt"), sep = '', dzData = dzData, mzData = mzData)
 
 # ===================
@@ -230,8 +229,8 @@ twinData$obese2 = cut(twinData$bmi2, breaks = c(-Inf, cutPoints, Inf), labels = 
 
 # Make the ordinal variables into mxFactors (ensure ordered is TRUE, and require levels)
 twinData[, c("obese1", "obese2")] = umxFactor(twinData[, c("obese1", "obese2")])
-mzData = twinData[twinData$zygosity \%in\% "MZFF", ][1:80,] # 80 pairs for speed on CRAN
-dzData = twinData[twinData$zygosity \%in\% "DZFF", ][1:80,]
+mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
+dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
 m2 = umxACEv(selDVs = "obese", dzData = dzData, mzData = mzData, sep = '')
 
 # FYI: Show mz, dz, and t1 and t2 have the same levels!
@@ -275,10 +274,8 @@ twinData[, ordDVs] = umxFactor(twinData[, ordDVs])
 selDVs = c("wt", "obese")
 mzData = twinData[twinData$zygosity \%in\% "MZFF", ]
 dzData = twinData[twinData$zygosity \%in\% "DZFF", ]
-\dontrun{
 m1 = umxACEv(selDVs = selDVs, dzData = dzData, mzData = mzData, sep = '')
 umxSummary(m1)
-}
 
 # ===================================
 # Example with covariance data only =
@@ -291,6 +288,7 @@ mz = cov(twinData[twinData$zygosity \%in\% "MZFF", tvars(selDVs, "")], use = "co
 dz = cov(twinData[twinData$zygosity \%in\% "DZFF", tvars(selDVs, "")], use = "complete")
 m1 = umxACEv(selDVs = selDVs, sep= "", dzData = dz, mzData= mz, numObsDZ= 569, numObsMZ= 351)
 umxSummary(m1, std = FALSE)
+}
 
 }
 \references{
@@ -308,6 +306,8 @@ Other Twin Modeling Functions:
 \code{\link{umxACEcov}()},
 \code{\link{umxACE}()},
 \code{\link{umxCP}()},
+\code{\link{umxDiffMZ}()},
+\code{\link{umxDiscTwin}()},
 \code{\link{umxDoCp}()},
 \code{\link{umxDoC}()},
 \code{\link{umxGxE_window}()},

@@ -5,31 +5,34 @@
 \title{"make" the umx package using devtools: release to CRAN etc.}
 \usage{
 umx_make(
-  what = c("load", "quick_install", "install_full", "spell", "run_examples", "check",
-    "test", "win", "rhub", "lastRhub", "release", "travisCI", "sitrep"),
+  what = c("load", "quickInst", "install", "spell", "sitrep", "checkCRAN", "testthat",
+    "examples", "win", "rhub", "lastRhub", "release"),
   pkg = "~/bin/umx",
   check = TRUE,
   run = FALSE,
   start = NULL,
   spelling = "en_US",
   which = c("win", "mac", "linux", "solaris"),
+  run_dont_test = FALSE,
   spell = TRUE
 )
 }
 \arguments{
-\item{what}{whether to "install", "release" to CRAN, "test", "check" test on "win" or "rhub", "spell", or "examples"))}
+\item{what}{whether to "install", "release" to CRAN, "test", "check" test on "win" or "rhub", "spell", or "examples")).}
 
 \item{pkg}{the local path to your package. Defaults to my path to umx.}
 
 \item{check}{Whether to run check on the package before release (default = TRUE).}
 
-\item{run}{If what is "examples", whether to also run examples marked don't run. (default FALSE)}
+\item{run}{If what is "examples", whether to also run examples marked don't run. (default FALSE).}
 
 \item{start}{If what is "examples", which function to start from (default (NULL) = beginning).}
 
 \item{spelling}{Whether to check spelling before release (default = "en_US": set NULL to not check).}
 
-\item{which}{What rhub platform to use? c("mac", "linux", "win")}
+\item{which}{What rhub platform to use? c("mac", "linux", "win").}
+
+\item{run_dont_test}{When checking.}
 
 \item{spell}{for rhub, check spelling? TRUE}
 }
@@ -41,20 +44,22 @@ Easily  run devtools "install", "release", "win", "examples" etc.
 }
 \examples{
 \dontrun{
-umx_make(what = "q")        # Quick install
-umx_make(what = "install")  # Just installs the package
-umx_make(what = "examples") # Run the examples
-umx_make(what = "spell")    # Spell check the documents
-umx_make(what = "check")    # Run R CMD check
-umx_make(what = "rhub")     # Check on rhub
-umx_make(what = "win")      # Check on win-builder
-umx_make(what = "release")  # Release to CRAN
-tmp = umx_make(what = "lastRhub") # View rhub result
+# umx_make()  # Just load new code (don't rebuild help etc)
+# umx_make(what = "quickInst") # Quick install
+# umx_make(what = "install")   # Install the package
+# umx_make(what = "spell")     # Spell check the documents
+# umx_make(what = "sitrep")    # Are needed packages up to date?
+# umx_make(what = "examples")  # Run the examples
+# umx_make(what = "checkCRAN") # Run R CMD check
+# umx_make(what = "rhub")      # Check on rhub
+# umx_make(what = "win")       # Check on win-builder
+# umx_make(what = "release")   # Release to CRAN
+# tmp = umx_make(what = "lastRhub") # View rhub result
 }
 }
 \references{
 \itemize{
-\item \url{https://github.com/tbates/umx}, \url{https://tbates.github.io}
+\item \url{https://devtools.r-lib.org}, \url{https://github.com/tbates/umx}
 }
 }
 \seealso{

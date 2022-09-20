@@ -101,6 +101,7 @@ umx_lower2full(tmp, byrow = FALSE, diag = TRUE)
 \seealso{
 Other Data Functions: 
 \code{\link{noNAs}()},
+\code{\link{prolific_check_ID}()},
 \code{\link{umxFactor}()},
 \code{\link{umxHetCor}()},
 \code{\link{umx_as_numeric}()},
@@ -109,6 +110,7 @@ Other Data Functions:
 \code{\link{umx_make_TwinData}()},
 \code{\link{umx_make_fake_data}()},
 \code{\link{umx_make_raw_from_cov}()},
+\code{\link{umx_merge_randomized_columns}()},
 \code{\link{umx_polychoric}()},
 \code{\link{umx_polypairwise}()},
 \code{\link{umx_polytriowise}()},

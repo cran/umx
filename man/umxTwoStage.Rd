@@ -3,16 +3,16 @@
 \name{umxTwoStage}
 \alias{umxTwoStage}
 \alias{umxMR}
-\title{Build a SEM implementing the equivalent of 2-stage least squares regression}
+\title{Build a SEM implementing the instrumental variable design}
 \usage{
 umxTwoStage(
   formula = Y ~ X,
   instruments = ~qtl,
   data,
   subset,
-  weights,
   contrasts = NULL,
-  name = "tsls",
+  name = "IV_model",
+  tryHard = c("no", "yes", "ordinal", "search"),
   ...
 )
 }
@@ -25,13 +25,11 @@ umxTwoStage(
 
 \item{subset}{(optional) vector specifying a subset of observations to be used in fitting the model.}
 
-\item{weights}{(optional) vector of weights to be used in the fitting process (not supported)
-If specified should be a non-negative numeric vector with one entry for each observation,
-to be used to compute weighted 2SLS estimates.}
-
 \item{contrasts}{an optional list (not supported)}
 
-\item{name}{for the model (default = "tsls")}
+\item{name}{for the model (default = "IVmodel")}
+
+\item{tryHard}{Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"}
 
 \item{...}{arguments to be passed along. (not supported)}
 }
@@ -41,7 +39,7 @@ to be used to compute weighted 2SLS estimates.}
 }
 }
 \description{
-\code{umxMR} (\code{umxTwoStage}) implements the Structural Equation Model equivalent of a 2SLS regression.
+\code{umxMR} (\code{umxTwoStage}) implements a Mendelian randomization or instrumental variable Structural Equation Model.
 For ease of learning, the parameters follow the \code{tsls()} function in the sem package.
 }
 \details{
@@ -62,8 +60,7 @@ library(umx)
 # = Mendelian Randomization analysis =
 # ====================================
 
-# Note: in practice: many more subjects are desirable - this just to let example run fast
-df = umx_make_MR_data(1000) 
+df = umx_make_MR_data(10e4)
 m1 = umxMR(Y ~ X, instruments = ~ qtl, data = df)
 parameters(m1)
 plot(m1, means = FALSE, min="") # help DiagrammaR layout the plot.
@@ -76,7 +73,7 @@ m1 = lm(Y ~ X    , data = df); coef(m1) # incorrect .35 effect of X on Y
 m1 = lm(Y ~ X + U, data = df); coef(m1) # Controlling U reveals the true 0.1 beta weight
 
 
-df = umx_make_MR_data(1e5) 
+df = umx_make_MR_data(10e4) 
 m1 = umxMR(Y ~ X, instruments = ~ qtl, data = df)
 coef(m1)
 
@@ -93,13 +90,12 @@ m3 = tsls(formula = Y ~ X, instruments = ~ qtl, data = (df[1, "qtl"] = NA))
 }
 \references{
 \itemize{
-\item 
-\itemize{
 \item Fox, J. (1979) Simultaneous equation models and two-stage least-squares. In Schuessler, K. F. (ed.) \emph{Sociological Methodology}, Jossey-Bass.
-}
 }
 \itemize{
 \item Greene, W. H. (1993) \emph{Econometric Analysis}, Second Edition, Macmillan.
+\item Sekula, P., Del Greco, M. F., Pattaro, C., & Kottgen, A. (2016). Mendelian Randomization as an Approach to
+Assess Causality Using Observational Data. \emph{Journal of the American Society of Nephrology}, \strong{27}), 3253-3265. \doi{10.1681/ASN.2016010098}
 }
 }
 \seealso{

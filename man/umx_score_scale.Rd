@@ -11,7 +11,7 @@ umx_score_scale(
   min = 1,
   max = NULL,
   data = NULL,
-  score = c("total", "mean", "max", "factor"),
+  score = c("total", "proportionCorrect", "errors", "mean", "max", "factor"),
   name = NULL,
   na.rm = TRUE,
   minManifests = NA,
@@ -36,7 +36,7 @@ umx_score_scale(
 
 \item{data}{The data frame}
 
-\item{score}{Whether to compute the score total, mean, max, or factor (default = "total")}
+\item{score}{Whether to compute total, proportionCorrect, errors, mean, max, or factor (default = "total")}
 
 \item{name}{= name of the scale to be returned. Defaults to "base_score"}
 
@@ -48,13 +48,13 @@ umx_score_scale(
 
 \item{mapStrings}{For recoding input like "No"/"Maybe"/"Yes" to numeric 0,1,2}
 
-\item{omegaNfactors}{nfactors for the omega function (if requesting reliability) (default = 1)}
+\item{omegaNfactors}{Number of factors for the omega reliability (default = 1)}
 
 \item{digits}{Rounding for omega etc. (default 2)}
 
 \item{verbose}{Whether to print the whole omega output (FALSE)}
 
-\item{suffix}{(if dealing with, e.g. "baseN_T1")}
+\item{suffix}{(if dealing with, e.g. "_T1")}
 }
 \value{
 \itemize{
@@ -64,7 +64,7 @@ umx_score_scale(
 \description{
 Use this function to generate scores as the appropriate sum of responses to the normal and reversed items in a scale.
 
-Items must be named on the pattern \code{baseN}, where \code{base} is the string common to all item (column) names and N is the item number in the scale.
+Items must be named on the pattern \code{basename + N + suffix}, where \code{base} is the prefix common to all item (column) names, N is item number in the scale, and suffix an optional trail (like "_T1").
 
 \code{pos} and \code{rev} are vectors of the item numbers for the normal and reverse-scored item numbers.
 
@@ -157,6 +157,7 @@ bfi= umx_score_scale(name="As", base="As", pos=2:5, rev=1, mapStrings = mapStrin
 \seealso{
 Other Data Functions: 
 \code{\link{noNAs}()},
+\code{\link{prolific_check_ID}()},
 \code{\link{umxFactor}()},
 \code{\link{umxHetCor}()},
 \code{\link{umx_as_numeric}()},
@@ -166,6 +167,7 @@ Other Data Functions:
 \code{\link{umx_make_TwinData}()},
 \code{\link{umx_make_fake_data}()},
 \code{\link{umx_make_raw_from_cov}()},
+\code{\link{umx_merge_randomized_columns}()},
 \code{\link{umx_polychoric}()},
 \code{\link{umx_polypairwise}()},
 \code{\link{umx_polytriowise}()},

@@ -3,7 +3,6 @@
 \name{plot.MxModel}
 \alias{plot.MxModel}
 \alias{plot}
-\alias{umxPlot}
 \title{Create and display a graphical path diagram for a model.}
 \usage{
 \method{plot}{MxModel}(
@@ -55,10 +54,12 @@
 \description{
 \code{\link[=plot]{plot()}} produces SEM diagrams in graphviz format, and relies on \code{\link[=DiagrammeR]{DiagrammeR()}} (or a
 graphviz application) to create the image.
-\emph{Note:} DiagrammeR is supported out of the box.  By default, plots open in your browser.
 }
 \details{
-If you use umx_set_plot_format("graphviz"), they will open in a graphviz helper app (if installed).
+\emph{Note:} DiagrammeR is supported out of the box.  By default, plots open in your browser. Other options include pdf SVG etc.
+
+If you use \code{umx_set_plot_format("graphviz")}, graphs will open in a graphviz helper app (if installed).
+
 The commercial application \dQuote{OmniGraffle} is great for editing these images.
 On unix and windows, \code{\link[=plot]{plot()}} will create a pdf and open it in your default pdf reader.
 
@@ -125,6 +126,7 @@ Other Plotting functions:
 \code{\link{umxPlotIP}()},
 \code{\link{umxPlotSexLim}()},
 \code{\link{umxPlotSimplex}()},
+\code{\link{umxPlot}()},
 \code{\link{umx}}
 }
 \concept{Plotting functions}

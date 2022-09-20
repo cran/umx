@@ -14,6 +14,7 @@ umxRAM(
   suffix = "",
   comparison = TRUE,
   type = c("Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"),
+  weight = NULL,
   allContinuousMethod = c("cumulants", "marginals"),
   autoRun = getOption("umx_auto_run"),
   tryHard = c("no", "yes", "ordinal", "search"),
@@ -47,6 +48,8 @@ umxRAM(
 \item{comparison}{Compare the new model to the old (if updating an existing model: default = TRUE)}
 
 \item{type}{One of "Auto", "FIML", "cov", "cor", "WLS", "DWLS", "ULS"}
+
+\item{weight}{Passes weight values to mxData}
 
 \item{allContinuousMethod}{"cumulants" or "marginals". Used in all-continuous WLS data to determine if a means model needed.}
 
@@ -84,12 +87,14 @@ umxRAM(
 supports \code{\link[=umxPath]{umxPath()}}. To support cross-language sharing and science learning, \code{umxRAM} also supports lavaan model strings.
 
 Here's a path example that models miles per gallon (mpg) as a function of weight (wt) and engine displacement (disp)
-using the widely used \code{mtcars} data set.\preformatted{m1 = umxRAM("tim", data = mtcars,
+using the widely used \code{mtcars} data set.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{m1 = umxRAM("tim", data = mtcars,
 	umxPath(c("wt", "disp"), to = "mpg"),
 	umxPath("wt", with = "disp"),
 	umxPath(v.m. = c("wt", "disp", "mpg"))
 )
-}
+}\if{html}{\out{</div>}}
 
 As you can see, most of the work is done by \code{\link[=umxPath]{umxPath()}}. \code{umxRAM} wraps these paths up, takes the \verb{data =} input, and
 then internally sets up all the labels and start values for the model, runs it, and calls \code{\link[=umxSummary]{umxSummary()}}, and \code{\link[=plot.MxModel]{plot.MxModel()}}.
@@ -103,14 +108,18 @@ saying \code{lm(y ~ x + df)} instead of \code{lm(y ~ x, data = df)}.
 
 \strong{String Syntax}
 
-Here is an example using lavaan syntax (for more, see \code{\link[=umxLav2RAM]{umxLav2RAM()}})\if{html}{\out{<div class="sourceCode R">}}\preformatted{m1 = umxRAM("mpg ~ wt + disp", data = mtcars)
+Here is an example using lavaan syntax (for more, see \code{\link[=umxLav2RAM]{umxLav2RAM()}})
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{m1 = umxRAM("mpg ~ wt + disp", data = mtcars)
 }\if{html}{\out{</div>}}
 
 \strong{Sketch mode}
 
 If you are at the "sketching" stage of theory consideration, \code{umxRAM} supports
 setting data to a simple vector of manifest names.
-As usual in \code{umxRAM}, any variables you refer to that are not in data are treated as latents.\if{html}{\out{<div class="sourceCode R">}}\preformatted{m1 = umxRAM("sketch", data = c("A", "B"),
+As usual in \code{umxRAM}, any variables you refer to that are not in data are treated as latents.
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{m1 = umxRAM("sketch", data = c("A", "B"),
 	umxPath("C", to = c("A", "B"), values=.3),
 	umxPath("A", with = "B", values=.45),
 	umxPath(v.m. = c("A", "B")),
@@ -298,6 +307,17 @@ m1$S$labels
 # wt   "mpg_with_wt"   "wt_with_wt"  "b1"
 # disp "disp_with_mpg" "b1"          "disp_with_disp"
 parameters(m1)
+
+# ===========
+# = Weights =
+# ===========
+# !!! Not tested !!!
+mtcars$litres = mtcars$disp/61.02
+m1 = umxRAM("tim", data = mtcars, weight= "cyl",
+	umxPath(c("wt", "litres"), to = "mpg"),
+	umxPath("wt", with = "litres"),
+	umxPath(v.m. = c("wt", "litres", "mpg"))
+)
 
 }
 
