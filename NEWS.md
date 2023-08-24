@@ -1,6 +1,27 @@
-## dev umx 4.2.00
+## dev umx 4.25.00
 
-## umx 4.15.0
+## umx 4.16.00
+* August 2023 R 4.3.1 (2023-06-16)
+* NEW: `umxMRDoC` Direction of causation with twins! (by @lf-araujo)
+* NEW: `umxMatrixFree` to help in simulations (by @lf-araujo)
+* NEW: `prolific_anonymize()`
+* NEW: `ggAddR` helper to add R/beta to a graph
+* NEW `umx_strings2numeric` helper function to recode strings to numbers
+* IMPROVED: `RMSEA()`
+* IMPROVED: `umxAPA` gains `cols` to allow input checking in place of Rs…
+* IMPROVED: `umx_strings2numeric` example, handle 1 col df
+* IMPROVED: `prolific_read_demog` handle "DATA_EXPIRED"
+* IMPROVED: `umx_score_scale` reliability works with `correctAnswers`
+* IMPROVED: `umx_is_numeric` works with tibble input h/t @psychelzh
+* IMPROVED: `libs` can for package update using `force.update = TRUE`
+* IMPROVED: `umxAPA` cor/means output data.frame input
+* FIXED: `umxModify` works with new R null behavior
+* FIXED: `umxAPA` (and others) report = "html" works properly.
+* REFS: `umx_score_scale` omega refs
+* RENAME: `umx_read_prolific_demog` -> `prolific_read_demog`
+
+## umx 4.15.1
+* Nov 2022 R 4.2.1
 * NEW: `umx_merge_randomized_columns` wide-2-mingled (rather than wide2long) to unify data from people assigned to different conditions.
 * NEW: `umxDiscTwin` Discordant twin test for causal effects.
 * NEW: `umxDiscTwin` Graphical output for publication.
@@ -468,7 +489,7 @@
 * NEW: `xmu_dot_define_shapes` builds the latents and manifest shape definitions (should be xmu_)
 * NEW: `xmu_check_variance` checks data for minVar (default > 0.1) and comparable scale for variables (maxVarRatio default = 500)
 	* `umx_set_data_variance_check` get/set variance tolerance.
-* NEW: `umx` is checked on [travis](https://travis-ci.org/tbates/umx/builds).
+* NEW: `umx` is checked on travis
 * NEW: [github](https://github.com/tbates/umx) has build, doi, etc info boxes! 
 * NEW: `plot` allows user control over splines, as well as max, min, same positioning.
 * NEW: `xmu_dot_move_ranks`.

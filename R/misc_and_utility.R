@@ -50,6 +50,37 @@
 #      and it tortures me.
 
 
+#' Add a fit statistic to a ggplot
+#'
+#' @description
+#' Add a fit statistic to a ggplot
+#'
+#' @param model a statistical model which contains a fit measure.
+#' @param effect optional hard coded fit/effect.
+#' @param xloc x location of R.
+#' @param yloc y location of R.
+#' @return - plot
+#' @export
+#' @family Plotting functions
+#' @seealso - [umxPlot()], [umxPlotFun()]
+#' @md
+#' @examples
+#' \dontrun{
+#'	m1 = lm(mpg ~ wt, data = mtcars)
+#'	p = ggplot2::ggplot(data = mtcars, aes(x = wt, y = mpg))+ geom_point() +geom_smooth()+
+#'	ggAddR(m1, effect = NA, xloc=2, yloc= 10); p
+#' }
+ggAddR <- function(model, effect = NA, xloc=8, yloc= 10) {
+	if(is.na(effect)){
+		r2 = round(summary(model)$r.squared, 3)
+		lab = bquote(R^2 == .(r2))
+		return(cowplot::draw_label(lab, x = xloc, y = yloc, fontfamily = "Times", size = 12))
+	} else {
+		return(cowplot::draw_label(effect, x = xloc, y = yloc, fontfamily = "Times", size = 12))
+	}
+}
+
+
 
 # #' Easily use the Box-Cox transform
 # #'
@@ -109,6 +140,7 @@
 #' `libs` allows loading multiple libraries in one call
 #'
 #' @param ... library names as strings, e.g. "pwr"
+#' @param force.update install.package even if present (to get new version) FALSE
 #' @return - nothing.
 #' @export
 #' @family Miscellaneous Utility Functions
@@ -120,11 +152,14 @@
 #' libs("umx", c("OpenMx", "car"))
 #' remove.packages()
 #' }
-libs <- function(...) {
+libs <- function(... , force.update = FALSE) {
 	dot.items = list(...) # grab all the dot items
 	dot.items = unlist(dot.items) # In case any dot items are lists
 	for (pack in dot.items) {
 		result = tryCatch({
+			if(force.update){
+				install.packages(pack)
+			}
 			library(pack, character.only = TRUE)
 		}, warning = function(warn) {
 			umx_msg("Who's, Z?")
@@ -1370,12 +1405,62 @@ umx_factor <- umxFactor
 # = Utility =
 # ===========
 
+#' A wrapper to map columns of strings to numeric.
+#' 
+#' If you give one column name, this is changed to numeric, and returned as a **vector**.
+#' If you give multiple column names, or don't set cols, each is changed to numeric, and the updated **data.frame** is returned.
+#' 
+#' @param df The df
+#' @param cols (optional) list of columns (default = use all)
+#' @param mapStrings legal strings which will be mapped in order to numbers.
+#' @return - df
+#' @export
+#' @family Data Functions
+#' @md
+#' @examples
+#' tmp = data.frame(x=letters)
+#' umx_strings2numeric(tmp, mapStrings = letters)
+#' umx_strings2numeric(tmp, cols= "x", mapStrings = letters)
+umx_strings2numeric <- function(df, cols= NA, mapStrings = NULL) {
+	if(!all(is.na(cols))){
+		umx_check_names(cols, data = df)
+		df = df[, cols, drop=FALSE]
+	}else{
+		cols = names(df)
+		df = df[, cols, drop = FALSE]
+	}
+	for (thisCol in cols){
+		# check values
+		unique_values = unique(df[, thisCol, drop = TRUE])
+		unique_values = unique_values[!is.na(unique_values)]
+		if(is.null(mapStrings)){
+			# use table to find valid strings in some order... (not good, tell the user!)
+			mapStrings = unique_values
+			message("You didn't set mapStrings. This is unwise! I found the following responses, and used them in this order:", omxQuotes(mapStrings))
+		}else{
+			if(any(!(unique_values %in% mapStrings))){
+				notFound = unique_values[which(!(unique_values %in% mapStrings))]
+				stop("Some values in column ", omxQuotes(thisCol), " not in mapStrings, e.g.. :", omxQuotes(notFound))
+			}
+		}
+		# string 2 numeric
+		tmp = factor(df[, thisCol, drop = TRUE], levels = mapStrings, labels = 1: length(mapStrings))
+		df[, thisCol] = as.numeric(as.character(tmp))
+	}
+	if(length(cols) == 1){
+		return(df[, cols, drop = TRUE])
+	} else {
+		return(df)
+	}
+}
+
 #' A wrapper to make paran easier to use.
 #' Just automates applying [complete.cases()]
 #' 
 #' @param df The df (just the relevant columns)
 #' @param cols (optional) list of columns (default = use all)
 #' @param graph Whether to graph.
+#' @param mapStrings optional mapping if cols are strings
 #' @return - nothing
 #' @export
 #' @family Miscellaneous Stats Functions
@@ -1387,11 +1472,24 @@ umx_factor <- umxFactor
 #' umxParan(bfi[, paste0("A", 1:5)])
 #' umxParan(bfi, cols= paste0("A", 1:5))
 #' # umxParan(bfi, paste0("AB", 1))
-umxParan <- function(df, cols= NA, graph = TRUE) {
+umxParan <- function(df, cols= NA, graph = TRUE, mapStrings = NULL) {
 	if(!all(is.na(cols))){
 		umx_check_names(cols, data = df)
 		df = df[, cols]
 	}
+	if(!is.null(mapStrings)){
+		for (thisCol in names(df)){
+			unique_values = unique(df[, thisCol, drop = TRUE])
+			unique_values = unique_values[!is.na(unique_values)]
+			if(any(!(unique_values %in% mapStrings))){
+				notFound = unique_values[which(!(unique_values %in% mapStrings))]
+				stop("Some values in column ", omxQuotes(thisCol), " not in mapStrings, e.g.. :", omxQuotes(notFound))
+			}
+			tmp = factor(df[, thisCol, drop = TRUE], levels = mapStrings, labels = 1: length(mapStrings))
+			df[, thisCol] = as.numeric(as.character(tmp))
+		}
+	}
+
 	paran::paran(df[complete.cases(df), ], graph = graph)
 }
 
@@ -1414,15 +1512,16 @@ umxParan <- function(df, cols= NA, graph = TRUE) {
 #' @param base String common to all item names.
 #' @param pos The positive-scored item numbers.
 #' @param rev The reverse-scored item numbers.
-#' @param min Min possible score (default = 1). Not implemented for values other than 1 so far...
-#' @param max Max possible score for an item (to compute how to reverse items).
+#' @param min Minimum legal response value (default = 1). Not implemented for values other than 1 so far...
+#' @param max Maximum legal response value (also used to compute reversed item values).
 #' @param data The data frame
-#' @param score Whether to compute total, proportionCorrect, errors, mean, max, or factor (default = "total")
-#' @param name = name of the scale to be returned. Defaults to "base_score"
+#' @param score Score total (default), proportionCorrect, errors, mean, max, or factor scores
+#' @param name The name of the scale to be returned. Defaults to "`base`_score"
 #' @param na.rm Whether to delete NAs when computing scores (Default = TRUE) Note: Choice affects mean!
-#' @param minManifests If score = factor, how many missing items to tolerate for an individual?
-#' @param alpha print Cronbach's alpha? (TRUE)
-#' @param mapStrings For recoding input like "No"/"Maybe"/"Yes" to numeric 0,1,2
+#' @param minManifests How many missing items to tolerate for an individual (when score = factor)
+#' @param alpha print Reliability (omega and Cronbach's alpha) (TRUE)
+#' @param mapStrings Recoding input like "No"/"Maybe"/"Yes" into numeric values (0,1,2)
+#' @param correctAnswer Use when scoring items with one correct response (1/0).
 #' @param omegaNfactors Number of factors for the omega reliability (default = 1)
 #' @param verbose Whether to print the whole omega output (FALSE)
 #' @param digits Rounding for omega etc. (default 2)
@@ -1430,7 +1529,9 @@ umxParan <- function(df, cols= NA, graph = TRUE) {
 #' @return - scores
 #' @export
 #' @family Data Functions
-#' @md
+#' @references -  Revelle, W. (2022) psych: Procedures for Personality and Psychological Research, Northwestern University, Evanston, Illinois, USA, <https://CRAN.R-project.org/package=psych> Version = 2.2.9.
+#' * McNeish, D. (2018). Thanks coefficient alpha, we’ll take it from here. *Psychological Methods*, **23**, 412-433. \doi{10.1037/met0000144}.
+#' @md 
 #' @examples
 #' library(psych)
 #' library(psychTools)
@@ -1455,6 +1556,27 @@ umxParan <- function(df, cols= NA, graph = TRUE) {
 #'    pos = 2:5, rev = 1, max = 6, data= bfi, score="mean")
 #' tmp$A[1] # = 4
 #'
+#' # ========================
+#' # = Request factor score =
+#' # ========================
+#' \dontrun{
+#'tmp = umx_score_scale(name = "A", base = "A", pos = 2:5, rev = 1,
+#'    max = 6, score = "factor", minManifests = 4, data= bfi)
+#' #            g
+#' # A2 0.6574826
+#' # A3 0.7581274
+#' # A4 0.4814788
+#' # A5 0.6272332
+#' # A1 0.3736021
+#'
+#' # ==================
+#' # = Request alpha  =
+#' # ==================
+#' 
+#' tmp=umx_score_scale(base="A", pos=2:5, rev=1, max=6, data=bfi, alpha=TRUE)
+#' # omega t = 0.72
+#' }
+#'
 #' # ==================
 #' # = na.rm = TRUE ! =
 #' # ==================
@@ -1476,7 +1598,7 @@ umxParan <- function(df, cols= NA, graph = TRUE) {
 #' 
 #' # Default scale name
 #' tmp = umx_score_scale("E", pos = 3:5, rev = 1:2, max = 6, 
-#'    data= tmp, score = "mean", na.rm=FALSE)
+#'    data= tmp, score = "mean", na.rm = FALSE)
 #' tmp$E_score[1]
 #' 
 #' # Using @BillRevelle's psych package: More diagnostics, including alpha
@@ -1508,14 +1630,14 @@ umxParan <- function(df, cols= NA, graph = TRUE) {
 #' bfi$As5 = factor(bfi$A5, levels = 1:6, labels = mapStrings)
 #' bfi= umx_score_scale(name="A" , base="A", pos=2:5, rev=1, max=6, data=bfi)
 #' bfi= umx_score_scale(name="As", base="As", pos=2:5, rev=1, mapStrings = mapStrings, data= bfi)
-umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL, score = c("total", "proportionCorrect", "errors", "mean", "max", "factor"), name = NULL, na.rm=TRUE, minManifests = NA, alpha = FALSE, mapStrings= NULL, omegaNfactors = 1, digits = 2, verbose = FALSE, suffix = "") {
+umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NULL, data= NULL, score = c("total", "proportionCorrect", "errors", "mean", "max", "factor"), name = NULL, na.rm=TRUE, minManifests = NA, alpha = FALSE, mapStrings= NULL,  correctAnswer = NULL, omegaNfactors = 1, digits = 2, verbose = FALSE, suffix = "") {
 	score = match.arg(score)
 	if(is.null(name)){ name = paste0(base, "_score", suffix) }
 	oldData = data
 	umx_check_names(namesNeeded= paste0(base, c(pos, rev), suffix), data=data)
 	if(!is.null(mapStrings)){
 		if(!is.null(max)){
-			# check min max matches mapStrings
+			# Check min max matches mapStrings
 			if(!(length(mapStrings) == length(min:max))){
 				stop(paste0("You set the max and min, but ", min, " to ", max, " must equal the number of map strings: ", length(mapStrings)))
 			}
@@ -1564,28 +1686,43 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 	}
 	allColNames = paste0(base, c(pos, rev), suffix)
 	df = data[ , allColNames, drop = FALSE]
-
+	if(!is.null(correctAnswer)){
+		dfDummy = matrix(nrow = nrow(df), ncol= ncol(df))
+		for (i in 1:nrow(df)) {
+			dfDummy[i,] = (df[i, ] == correctAnswer)
+		}
+		df = dfDummy
+		if(verbose){
+			print(str(df))
+		}
+	}
 	if(alpha){
 		print(reliability(cov(df, use = "pairwise.complete.obs")))
 		suppressWarnings({omegaOut = psych::omega(df, nfactors = omegaNfactors)})
 
 		if(verbose){
-			print(str(df))
 			print(omegaOut)
+			print("\n")
 		}else{
 			if(omegaNfactors == 1){
 				# Omega_h for 1 factor is not meaningful, just omega_t
-				cat(paste0("\u03C9 t = ", round(omegaOut$omega.tot, digits)))
+				cat(paste0("\u03C9 t = ", round(omegaOut$omega.tot, digits), "\n"))
 			} else {
-				cat(paste0("\u03C9 h = ", round(omegaOut$omega_h, digits), "; \u03C9 t = ", round(omegaOut$omega.tot, digits)))
+				cat(paste0("\u03C9 h = ", round(omegaOut$omega_h, digits), "; \u03C9 t = ", round(omegaOut$omega.tot, digits), "\n"))
 			}
 		}
 	}
 
-	if(score == "max"){
+	if(!is.null(correctAnswer)){
+		message("\nPolite note: I returned  the sum of correct Answers scored 1/0.")
 		scaleScore = rep(NA, nrow(df))
 		for (i in 1:nrow(df)) {
-			scaleScore[i] = max(df[i,], na.rm=TRUE)
+			scaleScore[i] = sum(df[i, ], na.rm = TRUE)
+		}
+	} else if(score == "max"){
+		scaleScore = rep(NA, nrow(df))
+		for (i in 1:nrow(df)) {
+			scaleScore[i] = max(df[i,], na.rm = TRUE)
 		}
 	}else if(score == "total"){
 		if(any(is.na(df))){
@@ -1603,7 +1740,7 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 		if(any(is.na(df))){
 			message("\nPolite note: You asked for proportions  (scaleScore/attempted). Just to let you know, some subjects have missing data.")
 		}
-		attempted = rowSums(!is.na(df))
+		attempted  = rowSums(!is.na(df))
 		scaleScore = rowSums(df, na.rm = na.rm)
 		scaleScore = scaleScore/attempted
 	}else if(score == "mean"){
@@ -1685,6 +1822,11 @@ umxVersion <- function (model = NULL, min = NULL, verbose = TRUE, return = c("um
 #' }
 umx_open_CRAN_page <- function(package = "umx", inst=FALSE) {
 	for (p in package) {
+		# asString = deparse(substitute(parameter))
+		# if(!exists(asString)){
+		# 	p = asString
+		# }
+		# umx_msg(p)
 		# 1. Open the web pages
 		system(paste0("open 'https://cran.r-project.org/package=", p, "'"))		
 
@@ -2384,7 +2526,7 @@ umx_make_sql_from_excel <- function(theFile = "Finder") {
 	# remove suffix (i.e., .xlsx )
 	testName = umx_trim(basename(theFile), "\\..+$")
 	
-	df = gdata::read.xls(theFile, sheet = 1, stringsAsFactors= FALSE)
+	df = openxlsx::read.xlsx(theFile, sheet = 1, stringsAsFactors= FALSE)
 
 	expect8 = c("itemText", "direction", "scale", "type")
 	if(!all(expect8 %in% names(df))){
@@ -2503,7 +2645,7 @@ dl_from_dropbox <- function(x, key=NULL){
 #'
 #' @description
 #' `fin_valuation` uses the revenue, operating margin, expenses and PE to compute a market capitalization.
-#' Better to use a more powerful online site, like  <https://dcftool.com/analysis/AAPL> or <https://www.minuteup.co/?stock=RKLB>.
+#' Better to use a more powerful online site.
 #'
 #' @details
 #' Revenue is multiplied by opmargin to get a gross profit. From this the proportion specified in `expenses` is subtracted 
@@ -2519,7 +2661,6 @@ dl_from_dropbox <- function(x, key=NULL){
 #' @export
 #' @family Miscellaneous Functions
 #' @seealso - [fin_interest()], [fin_NI()], [fin_percent()]
-#' @references <https://www.minuteup.co/?stock=RKLB>, <https://dcftool.com/analysis/AAPL>
 #' @md
 #' @examples
 #' fin_valuation(rev=7e9, opmargin=.1, PE=33)
@@ -2976,8 +3117,9 @@ plot.percent <- function(x, ...) {
 #' umxPlotFun(c("sin(x)", "x^3")) + ylim(c(-1,5)) 
 #' }
 #'
-umxPlotFun <- function(fun= dnorm, min= -1, max= 5, xlab = NULL, ylab = NULL, title = NULL, logY = c("no", "log", "log10"), p = NULL) {
+umxPlotFun <- function(fun= c(dnorm, "sin(x) + sqrt(1/x)"), min= -1, max= 5, xlab = NULL, ylab = NULL, title = NULL, logY = c("no", "log", "log10"), p = NULL) {
 	logY = xmu_match.arg(logY, c("no", "log", "log10"), check = FALSE)
+	
 	if(inherits(fun, "numeric")){
 		stop("If you write a function symbolically, you need to put it in quotes, e.g. 'x^2'")
 	} else if(inherits(fun, "character")){
@@ -3008,7 +3150,7 @@ umxPlotFun <- function(fun= dnorm, min= -1, max= 5, xlab = NULL, ylab = NULL, ti
 			p = p + ggplot2::stat_function(fun = fun[[1]], xlim= c(min, max))
 		}
 	}else{
-		p    = ggplot(data.frame(x = c(min, max)), aes(x))
+		p  = ggplot(data.frame(x = c(min, max)), aes(x) )
 		if(logY != "no"){
 			p = p + ggplot2::coord_trans(y = logY)
 		}
@@ -3556,9 +3698,10 @@ umx_update_OpenMx <- install.OpenMx
 #' \dontrun{
 #' # umx_make()  # Just load new code (don't rebuild help etc)
 #' # umx_make(what = "quickInst") # Quick install
-#' # umx_make(what = "install")   # Install the package
-#' # umx_make(what = "spell")     # Spell check the documents
+#' # umx_make(what = "install")   # Full package rebuild and install
+#' # umx_make(what = "spell")     # Spellcheck Rd documents
 #' # umx_make(what = "sitrep")    # Are needed packages up to date?
+#' # umx_make(what = "deps_install") # Update needed packages
 #' # umx_make(what = "examples")  # Run the examples
 #' # umx_make(what = "checkCRAN") # Run R CMD check
 #' # umx_make(what = "rhub")      # Check on rhub
@@ -3566,16 +3709,10 @@ umx_update_OpenMx <- install.OpenMx
 #' # umx_make(what = "release")   # Release to CRAN
 #' # tmp = umx_make(what = "lastRhub") # View rhub result
 #' }
-umx_make <- function(what = c("load", "quickInst", "install", "spell", "sitrep", "checkCRAN", "testthat", "examples", "win", "rhub", "lastRhub", "release"), pkg = "~/bin/umx", check = TRUE, run = FALSE, start = NULL, spelling = "en_US", which = c("win", "mac", "linux", "solaris"), run_dont_test = FALSE, spell=TRUE) {
+umx_make <- function(what = c("load", "quickInst", "install", "spell", "sitrep", "deps_install", "checkCRAN", "testthat", "examples", "win", "rhub", "lastRhub", "release"), pkg = "~/bin/umx", check = TRUE, run = FALSE, start = NULL, spelling = "en_US", which = c("win", "mac", "linux", "solaris"), run_dont_test = FALSE, spell=TRUE) {
 	what  = match.arg(what)
 	which = match.arg(which)
-	if(what == "lastRhub"){
-		prev = rhub::list_package_checks(package = pkg, howmany = 4)
-		check_id = prev$id[1]
-		return(rhub::get_check(check_id))
-	}else if(what == "testthat"){
-		devtools::test(pkg = pkg)
-	}else if(what == "load"){
+	if(what == "load"){
 		devtools::load_all(path = pkg)
 		changed = gert::git_status(repo = "~/bin/umx")
 		if(dim(changed)[1]>=1){
@@ -3593,6 +3730,14 @@ umx_make <- function(what = c("load", "quickInst", "install", "spell", "sitrep",
 		devtools::document(pkg = pkg);
 		devtools::install(pkg = pkg);
 		devtools::load_all(path = pkg)
+	} else if (what == "spell"){
+		spelling::spell_check_package(pkg = pkg, vignettes = TRUE, use_wordlist = TRUE)
+	# }else if (what=="travisCI"){
+	# 	browseURL("https://www.travis-ci.com/tbates/umx")
+	}else if (what == "sitrep"){
+		devtools::dev_sitrep(pkg = pkg)
+	}else if (what == "deps_install"){
+		devtools::install_dev_deps(pkg=pkg)
 	} else if(what == "run_examples"){
 		devtools::run_examples(pkg = pkg, run = run, start = start)
 	} else if(what == "checkCRAN"){
@@ -3619,17 +3764,17 @@ umx_make <- function(what = c("load", "quickInst", "install", "spell", "sitrep",
 		}else{
 			devtools::check_rhub(pkg = pkg, platforms = plat, interactive = FALSE)
 		}
+	} else if(what == "lastRhub"){
+			prev = rhub::list_package_checks(package = pkg, howmany = 4)
+			check_id = prev$id[1]
+			return(rhub::get_check(check_id))
+		}else if(what == "testthat"){
+			devtools::test(pkg = pkg)
 	} else if (what == "release"){
 		oldDir = getwd()
 		setwd(dir= pkg)
 		devtools::release(pkg = pkg, check = check, "--no-manual") # spelling = NULL		 
 		setwd(dir= oldDir)
-	} else if (what == "spell"){
-		spelling::spell_check_package(pkg = pkg, vignettes = TRUE, use_wordlist = TRUE)
-	# }else if (what=="travisCI"){
-	# 	browseURL("https://travis-ci.org/tbates/umx")
-	}else if (what == "sitrep"){
-		devtools::dev_sitrep(pkg = pkg)
 	}else{
 		stop("I don't know how to ", what)
 	}
@@ -5395,7 +5540,7 @@ umx_is_numeric <- function(df, all = TRUE){
 	bIsNumeric = rep(FALSE, length(colNames))
 	i = 1
 	for (n in colNames) {
-		bIsNumeric[i] = is.numeric(df[,n])
+		bIsNumeric[i] = is.numeric(df[, n, drop = TRUE])
 		i = i + 1
 	}
 	if(all){
@@ -5883,6 +6028,7 @@ umx_explode <- function(delimiter = character(), string) {
 #' # Other options passed to R's grep command
 #' umx_names(mtcars, "mpg" , invert = TRUE)  # Non-matches (instead of matches)
 #' umx_names(mtcars, "disp", value  = FALSE) # Return indices of matches 
+#' umx_names(mtcars, "disp", value  = "grepl")  # which var matches disp
 #' umx_names(mtcars, "^d"  , fixed  = TRUE)  # Vars containing literal '^d' (none...)
 #' 
 #' # =======================================
@@ -5904,7 +6050,7 @@ umx_explode <- function(delimiter = character(), string) {
 #' 
 umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE, perl = FALSE, value = TRUE, fixed = FALSE, useBytes = FALSE, invert = FALSE, global = FALSE, collapse = c("as.is", "vector", "formula")) {
 	collapse = match.arg(collapse)
-
+	umx_check(value %in% c(TRUE, FALSE, "grepl"), "stop", "'value' must be one of TRUE, FALSE, or grepl")
 	if(fixed){
 		ignore.case = FALSE
 	}
@@ -5954,8 +6100,11 @@ umx_names <- function(df, pattern = ".*", replacement = NULL, ignore.case = TRUE
 		stop(paste0("umx_names requires a dataframe or something else with names() or parameters(), ", umx_str_from_object(df), " is a ", typeof(df)))
 	}
 	if(is.null(replacement)){
-		tmp =  grep(pattern = pattern, x = nameVector, ignore.case = ignore.case, perl = perl, value = value,
-	     fixed = fixed, useBytes = useBytes, invert = invert)
+		if(value == "grepl"){
+			tmp = grepl(pattern = pattern, x = nameVector, ignore.case = ignore.case, perl = perl, fixed = fixed, useBytes = useBytes)
+		} else {
+			tmp = grep(pattern = pattern, x = nameVector, ignore.case = ignore.case, perl = perl, value = value, fixed = fixed, useBytes = useBytes, invert = invert)
+		}
 	} else {
 		if(global){
 			tmp = gsub(pattern = pattern, replacement = replacement, x = nameVector, ignore.case = ignore.case, perl = perl, fixed = fixed, useBytes = useBytes)
@@ -6272,14 +6421,14 @@ umx_long2wide <- function(data, famID = NA, twinID = NA, zygosity = NA, vars2kee
 #'
 #' @param colNames Names of the columns containing the condition data.
 #' @param df The data frame
-#' @param levels optional names for the levels of condition (default = colNames).
+#' @param levels optional names for the levels of condition (default = `colNames`).
 #' @param newVarName Name for the new column holding the newVarName (default "score").
 #' @param newCondName Name for the new column holding the condition (default "condition").
 #' @param as.factor Turn condition into a factor? (FALSE)
 #' @return - df with new cols
 #' @export
 #' @family Data Functions
-#' @seealso - [umx_long2wide()]
+#' @seealso - [umx_long2wide()], [prolific_check_ID()], [prolific_read_demog()], [prolific_anonymize()]
 #' @md
 #' @examples
 #' \dontrun{
@@ -6332,7 +6481,7 @@ umx_merge_randomized_columns <- function(colNames, df, levels = colNames, newVar
 #' @return - long-format dataframe
 #' @export
 #' @family Twin Data functions
-#' @seealso [reshape()], [umx_merge_randomized_columns()]
+#' @seealso [reshape()], [umx_merge_randomized_columns()], [umx_select_valid()]
 #' @examples
 #' long = umx_wide2long(data = twinData, sep = "")
 #' long = umx_wide2long(data = twinData, sep = "", verbose = TRUE)
@@ -7449,8 +7598,8 @@ umx_file_load_pseudo <- function(fn, bp, suffix = "_NT", chosenp = "S5") {
 #' @param file Path to a file to read.
 #' @param base Optional path to folder, in which case 'file' is just filename.
 #' @param df Existing datafile to merge demographics into (optional)
-#' @param by.df The ID name in your datafile (default = "PROLIFIC_PID" (WAS "PID")
-#' @param by.demog The ID name in the prolific demographics file (default = by.demog (WAS "participant_id") 
+#' @param by.df The ID name in existing datafile (default = "PROLIFIC_PID"
+#' @param by.demog The ID name in the prolific demographics file (default = "Participant id" was `by.demog`)
 #' @param age Name of sex var in demographics file ("age")
 #' @param sex Name of sex var in demographics file ("Sex")
 #' @param vars Additional vars to keep from demographics file (WAS age & Sex)
@@ -7458,6 +7607,7 @@ umx_file_load_pseudo <- function(fn, bp, suffix = "_NT", chosenp = "S5") {
 #' @param all.demog Whether to keep all lines (people) in the demographics file (default = FALSE)
 #' @param verbose Print variable names found in the file.
 #' @return - [[data.frame]]
+#' @seealso - [prolific_check_ID()], [prolific_anonymize()], [umx_merge_randomized_columns()]
 #' @export
 #' @family Data Functions
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
@@ -7465,27 +7615,92 @@ umx_file_load_pseudo <- function(fn, bp, suffix = "_NT", chosenp = "S5") {
 #' @examples
 #' \dontrun{
 #' fp = "~/Desktop/prolific_export_5f20c3e662e3b6407dcd37a5.csv"
-#' df = umx_read_prolific_demog(fp, sex = "gender", df = df)
-#' tmp = umx_read_prolific_demog(fp, by.df = "PROLIFIC_PID", vars=c("EthnicitySimplified"))
+#' df = prolific_read_demog(fp, sex = "Gender", age = "Age", df = df)
+#' tmp = prolific_read_demog(fp, by.df = "PROLIFIC_PID", vars=c("EthnicitySimplified"))
 #' }
-umx_read_prolific_demog <-function(file, base = "", df = NULL, by.df = "PROLIFIC_PID", by.demog = by.df, age = "age", sex = "Sex", vars= NULL, all.df = TRUE, all.demog = FALSE, verbose = FALSE) {
+prolific_read_demog <- function(file, base = "", df = NULL, by.df = "PROLIFIC_PID", by.demog = "Participant.id", age = "age", sex = "Gender", vars= NULL, all.df = TRUE, all.demog = FALSE, verbose = FALSE) {
 	if(base != "") file = paste0(base, file)
-	newdf = read.csv(file, header= TRUE, sep=',', quote="\"", dec=".", fill= TRUE, comment.char="", stringsAsFactors= FALSE)
-	if(verbose) print(namez(newdf)) 
-	umx_check_names(namesNeeded = vars, data = newdf)
+	newdf = read.csv(file, header= TRUE, sep = ',', quote = "\"", dec = ".", fill = TRUE, comment.char = "", stringsAsFactors = FALSE, na.strings = c("NA", "DATA_EXPIRED"))
+	if(verbose) print(namez(newdf))
+	allNames = umx_check_names(namesNeeded = c(vars,age, sex), data = newdf, message="Checking demographics col names", die=FALSE)
+	if(allNames){
+		# allNames found
+	} else {
+		print(paste0("Asked for: ", omxQuotes(c(vars,age, sex))))
+		print(namez(newdf))
+		stop("Names missing")
+	}
 	if(!is.null(df)){
 		umx_check_names(namesNeeded = by.df, data = df)
 		umx_check_names(namesNeeded = by.demog, data = newdf)
 		newdf = merge(df, newdf[, c(by.demog, age, sex, vars)], by.x = by.df, by.y = by.demog, all.x = all.df, all.y = all.demog)
 	}else{
-		newdf = newdf[, vars]
+		newdf = newdf[, c(by.demog, age, sex, vars)]
 	}
 	# May as well print out a nice subjects section...
 	print(umx_aggregate(eval(parse(text= paste0(age, "~", sex))), data = newdf))
 	tmp = newdf; tmp$one = 1
+	# "Man (including Trans Male/Trans Man)"
 	print(umx_aggregate(eval(parse(text= paste0(age, " ~ one"))), data = tmp))
-	umx_msg("Subjects with data were n prolific volunteers ( m  male f female, mean age  yrs years)")
+	umx_msg("Subjects were n prolific volunteers ( m  male f female, mean age  yrs years)")
 	invisible(newdf)
+}
+
+#' Clean up a prolific file for sharing by removing anonymity-compromising columns.
+#'
+#' prolific.ac IDs and other columns like IP and lat/long might compromise 
+#' subject anonymity when shared.
+#' `prolific_anonymize` replaces PIDs with a simple numeric sequence, preserving
+#' repeated measures in long data, and removing other columns.
+#' You can delete additional  columns by adding them to `extraColumns`. It is ideal for use 
+#' when sharing data to \url{https://researchbox.org} which enforces anonymization.
+#'
+#' @param df Existing datafile to anonymize.
+#' @param PID The prolific ID col name to anonymize
+#' @param extraColumns Any  extra columns to delete (default NA)
+#' @param baseOffset The numeric to start renumbering PIDs from (default = 1e4)
+#' @return - [[data.frame]]
+#' @seealso - [prolific_check_ID()], [prolific_read_demog()], [umx_merge_randomized_columns()] 
+#' @export
+#' @family Data Functions
+#' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
+#' @md
+#' @examples
+#' \dontrun{
+#' tmp = prolific_anonymize(df, PID = "PID")
+#' }
+prolific_anonymize <- function(df = NULL, PID = "PID", extraColumns = NA, baseOffset = 1e4){
+	revealingColumns = c("StartDate", "EndDate", "Status", "IPAddress", "Progress", "Duration..in.seconds.", "Finished", "RecordedDate", "ResponseId", "RecipientLastName", "RecipientFirstName", "RecipientEmail", "ExternalReference", "LocationLatitude", "LocationLongitude", "DistributionChannel", "UserLanguage", "QID1210817776", "PROLIFIC_PID", "PID")
+	# cleanup revealingColumns
+	if(PID %in% revealingColumns){
+		revealingColumns = revealingColumns[!revealingColumns==PID]
+	}
+
+	isPIDInNamesB = umx_check_names(PID, df, die = FALSE)
+	if(isPIDInNamesB){
+		# Anonymise the PID column
+		oldValues = df[,PID]
+		if(anyDuplicated(df[, PID])){
+			message("Some IDs were duplicates. That pattern will be preserved")
+			uniqueIDs = unique(oldValues)
+			newIDs    = c((baseOffset+1):(baseOffset + length(uniqueIDs)) )
+			lookuptbl = setNames(newIDs, uniqueIDs)
+			df[,PID]  = lookuptbl[as.character(oldValues)]
+		} else {
+			message("No duplicates")
+			df[,PID] = c((baseOffset+1): (baseOffset + length(oldValues) ) )
+		}
+	} else {
+		# PID was not found, assume this df has no ID column so invent one. But this is super unusal do tell the user!
+		df[,PID] = c((baseOffset+1): (baseOffset + dim(df)[1]) )
+		message("Created ", PID, " and stored anonymous sequential number IDs there")
+	}
+	
+	# clean up	
+	df = df[, names(df)[!names(df) %in% revealingColumns]]
+	message("OK, what's left now is:")
+	message(omxQuotes(names(df)))
+	invisible(df)
 }
 
 #' Return PIDs in df
@@ -7497,6 +7712,7 @@ umx_read_prolific_demog <-function(file, base = "", df = NULL, by.df = "PROLIFIC
 #' @param IDcol Name of prolific ID column (default PROLIFIC_PID)
 #' @return - list of IDs in the dataframe
 #' @export
+#' @seealso - [prolific_read_demog()], [prolific_anonymize()], [umx_merge_randomized_columns()] # [prolific_check_ID()]
 #' @family Data Functions
 #' @examples
 #' # IDs = c("59d0ec2446447f00011edb063","5a08c9a7f2e3460001edb063f0254")
@@ -8340,7 +8556,7 @@ xmu_standardize_SexLim <- function(model, ...){
 	}
 	return(model)
 }
-# @export
+#' @export
 umx_standardize.MxModelSexLim <- xmu_standardize_SexLim
 
 

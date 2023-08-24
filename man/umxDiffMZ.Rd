@@ -68,7 +68,7 @@ umxDiffMZ(x="ht", y="wt", xylim = c( -2, 2), data = twinData, sep = "")
 }
 \seealso{
 \itemize{
-\item \code{\link[=umxDoC]{umxDoC()}}, \code{\link[=umxDiscTwin]{umxDiscTwin()}}
+\item \code{\link[=umxDoC]{umxDoC()}}, \code{\link[=umxDiscTwin]{umxDiscTwin()}}, \code{\link[=umxMR]{umxMR()}}
 }
 
 Other Twin Modeling Functions: 
@@ -84,6 +84,7 @@ Other Twin Modeling Functions:
 \code{\link{umxGxEbiv}()},
 \code{\link{umxGxE}()},
 \code{\link{umxIP}()},
+\code{\link{umxMRDoC}()},
 \code{\link{umxReduceACE}()},
 \code{\link{umxReduceGxE}()},
 \code{\link{umxReduce}()},

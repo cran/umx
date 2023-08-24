@@ -17,6 +17,7 @@ umx_score_scale(
   minManifests = NA,
   alpha = FALSE,
   mapStrings = NULL,
+  correctAnswer = NULL,
   omegaNfactors = 1,
   digits = 2,
   verbose = FALSE,
@@ -30,23 +31,25 @@ umx_score_scale(
 
 \item{rev}{The reverse-scored item numbers.}
 
-\item{min}{Min possible score (default = 1). Not implemented for values other than 1 so far...}
+\item{min}{Minimum legal response value (default = 1). Not implemented for values other than 1 so far...}
 
-\item{max}{Max possible score for an item (to compute how to reverse items).}
+\item{max}{Maximum legal response value (also used to compute reversed item values).}
 
 \item{data}{The data frame}
 
-\item{score}{Whether to compute total, proportionCorrect, errors, mean, max, or factor (default = "total")}
+\item{score}{Score total (default), proportionCorrect, errors, mean, max, or factor scores}
 
-\item{name}{= name of the scale to be returned. Defaults to "base_score"}
+\item{name}{The name of the scale to be returned. Defaults to "\code{base}_score"}
 
 \item{na.rm}{Whether to delete NAs when computing scores (Default = TRUE) Note: Choice affects mean!}
 
-\item{minManifests}{If score = factor, how many missing items to tolerate for an individual?}
+\item{minManifests}{How many missing items to tolerate for an individual (when score = factor)}
 
-\item{alpha}{print Cronbach's alpha? (TRUE)}
+\item{alpha}{print Reliability (omega and Cronbach's alpha) (TRUE)}
 
-\item{mapStrings}{For recoding input like "No"/"Maybe"/"Yes" to numeric 0,1,2}
+\item{mapStrings}{Recoding input like "No"/"Maybe"/"Yes" into numeric values (0,1,2)}
+
+\item{correctAnswer}{Use when scoring items with one correct response (1/0).}
 
 \item{omegaNfactors}{Number of factors for the omega reliability (default = 1)}
 
@@ -100,6 +103,27 @@ tmp = umx_score_scale(name = "A", base = "A",
    pos = 2:5, rev = 1, max = 6, data= bfi, score="mean")
 tmp$A[1] # = 4
 
+# ========================
+# = Request factor score =
+# ========================
+\dontrun{
+tmp = umx_score_scale(name = "A", base = "A", pos = 2:5, rev = 1,
+   max = 6, score = "factor", minManifests = 4, data= bfi)
+#            g
+# A2 0.6574826
+# A3 0.7581274
+# A4 0.4814788
+# A5 0.6272332
+# A1 0.3736021
+
+# ==================
+# = Request alpha  =
+# ==================
+
+tmp=umx_score_scale(base="A", pos=2:5, rev=1, max=6, data=bfi, alpha=TRUE)
+# omega t = 0.72
+}
+
 # ==================
 # = na.rm = TRUE ! =
 # ==================
@@ -121,7 +145,7 @@ tmp$A[1] # Subject 1 max = 5 (reversed) item 1
 
 # Default scale name
 tmp = umx_score_scale("E", pos = 3:5, rev = 1:2, max = 6, 
-   data= tmp, score = "mean", na.rm=FALSE)
+   data= tmp, score = "mean", na.rm = FALSE)
 tmp$E_score[1]
 
 # Using @BillRevelle's psych package: More diagnostics, including alpha
@@ -154,10 +178,20 @@ bfi$As5 = factor(bfi$A5, levels = 1:6, labels = mapStrings)
 bfi= umx_score_scale(name="A" , base="A", pos=2:5, rev=1, max=6, data=bfi)
 bfi= umx_score_scale(name="As", base="As", pos=2:5, rev=1, mapStrings = mapStrings, data= bfi)
 }
+\references{
+\itemize{
+\item Revelle, W. (2022) psych: Procedures for Personality and Psychological Research, Northwestern University, Evanston, Illinois, USA, \url{https://CRAN.R-project.org/package=psych} Version = 2.2.9.
+}
+\itemize{
+\item McNeish, D. (2018). Thanks coefficient alpha, we’ll take it from here. \emph{Psychological Methods}, \strong{23}, 412-433. \doi{10.1037/met0000144}.
+}
+}
 \seealso{
 Other Data Functions: 
 \code{\link{noNAs}()},
+\code{\link{prolific_anonymize}()},
 \code{\link{prolific_check_ID}()},
+\code{\link{prolific_read_demog}()},
 \code{\link{umxFactor}()},
 \code{\link{umxHetCor}()},
 \code{\link{umx_as_numeric}()},
@@ -172,11 +206,11 @@ Other Data Functions:
 \code{\link{umx_polypairwise}()},
 \code{\link{umx_polytriowise}()},
 \code{\link{umx_read_lower}()},
-\code{\link{umx_read_prolific_demog}()},
 \code{\link{umx_rename}()},
 \code{\link{umx_reorder}()},
 \code{\link{umx_select_valid}()},
 \code{\link{umx_stack}()},
+\code{\link{umx_strings2numeric}()},
 \code{\link{umx}}
 }
 \concept{Data Functions}

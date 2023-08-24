@@ -11,8 +11,9 @@ umxPlot(
   xlab = x,
   ylab = y,
   title = paste0(y, " as a function of ", x),
-  fitx = 1,
-  fity = 2,
+  fitx = NA,
+  fity = NA,
+  geom_point = TRUE,
   method = c("lm", "auto", "loess", "glm", "gam"),
   family = c("gaussian", "binomial", "Gamma", "inverse", "poisson", "quasi",
     "quasibinomial", "quasipoisson")
@@ -34,6 +35,8 @@ umxPlot(
 \item{fitx}{x location for the fit summary (default 1).}
 
 \item{fity}{y location for the fit summary (default 2).}
+
+\item{geom_point}{show points? (TRUE)}
 
 \item{method}{Method for fitting curve (default = lm)}
 
@@ -66,6 +69,7 @@ umxPlot(x = "wt", y = "mpg", mtcars, fitx = 2, fity = 10)
 }
 
 Other Plotting functions: 
+\code{\link{ggAddR}()},
 \code{\link{plot.MxLISRELModel}()},
 \code{\link{plot.MxModelTwinMaker}()},
 \code{\link{plot.MxModel}()},
