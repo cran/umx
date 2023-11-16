@@ -110,12 +110,13 @@ umxDoCp <- function(var1Indicators, var2Indicators, mzData= NULL, dzData= NULL, 
 #' Rule 2: The latent a, c, and e latent variables must be labelled to match the base name given in t1_t2links.
 #' To avoid clashes, variables must not match the numbered variables in `t1_t2links`  - by default names like "a1" are reserved for ace.
 #' 
-#' @param name The name for the resulting [umxSuperModel()] (Default "m1")
-#' @param paths A vector of [umxPath()]s describing one person
+#' @param name The name for the resulting [umxSuperModel()] (Default "m1").
+#' @param paths A vector of [umxPath()]s describing one person.
 #' @param t1_t2links base name (and values) of paths that covary between T1 and T2. Default: c('a'=c(1,.5), 'c'=c(1,1), 'e'=c(0,0))
-#' @param mzData Data for MZ twins
-#' @param dzData Data for DZ twins
+#' @param mzData Data for MZ twins.
+#' @param dzData Data for DZ twins.
 #' @param sep The separator used to create twin 1 and 2 names (Default "_T")
+#' @param autoRun Whether to run the supermodel before returning it.
 #' @return - [umxSuperModel()]
 #' @export
 #' @family Twin Modeling Functions
@@ -175,7 +176,7 @@ umxDoCp <- function(var1Indicators, var2Indicators, mzData= NULL, dzData= NULL, 
 #' 
 #' }
 #'
-umxTwinMaker <- function(name = "m1", paths, t1_t2links = list('a'=c(1, .5), 'c'=c(1, 1), 'e'=c(0, 0)), mzData = NULL, dzData= NULL, sep = "_T"){
+umxTwinMaker <- function(name = "m1", paths, t1_t2links = list('a'=c(1, .5), 'c'=c(1, 1), 'e'=c(0, 0)), mzData = NULL, dzData= NULL, sep = "_T", autoRun = getOption("umx_auto_run")){
 	# TODO
 	# Ensure labels that might need equating of freeing across MZ/DZ or T1 T2
 	# Check no manifests match the t1_t2links?
@@ -235,7 +236,7 @@ umxTwinMaker <- function(name = "m1", paths, t1_t2links = list('a'=c(1, .5), 'c'
 			DZ = mxModel(DZ, umxPath(T1, with = T2, free=FALSE, values = DZvalue, labels=paste0(T1, "_DZr_", T2)))
 		}
 	}
-	model = umxSuperModel(name, MZ, DZ)
+	model = umxSuperModel(name, MZ, DZ, autoRun = autoRun)
 	
 	# TODO: equate means: "wt_T1_with_wt_T1" "wt_T2_with_wt_T2"
 	# 4. Equate means in auto-added means model
@@ -495,6 +496,9 @@ xmu_path2twin <- function(paths, thisTwin = 1, sep = "_T"){
 		thisPath = paths[[i]]
 		thisPath@from = xmu_path_regex(thisPath$from, "$", suffix)
 		thisPath@to   = xmu_path_regex(thisPath$to  , "$", suffix)
+    		if (any(grepl("^data\\.", thisPath@labels))) {
+      			thisPath@labels = xmu_path_regex(thisPath@labels, "$", suffix)
+    		}
 		paths[[i]] = thisPath
 	}
 	paths

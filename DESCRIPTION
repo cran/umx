@@ -1,6 +1,6 @@
 Package: umx
-Version: 4.16.0
-Date: 2023-08-20
+Version: 4.19.0
+Date: 2023-11-20
 Title: Structural Equation Modeling and Twin Modeling in R
 Authors@R: c(
 	person(c("Timothy", "C."), "Bates"   , role = c("aut", "cre"), email = "timothy.c.bates@gmail.com", comment = c(ORCID = "0000-0002-1153-9007")),
@@ -21,17 +21,19 @@ Description: Quickly create, run, and report structural equation models, and twi
     See '?umx' for help, and umx_open_CRAN_page("umx") for NEWS.
     Timothy C. Bates, Michael C. Neale, Hermine H. Maes, (2019). umx: A library for Structural Equation and Twin Modelling in R.
     Twin Research and Human Genetics, 22, 27-41. <doi:10.1017/thg.2019.2>.
-Depends: R (>= 4.1.0), OpenMx (>= 2.19.0)
-Imports: ggplot2, cowplot, DiagrammeR, DiagrammeRsvg, rsvg, lavaan,
-        MASS, Matrix, methods, MuMIn, mvtnorm, nlme, polycor, R2HTML,
-        RCurl, scales, utils, xtable, kableExtra, knitr
-Suggests: cocor, devtools, gert, hrbrthemes, openxlsx, paran, psych,
-        psychTools, pwr, rmarkdown, rhub, spelling, testthat
+Depends: R (>= 4.1.0), OpenMx (>= 2.19.0),
+Imports: cowplot, DiagrammeR, ggplot2, kableExtra, knitr, lavaan, MASS,
+        Matrix, methods, MuMIn, mvtnorm, nlme, polycor, R2HTML, RCurl,
+        scales, utils, xtable, gert, hrbrthemes, openxlsx, paran,
+        psych, psychTools, foreign, pwr, rmarkdown
+Suggests: cocor, devtools, rhub, spelling, testthat, parallel,
+        GPArotation
+Enhances: DiagrammeRsvg, rsvg
 BugReports: https://github.com/tbates/umx/issues
 LazyData: true
 RoxygenNote: 7.2.3
 NeedsCompilation: no
-Packaged: 2023-08-24 16:10:02 UTC; tim
+Packaged: 2023-11-16 21:36:59 UTC; tim
 Author: Timothy C. Bates [aut, cre] (<https://orcid.org/0000-0002-1153-9007>),
   Nathan Gillespie [wit],
   Hermine Maes [ctb],
@@ -41,4 +43,4 @@ Author: Timothy C. Bates [aut, cre] (<https://orcid.org/0000-0002-1153-9007>),
   Brenton Wiernik [ctb],
   Michael Zakharin [wit]
 Repository: CRAN
-Date/Publication: 2023-08-24 16:40:02 UTC
+Date/Publication: 2023-11-16 22:50:06 UTC

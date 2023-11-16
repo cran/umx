@@ -52,10 +52,11 @@ fin_valuation(rev=7e9, opmargin=.1, PE=33)
 
 Other Miscellaneous Functions: 
 \code{\link{deg2rad}()},
+\code{\link{fin_JustifiedPE}()},
 \code{\link{fin_NI}()},
 \code{\link{fin_interest}()},
 \code{\link{fin_percent}()},
-\code{\link{loadings.MxModel}()},
+\code{\link{fin_ticker}()},
 \code{\link{rad2deg}()},
 \code{\link{umxBrownie}()}
 }

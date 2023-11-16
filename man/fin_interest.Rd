@@ -111,10 +111,11 @@ fin_interest(principal = 100, final=200, yrs = 5)
 
 Other Miscellaneous Functions: 
 \code{\link{deg2rad}()},
+\code{\link{fin_JustifiedPE}()},
 \code{\link{fin_NI}()},
 \code{\link{fin_percent}()},
+\code{\link{fin_ticker}()},
 \code{\link{fin_valuation}()},
-\code{\link{loadings.MxModel}()},
 \code{\link{rad2deg}()},
 \code{\link{umxBrownie}()}
 }

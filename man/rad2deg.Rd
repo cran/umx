@@ -35,11 +35,12 @@ rad2deg(pi) #180 degrees
 
 Other Miscellaneous Functions: 
 \code{\link{deg2rad}()},
+\code{\link{fin_JustifiedPE}()},
 \code{\link{fin_NI}()},
 \code{\link{fin_interest}()},
 \code{\link{fin_percent}()},
+\code{\link{fin_ticker}()},
 \code{\link{fin_valuation}()},
-\code{\link{loadings.MxModel}()},
 \code{\link{umxBrownie}()}
 }
 \concept{Miscellaneous Functions}

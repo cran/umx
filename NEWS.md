@@ -1,10 +1,25 @@
 ## dev umx 4.25.00
 
+## umx 4.19.00
+* November 2023 R 4.3.1 (2023-06-16)
+* FIXED: encode unicode beta in an `expression` instead of using uXXXX
+* IMPROVED: Move DiagrammeRsvg rsvg to Enhances
+* FIXED: `umxMatrixFree` undocumented argument 'byrow'
+* FIXED: `umxMRDoC` sketch mode fixed
+
+## umx 4.17.00
+* Sept 2023 R 4.3.1 (2023-09-15)
+* NEW: `fin_ticker` open a stock in the browser.
+* IMPROVED: `umxTwinMaker` can manage definition variables (by @lf-araujo)
+* IMPROVED: `umxSummary` suppress duplicate paths
+* FIXED: `umxGxE_window` handles target range without error once more (h/t Marla Kürten)
+* FIXED: `umxMRDoC`  byrow misspelling
+
 ## umx 4.16.00
 * August 2023 R 4.3.1 (2023-06-16)
 * NEW: `umxMRDoC` Direction of causation with twins! (by @lf-araujo)
 * NEW: `umxMatrixFree` to help in simulations (by @lf-araujo)
-* NEW: `prolific_anonymize()`
+* NEW: `prolific_anonymize()` remove IDs and other identifying columns: Ideal when sharing data.
 * NEW: `ggAddR` helper to add R/beta to a graph
 * NEW `umx_strings2numeric` helper function to recode strings to numbers
 * IMPROVED: `RMSEA()`

@@ -553,7 +553,7 @@ loadings.default <- function(x, ...) stats::loadings(x, ...)
 #' @param ... Other parameters (currently unused)
 #' @return - loadings matrix
 #' @export
-#' @family Miscellaneous Functions
+#' @family Reporting functions
 #' @seealso - [factanal()], [loadings()]
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
@@ -1023,7 +1023,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 	report   = match.arg(report)
 	filter   = match.arg(filter)
 	
-	message("?umxSummary std=T|F', digits, report= 'html', filter= 'NS' & more")
+	message("?umxSummary options: std=T|F', digits=, report= 'html', filter= 'NS' & more")
 	
 	# If the filter is not default, user must want something: Assume it's what would have been the default...
 	if( filter != "ALL" & is.null(std) ) {
@@ -1135,6 +1135,7 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 			toShow = parameterTable[, namesToShow]
 		}
 		toShow = xmu_summary_RAM_group_parameters(model, toShow,  means= means, residuals = residuals)
+		toShow = unique.data.frame(toShow[,c(namesToShow, "type")])
 		umx_print(toShow, digits = digits, report = report, caption = paste0("Parameter loadings for model ", omxQuotes(model$name)), na.print = "", zero.print = "0", justify = "none")
 	}
 	with(modelSummary, {
@@ -1184,7 +1185,6 @@ umxSummary.MxModel <- function(model, refModels = NULL, std = FALSE, digits = 2,
 	}
 	
 	xmu_print_algebras(model)
-	
 	if(!is.null(std)){ # return these as  invisible for the user to filter, sort etc.
 		if(filter == "NS"){
 			invisible(parameterTable[parameterTable$sig == FALSE, namesToShow])

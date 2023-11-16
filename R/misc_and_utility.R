@@ -49,6 +49,58 @@
 #      I know not, but I feel it so,
 #      and it tortures me.
 
+#' Justified P/E Ratio
+#'
+#' @description
+#' Compute the Justified P/E of a stock.
+#' Justified P/E = ( (DPS / EPS) * (1 + g)) / (k – g)
+#' DPS is the dividend per share, EPS is the earnings per share,
+#' g is the sustainable growth rate, and k is the required rate of return.
+#' @param Dividend The dividend.
+#' @param EPS The Earnings per Share.
+#' @param growthRate The growth rate.
+#' @param discountRate Your chosen discount rate.
+#' @param basePE The base PE.
+#' @param yrs Years.
+#' @return - A PE that is justified for this stock.
+#' @export
+#' @family Miscellaneous Functions
+#' @seealso - [fin_interest()], [fin_percent()], [fin_NI()]
+#' @md
+#' @examples
+#' # fin_JustifiedPE(Dividend= .8, EPS = 2, growthRate = .06, discountRate = .1)
+#' 
+fin_JustifiedPE <- function(Dividend= .02, EPS = 1, growthRate = .08, discountRate = .12, basePE= 20, yrs=10) {
+	paste0("Based on growth (", growthRate*100, "% expected growth for ", yrs, " years and a base P/E of ",
+	basePE, "), the justified P/E would be: ", (growthRate * yrs) + basePE )
+	
+   # ((0.4 * 2) * (1 + 0.06)) / (0.1 - 0.06)
+   # ((Dividend/EPS) * (1 + growthRate)) / (k-growthRate)
+   # Justified P/E Ratio = 16.8
+}
+
+#' Open a ticker in yahoo finance.
+#'
+#' @description
+#' Open a stock ticker, currently in yahoo finance
+#'
+#' @param ticker A stock symbol to look up, e.g., "OXY"
+#' @return - Open a ticker in a finance site online
+#' @export
+#' @family Miscellaneous Functions
+#' @seealso - [fin_interest()], [fin_percent()], [fin_NI()]
+#' @md
+#' @examples
+#' # Open $INTC in yahoo finance.
+#' \dontrun{
+#' fin_ticker("INTC")
+#' }
+
+fin_ticker <- function(ticker= "INTC") {
+	url =paste0("https://finance.yahoo.com/quote/", ticker)
+	# https://www.google.com/finance/quote/SWBI:NASDAQ
+	browseURL(url, browser = getOption("browser"))
+}
 
 #' Add a fit statistic to a ggplot
 #'
@@ -3852,7 +3904,7 @@ xmu_dot_define_shapes <- function(latents, manifests, preOut= "") {
 #' Helper to make a graphviz rank string
 #'
 #' Given a list of names, this filters the list, and returns a graphviz string to force them into the given rank.
-#' e.g. "{rank=same; as1};"
+#' e.g. `"{rank=same; as1};"`
 #'
 #' @param vars a list of strings
 #' @param pattern regular expression to filter vars
