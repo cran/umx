@@ -207,6 +207,7 @@ ggAddR <- function(model, effect = NA, xloc=8, yloc= 10) {
 libs <- function(... , force.update = FALSE) {
 	dot.items = list(...) # grab all the dot items
 	dot.items = unlist(dot.items) # In case any dot items are lists
+	
 	for (pack in dot.items) {
 		result = tryCatch({
 			if(force.update){
@@ -1560,6 +1561,7 @@ umxParan <- function(df, cols= NA, graph = TRUE, mapStrings = NULL) {
 #' To reverse items, the function uses `max` and `min` as the lowest and highest possible response scores to compute how to reverse items.
 #' 
 #' *note*: `min` defaults to 1.
+#' **TIP**: If you have strings, `umx_score_scale` will work (use `mapStrings = `). *BUT* if you want to make a numeric copy, use `umx_strings2numeric`
 #' 
 #' @param base String common to all item names.
 #' @param pos The positive-scored item numbers.
@@ -1847,7 +1849,7 @@ umxVersion <- function (model = NULL, min = NULL, verbose = TRUE, return = c("um
 	}
 	OpenMx_vers = mxVersion(model = model, verbose = verbose)	
     if (verbose) {
-		message('You can update OpenMx with:\ninstall.OpenMx(c("NPSOL", "travis", "CRAN", "open travis build page")')
+		message('Open the CRAN page for any package with umx_open_CRAN_page()\nYou can update OpenMx with:\ninstall.OpenMx(c("NPSOL", "travis", "CRAN", "open travis build page")')
     }
 
 	if(return == "umx"){
@@ -5468,7 +5470,9 @@ umx_string_to_algebra <- function(algString, name = NA, dimnames = NA) {
 #' @references - <https://github.com/tbates/umx>
 #' @md
 #' @examples
-#' data(twinData) 
+#' data(twinData)
+#' # note: this example is here to remind us why scaling independently for each 
+#' # twin would be very bad! Use  umx_scale_wide_twin_data() instead!
 #' df = umx_scale(twinData, varsToScale = c("wt1", "wt2"))
 #' df = umx_scale(twinData,  attr= TRUE)
 #' plot(wt1 ~ wt2, data = df)
@@ -7647,12 +7651,12 @@ umx_file_load_pseudo <- function(fn, bp, suffix = "_NT", chosenp = "S5") {
 #' prolific academic provides a demographics file. This reads it and merges with your data
 #' using PID and participant_id
 #'
-#' @param file Path to a file to read.
+#' @param file Path to demographics file.
 #' @param base Optional path to folder, in which case 'file' is just filename.
 #' @param df Existing datafile to merge demographics into (optional)
-#' @param by.df The ID name in existing datafile (default = "PROLIFIC_PID"
+#' @param by.df The ID name in existing df (default = "PROLIFIC_PID")
 #' @param by.demog The ID name in the prolific demographics file (default = "Participant id" was `by.demog`)
-#' @param age Name of sex var in demographics file ("age")
+#' @param age Name of age var in demographics file ("age")
 #' @param sex Name of sex var in demographics file ("Sex")
 #' @param vars Additional vars to keep from demographics file (WAS age & Sex)
 #' @param all.df Whether to keep all lines of df (default = TRUE)
@@ -7668,34 +7672,75 @@ umx_file_load_pseudo <- function(fn, bp, suffix = "_NT", chosenp = "S5") {
 #' \dontrun{
 #' fp = "~/Desktop/prolific_export_5f20c3e662e3b6407dcd37a5.csv"
 #' df = prolific_read_demog(fp, sex = "Gender", age = "Age", df = df)
-#' tmp = prolific_read_demog(fp, by.df = "PROLIFIC_PID", vars=c("EthnicitySimplified"))
+#' tmp = prolific_read_demog(fp, by.df = "PROLIFIC_PID", vars=c("Ethnicity.simplified"))
 #' }
 prolific_read_demog <- function(file, base = "", df = NULL, by.df = "PROLIFIC_PID", by.demog = "Participant.id", age = "age", sex = "Gender", vars= NULL, all.df = TRUE, all.demog = FALSE, verbose = FALSE) {
 	if(base != "") file = paste0(base, file)
 	newdf = read.csv(file, header= TRUE, sep = ',', quote = "\"", dec = ".", fill = TRUE, comment.char = "", stringsAsFactors = FALSE, na.strings = c("NA", "DATA_EXPIRED"))
 	if(verbose) print(namez(newdf))
 	allNames = umx_check_names(namesNeeded = c(vars,age, sex), data = newdf, message="Checking demographics col names", die=FALSE)
-	if(allNames){
-		# allNames found
-	} else {
+	if(!allNames){
 		print(paste0("Asked for: ", omxQuotes(c(vars,age, sex))))
 		print(namez(newdf))
-		stop("Names missing")
+		stop("At least one name missing")
 	}
+
+	# Replace "CONSENT_REVOKED" with NA
+	# TODO check each var name?
+	tmp = newdf[, allNames]
+	bad = tmp == "CONSENT_REVOKED"
+	tmp[bad] = NA
+	newdf[, allNames] = tmp
+	# repair age if needed
+	newdf[, age] = as.numeric(newdf[, age])
 	if(!is.null(df)){
 		umx_check_names(namesNeeded = by.df, data = df)
 		umx_check_names(namesNeeded = by.demog, data = newdf)
-		newdf = merge(df, newdf[, c(by.demog, age, sex, vars)], by.x = by.df, by.y = by.demog, all.x = all.df, all.y = all.demog)
+		newdf = merge(df, newdf[, c(by.demog, age, sex, vars)], by.x = by.df, by.y = by.demog, all.x = all.df, all.y = all.demog, suffixes = c("", ".y"))
 	}else{
 		newdf = newdf[, c(by.demog, age, sex, vars)]
 	}
+
+	if(age %in% namez(df)){
+		age = paste0(age, ".y")
+	}
+	if(sex %in% namez(df)){
+		sex = paste0(sex, ".y")
+	}
+
 	# May as well print out a nice subjects section...
-	print(umx_aggregate(eval(parse(text= paste0(age, "~", sex))), data = newdf))
-	tmp = newdf; tmp$one = 1
 	# "Man (including Trans Male/Trans Man)"
-	print(umx_aggregate(eval(parse(text= paste0(age, " ~ one"))), data = tmp))
-	umx_msg("Subjects were n prolific volunteers ( m  male f female, mean age  yrs years)")
+
+	jnk = umx_aggregate(eval(parse(text= paste0(age, "~", sex))), data = newdf)
+	print(jnk)
+
+	
+	fStr = namez(xmu_read.markdown(jnk)[1,1], pattern = ".*Female \\(n = ([0-9]+)\\)", replacement = "\\1") # "Female (n = 351)"
+	mStr = namez(xmu_read.markdown(jnk)[2,1], pattern =   ".*Male \\(n = ([0-9]+)\\)", replacement = "\\1") # "Male (n = 351)"
+
+	tmp = newdf; tmp$one = 1
+	jnk = umx_aggregate(eval(parse(text= paste0(age, " ~ one"))), data = tmp)
+	print(jnk)
+	Nstr = namez(xmu_read.markdown(jnk)[1,1], pattern = "1 \\(n = ([0-9]+)\\)", replacement = "\\1") # "1 (n = 703)"
+	ageStr = xmu_read.markdown(jnk)[1,2] # "48.32 (12.92)"
+	message(paste0("Subjects were ", Nstr, " prolific volunteers (", mStr," male, ", fStr, " female; mean age ", ageStr , " years)"))
+	# "Subjects were n prolific volunteers ( m  male f female, mean age  yrs years)"
 	invisible(newdf)
+}
+
+xmu_read.markdown <- function(file, stringsAsFactors = FALSE, strip.white = TRUE, ...){
+    if (length(file) > 1) {
+        lines <- file
+    } else if (grepl('\n', file)) {
+        con <- textConnection(file)
+        lines <- readLines(con)
+        close(con)
+    } else {
+        lines <- readLines(file)
+    }
+    lines <- lines[!grepl('^[[:blank:]+-=:_|]*$', lines)]
+    lines <- gsub('(^\\s*?\\|)|(\\|\\s*?$)', '', lines)
+    read.delim(text = paste(lines, collapse = '\n'), sep = '|', stringsAsFactors = stringsAsFactors, strip.white = strip.white, ...)
 }
 
 #' Clean up a prolific file for sharing by removing anonymity-compromising columns.
@@ -7728,8 +7773,10 @@ prolific_anonymize <- function(df = NULL, PID = "PID", extraColumns = NA, baseOf
 		revealingColumns = revealingColumns[!revealingColumns==PID]
 	}
 
-	isPIDInNamesB = umx_check_names(PID, df, die = FALSE)
-	if(isPIDInNamesB){
+	isPIDInNames    = umx_check_names(PID, df, die = FALSE)
+	areExtrasFound = umx_check_names(extraColumns, df, die = TRUE)
+	
+	if(isPIDInNames){
 		# Anonymise the PID column
 		oldValues = df[,PID]
 		if(anyDuplicated(df[, PID])){
@@ -7745,11 +7792,11 @@ prolific_anonymize <- function(df = NULL, PID = "PID", extraColumns = NA, baseOf
 	} else {
 		# PID was not found, assume this df has no ID column so invent one. But this is super unusal do tell the user!
 		df[,PID] = c((baseOffset+1): (baseOffset + dim(df)[1]) )
-		message("Created ", PID, " and stored anonymous sequential number IDs there")
+		message("Polite note: I did not find a PID column. So I created one called ", PID, " and stored anonymous sequential number IDs there")
 	}
 	
 	# clean up	
-	df = df[, names(df)[!names(df) %in% revealingColumns]]
+	df = df[, names(df)[!names(df) %in% c(revealingColumns, extraColumns)]]
 	message("OK, what's left now is:")
 	message(omxQuotes(names(df)))
 	invisible(df)
@@ -7757,7 +7804,7 @@ prolific_anonymize <- function(df = NULL, PID = "PID", extraColumns = NA, baseOf
 
 #' Return PIDs in df
 #'
-#' prolific participants can time out but still be in the dataframe. This identifies them.
+#' Participants may time-out on Prolific, but still complete on Qualtrics. This identifies them.
 #'
 #' @param IDs Timed-out (or other) IDs to look for.
 #' @param df to search.
@@ -7780,11 +7827,10 @@ prolific_check_ID <- function(IDs, df, IDcol = "PROLIFIC_PID") {
 #' positive definite. This is useful, especially when copying data from a paper
 #' that includes just the lower triangle of a correlation matrix.
 #'
-#' @param file Path to a file to read (Default "" will read from user input)
-#' @param diag Whether the data include the diagonal. Defaults to TRUE
-#' @param names The default names for the variables.
-#' Defaults to as.character(paste("X", 1:n, sep=""))
-#' @param ensurePD Whether to coerce the resultant matrix to positive definite (Defaults to FALSE)
+#' @param file Path to file (Default "" will read from user input)
+#' @param diag Whether data include diagonal (Default TRUE)
+#' @param names Variable names. (Default as.character(paste0("X", 1:n)) )
+#' @param ensurePD Whether to coerce the resultant matrix to positive definite (Default FALSE)
 #' @return - [matrix()]
 #' @export
 #' @family Data Functions
@@ -7921,8 +7967,10 @@ xmu_make_bin_cont_pair_data <- function(data, vars = NULL, suffixes=NULL){
 
 			# Set NA if FALSE
 			lowScores = data[,thisBinName] == "low"
-			data[lowScores , thisVarName] = NA
-			data[!lowScores, thisBinName] = NA
+			lowScoreRows = which(lowScores)
+			data[lowScoreRows, thisVarName] = NA
+			nonLowScoreRows = which(!lowScores)
+			data[nonLowScoreRows, thisBinName] = NA
 		}
 		var_i = var_i + 1
 	}

@@ -53,10 +53,13 @@ umxPlot <- function(x, y= NULL, data, xlab= x, ylab = y, title = paste0(y, " as 
 		tmp = dimnames(tmp)[[1]]
 		y = tmp[1]
 		x = tmp[2]
+		umx_check_names(c(x, y), data = data, die = TRUE)
 	} else if(is.null(y)){
 		# let qplot make a histogram
 		return(qplot(x, data = data, xlab =x, main = title))
 	} else {
+		# make formula from x and y strings
+		umx_check_names(c(x, y), data = data, die = TRUE)
 		.formula = reformulate(paste0(y, "~ ", x))	
 	}
 	if(geom_point){
@@ -64,14 +67,13 @@ umxPlot <- function(x, y= NULL, data, xlab= x, ylab = y, title = paste0(y, " as 
 	} else {
 		p = ggplot(data = data, aes_string(x, y)) + geom_smooth(method = method)
 	}
-	data[,x]
-	
+	# data[,x]
 	if(is.na(fitx)){
 		fitx = min(data[,x])
-		fity= max(data[,y])
+		fity = max(data[,y])
 	}
 
-	if(method =="lm"){
+	if(method == "lm"){
 		m1  = lm(.formula, data = data)
 		r2  = round(summary(m1)$r.squared, 3)
 		lab = bquote(R^2 == .(r2))
@@ -79,6 +81,8 @@ umxPlot <- function(x, y= NULL, data, xlab= x, ylab = y, title = paste0(y, " as 
 		p = p + cowplot::draw_label(lab, x = fitx, y = fity, fontfamily = "Times", size = 12)
 	}else if (method == "glm"){
 		# m1  = glm(.formula, data = data, family=family)
+	}else{
+		message("polite note: Currently, I only know how to do method = lm or glm")
 	}
 	p = p + theme_gray() # gray, bw, linedraw, light, dark, minimal, classic
 	p
@@ -377,6 +381,10 @@ umxReduce.MxModelGxE <- umxReduceGxE
 #' 
 #' }
 umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report"), intervals = TRUE, baseFileName = "tmp", tryHard = c("yes", "no", "ordinal", "search"), silent=FALSE, digits = 2, ...) {
+	
+	# override umx_set_auto_run
+	oldAutoRun = umx_set_auto_run(autoRun = FALSE)
+	
 	report  = match.arg(report)
 	tryHard = match.arg(tryHard)
 	if(silent){
@@ -450,6 +458,8 @@ umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report
 	}
 	umx_set_auto_plot(oldAutoPlot, silent = TRUE)
 	umx_set_silent(oldSilent)
+	umx_set_auto_run(autoRun = oldAutoRun)
+	
 	invisible(bestModel)
 }
 #' @export
@@ -3333,14 +3343,24 @@ umxMI <- function(model = NA, matrices = NA, full = TRUE, numInd = NA, typeToSho
 		}
 	}
 	suppressMessages({MI = mxMI(model = model, matrices = matrices, full = full)})
-	if(full){
-		MIlist = MI$MI.Full
+	if(typeof(MI)[1]=="list"){
+		# old style
+		if(full){
+			MIlist = MI$MI.Full
+		} else {
+			MIlist = MI$MI
+		}
 	} else {
-		MIlist = MI$MI
+		# dataframe for Nov 2023 OpenMx 6b2cc13d1d17843b505bf4fb295c73bb8a1212b5
+		if(full){
+			MIlist = MI[, "MI.Full"]
+		} else {
+			MIlist = MI[, "MI"]
+		}
 	}
 	if(is.na(numInd)){
 		thresh = qchisq(p = (1 - 0.01), df = 1) # 6.63
-		# check how many
+		# check how many sig
 		nSig = length(MIlist[MIlist > thresh])
 		if(nSig < 1){
 			# nothing significant, display top 3 or so
@@ -4608,6 +4628,7 @@ umxAPA <- function(obj = .Last.value, se = NULL, p = NULL, std = FALSE, digits =
 
 		if(means){
 			mean_sd = umx_apply(umx_fun_mean_sd, of = obj)
+			# along the bottom
 			# output  = data.frame(rbind(cor_table, mean_sd), stringsAsFactors = FALSE)
 			# rownames(output)[length(rownames(output))] = "Mean (SD)"
 

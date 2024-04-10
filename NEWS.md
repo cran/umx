@@ -1,4 +1,14 @@
-## dev umx 4.25.00
+## dev
+
+## umx 4.20.00
+* April 2024 R 4.4.3
+* NEW: `umxRAM` Can include definition variables h/t @lf-araujo
+* HELP: `umxRAM` example a model with a def var on means
+* IMPROVED: `umxMR` can standardize manifests.
+* IMPROVED: `prolific_read_demog` outputs a ready to paste demographics string.
+* IMPROVED: `prolific_anonymize` can delete more columns.
+* IMPROVED: various messages, and help improvements.
+* FIXED: `umxReduce.ACE` now aware of `umx_set_auto_run` #241 @lf-araujo
 
 ## umx 4.19.00
 * November 2023 R 4.3.1 (2023-06-16)
