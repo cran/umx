@@ -24,7 +24,7 @@ umxAPA(
 )
 }
 \arguments{
-\item{obj}{A model (e.g. \code{\link[=lm]{lm()}}, \code{\link[=lme]{lme()}}, \code{\link[=glm]{glm()}}, \code{\link[=t.test]{t.test()}}), beta-value, or \link{data.frame}}
+\item{obj}{A model (e.g. \code{\link[=lm]{lm()}}, \code{\link[nlme:lme]{nlme::lme()}}, \code{\link[=glm]{glm()}}, \code{\link[=t.test]{t.test()}}), beta-value, or \link{data.frame}}
 
 \item{se}{If obj is a beta, se treated as standard-error (returning a CI).
 If obj is a model, used to select effect of interest (blank for all effects).
@@ -155,6 +155,7 @@ umxAPA(m1)
 \code{\link[=SE_from_p]{SE_from_p()}}
 
 Other Reporting Functions: 
+\code{\link{umx}},
 \code{\link{umxFactorScores}()},
 \code{\link{umxGetLatents}()},
 \code{\link{umxGetManifests}()},
@@ -162,7 +163,6 @@ Other Reporting Functions:
 \code{\link{umxGetParameters}()},
 \code{\link{umxParameters}()},
 \code{\link{umx_aggregate}()},
-\code{\link{umx_time}()},
-\code{\link{umx}}
+\code{\link{umx_time}()}
 }
 \concept{Reporting Functions}

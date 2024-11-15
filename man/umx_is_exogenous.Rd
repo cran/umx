@@ -7,7 +7,7 @@
 umx_is_exogenous(model, manifests_only = TRUE)
 }
 \arguments{
-\item{model}{an \code{\link[=mxModel]{mxModel()}} from which to get exogenous variables}
+\item{model}{an \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} from which to get exogenous variables}
 
 \item{manifests_only}{Whether to check only manifests (default = TRUE)}
 }
@@ -40,11 +40,11 @@ umx_is_exogenous(m1, manifests_only = FALSE)
 }
 \seealso{
 Other Check or test: 
+\code{\link{umx}},
 \code{\link{umx_check_names}()},
 \code{\link{umx_is_class}()},
 \code{\link{umx_is_endogenous}()},
 \code{\link{umx_is_numeric}()},
-\code{\link{umx_is_ordered}()},
-\code{\link{umx}}
+\code{\link{umx_is_ordered}()}
 }
 \concept{Check or test}

@@ -35,7 +35,7 @@ umxRAM(
 
 \item{...}{umxPaths, mxThreshold objects, etc.}
 
-\item{data}{data for the model. Can be an \code{\link[=mxData]{mxData()}} or a data.frame}
+\item{data}{data for the model. Can be an \code{\link[OpenMx:mxData]{OpenMx::mxData()}} or a data.frame}
 
 \item{name}{A friendly name for the model}
 
@@ -79,7 +79,7 @@ umxRAM(
 }
 \value{
 \itemize{
-\item \code{\link[=mxModel]{mxModel()}}
+\item \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}
 }
 }
 \description{
@@ -331,10 +331,10 @@ m1 = umxRAM("tim", data = mtcars, weight= "cyl",
 \code{\link[=umxPath]{umxPath()}}, \code{\link[=umxSummary]{umxSummary()}}, \code{\link[=plot]{plot()}}, \code{\link[=parameters]{parameters()}}, \code{\link[=umxSuperModel]{umxSuperModel()}}, \code{\link[=umxLav2RAM]{umxLav2RAM()}}
 
 Other Core Model Building Functions: 
+\code{\link{umx}},
 \code{\link{umxMatrix}()},
 \code{\link{umxModify}()},
 \code{\link{umxPath}()},
-\code{\link{umxSuperModel}()},
-\code{\link{umx}}
+\code{\link{umxSuperModel}()}
 }
 \concept{Core Model Building Functions}

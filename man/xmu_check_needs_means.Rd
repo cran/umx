@@ -11,7 +11,7 @@ xmu_check_needs_means(
 )
 }
 \arguments{
-\item{data}{\code{\link[=mxData]{mxData()}} to check.}
+\item{data}{\code{\link[OpenMx:mxData]{OpenMx::mxData()}} to check.}
 
 \item{type}{of the data requested by the model.}
 
@@ -116,13 +116,14 @@ Other xmu internal not for end user:
 \code{\link{xmu_path_regex}()},
 \code{\link{xmu_print_algebras}()},
 \code{\link{xmu_rclabel_2_bracket_address}()},
+\code{\link{xmu_relevel_factors}()},
 \code{\link{xmu_safe_run_summary}()},
 \code{\link{xmu_set_sep_from_suffix}()},
 \code{\link{xmu_show_fit_or_comparison}()},
 \code{\link{xmu_simplex_corner}()},
+\code{\link{xmu_standardize_ACE}()},
 \code{\link{xmu_standardize_ACEcov}()},
 \code{\link{xmu_standardize_ACEv}()},
-\code{\link{xmu_standardize_ACE}()},
 \code{\link{xmu_standardize_CP}()},
 \code{\link{xmu_standardize_IP}()},
 \code{\link{xmu_standardize_RAM}()},

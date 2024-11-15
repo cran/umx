@@ -28,11 +28,11 @@ xmuLabel_RAM_Model(
 }
 \value{
 \itemize{
-\item The labeled \code{\link[=mxModel]{mxModel()}}
+\item The labeled \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}
 }
 }
 \description{
-This function will label all the free parameters in a RAM \code{\link[=mxModel]{mxModel()}}
+This function will label all the free parameters in a RAM \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}
 }
 \details{
 Model developers should just call \code{\link[=xmuLabel]{xmuLabel()}}
@@ -103,13 +103,14 @@ Other xmu internal not for end user:
 \code{\link{xmu_path_regex}()},
 \code{\link{xmu_print_algebras}()},
 \code{\link{xmu_rclabel_2_bracket_address}()},
+\code{\link{xmu_relevel_factors}()},
 \code{\link{xmu_safe_run_summary}()},
 \code{\link{xmu_set_sep_from_suffix}()},
 \code{\link{xmu_show_fit_or_comparison}()},
 \code{\link{xmu_simplex_corner}()},
+\code{\link{xmu_standardize_ACE}()},
 \code{\link{xmu_standardize_ACEcov}()},
 \code{\link{xmu_standardize_ACEv}()},
-\code{\link{xmu_standardize_ACE}()},
 \code{\link{xmu_standardize_CP}()},
 \code{\link{xmu_standardize_IP}()},
 \code{\link{xmu_standardize_RAM}()},

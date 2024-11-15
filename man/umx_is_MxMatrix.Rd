@@ -7,7 +7,7 @@
 umx_is_MxMatrix(obj)
 }
 \arguments{
-\item{obj}{an object to be tested to see if it is an OpenMx \code{\link[=mxMatrix]{mxMatrix()}}}
+\item{obj}{an object to be tested to see if it is an OpenMx \code{\link[OpenMx:mxMatrix]{OpenMx::mxMatrix()}}}
 }
 \value{
 \itemize{
@@ -30,11 +30,11 @@ if(umx_is_MxMatrix(x)){
 }
 \seealso{
 Other Test: 
+\code{\link{umx_check}()},
 \code{\link{umx_check_OS}()},
 \code{\link{umx_check_model}()},
 \code{\link{umx_check_names}()},
 \code{\link{umx_check_parallel}()},
-\code{\link{umx_check}()},
 \code{\link{umx_has_CIs}()},
 \code{\link{umx_has_been_run}()},
 \code{\link{umx_has_means}()},

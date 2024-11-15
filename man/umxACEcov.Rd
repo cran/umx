@@ -65,7 +65,7 @@ Used to expand selDVs into full column names, i.e., "dep" --> c("dep_T1", "dep_T
 }
 \value{
 \itemize{
-\item \code{\link[=mxModel]{mxModel()}} of subclass mxModel.ACEcov
+\item \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} of subclass mxModel.ACEcov
 }
 }
 \description{
@@ -141,32 +141,32 @@ Educational Achievement Data. \emph{Behavior Genetics}, \strong{46}, 583-95. \do
 \seealso{
 Other Twin Modeling Functions: 
 \code{\link{power.ACE.test}()},
-\code{\link{umxACEv}()},
+\code{\link{umx}},
 \code{\link{umxACE}()},
+\code{\link{umxACEv}()},
 \code{\link{umxCP}()},
 \code{\link{umxDiffMZ}()},
 \code{\link{umxDiscTwin}()},
-\code{\link{umxDoCp}()},
 \code{\link{umxDoC}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxGxE}()},
 \code{\link{umxGxE_window}()},
 \code{\link{umxGxEbiv}()},
-\code{\link{umxGxE}()},
 \code{\link{umxIP}()},
 \code{\link{umxMRDoC}()},
+\code{\link{umxReduce}()},
 \code{\link{umxReduceACE}()},
 \code{\link{umxReduceGxE}()},
-\code{\link{umxReduce}()},
 \code{\link{umxRotate.MxModelCP}()},
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
 \code{\link{umxSummarizeTwinData}()},
-\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryDoC}()},
 \code{\link{umxSummaryGxEbiv}()},
 \code{\link{umxSummarySexLim}()},
 \code{\link{umxSummarySimplex}()},
-\code{\link{umxTwinMaker}()},
-\code{\link{umx}}
+\code{\link{umxTwinMaker}()}
 }
 \concept{Twin Modeling Functions}

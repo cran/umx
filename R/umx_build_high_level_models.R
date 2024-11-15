@@ -43,7 +43,7 @@
 #' @details
 #' In an EFA, all items may load on all factors.
 #' 
-#' Should work with rotations provided in `library("GPArotation")` and `library("psych")`, e.g
+#' Should work with rotations provided in `libs("GPArotation")` and `libs("psych")`, e.g.,
 #' 
 #' **Orthogonal**: "varimax", "quartimax", "bentlerT", "equamax", "varimin", "geominT" and "bifactor"
 #' **Oblique**: "Promax", "promax", "oblimin", "simplimax", "bentlerQ", "geominQ", "biquartimin" and "cluster"
@@ -79,11 +79,11 @@
 #' @param digits rounding (default = 2)
 #' @param n.obs Number of observations in if covmat provided (default = NA)
 #' @param covmat Covariance matrix of data you are modeling (not implemented)
-#' @return - EFA [mxModel()]
+#' @return - EFA [OpenMx::mxModel()]
 #' @family Super-easy helpers
 #' @export
 #' @md
-#' @seealso - [factanal()], [mxFactorScores()]
+#' @seealso - [factanal()], [OpenMx::mxFactorScores()]
 #' @references - <https://github.com/tbates/umx>,
 #' 
 #' Hendrickson, A. E. and White, P. O. (1964). Promax: a quick method for rotation to orthogonal oblique structure. *British Journal of Statistical Psychology*, **17**, 65–70. \doi{10.1111/j.2044-8317.1964.tb00244.x}.
@@ -228,13 +228,16 @@ umxEFA <- function(x = NULL, factors = NULL, data = NULL, scores = c("none", 'ML
 			rm = newLoadings$rotmat
 			print("Factor Correlation Matrix")
 			junk = tryCatch({
-				print(solve(t(rm) %*% rm))
+				tmp = solve(t(rm) %*% rm)
+				print(tmp)
 			}, warning = function(x) {
-				umx_msg("Warning while printing factor correlation matrix: It may not be valid")
-				umx_msg(x)
+				umx_msg("A polite warning occurred while printing factor correlation matrix for this rotation: It may not be valid, or rotation may not provide a rotmat?")
+				print(paste0("Class of rotation matrix (should be matrix), was in fact: ", class(rm)))
+				print(x)
 			}, error = function(x) {
-				umx_msg("Error: Can't print factor correlation matrix: It may not be valid")
-				umx_msg(x)
+				umx_msg("A polite error occurred: Can't print factor correlation matrix for this rotation: It may not be valid, or rotation may not provide a rotmat?")
+				print(paste0("Class of rotation matrix (should be matrix), was in fact: ", class(rm)))
+				print(x)
 			}, finally={
 			    # ignored
 			})
@@ -280,7 +283,7 @@ umxFactanal <- umxEFA
 #' @return - dataframe of scores.
 #' @export
 #' @family Reporting Functions
-#' @seealso - [mxFactorScores()]
+#' @seealso - [OpenMx::mxFactorScores()]
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
@@ -346,7 +349,7 @@ umxFactorScores <- function(model, type = c('ML', 'WeightedML', 'Regression'), m
 #' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"
 #' @param contrasts An optional list (not supported)
 #' @param ...	arguments to be passed along. (not supported)
-#' @return - [mxModel()]
+#' @return - [OpenMx::mxModel()]
 #' @export
 #' @family Super-easy helpers
 #' @seealso - [umx_make_MR_data()], [umxDiffMZ()], [umxDoC()], [umxDiscTwin()]
@@ -362,26 +365,27 @@ umxFactorScores <- function(model, type = c('ML', 'WeightedML', 'Regression'), m
 #' # ====================================
 #' 
 #' library(umx)
-#' df = umx_make_MR_data(10e4)
+#' df = umx_make_MR_data(10e4, Vqtl = 0.02, bXY = 0.1, bUX = 0.5, bUY = 0.5, pQTL = 0.5)
 #' m1 = umxMR(Y ~ X, instruments = ~ qtl, data = df)
 #' parameters(m1)
 #' plot(m1, means = FALSE, min="") # help DiagrammR layout the plot.
 #' m2 = umxModify(m1, "qtl_to_X", comparison=TRUE, tryHard="yes", name="QTL_affects_X") # yip
-#' m3 = umxModify(m1, "X_to_Y"  , comparison=TRUE, tryHard="yes", name="X_affects_Y") # nope
+#' m3 = umxModify(m1, "X_to_Y"  , comparison=TRUE, tryHard="yes", name="X_affects_Y") # yip
 #' plot(m3, means = FALSE)
 #' 
 #' # Errant analysis using ordinary least squares regression (WARNING this result is CONFOUNDED!!)
-#' m1 = lm(Y ~ X    , data = df); coef(m1) # incorrect .35 effect of X on Y
-#' m1 = lm(Y ~ X + U, data = df); coef(m1) # Controlling U reveals the true 0.1 beta weight
+#' ols1 = lm(Y ~ X    , data = df); coef(ols1) # Inflated .35 effect of X on Y
+#' ols2 = lm(Y ~ X + U, data = df); coef(ols2) # Controlling U reveals the true 0.1 beta weight
 #'
-#' df = umx_make_MR_data(10e4) 
+#' # Simulate date with no causal X -> Y effect.
+#' df = umx_make_MR_data(10e4, Vqtl = 0.02, bXY = 0, bUX = 0.5, bUY = 0.5, pQTL = 0.5)
 #' m1 = umxMR(Y ~ X, instruments = ~ qtl, data = df)
-#' coef(m1)
+#' parameters(m1)
 #' 
 #' # ======================
 #' # = Now with sem::tsls =
 #' # ======================
-#' # library(sem) # may require you to install X11
+#' # libs("sem")
 #' m2 = sem::tsls(formula = Y ~ X, instruments = ~ qtl, data = df)
 #' coef(m2)
 #'

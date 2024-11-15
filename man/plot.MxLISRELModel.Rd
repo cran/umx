@@ -18,7 +18,7 @@
 )
 }
 \arguments{
-\item{x}{A LISREL \code{\link[=mxModel]{mxModel()}} from which to make a path diagram}
+\item{x}{A LISREL \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} from which to make a path diagram}
 
 \item{std}{Whether to standardize the model (default = FALSE).}
 
@@ -39,7 +39,7 @@
 \item{...}{Optional parameters}
 }
 \description{
-\code{plot.MxLISRELModel} produces SEM diagrams using \code{\link[DiagrammeR:DiagrammeR]{DiagrammeR::DiagrammeR()}} (or a graphviz application) to create the image.
+\code{plot.MxLISRELModel} produces SEM diagrams using [\code{\link[DiagrammeR:DiagrammeR]{DiagrammeR::DiagrammeR()}} to create the image.
 }
 \details{
 \emph{Note:} By default, plots open in your browser (or plot pane if using RStudio).
@@ -74,21 +74,21 @@ The commercial application \dQuote{OmniGraffle} is great for editing these image
 
 Other Plotting functions: 
 \code{\link{ggAddR}()},
-\code{\link{plot.MxModelTwinMaker}()},
 \code{\link{plot.MxModel}()},
+\code{\link{plot.MxModelTwinMaker}()},
+\code{\link{umx}},
+\code{\link{umxPlot}()},
+\code{\link{umxPlotACE}()},
 \code{\link{umxPlotACEcov}()},
 \code{\link{umxPlotACEv}()},
-\code{\link{umxPlotACE}()},
 \code{\link{umxPlotCP}()},
 \code{\link{umxPlotDoC}()},
 \code{\link{umxPlotFun}()},
-\code{\link{umxPlotGxEbiv}()},
 \code{\link{umxPlotGxE}()},
+\code{\link{umxPlotGxEbiv}()},
 \code{\link{umxPlotIP}()},
 \code{\link{umxPlotSexLim}()},
-\code{\link{umxPlotSimplex}()},
-\code{\link{umxPlot}()},
-\code{\link{umx}}
+\code{\link{umxPlotSimplex}()}
 }
 \concept{Plotting functions}
 \concept{umx S3 functions}

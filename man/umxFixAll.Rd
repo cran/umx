@@ -7,7 +7,7 @@
 umxFixAll(model, name = "_fixed", run = FALSE, verbose = FALSE)
 }
 \arguments{
-\item{model}{an \code{\link[=mxModel]{mxModel()}} within which to fix free parameters}
+\item{model}{an \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} within which to fix free parameters}
 
 \item{name}{optional new name for the model. if you begin with a _ it will be made a suffix}
 
@@ -17,7 +17,7 @@ umxFixAll(model, name = "_fixed", run = FALSE, verbose = FALSE)
 }
 \value{
 \itemize{
-\item the fixed \code{\link[=mxModel]{mxModel()}}
+\item the fixed \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}
 }
 }
 \description{
@@ -46,12 +46,12 @@ mxCompare(m1, m2)
 }
 \seealso{
 Other Advanced Model Building Functions: 
+\code{\link{umx}},
 \code{\link{umxAlgebra}()},
 \code{\link{umxJiggle}()},
 \code{\link{umxRun}()},
 \code{\link{umxThresholdMatrix}()},
 \code{\link{umxUnexplainedCausalNexus}()},
-\code{\link{umx}},
 \code{\link{xmuLabel}()},
 \code{\link{xmuValues}()}
 }

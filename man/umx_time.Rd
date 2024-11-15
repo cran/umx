@@ -12,7 +12,7 @@ umx_time(
 )
 }
 \arguments{
-\item{x}{A \code{\link[=mxModel]{mxModel()}} or list of models for which to display elapsed time, or 'start' or 'stop'}
+\item{x}{A \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} or list of models for which to display elapsed time, or 'start' or 'stop'}
 
 \item{formatStr}{A format string, defining how to show the time (defaults to human readable)}
 
@@ -70,6 +70,7 @@ umx_time('stop') # report the time since timer was restarted.
 }
 \seealso{
 Other Reporting Functions: 
+\code{\link{umx}},
 \code{\link{umxAPA}()},
 \code{\link{umxFactorScores}()},
 \code{\link{umxGetLatents}()},
@@ -77,7 +78,6 @@ Other Reporting Functions:
 \code{\link{umxGetModel}()},
 \code{\link{umxGetParameters}()},
 \code{\link{umxParameters}()},
-\code{\link{umx_aggregate}()},
-\code{\link{umx}}
+\code{\link{umx_aggregate}()}
 }
 \concept{Reporting Functions}

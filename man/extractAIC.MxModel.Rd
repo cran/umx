@@ -7,7 +7,7 @@
 \method{extractAIC}{MxModel}(fit, scale, k, ...)
 }
 \arguments{
-\item{fit}{an fitted \code{\link[=mxModel]{mxModel()}} from which to get the AIC}
+\item{fit}{an fitted \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} from which to get the AIC}
 
 \item{scale}{not used}
 
@@ -39,27 +39,22 @@ extractAIC(m1)
 AIC(m1)
 }
 }
-\references{
-\itemize{
-\item \url{https://openmx.ssri.psu.edu/thread/931#comment-4858}
-}
-}
 \seealso{
 \itemize{
 \item \code{\link[=AIC]{AIC()}}, \code{\link[=umxCompare]{umxCompare()}}, \code{\link[=logLik]{logLik()}}
 }
 
 Other Reporting functions: 
+\code{\link{RMSEA}()},
 \code{\link{RMSEA.MxModel}()},
 \code{\link{RMSEA.summary.mxmodel}()},
-\code{\link{RMSEA}()},
-\code{\link{loadings.MxModel}()},
 \code{\link{loadings}()},
+\code{\link{loadings.MxModel}()},
 \code{\link{residuals.MxModel}()},
-\code{\link{tmx_show.MxMatrix}()},
 \code{\link{tmx_show}()},
-\code{\link{umxCI_boot}()},
+\code{\link{tmx_show.MxMatrix}()},
 \code{\link{umxCI}()},
+\code{\link{umxCI_boot}()},
 \code{\link{umxConfint}()},
 \code{\link{umxExpCov}()},
 \code{\link{umxExpMeans}()},

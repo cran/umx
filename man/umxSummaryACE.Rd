@@ -21,7 +21,7 @@ umxSummaryACE(
 )
 }
 \arguments{
-\item{model}{an \code{\link[=mxModel]{mxModel()}} to summarize.}
+\item{model}{an \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} to summarize.}
 
 \item{digits}{round to how many digits (default = 2).
 Defaults to NA = do not create plot output.}
@@ -48,7 +48,7 @@ Defaults to NA = do not create plot output.}
 }
 \value{
 \itemize{
-\item optional \code{\link[=mxModel]{mxModel()}}
+\item optional \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}
 }
 }
 \description{
@@ -86,22 +86,23 @@ stdFit = umxSummaryACE(m1, returnStd = TRUE);
 
 Other Twin Modeling Functions: 
 \code{\link{power.ACE.test}()},
+\code{\link{umx}},
+\code{\link{umxACE}()},
 \code{\link{umxACEcov}()},
 \code{\link{umxACEv}()},
-\code{\link{umxACE}()},
 \code{\link{umxCP}()},
 \code{\link{umxDiffMZ}()},
 \code{\link{umxDiscTwin}()},
-\code{\link{umxDoCp}()},
 \code{\link{umxDoC}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxGxE}()},
 \code{\link{umxGxE_window}()},
 \code{\link{umxGxEbiv}()},
-\code{\link{umxGxE}()},
 \code{\link{umxIP}()},
 \code{\link{umxMRDoC}()},
+\code{\link{umxReduce}()},
 \code{\link{umxReduceACE}()},
 \code{\link{umxReduceGxE}()},
-\code{\link{umxReduce}()},
 \code{\link{umxRotate.MxModelCP}()},
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
@@ -111,7 +112,6 @@ Other Twin Modeling Functions:
 \code{\link{umxSummaryGxEbiv}()},
 \code{\link{umxSummarySexLim}()},
 \code{\link{umxSummarySimplex}()},
-\code{\link{umxTwinMaker}()},
-\code{\link{umx}}
+\code{\link{umxTwinMaker}()}
 }
 \concept{Twin Modeling Functions}

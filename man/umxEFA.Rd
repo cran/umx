@@ -53,7 +53,7 @@ umxEFA(
 }
 \value{
 \itemize{
-\item EFA \code{\link[=mxModel]{mxModel()}}
+\item EFA \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}
 }
 }
 \description{
@@ -80,7 +80,7 @@ You can also rotate the factors using any rotation function.
 
 In an EFA, all items may load on all factors.
 
-Should work with rotations provided in \code{library("GPArotation")} and \code{library("psych")}, e.g
+Should work with rotations provided in \code{libs("GPArotation")} and \code{libs("psych")}, e.g.,
 
 \strong{Orthogonal}: "varimax", "quartimax", "bentlerT", "equamax", "varimin", "geominT" and "bifactor"
 \strong{Oblique}: "Promax", "promax", "oblimin", "simplimax", "bentlerQ", "geominQ", "biquartimin" and "cluster"
@@ -144,11 +144,11 @@ Kaiser, H. F. (1958). The varimax criterion for analytic rotation in factor anal
 }
 \seealso{
 \itemize{
-\item \code{\link[=factanal]{factanal()}}, \code{\link[=mxFactorScores]{mxFactorScores()}}
+\item \code{\link[=factanal]{factanal()}}, \code{\link[OpenMx:mxFactorScores]{OpenMx::mxFactorScores()}}
 }
 
 Other Super-easy helpers: 
-\code{\link{umxTwoStage}()},
-\code{\link{umx}}
+\code{\link{umx}},
+\code{\link{umxTwoStage}()}
 }
 \concept{Super-easy helpers}

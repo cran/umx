@@ -85,7 +85,7 @@ umxACE(
 }
 \value{
 \itemize{
-\item \code{\link[=mxModel]{mxModel()}} of subclass mxModel.ACE
+\item \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} of subclass mxModel.ACE
 }
 }
 \description{
@@ -426,7 +426,7 @@ plot(m1)
 \references{
 \itemize{
 \item Eaves, L. J., Last, K. A., Young, P. A., & Martin, N. G. (1978). Model-fitting approaches
-to the analysis of human behaviour. \emph{Heredity}, \strong{41}, 249-320. \url{https://www.nature.com/articles/hdy1978101.pdf}
+to the analysis of human behaviour. \emph{Heredity}, \strong{41}, 249-320. \doi{https://doi.org/10.1038/hdy.1978.101}
 }
 }
 \seealso{
@@ -436,32 +436,32 @@ to the analysis of human behaviour. \emph{Heredity}, \strong{41}, 249-320. \url{
 
 Other Twin Modeling Functions: 
 \code{\link{power.ACE.test}()},
+\code{\link{umx}},
 \code{\link{umxACEcov}()},
 \code{\link{umxACEv}()},
 \code{\link{umxCP}()},
 \code{\link{umxDiffMZ}()},
 \code{\link{umxDiscTwin}()},
-\code{\link{umxDoCp}()},
 \code{\link{umxDoC}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxGxE}()},
 \code{\link{umxGxE_window}()},
 \code{\link{umxGxEbiv}()},
-\code{\link{umxGxE}()},
 \code{\link{umxIP}()},
 \code{\link{umxMRDoC}()},
+\code{\link{umxReduce}()},
 \code{\link{umxReduceACE}()},
 \code{\link{umxReduceGxE}()},
-\code{\link{umxReduce}()},
 \code{\link{umxRotate.MxModelCP}()},
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
 \code{\link{umxSummarizeTwinData}()},
-\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryDoC}()},
 \code{\link{umxSummaryGxEbiv}()},
 \code{\link{umxSummarySexLim}()},
 \code{\link{umxSummarySimplex}()},
-\code{\link{umxTwinMaker}()},
-\code{\link{umx}}
+\code{\link{umxTwinMaker}()}
 }
 \concept{Twin Modeling Functions}

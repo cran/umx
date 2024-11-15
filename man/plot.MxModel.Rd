@@ -23,7 +23,7 @@
 )
 }
 \arguments{
-\item{x}{An \code{\link[=mxModel]{mxModel()}} from which to make a path diagram}
+\item{x}{An \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} from which to make a path diagram}
 
 \item{std}{Whether to standardize the model (default = FALSE).}
 
@@ -52,11 +52,10 @@
 \item{...}{Optional parameters}
 }
 \description{
-\code{\link[=plot]{plot()}} produces SEM diagrams in graphviz format, and relies on \code{\link[=DiagrammeR]{DiagrammeR()}} (or a
-graphviz application) to create the image.
+\code{\link[=plot]{plot()}} produces SEM diagrams in graphviz format, and relies on \code{\link[DiagrammeR:DiagrammeR]{DiagrammeR::DiagrammeR()}} to create the image.
 }
 \details{
-\emph{Note:} DiagrammeR is supported out of the box.  By default, plots open in your browser. Other options include pdf SVG etc.
+\emph{Note:} \code{\link[DiagrammeR:DiagrammeR]{DiagrammeR::DiagrammeR()}} is supported out of the box.  By default, plots open in your browser. Other options include pdf SVG etc.
 
 If you use \code{umx_set_plot_format("graphviz")}, graphs will open in a graphviz helper app (if installed).
 
@@ -116,18 +115,18 @@ Other Plotting functions:
 \code{\link{ggAddR}()},
 \code{\link{plot.MxLISRELModel}()},
 \code{\link{plot.MxModelTwinMaker}()},
+\code{\link{umx}},
+\code{\link{umxPlot}()},
+\code{\link{umxPlotACE}()},
 \code{\link{umxPlotACEcov}()},
 \code{\link{umxPlotACEv}()},
-\code{\link{umxPlotACE}()},
 \code{\link{umxPlotCP}()},
 \code{\link{umxPlotDoC}()},
 \code{\link{umxPlotFun}()},
-\code{\link{umxPlotGxEbiv}()},
 \code{\link{umxPlotGxE}()},
+\code{\link{umxPlotGxEbiv}()},
 \code{\link{umxPlotIP}()},
 \code{\link{umxPlotSexLim}()},
-\code{\link{umxPlotSimplex}()},
-\code{\link{umxPlot}()},
-\code{\link{umx}}
+\code{\link{umxPlotSimplex}()}
 }
 \concept{Plotting functions}

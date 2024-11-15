@@ -7,7 +7,7 @@
 umxSummary(model, ...)
 }
 \arguments{
-\item{model}{The \code{\link[=mxModel]{mxModel()}} whose fit will be reported}
+\item{model}{The \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} whose fit will be reported}
 
 \item{...}{Other parameters to control model summary}
 }
@@ -29,11 +29,11 @@ View documentation on the GxE model subclass here: \code{\link[=umxSummaryGxE]{u
 }
 \seealso{
 Other Model Summary and Comparison: 
+\code{\link{umx}},
 \code{\link{umxCompare}()},
 \code{\link{umxEquate}()},
 \code{\link{umxMI}()},
 \code{\link{umxReduce}()},
-\code{\link{umxSetParameters}()},
-\code{\link{umx}}
+\code{\link{umxSetParameters}()}
 }
 \concept{Model Summary and Comparison}

@@ -7,7 +7,7 @@
 umx_is_MxModel(obj, listOK = FALSE)
 }
 \arguments{
-\item{obj}{An object to be tested to see if it is an OpenMx \code{\link[=mxModel]{mxModel()}}}
+\item{obj}{An object to be tested to see if it is an OpenMx \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}}
 
 \item{listOK}{Is it acceptable to pass in a list of models? (Default = FALSE)}
 }
@@ -35,11 +35,11 @@ if(umx_is_MxModel(list(m1,m1), listOK = TRUE)){
 }
 \seealso{
 Other Test: 
+\code{\link{umx_check}()},
 \code{\link{umx_check_OS}()},
 \code{\link{umx_check_model}()},
 \code{\link{umx_check_names}()},
 \code{\link{umx_check_parallel}()},
-\code{\link{umx_check}()},
 \code{\link{umx_has_CIs}()},
 \code{\link{umx_has_been_run}()},
 \code{\link{umx_has_means}()},

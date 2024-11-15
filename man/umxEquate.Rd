@@ -20,7 +20,7 @@ umxEquate(
 )
 }
 \arguments{
-\item{model}{An \code{\link[=mxModel]{mxModel()}} within which to equate parameters listed in "a" with those in "b"}
+\item{model}{An \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} within which to equate parameters listed in "a" with those in "b"}
 
 \item{a}{one or more labels to equate with those in the "b" set.}
 
@@ -46,7 +46,7 @@ umxEquate(
 }
 \value{
 \itemize{
-\item \code{\link[=mxModel]{mxModel()}}
+\item \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}
 }
 }
 \description{
@@ -102,11 +102,11 @@ parameters(m2)
 \code{\link[=umxModify]{umxModify()}}, \code{\link[=umxCompare]{umxCompare()}}
 
 Other Model Summary and Comparison: 
+\code{\link{umx}},
 \code{\link{umxCompare}()},
 \code{\link{umxMI}()},
 \code{\link{umxReduce}()},
 \code{\link{umxSetParameters}()},
-\code{\link{umxSummary}()},
-\code{\link{umx}}
+\code{\link{umxSummary}()}
 }
 \concept{Model Summary and Comparison}

@@ -17,7 +17,7 @@ umx_set_plot_format(umx.plot.format = NULL, silent = FALSE)
 }
 }
 \description{
-Set output format of plots (default = "DiagrammeR", alternative is "graphviz"). If you call this with no
+Set output format of plots (default = "\code{\link[DiagrammeR:DiagrammeR]{DiagrammeR::DiagrammeR()}}", alternatives are graphviz, svg, png, pdf). If you call this with no
 value, it will return the current setting. If you call it with TRUE, it toggles the setting.
 }
 \examples{
@@ -37,6 +37,7 @@ umx_set_plot_format(old) # reinstate
 }
 \seealso{
 Other Get and set: 
+\code{\link{umx}},
 \code{\link{umx_get_checkpoint}()},
 \code{\link{umx_get_options}()},
 \code{\link{umx_set_auto_plot}()},
@@ -52,7 +53,6 @@ Other Get and set:
 \code{\link{umx_set_plot_use_hrbrthemes}()},
 \code{\link{umx_set_separator}()},
 \code{\link{umx_set_silent}()},
-\code{\link{umx_set_table_format}()},
-\code{\link{umx}}
+\code{\link{umx_set_table_format}()}
 }
 \concept{Get and set}

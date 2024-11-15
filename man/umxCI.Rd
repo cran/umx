@@ -16,7 +16,7 @@ umxCI(
 )
 }
 \arguments{
-\item{model}{The \code{\link[=mxModel]{mxModel()}} you wish to report \code{\link[=mxCI]{mxCI()}}s on}
+\item{model}{The \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} you wish to report \code{\link[OpenMx:mxCI]{OpenMx::mxCI()}}s on}
 
 \item{which}{What CIs to add: c("ALL", NA, "list of your making")}
 
@@ -35,7 +35,7 @@ umxCI(
 }
 \value{
 \itemize{
-\item \code{\link[=mxModel]{mxModel()}}
+\item \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}
 }
 }
 \description{
@@ -110,15 +110,15 @@ m1 = umxCI(m1, which = "a_r1c1", run = "yes")
 }
 
 Other Reporting functions: 
+\code{\link{RMSEA}()},
 \code{\link{RMSEA.MxModel}()},
 \code{\link{RMSEA.summary.mxmodel}()},
-\code{\link{RMSEA}()},
 \code{\link{extractAIC.MxModel}()},
-\code{\link{loadings.MxModel}()},
 \code{\link{loadings}()},
+\code{\link{loadings.MxModel}()},
 \code{\link{residuals.MxModel}()},
-\code{\link{tmx_show.MxMatrix}()},
 \code{\link{tmx_show}()},
+\code{\link{tmx_show.MxMatrix}()},
 \code{\link{umxCI_boot}()},
 \code{\link{umxConfint}()},
 \code{\link{umxExpCov}()},

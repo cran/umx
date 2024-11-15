@@ -7,7 +7,7 @@
 umx_is_RAM(obj)
 }
 \arguments{
-\item{obj}{an object to be tested to see if it is an OpenMx RAM \code{\link[=mxModel]{mxModel()}}}
+\item{obj}{an object to be tested to see if it is an OpenMx RAM \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}}
 }
 \value{
 \itemize{
@@ -43,11 +43,11 @@ if(!umx_is_RAM(m1)){
 }
 \seealso{
 Other Test: 
+\code{\link{umx_check}()},
 \code{\link{umx_check_OS}()},
 \code{\link{umx_check_model}()},
 \code{\link{umx_check_names}()},
 \code{\link{umx_check_parallel}()},
-\code{\link{umx_check}()},
 \code{\link{umx_has_CIs}()},
 \code{\link{umx_has_been_run}()},
 \code{\link{umx_has_means}()},

@@ -96,7 +96,7 @@ Latent variance is fixed at 0. Loading of path 1 is fixed at 1. unique.bivariate
 }
 \value{
 \itemize{
-\item 1 or more \code{\link[=mxPath]{mxPath()}}s
+\item 1 or more \code{\link[OpenMx:mxPath]{OpenMx::mxPath()}}s
 }
 }
 \description{
@@ -251,14 +251,14 @@ plot(m1)
 }
 \seealso{
 \itemize{
-\item \code{\link[=mxPath]{mxPath()}}
+\item \code{\link[OpenMx:mxPath]{OpenMx::mxPath()}}
 }
 
 Other Core Model Building Functions: 
+\code{\link{umx}},
 \code{\link{umxMatrix}()},
 \code{\link{umxModify}()},
 \code{\link{umxRAM}()},
-\code{\link{umxSuperModel}()},
-\code{\link{umx}}
+\code{\link{umxSuperModel}()}
 }
 \concept{Core Model Building Functions}

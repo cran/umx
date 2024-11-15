@@ -111,39 +111,39 @@ of measurement invariance. \emph{Review of Psychology}, \strong{16}, 87--107.
 
 Briley, D.A., Harden, K.P., Bates, T.C., Tucker-Drob, E.M. (2015).
 Nonparametric Estimates of Gene x Environment Interaction Using Local Structural Equation Modeling.
-\emph{Behavior Genetics}, \strong{45}, 581-96. \doi{10.1007/s10519-015-9732-8} \url{https://link.springer.com/article/10.1007/s10519-015-9732-8}
+\emph{Behavior Genetics}, \strong{45}, 581-96. \doi{10.1007/s10519-015-9732-8}.
 }
 \seealso{
 \code{\link[=umxGxE]{umxGxE()}}
 
 Other Twin Modeling Functions: 
 \code{\link{power.ACE.test}()},
+\code{\link{umx}},
+\code{\link{umxACE}()},
 \code{\link{umxACEcov}()},
 \code{\link{umxACEv}()},
-\code{\link{umxACE}()},
 \code{\link{umxCP}()},
 \code{\link{umxDiffMZ}()},
 \code{\link{umxDiscTwin}()},
-\code{\link{umxDoCp}()},
 \code{\link{umxDoC}()},
-\code{\link{umxGxEbiv}()},
+\code{\link{umxDoCp}()},
 \code{\link{umxGxE}()},
+\code{\link{umxGxEbiv}()},
 \code{\link{umxIP}()},
 \code{\link{umxMRDoC}()},
+\code{\link{umxReduce}()},
 \code{\link{umxReduceACE}()},
 \code{\link{umxReduceGxE}()},
-\code{\link{umxReduce}()},
 \code{\link{umxRotate.MxModelCP}()},
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
 \code{\link{umxSummarizeTwinData}()},
-\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryDoC}()},
 \code{\link{umxSummaryGxEbiv}()},
 \code{\link{umxSummarySexLim}()},
 \code{\link{umxSummarySimplex}()},
-\code{\link{umxTwinMaker}()},
-\code{\link{umx}}
+\code{\link{umxTwinMaker}()}
 }
 \concept{Twin Modeling Functions}

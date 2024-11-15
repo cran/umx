@@ -8,7 +8,7 @@
 umxExpCov(object, latents = FALSE, manifests = TRUE, digits = NULL, ...)
 }
 \arguments{
-\item{object}{an \code{\link[=mxModel]{mxModel()}} to get the covariance matrix from}
+\item{object}{an \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} to get the covariance matrix from}
 
 \item{latents}{Whether to select the latent variables (defaults to TRUE)}
 
@@ -24,7 +24,7 @@ umxExpCov(object, latents = FALSE, manifests = TRUE, digits = NULL, ...)
 }
 }
 \description{
-Extract the expected covariance matrix from an \code{\link[=mxModel]{mxModel()}}
+Extract the expected covariance matrix from an \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}}
 }
 \examples{
 \dontrun{
@@ -41,29 +41,23 @@ umxExpCov(m1, digits = 3)
 
 }
 }
-\references{
-\itemize{
-\item \url{https://openmx.ssri.psu.edu/thread/2598}
-Original written by \url{https://openmx.ssri.psu.edu/users/bwiernik}
-}
-}
 \seealso{
 \itemize{
 \item \code{\link[=umxRun]{umxRun()}}, \code{\link[=umxCI_boot]{umxCI_boot()}}
 }
 
 Other Reporting functions: 
+\code{\link{RMSEA}()},
 \code{\link{RMSEA.MxModel}()},
 \code{\link{RMSEA.summary.mxmodel}()},
-\code{\link{RMSEA}()},
 \code{\link{extractAIC.MxModel}()},
-\code{\link{loadings.MxModel}()},
 \code{\link{loadings}()},
+\code{\link{loadings.MxModel}()},
 \code{\link{residuals.MxModel}()},
-\code{\link{tmx_show.MxMatrix}()},
 \code{\link{tmx_show}()},
-\code{\link{umxCI_boot}()},
+\code{\link{tmx_show.MxMatrix}()},
 \code{\link{umxCI}()},
+\code{\link{umxCI_boot}()},
 \code{\link{umxConfint}()},
 \code{\link{umxExpMeans}()},
 \code{\link{umxFitIndices}()},

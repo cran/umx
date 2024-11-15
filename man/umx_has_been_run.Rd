@@ -7,7 +7,7 @@
 umx_has_been_run(model, stop = FALSE)
 }
 \arguments{
-\item{model}{The \code{\link[=mxModel]{mxModel()}} you want to check has been run}
+\item{model}{The \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} you want to check has been run}
 
 \item{stop}{Whether to stop if the model has not been run (defaults to FALSE)}
 }
@@ -40,11 +40,11 @@ umx_has_been_run(m1)
 }
 \seealso{
 Other Test: 
+\code{\link{umx_check}()},
 \code{\link{umx_check_OS}()},
 \code{\link{umx_check_model}()},
 \code{\link{umx_check_names}()},
 \code{\link{umx_check_parallel}()},
-\code{\link{umx_check}()},
 \code{\link{umx_has_CIs}()},
 \code{\link{umx_has_means}()},
 \code{\link{umx_has_square_brackets}()},

@@ -274,12 +274,12 @@ noNAs <- function(df, rows = NULL, cols = NULL, drop = TRUE) {
 #' `umxModelNames` returns the names of each model contained in the model provided to it 
 #' (optionally excluding the out model itself).
 #'
-#' @param model an [mxModel()] to search for model names.
+#' @param model an [OpenMx::mxModel()] to search for model names.
 #' @param includeOuterModelName FALSE
 #' @return - All models names
 #' @export
 #' @family Miscellaneous Utility Functions
-#' @seealso - [mxRename()], [umxSuperModel()]
+#' @seealso - [OpenMx::mxRename()], [umxSuperModel()]
 #' @md
 #' @examples
 #' \dontrun{
@@ -462,7 +462,7 @@ umx_set_plot_file_suffix <- function(umx.plot.suffix = NULL, silent = FALSE) {
 
 #' Set output format of plots (structural diagrams) in umx
 #'
-#' Set output format of plots (default = "DiagrammeR", alternative is "graphviz"). If you call this with no
+#' Set output format of plots (default = "[DiagrammeR::DiagrammeR()]", alternatives are graphviz, svg, png, pdf). If you call this with no
 #' value, it will return the current setting. If you call it with TRUE, it toggles the setting.
 #'
 #' @param umx.plot.format format for plots (if empty, returns the current value of umx.plot.format). If "TRUE", then toggles
@@ -1089,6 +1089,7 @@ umx_get_checkpoint <- function(model = NULL) {
 #' @param testScript A user-provided script to run (NULL)
 #' @param rowwiseParallel Whether to parallel-ize rows (default) or gradient computation 
 #' @param nSubjects Number of rows to model (Default = 1000) Reduce for quicker runs.
+#' @param optimizer Set optimizer, e.g., "NPSOL")
 #' @return None
 #' @export
 #' @family Test
@@ -1096,10 +1097,14 @@ umx_get_checkpoint <- function(model = NULL) {
 #' @md
 #' @examples
 #' \dontrun{
-#' # On a fast machine, takes a minute with 1 core
+#' # In 2016 1core took 1 minute
 #' umx_check_parallel()
 #' }
-umx_check_parallel <- function(nCores = c(1, omxDetectCores()), testScript = NULL, rowwiseParallel = TRUE, nSubjects = 1000) {
+umx_check_parallel <- function(nCores = c(1, omxDetectCores()), testScript = NULL, rowwiseParallel = TRUE, nSubjects = 1000, optimizer=NULL) {
+	if(!is.null(optimizer)){
+		oldOpt = umx_set_optimizer()
+		umx_set_optimizer(optimizer)
+	}
 	if(!is.null(testScript)){
 		stop("test script not implemented yet - beat on tim to do it!")
 	}
@@ -1171,8 +1176,7 @@ umx_check_parallel <- function(nCores = c(1, omxDetectCores()), testScript = NUL
 	
 	# set rowwiseParallel
 	if(packageVersion("OpenMx") >= "2.6.1"){
-		message("ignored rowwiseParallel: bug tim if you need this")
-		# test1$fitfunction$rowwiseParallel = rowwiseParallel
+		test1$fitfunction$rowwiseParallel = rowwiseParallel
 	} else {
 		message("ignored rowwiseParallel: upgrade to OpenMx 2.6.1 or better to use this")
 		# ignore: this is not supported by versions before 2.6.1
@@ -1189,7 +1193,6 @@ umx_check_parallel <- function(nCores = c(1, omxDetectCores()), testScript = NUL
 	}
 	n = 1
 	# run each model
-	# thisCores = 4
 	for (thisCores in nCores) {
 		umx_set_cores(thisCores)
 		thisModel = mxRename(models[[n]], paste0("nCores_equals_", thisCores))
@@ -1199,7 +1202,9 @@ umx_check_parallel <- function(nCores = c(1, omxDetectCores()), testScript = NUL
 		n = n + 1
 	}
 	umx_set_cores(oldCores)
-	# umx_time(models, autoRun= F)
+	if(!is.null(optimizer)){
+		umx_set_optimizer(oldOpt)
+	}
 	invisible(umx_time(models, formatStr = "%M %OS3", autoRun = FALSE))
 }
 
@@ -1211,11 +1216,11 @@ umx_check_parallel <- function(nCores = c(1, omxDetectCores()), testScript = NUL
 #'
 #' umxJiggle takes values in a matrix and jiggles them
 #'
-#' @param matrixIn an [mxMatrix()] to jiggle the values of
+#' @param matrixIn an [OpenMx::mxMatrix()] to jiggle the values of
 #' @param mean the mean value to add to each value
 #' @param sd the sd of the jiggle noise
 #' @param dontTouch A value, which, if found, will be left as-is (defaults to 0)
-#' @return - [mxMatrix()]
+#' @return - [OpenMx::mxMatrix()]
 #' @family Advanced Model Building Functions
 #' @references - <https://github.com/tbates/umx>
 #' @export
@@ -1239,7 +1244,7 @@ umxJiggle <- function(matrixIn, mean = 0, sd = .1, dontTouch = 0) {
 #'
 #' Return a list of all the exogenous variables (variables with no incoming single-arrow path) in a model. 
 #'
-#' @param model an [mxModel()] from which to get exogenous variables
+#' @param model an [OpenMx::mxModel()] from which to get exogenous variables
 #' @param manifests_only Whether to check only manifests (default = TRUE)
 #' @return - list of exogenous variables
 #' @export
@@ -1283,7 +1288,7 @@ umx_is_exogenous <- function(model, manifests_only = TRUE) {
 #'
 #' Return a list of all the endogenous variables (variables with at least one incoming single-arrow path) in a model.
 #'
-#' @param model an [mxModel()] from which to get endogenous variables
+#' @param model an [OpenMx::mxModel()] from which to get endogenous variables
 #' @param manifests_only Whether to check only manifests (default = TRUE)
 #' @return - list of endogenous variables
 #' @export
@@ -1347,24 +1352,24 @@ eddie_AddCIbyNumber <- function(model, labelRegex = "") {
 
 #' umxFactor
 #'
-#' A convenient version of [mxFactor()] supporting the common 
+#' A convenient version of [OpenMx::mxFactor()] supporting the common 
 #' case in which the factor levels are those in the variable.
 #'
 #' @aliases umx_factor
-#' @param x A variable to recode as an mxFactor (see [mxFactor()])
-#' @param levels (default NULL). Like [factor()] but UNLIKE [mxFactor()], 
+#' @param x A variable to recode as an mxFactor (see [OpenMx::mxFactor()])
+#' @param levels (default NULL). Like [factor()] but UNLIKE [OpenMx::mxFactor()], 
 #' unique values will be used if levels not specified.
-#' @param labels = levels (see [mxFactor()])
-#' @param exclude = NA (see [mxFactor()])
+#' @param labels = levels (see [OpenMx::mxFactor()])
+#' @param exclude = NA (see [OpenMx::mxFactor()])
 #' @param ordered = TRUE By default return an ordered mxFactor
-#' @param collapse = FALSE (see [mxFactor()])
+#' @param collapse = FALSE (see [OpenMx::mxFactor()])
 #' @param verbose Whether to tell user about such things as coercing to factor
 #' @param sep If twin data are being used, the string that separates the base from twin index
 #' will try and ensure factor levels same across all twins.
-#' @return - [mxFactor()]
+#' @return - [OpenMx::mxFactor()]
 #' @export
 #' @family Data Functions
-#' @seealso - [umxFactanal()], [mxFactor()]
+#' @seealso - [umxFactanal()], [OpenMx::mxFactor()]
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
 #' @md
 #' @examples
@@ -1583,6 +1588,7 @@ umxParan <- function(df, cols= NA, graph = TRUE, mapStrings = NULL) {
 #' @return - scores
 #' @export
 #' @family Data Functions
+#' @seealso	umx_strings2numeric
 #' @references -  Revelle, W. (2022) psych: Procedures for Personality and Psychological Research, Northwestern University, Evanston, Illinois, USA, <https://CRAN.R-project.org/package=psych> Version = 2.2.9.
 #' * McNeish, D. (2018). Thanks coefficient alpha, we’ll take it from here. *Psychological Methods*, **23**, 412-433. \doi{10.1037/met0000144}.
 #' @md 
@@ -1820,7 +1826,7 @@ umx_score_scale <- function(base= NULL, pos = NULL, rev = NULL, min= 1, max = NU
 #' @param min Optional minimum version string to test for, e.g. '2.7.0' (Default = NULL).
 #' @param verbose = TRUE
 #' @param return Which package (umx or OpenMx) to 'return' version info for (Default = umx).
-#' @return - [mxModel()]
+#' @return - [OpenMx::mxModel()]
 #' @export
 #' @family Miscellaneous Utility Functions
 #' @seealso - [packageVersion()], [install.OpenMx()]
@@ -2021,7 +2027,7 @@ umx_as_numeric <- function(df, which = NULL, force = FALSE) {
 		colsToConvert = colsToConvert[umx_is_numeric(df)]
 	}
 	for (i in colsToConvert) {
-		df[ ,i] = as.numeric(df[ ,i])
+		df[ ,i] = as.numeric(df[ ,i, drop = TRUE])
 	}
 	return(df)
 }
@@ -2271,20 +2277,17 @@ umx_grep <- function(df, grepString, output = c("both", "label", "name"), ignore
 #' 
 #' *note*: Cheaper cuts like blade steak can come out fine.
 #' 
-#' A great reference is The Food Lab by Kenji Alt Lopez. https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087.
-#'
 #' @export
 #' @family Miscellaneous Functions
-#' @seealso - [omxBrownie()]
-#' @references - [The Food Lab](https://www.amazon.co.uk/Food-Lab-Cooking-Through-Science/dp/0393081087)
+#' @seealso - [OpenMx::omxBrownie()]
 #' @examples
 #' umxBrownie()
 #' @md
 umxBrownie <- function() {
 	message("Rub steak in a table spoon of salt, put it back in the fridge for an hour (longer is fine).\n",
-	"Place steak on a hot cast-iron skillet, with a little peanut oil.\n",
-	"Turn steaks as often as you wish. Control heat to below smoke point.\n",
-	"Remove and eat when internal temp reaches 130 \u0080 F.\n"
+	"Place steak on a hot cast-iron skillet, with a little olive oil.\n",
+	"Turn steak as often as you wish. Control heat to below smoke point.\n",
+	"Remove and eat when internal temp reaches 110 \u0080 F.\n"
 	)
 }
 
@@ -2331,7 +2334,6 @@ umx_rename_file <- function(findStr = "old", replaceStr = NA, baseFolder = "Find
 		baseFolder = paste(dirname(file.choose(new = FALSE)), "/", sep = "") # choose a directory
 		message("Using selected folder:", baseFolder)
 	}
-
 	# =================================================
 	# = 2. Find files matching listPattern or findStr =
 	# =================================================
@@ -2752,12 +2754,12 @@ fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, sy
 #' Can move the weighting between a conservative .5 and an optimistic 2 (in terms of how long the growth will last and how low the hurdle rate is)
 #' 
 #' 
-#' @param principal The initial investment at time 0.
+#' @param principal The initial investment at time 0 (default 100)
 #' @param deposits Optional periodic additional investment each *year*.
-#' @param interest Annual interest rate (default = .05)
-#' @param inflate How much to inflate deposits over time (default = 0)
-#' @param yrs Duration of the investment (default = 10).
-#' @param n Compounding intervals per year (default = 12 (monthly), 365 for daily)
+#' @param interest Annual interest rate (default .05)
+#' @param inflate How much to inflate deposits over time (default 0)
+#' @param yrs Duration of the investment (default 10).
+#' @param n Compounding intervals per year (default 12 (monthly), use 365 for daily)
 #' @param when Deposits made at the "beginning" (of each year) or "end"
 #' @param symbol Currency symbol to embed in the result.
 #' @param report "markdown" or "html", 
@@ -2808,7 +2810,7 @@ fin_valuation <- function(revenue=6e6*30e3, opmargin=.08, expenses=.2, PE=30, sy
 #' # 8 Interest needed to increase principal to final value in yrs time.
 #' fin_interest(principal = 100, final=200, yrs = 5)
 #'
-fin_interest <- function(principal = 0, deposits = 0, inflate = 0, interest = 0.05, yrs = 10, final= NULL, n = 12, when = "beginning", symbol = NULL, largest_with_cents = 0, baseYear= as.numeric(format(Sys.time(), "%Y")), table = TRUE, report= c("markdown", "html")){
+fin_interest <- function(principal = 100, deposits = 0, inflate = 0, interest = 0.05, yrs = 10, final= NULL, n = 12, when = "beginning", symbol = NULL, largest_with_cents = 0, baseYear= as.numeric(format(Sys.time(), "%Y")), table = TRUE, report= c("markdown", "html")){
 	report = match.arg(report)
 	if(is.null(symbol)){symbol = umx_set_dollar_symbol(silent=TRUE)}
 	if(principal==0){
@@ -3433,7 +3435,7 @@ rowMin <- function(df, na.rm= TRUE) {
 #' @param df a dataframe to round in
 #' @param digits how many digits to round to (defaults to getOption("digits"))
 #' @param coerce whether to make the column numeric if it is not (default = FALSE)
-#' @return - [mxModel()]
+#' @return - [OpenMx::mxModel()]
 #' @family Miscellaneous Stats Functions
 #' @export
 #' @references - <https://github.com/tbates/umx>
@@ -3859,7 +3861,7 @@ umx_make <- function(what = c("load", "quickInst", "install", "spell", "sitrep",
 #' umx_msg(mtcars)
 umx_msg <- function(x) {
 	nm = deparse(substitute(x) )
-	if(is.data.frame(x)){
+	if(any(is.data.frame(x))){
 		message(nm, " = ")
 		str(x)
 	} else {
@@ -4172,7 +4174,7 @@ xmu_dot_mat2dot <- function(x, cells = c("diag", "lower", "lower_inc", "upper", 
 #' 
 #' If a model has not been run, umx_time will run it for you.
 #'
-#' @param x A [mxModel()] or list of models for which to display elapsed time, or 'start' or 'stop'
+#' @param x A [OpenMx::mxModel()] or list of models for which to display elapsed time, or 'start' or 'stop'
 #' @param formatStr A format string, defining how to show the time (defaults to human readable)
 #' @param tz time zone in which the model was executed (defaults to "GMT")
 #' @param autoRun If TRUE (default), run the model if it appears not to have been.
@@ -4418,7 +4420,7 @@ umx_print <- function (x, digits = getOption("digits"), caption = NULL, report =
 #'
 #' check if an mxModel has been run or not
 #'
-#' @param model The [mxModel()] you want to check has been run
+#' @param model The [OpenMx::mxModel()] you want to check has been run
 #' @param stop  Whether to stop if the model has not been run (defaults to FALSE)
 #' @return - boolean
 #' @export
@@ -4615,7 +4617,7 @@ umx_check_names <- function(namesNeeded, data = NA, die = TRUE, illegal = NULL, 
 #' @param digits digits to round output to (Ignored if NULL). Set for easy printing.
 #' @param strict Whether to allow non-ordered factors to be processed (default = FALSE (no)).
 #' @param allowCorForFactorCovs When ordinal data are present, use heterochoric correlations in affected cells, in place of covariances. 
-#' @return - [mxModel()]
+#' @return - [OpenMx::mxModel()]
 #' @export
 #' @family Miscellaneous Stats Functions
 #' @references - <https://tbates.github.io>
@@ -4803,7 +4805,7 @@ umx_is_MxData <- function(x) {
 #'
 #' Return the names of any ordinal variables in a dataframe
 #'
-#' @param df A [data.frame()] or [mxData()] to look in for ordinal variables (if you offer a
+#' @param df A [data.frame()] or [OpenMx::mxData()] to look in for ordinal variables (if you offer a
 #' matrix or vector, it will be upgraded to a dataframe)
 #' @param names whether to return the names of ordinal variables, or a binary (T,F) list (default = FALSE)
 #' @param strict whether to stop when unordered factors are found (default = TRUE)
@@ -4942,7 +4944,7 @@ umx_is_ordered <- function(df, names = FALSE, strict = TRUE, binary.only = FALSE
 #'
 #' Utility function returning a binary answer to the question "Is this a RAM model?"
 #'
-#' @param obj an object to be tested to see if it is an OpenMx RAM [mxModel()]
+#' @param obj an object to be tested to see if it is an OpenMx RAM [OpenMx::mxModel()]
 #' @return - Boolean
 #' @export
 #' @family Test
@@ -4982,7 +4984,7 @@ umx_is_RAM <- function(obj) {
 #'
 #' Utility function returning a binary answer to the question "Is this an OpenMx model?"
 #'
-#' @param obj An object to be tested to see if it is an OpenMx [mxModel()]
+#' @param obj An object to be tested to see if it is an OpenMx [OpenMx::mxModel()]
 #' @param listOK Is it acceptable to pass in a list of models? (Default = FALSE)
 #' @return - Boolean
 #' @export
@@ -5022,7 +5024,7 @@ umx_is_MxModel <- function(obj, listOK = FALSE) {
 #'
 #' Utility function returning a binary answer to the question "Is this an OpenMx mxMatrix?"
 #'
-#' @param obj an object to be tested to see if it is an OpenMx [mxMatrix()]
+#' @param obj an object to be tested to see if it is an OpenMx [OpenMx::mxMatrix()]
 #' @return - Boolean
 #' @export
 #' @family Test
@@ -5099,9 +5101,9 @@ umx_is_cov <- function(data = NULL, boolean = FALSE, verbose = FALSE) {
 
 #' umx_has_means
 #'
-#' A utility function to return a binary answer to the question "does this [mxModel()] have a means model?" 
+#' A utility function to return a binary answer to the question "does this [OpenMx::mxModel()] have a means model?" 
 #'
-#' @param model The [mxModel()] to check for presence of means
+#' @param model The [OpenMx::mxModel()] to check for presence of means
 #' @return - TRUE or FALSE
 #' @export
 #' @family Test
@@ -5139,9 +5141,9 @@ umx_has_means <- function(model) {
 
 #' umx_has_CIs
 #'
-#' A utility function to return a binary answer to the question "does this [mxModel()] have confidence intervals?" 
+#' A utility function to return a binary answer to the question "does this [OpenMx::mxModel()] have confidence intervals?" 
 #'
-#' @param model The [mxModel()] to check for presence of CIs
+#' @param model The [OpenMx::mxModel()] to check for presence of CIs
 #' @param check What to check for: "intervals" requested, "output" present, or "both". Defaults to "both"
 #' @return - TRUE or FALSE
 #' @export
@@ -5309,7 +5311,7 @@ umx_reorder <- function(old, newOrder, force=FALSE) {
 #' umx_cont_2_quantiles
 #'
 #' Recode a continuous variable into n-quantiles (default = deciles (10 levels)).
-#' It returns an [mxFactor()], with the levels labeled with the max value
+#' It returns an [OpenMx::mxFactor()], with the levels labeled with the max value
 #' in each quantile (i.e., open on the left-side). quantiles are labeled "quantile1"
 #' "quantile2" etc.
 #' 
@@ -5322,7 +5324,7 @@ umx_reorder <- function(old, newOrder, force=FALSE) {
 #' @param type what to return (Default is "mxFactor") options: "ordered" and "unordered")
 #' @param verbose report the min, max, and decile cuts used (default = FALSE)
 #' @param returnCutpoints just return the cutpoints, for use directly
-#' @return - recoded variable as an [mxFactor()]
+#' @return - recoded variable as an [OpenMx::mxFactor()]
 #' @export
 #' @family Data Functions
 #' @references - <https://github.com/tbates/umx>, <https://tbates.github.io>
@@ -5421,7 +5423,6 @@ umx_has_square_brackets <- function (input) {
     return(length(match1) > 0 && length(match2) > 0)
 }
 
-
 #' Convert a string to an OpenMx algebra
 #'
 #' This is useful use to quickly and easily insert values from R variables into the string (using paste() and rep() etc.), 
@@ -5432,7 +5433,7 @@ umx_has_square_brackets <- function (input) {
 #' @param algString a string to turn into an algebra
 #' @param name of the returned algebra
 #' @param dimnames of the returned algebra
-#' @return - [mxAlgebra()]
+#' @return - [OpenMx::mxAlgebra()]
 #' @export
 #' @family xmu internal not for end user
 #' @references - <https://github.com/tbates/umx>
@@ -5449,14 +5450,14 @@ umx_string_to_algebra <- function(algString, name = NA, dimnames = NA) {
 #' Scale data columns, skipping non-scalable columns
 #'
 #' @description 
-#' `umx_scale` applies scale to the columns of a data.frame. By default it scales all numeric columns,
+#' `umx_scale` applies [scale()] to the columns of a data.frame. By default it scales all numeric columns,
 #' and is smart enough to skip non-scalable columns (strings, factors, etc.).
 #' 
 #' You can also select which columns to convert.
 #' This is useful when you want to avoid numeric columns which are actually factors.
 #' 
-#' *note*: By default, the attributes which scale adds ("scaled:center" and 
-#' "scaled:scale" removed to leave nice numeric columns. Set `attr= TRUE` to preserve these.
+#' *note*: By default, the [scale()] function adds [attributes()] ("scaled:center" and 
+#' "scaled:scale", `umx_scale` removes these leaving nice numeric columns. Set `attr= TRUE` to preserve them.
 #'
 #' @param df A dataframe to scale (or a numeric vector)
 #' @param varsToScale (leave blank to scale all)
@@ -5613,14 +5614,14 @@ umx_is_numeric <- function(df, all = TRUE){
 #' Optionally, this also works on wide (i.e., twin) data. Just supply suffixes to identify
 #' the paired-wide columns (see examples).
 #' 
-#' @details In R, residuals for a variable can be found with the following statement:
+#' @details In R, residuals for a variable can be found with the `residuals` function:
 #' 
-#' \code{tmp = residuals(lm(var ~ cov1 + cov2, data = data, na.action = na.exclude))}
+#' \code{residuals(lm(mpg ~ wt + am, data = mtcars, na.action = na.exclude))}
 #'
-#' This tmp variable could then be written over the old data:
+#' This result could then be written over the old DV column.
 #' 
-#' umx_residualize obviates the user having to build the lm, set na.action, or replace the data.
-#' In addition, it has the powerful feature of operating on a list of variables, and of operating on
+#' `umx_residualize` obviates the user having to build the lm, set na.action, or replace the data.
+#' In addition, it has the powerful features of operating on a list of variables, and of operating on
 #' wide data, expanding the var name using a set of variable-name suffixes.
 #' 
 #' @param var The base name of the variable you want to residualize. Alternatively, a 
@@ -5758,33 +5759,38 @@ umx_residualize <- function(var, covs = NULL, suffixes = NULL, data){
 #' data(twinData) 
 #' df = umx_scale_wide_twin_data(data = twinData, varsToScale = c("ht", "wt"), sep = "")
 #' plot(wt1 ~ wt2, data = df)
-umx_scale_wide_twin_data <- function(varsToScale, sep, data, twins = 1:2) {
-	# Issue #82 is to allow twins > 2
-	if(length(sep) != 1){
-		stop("I need one sep, you gave me ", length(sep), "\nYou, might, for instance, need to change c('_T1', '_T2') to just '_T'")
-	}
-	if(!identical(twins, 1:2)){
-		stop("I only support two twins at present, but you asked for:", omxQuotes(twins)," \n",
-		"comment on gitgub.com/tbates/umx/#82 to include arbitrary family members.")
-	}
-	# TODO umx_scale_wide_twin_data: Discover suffixes as unique digits following suffix (could be 1:6)
-	namesNeeded = umx_paste_names(varsToScale, sep = sep, suffixes = twins)
-	umx_check_names(namesNeeded, data)
-	t1Traits = paste0(varsToScale, sep, 1)
-	t2Traits = paste0(varsToScale, sep, 2)
+umx_scale_wide_twin_data <-  function(varsToScale, sep, data, twins = 1:2) {
+	  if (length(sep) != 1) {
+		  stop("I need one sep, you gave me ", length(sep), "\nYou might, for instance, need to change c('_T1', '_T2') to just '_T'")
+	  }
 	
-	for (i in 1:length(varsToScale)) {
-		T1 = data[,t1Traits[i]]
-		T2 = data[,t2Traits[i]]
-		totalMean = mean(c(T1, T2), na.rm = TRUE)
-		totalSD   =   sd(c(T1, T2), na.rm = TRUE)
-		T1 = (T1 - totalMean)/totalSD
-		T2 = (T2 - totalMean)/totalSD
-		data[,t1Traits[i] ] = T1
-		data[,t2Traits[i] ] = T2
-	}
-	return(data)
-}
+	  namesNeeded <- umx_paste_names(varsToScale, sep = sep, suffixes = twins)
+	  umx_check_names(namesNeeded, data)
+	
+	  for (i in 1:length(varsToScale)) {
+		  combinedData <- NULL
+		  for (twin in twins) {
+			  trait <- paste0(varsToScale[i], sep, twin)
+			  if (is.numeric(data[, trait])) {
+				  combinedData <- c(combinedData, data[, trait])
+			  }
+		  }
+		
+		  if (!is.null(combinedData)) {
+			  totalMean <- mean(combinedData, na.rm = TRUE)
+			  totalSD <- sd(combinedData, na.rm = TRUE)
+			
+			  for (twin in twins) {
+				  trait <- paste0(varsToScale[i], sep, twin)
+				  if (is.numeric(data[, trait])) {
+					  data[, trait] <- (data[, trait] - totalMean) / totalSD
+				  }
+			  }
+		  }
+	  }
+	
+	  return(data)
+  }
 
 #' Select first item in list of options, while being flexible about choices.
 #'
@@ -6222,7 +6228,7 @@ umx_trim <- function(string, removeThis = NULL) {
 #'
 #' @param vec vector to rotate
 #' @param na.last Whether to set the last value to NA (default = FALSE)
-#' @return - [mxModel()]
+#' @return - [OpenMx::mxModel()]
 #' @export
 #' @family String Functions
 #' @references - <https://tbates.github.io>
@@ -7206,18 +7212,13 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		SESlist = rnorm(n = nMZpairs, mean = 0, sd = 1)
 		j = 1
 		for (thisSES in SESlist) {
-			# thisSES = 0
 			AA = max(0, (avgA + (thisSES * SES_2_A_beta)))
-			# CC = 0.0
-			# EE = 0.1
 			AC  = AA + CC
 			ACE = AA + CC + EE
 			mzCov = matrix(nrow = 2, byrow = TRUE, c(
 				ACE, AC,
 				AC , ACE)
 			);
-			# print(mzCov)
-			# MASS:: package
 			mzPair = mvrnorm(n = 1, mu = c(0, 0), Sigma = mzCov, empirical = empirical);
 			mzData[j, ] = c(mzPair, thisSES, thisSES)
 			j = j + 1
@@ -7229,7 +7230,6 @@ umx_make_TwinData <- function(nMZpairs, nDZpairs = nMZpairs, AA = NULL, CC = NUL
 		SESlist = rnorm(n = nDZpairs, mean = 0, sd = 1)
 		j = 1
 		for (thisSES in SESlist) {
-			# thisSES = -5
 			AA = max(0, (avgA + (thisSES * SES_2_A_beta)))
 			hAC = (dzAr * AA) + CC
 			ACE = AA + CC + EE
@@ -7555,7 +7555,7 @@ umx_make_raw_from_cov <- function(covMat, n, means = 0, varNames = NULL, empiric
 #'
 #' @param m1 first copy of the model
 #' @param m2 second copy of the model
-#' @return - [mxModel()]
+#' @return - [OpenMx::mxModel()]
 #' @family xmu internal not for end user
 #' @export
 #' @references - <https://github.com/tbates/umx>
@@ -8030,18 +8030,18 @@ umxHetCor <- function(data, ML = FALSE, use = c("pairwise.complete.obs", "comple
 #' Convert lower-only matrix data to full (or enforce symmetry on a full matrix)
 #'
 #' Takes a vector of the lower-triangle of cells in a matrix as you might read-in
-#' from a journal article), OR a matrix (for instance from a "lower" [mxMatrix()], 
+#' from a journal article), OR a matrix (for instance from a "lower" [OpenMx::mxMatrix()], 
 #' and returns a full matrix, copying the lower triangle into the upper.
 #' 
 #' *note*: Can also take lower data presented in the form of a data.frame. Note also, if 
 #' presented with a full matrix, the function will return a matrix with  symmetry enforced. Can be
 #' handy when you have a "nearly-symmetrical" matrix (with differences in the tenth decimal place).
 #' 
-#' @param lower.data An [mxMatrix()]
+#' @param lower.data An [OpenMx::mxMatrix()]
 #' @param diag A boolean specifying whether the lower.data includes the diagonal
 #' @param byrow Whether the matrix is to be filled by row or by column (default = TRUE)
 #' @param dimnames Optional dimnames for the matrix (defaults to NULL)
-#' @return - [mxMatrix()]
+#' @return - [OpenMx::mxMatrix()]
 #' @family Data Functions
 #' @export
 #' @references - <https://github.com/tbates/umx>
@@ -8413,7 +8413,7 @@ qm <- function(..., rowMarker = "|") {
 #'
 #' Versions exist for RAM, ACE, ACEv, ACEcov, IP, CP and GxE models.
 #'
-#' @param model The [mxModel()] whose fit will be reported.
+#' @param model The [OpenMx::mxModel()] whose fit will be reported.
 #' @param ... Other parameters.
 #' @family xmu internal not for end user
 #' @md
@@ -8433,7 +8433,7 @@ umx_standardize.default <- function(model, ...){
 #' 
 #' `xmu_standardize_RAM` takes a RAM-style model, and returns standardized version.
 #'
-#' @param model The [mxModel()] you wish to standardize
+#' @param model The [OpenMx::mxModel()] you wish to standardize
 #' @param ... Other options
 #' @family xmu internal not for end user
 #' @references - <https://github.com/tbates/umx>

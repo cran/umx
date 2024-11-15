@@ -93,7 +93,7 @@ umxPlot <- function(x, y= NULL, data, xlab= x, ylab = y, title = paste0(y, " as 
 # = Model Diagnostics =
 # =====================
 
-#' Diagnose problems in a model - this is a work in progress.
+#' Diagnose problems in a model - not working!
 #'
 #' The goal of this function **WILL BE** (not currently functional) to diagnose problems in
 #' a model and return suggestions to the user.
@@ -109,10 +109,10 @@ umxPlot <- function(x, y= NULL, data, xlab= x, ylab = y, title = paste0(y, " as 
 #' 	* diagonalizeExpCov diagonal
 #' 	* [umx_is_ordered()]
 #'
-#' 	more tricky - we should really report the variances and the standardized thresholds.
-#' The guidance would be to try starting with unit variances and thresholds that are within
-#'  +/- 2 SD of the mean. [bivariate outliers %p option](https://openmx.ssri.psu.edu/thread/3899)
-#' @param model an [mxModel()] to diagnose
+#' Tricky, but reporting variances and standardized thresholds is ideal.
+#' Guidance is to start with unit variances and thresholds within
+#'  +/- 2 SD of the mean. Like %p option in Classic Mx.
+#' @param model an [OpenMx::mxModel()] to diagnose
 #' @param tryHard whether I should try and fix it? (defaults to FALSE)
 #' @param diagonalizeExpCov Whether to diagonalize the ExpCov
 #' @return - helpful messages and perhaps a modified model
@@ -213,12 +213,12 @@ umxWeightedAIC <- function(models, digits= 2) {
 #' [umx_set_table_format()], or set `report= "html"` to open a
 #' table for pasting into a word processor.
 #' 
-#' `umxReduce` is a work in progress, with more automatic reductions coming as demand emerges.
-#' I am thinking for RAM models to drop NS paths, and report that test.
+#' `umxReduce` can be extended to new cases as demand emerges.
 #'
-#' @param model The [mxModel()] which will be reduced.
+#' @param model The [OpenMx::mxModel()] which will be reduced.
 #' @param report How to report the results. "html" = open in browser
 #' @param intervals Recompute CIs (if any included) on the best model (default = TRUE)
+#' @param testD Whether to test ADE and DE models (TRUE) 
 #' @param baseFileName (optional) custom filename for html output (defaults to "tmp")
 #' @param tryHard Default = "yes"
 #' @param silent Default = FALSE
@@ -230,12 +230,12 @@ umxWeightedAIC <- function(models, digits= 2) {
 #'  *Psychonomic Bulletin and Review*, **11**, 192-196. \doi{10.3758/BF03206482}
 #' @export
 #' @md
-umxReduce <- function(model, report = c("markdown", "inline", "html"), intervals = TRUE, baseFileName = "tmp", tryHard = "yes", silent=FALSE, ...){
+umxReduce <- function(model, report = c("markdown", "inline", "html"), intervals = TRUE, testD = TRUE, baseFileName = "tmp", tryHard = "yes", silent=FALSE, ...){
 	UseMethod("umxReduce", model)
 }
 
 #' @export
-umxReduce.default <- function(model, report = c("markdown", "inline", "html"), intervals = FALSE, baseFileName = "tmp", tryHard = "yes", silent=FALSE, ...){
+umxReduce.default <- function(model, report = c("markdown", "inline", "html"), intervals = FALSE, testD = TRUE, baseFileName = "tmp", tryHard = "yes", silent=FALSE, ...){
 	stop("umxReduce is not defined for objects of class:", class(model))
 }
 
@@ -254,6 +254,7 @@ umxReduce.default <- function(model, report = c("markdown", "inline", "html"), i
 #' @param model A [umxGxE()] to reduce.
 #' @param report How to report the results. default = "markdown". "html" = open in browser.
 #' @param intervals Recompute CIs (if any included) on the best model (default = TRUE)
+#' @param testD Whether to test ADE and DE models (TRUE)
 #' @param baseFileName (optional) custom filename for html output (default = "tmp").
 #' @param tryHard Default ('no') uses normal mxRun. "yes" uses mxTryHard. Other options: "ordinal", "search"
 #' @param silent Default (FALSE)
@@ -269,7 +270,7 @@ umxReduce.default <- function(model, report = c("markdown", "inline", "html"), i
 #' \dontrun{
 #' model = umxReduce(model)
 #' }
-umxReduceGxE <- function(model, report = c("markdown", "inline", "html", "report"), intervals = TRUE, baseFileName = "tmp_gxe", tryHard = c("yes", "no", "ordinal", "search"), silent = FALSE, ...) {
+umxReduceGxE <- function(model, report = c("markdown", "inline", "html", "report"), intervals = TRUE, testD = TRUE, baseFileName = "tmp_gxe", tryHard = c("yes", "no", "ordinal", "search"), silent = FALSE, ...) {
 	report = match.arg(report)
 	umx_is_MxModel(model)
 	if(inherits(model, "MxModelGxE")){
@@ -344,9 +345,10 @@ umxReduce.MxModelGxE <- umxReduceGxE
 #'
 #' Suggestions for more sophisticated automation welcomed!
 #'
-#' @param model an ACE or ADE [mxModel()] to reduce
+#' @param model an ACE or ADE [OpenMx::mxModel()] to reduce
 #' @param report How to report the results. "html" = open in browser
 #' @param intervals Recompute CIs (if any included) on the best model (default = TRUE)
+#' @param testD Whether to test ADE and DE models (TRUE)
 #' @param baseFileName (optional) custom filename for html output (defaults to "tmp")
 #' @param tryHard (default = "yes")
 #' @param silent Don't print the ACE models (default = FALSE)
@@ -380,10 +382,9 @@ umxReduce.MxModelGxE <- umxReduceGxE
 #' m1 = umxACE(selDVs = "bmi", dzData = dzData, mzData = mzData, sep = "", dzCr = .25)
 #' 
 #' }
-umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report"), intervals = TRUE, baseFileName = "tmp", tryHard = c("yes", "no", "ordinal", "search"), silent=FALSE, digits = 2, ...) {
-	
-	# override umx_set_auto_run
-	oldAutoRun = umx_set_auto_run(autoRun = FALSE)
+umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report"), intervals = TRUE, testD = TRUE, baseFileName = "tmp", tryHard = c("yes", "no", "ordinal", "search"), silent=FALSE, digits = 2, ...) {
+	# override umx_set_auto_run?
+	oldAutoRun = umx_set_auto_run(autoRun = TRUE)
 	
 	report  = match.arg(report)
 	tryHard = match.arg(tryHard)
@@ -393,11 +394,12 @@ umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report
 		oldSilent = FALSE
 	}
 	oldAutoPlot = umx_set_auto_plot(FALSE, silent = TRUE)
+
+
 	if(model$top$dzCr$values == 1){
-		message("You gave me an ACE model")		
 		ACE = model
 		ADE = umxModify(model, 'dzCr_r1c1', value = .25, name = "ADE", tryHard = tryHard)
-		if(-2*logLik(ACE) > -2*logLik(ADE)){
+		if(-2*logLik(ACE) > -2*logLik(ADE) && testD){
 			CE = umxModify(ADE, regex = "a_r[0-9]+c[0-9]+" , name = "DE", tryHard = tryHard)
 			AE = umxModify(ADE, regex = "c_r[0-9]+c[0-9]+" , name = "AE", tryHard = tryHard)
 			 E = umxModify( AE, regex = "a_r[0-9]+c[0-9]+" , name =  "E", tryHard = tryHard)
@@ -442,16 +444,19 @@ umxReduceACE <- function(model, report = c("markdown", "inline", "html", "report
 	biggles = umxCompare(ACE, c(ADE, CE, AE, E), all = TRUE, report = report, silent=TRUE)
 	tmp2 = cbind(biggles[, 1, drop = FALSE], tmp, biggles[, 2:dim(biggles)[2] ] )
 	umx_print(tmp2, digits = digits, report = report)
-	
 	whichBest = which.min(AIC(ACE, ADE, CE, AE)[,"AIC"])[1]
 	bestModel = list(ACE, ADE, CE, AE)[[whichBest]]
-	message("Among ACE, ADE, CE, and AE models ", omxQuotes(bestModel$name), " fit best according to AIC.")
+	message("Among ACE, ADE, CE, and AE models ", omxQuotes(bestModel$name), " fit best according to AIC.\n")
 	# Probabilities according to AIC MuMIn::Weights (Wagenmakers et al https://pubmed.ncbi.nlm.nih.gov/15117008/ )
-	aic.weights = round(Weights(AIC(ACE, ADE, CE, AE)[,"AIC"]), 2)
-	aic.names   = namez(c(ACE, ADE, CE, AE))
-	message("Conditional AIC probability {Wagenmakers, 2004, 192-196}  indicates relative model support as", 
-		omxQuotes(aic.names), " respectively are: ", 
-		omxQuotes(aic.weights), " Using MuMIn::Weights(AIC()).")
+	if(testD){
+		aic.weights = round(Weights(AIC(ACE, ADE, CE, AE)[,"AIC"]), 2)
+		aic.names   = namez(c(ACE, ADE, CE, AE))
+	} else {
+		aic.weights = round(Weights(AIC(ACE, CE, AE)[,"AIC"]), 2)
+		aic.names   = namez(c(ACE, CE, AE))
+	}
+	message("Conditional AIC probability {Wagenmakers, 2004, 192-196} using MuMIn::Weights(AIC()) indicated relative model support for ", 
+		omxQuotes(aic.names), " respectively as: ", omxQuotes(aic.weights))
 		message(paste0(aic.names," (", aic.weights, "%)"))
 	if(intervals){
 		bestModel = mxRun(bestModel, intervals = intervals)
@@ -470,7 +475,7 @@ umxReduce.MxModelACE <- umxReduceACE
 #' Return the [residuals()] from an OpenMx RAM model. You can format these (with digits), and suppress small values.
 #'
 #' @rdname residuals.MxModel
-#' @param object An fitted [mxModel()] from which to get residuals
+#' @param object An fitted [OpenMx::mxModel()] from which to get residuals
 #' @param digits round to how many digits (default = 2)
 #' @param suppress smallest deviation to print out (default = NULL = show all)
 #' @param reorder optionally reorder the variables in the residuals matrix to show patterns
@@ -588,11 +593,11 @@ loadings.MxModel <- function(x, ...) {
 #' 
 #' Because CIs can take time to run, by default only already-computed CIs will be reported. To run new CIs, set run = TRUE .
 #'
-#' @details *Note*: [confint()] is an OpenMx function which will return SE-based CIs.
+#' @details *Note*: OpenMx defines a `confint` function which will return SE-based CIs.
 #' 
 #' If `parm` is empty, and `run = FALSE`, a message will alert you to set `run = TRUE`. 
 #'
-#' @param object An [mxModel()], possibly already containing [mxCI()]s that have been [mxRun()] with intervals = TRUE))
+#' @param object An [OpenMx::mxModel()], possibly already containing [OpenMx::mxCI()]s that have been [OpenMx::mxRun()] with intervals = TRUE))
 #' @param parm	Which parameters to get confidence intervals for. Can be "existing", "all", or one or more parameter names.
 #' @param level The confidence level required (default = .95)
 #' @param run Whether to run the model (defaults to FALSE)
@@ -600,7 +605,7 @@ loadings.MxModel <- function(x, ...) {
 #' @param optimizer For difficult CIs, trying other optimizers can help!
 #' @param showErrorCodes (default = FALSE)
 #' @export
-#' @return - [mxModel()]
+#' @return - [OpenMx::mxModel()]
 #' @family Reporting functions
 #' @seealso - [stats::confint()], [OpenMx::mxSE()], [umxCI()], [OpenMx::mxCI()]
 #' @references - <https://github.com/tbates/umx>
@@ -803,7 +808,7 @@ umxConfint <- function(object, parm = c("existing", "all", "or one or more label
 #' }
 #' If `run = "no"`, the function simply adds the CI requests, but returns the model without running them.
 #' 
-#' @param model The [mxModel()] you wish to report [mxCI()]s on
+#' @param model The [OpenMx::mxModel()] you wish to report [OpenMx::mxCI()]s on
 #' @param which What CIs to add: c("ALL", NA, "list of your making")
 #' @param remove = FALSE (if set, removes existing specified CIs from the model)
 #' @param run Whether or not to compute the CIs. Valid values = "no" (default), "yes", "if necessary".
@@ -812,7 +817,7 @@ umxConfint <- function(object, parm = c("existing", "all", "or one or more label
 #' @param type The type of CI (defaults to "both", options are "lower" and  "upper")
 #' @param regex Add CIs for labels matching this regular expression (over-rides which)
 #' @param showErrorCodes Whether to show errors (default == TRUE)
-#' @return - [mxModel()]
+#' @return - [OpenMx::mxModel()]
 #' @family Reporting functions
 #' @seealso - [stats::confint()], [umxConfint()], [umxCI()], [umxModify()]
 #' @references - <https://github.com/tbates/umx>
@@ -932,7 +937,7 @@ umxCI <- function(model = NULL, which = c("ALL", NA, "list of your making"), rem
 #' 
 #' View documentation on the GxE model subclass here: [umxSummaryGxE()].
 #'
-#' @param model The [mxModel()] whose fit will be reported
+#' @param model The [OpenMx::mxModel()] whose fit will be reported
 #' @param ... Other parameters to control model summary
 #' @family Model Summary and Comparison
 #' @md
@@ -962,7 +967,7 @@ umxSummary.default <- function(model, ...){
 #' 
 #' Sometimes SEs appear NA. This may reflect a model which is not identified (see <http://davidakenny.net/cm/identify.htm>).
 #' This can include empirical under-identification - for instance two factors
-#' that are essentially identical in structure. use [mxCheckIdentification()] to check identification.
+#' that are essentially identical in structure. use [OpenMx::mxCheckIdentification()] to check identification.
 #' 
 #' Solutions: If there are paths estimated at or close to zero suggests that fixing one or two of 
 #' these to zero may fix the standard error calculation.
@@ -972,7 +977,7 @@ umxSummary.default <- function(model, ...){
 #' *Solution*: Fixing a factor loading to 1 and estimating factor variances can help here.
 #'
 #' @aliases umxSummary.MxModel umxSummary.MxRAMModel
-#' @param model The [mxModel()] whose fit will be reported
+#' @param model The [OpenMx::mxModel()] whose fit will be reported
 #' @param std If TRUE, model is standardized (Default FALSE, NULL means "don't show").
 #' @param digits How many decimal places to report (Default 2)
 #' @param report If "html", then show results in browser (default = "markdown")
@@ -1219,7 +1224,7 @@ umxSummary.MxRAMModel <- umxSummary.MxModel
 #' See documentation for other umx models here: [umxSummary()].
 #' 
 #' @aliases umxSummary.MxModelACE
-#' @param model an [mxModel()] to summarize.
+#' @param model an [OpenMx::mxModel()] to summarize.
 #' @param digits round to how many digits (default = 2).
 #' Defaults to NA = do not create plot output.
 #' @param comparison you can run mxCompare on a comparison model (NULL).
@@ -1232,7 +1237,7 @@ umxSummary.MxRAMModel <- umxSummary.MxModel
 #' @param extended how much to report (FALSE).
 #' @param zero.print How to show zeros (".")
 #' @param ... Other parameters to control model summary.
-#' @return - optional [mxModel()]
+#' @return - optional [OpenMx::mxModel()]
 #' @export
 #' @family Twin Modeling Functions
 #' @seealso - [umxACE()], [plot.MxModelACE()], [umxModify()]
@@ -1452,7 +1457,7 @@ umxSummary.MxModelACE <- umxSummaryACE
 #' @param zero.print How to show zeros (".")
 #' @param report If "html", then open an html table of the results.
 #' @param ... Other parameters to control model summary
-#' @return - optional [mxModel()]
+#' @return - optional [OpenMx::mxModel()]
 #' @export
 #' @family Summary functions
 #' @seealso - [umxACEcov()] 
@@ -1649,7 +1654,7 @@ umxSummary.MxModelACEcov <- umxSummaryACEcov
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param returnStd Whether to return the standardized form of the model (default = FALSE)
 #' @param ... Optional additional parameters
-#' @return - optional [mxModel()]
+#' @return - optional [OpenMx::mxModel()]
 #' @export
 #' @family Summary functions
 #' @seealso - \code{\link{umxCP}()}, [plot()], [umxSummary()] work for IP, CP, GxE, SAT, and ACE models.
@@ -1794,7 +1799,7 @@ umxSummary.MxModelCP <- umxSummaryCP
 #' @param report how to display the results ("html" will open in browser as table)
 #' @param returnStd Whether to return the standardized form of the model (default = FALSE)
 #' @param ... Optional additional parameters
-#' @return - optional [mxModel()]
+#' @return - optional [OpenMx::mxModel()]
 #' @family Summary functions
 #' @export
 #' @seealso - \code{\link{umxIP}()}, [plot()], [umxSummary()] work for IP, CP, GxE, SAT, and ACE models.
@@ -1919,7 +1924,7 @@ umxSummary.MxModelIP <- umxSummaryIP
 #' @param returnStd Whether to return the standardized form of the model (default = FALSE)
 #' @param show not doing anything yet (required for all summary functions)
 #' @param ... Optional additional parameters
-#' @return - optional [mxModel()]
+#' @return - optional [OpenMx::mxModel()]
 #' @family Summary functions
 #' @export
 #' @seealso - [umxGxE()], [umxReduce()], [plot()], [umxSummary)] all work for IP, CP, GxE, and ACE models.
@@ -1982,10 +1987,10 @@ umxSummaryGxE <- function(model = NULL, digits = 2, xlab = NA, location = "tople
 umxSummary.MxModelGxE <- umxSummaryGxE
 
 
-#' Print a comparison table of one or more [mxModel()]s, formatted nicely.
+#' Print a comparison table of one or more [OpenMx::mxModel()]s, formatted nicely.
 #'
 #' @description
-#' umxCompare compares two or more [mxModel()]s. It has several nice features:
+#' umxCompare compares two or more [OpenMx::mxModel()]s. It has several nice features:
 #' 
 #' 1. It supports direct control of rounding, and reports p-values rounded to APA style.
 #' 2. It reports the table in your preferred format (default is markdown, options include latex).
@@ -1995,7 +2000,7 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' 
 #' *Note*: If you leave comparison blank, it will just give fit info for the base model
 #'
-#' @param base The base [mxModel()] for comparison
+#' @param base The base [OpenMx::mxModel()] for comparison
 #' @param comparison The model (or list of models) which will be compared for fit with the base model (can be empty)
 #' @param all Whether to make all possible comparisons if there is more than one base model (defaults to T)
 #' @param digits rounding for p-values etc.
@@ -2006,7 +2011,7 @@ umxSummary.MxModelGxE <- umxSummaryGxE
 #' @param compareWeightedAIC Show the Wagenmakers AIC weighted comparison (default = FALSE)
 #' @param silent (don't print, just return the table as a dataframe (default = FALSE)
 #' @family Model Summary and Comparison
-#' @seealso - [umxSummary()], [umxRAM()],[mxCompare()]
+#' @seealso - [umxSummary()], [umxRAM()],[umxCompare()]
 #' @references - <https://github.com/tbates/umx>
 #' @export
 #' @md
@@ -2356,7 +2361,7 @@ umxGetModel <- function(model, targetModel = NULL) {
 
 #' umxCI_boot
 #'
-#' Compute boot-strapped Confidence Intervals for parameters in an [mxModel()]
+#' Compute boot-strapped Confidence Intervals for parameters in an [OpenMx::mxModel()]
 #' The function creates a sampling distribution for parameters by repeatedly drawing samples
 #' with replacement from your data and then computing the statistic for each redrawn sample.
 #' @param model is an optimized mxModel
@@ -2371,8 +2376,6 @@ umxGetModel <- function(model, targetModel = NULL) {
 #' @param digits rounding precision
 #' @return - expected covariance matrix
 #' @export
-#' @references - \url{https://openmx.ssri.psu.edu/thread/2598}
-#' Original written by \url{https://openmx.ssri.psu.edu/users/bwiernik}
 #' @seealso - [umxExpMeans()], [umxExpCov()]
 #' @family Reporting functions
 #' @md
@@ -2461,7 +2464,7 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 
 #' Create and display a graphical path diagram for a LISREL model.
 #'
-#' `plot.MxLISRELModel` produces SEM diagrams using [DiagrammeR::DiagrammeR()] (or a graphviz application) to create the image. 
+#' `plot.MxLISRELModel` produces SEM diagrams using [[DiagrammeR::DiagrammeR()] to create the image. 
 #' 
 #' \emph{Note:} By default, plots open in your browser (or plot pane if using RStudio).
 #' 
@@ -2480,7 +2483,7 @@ umxCI_boot <- function(model, rawData = NULL, type = c("par.expected", "par.obse
 #' The commercial application \dQuote{OmniGraffle} is great for editing these images.
 #'
 #' @rdname plot.MxLISRELModel
-#' @param x A LISREL [mxModel()] from which to make a path diagram
+#' @param x A LISREL [OpenMx::mxModel()] from which to make a path diagram
 #' @param std Whether to standardize the model (default = FALSE).
 #' @param fixed Whether to show fixed paths (defaults to TRUE)
 #' @param means Whether to show means or not (default = TRUE)
@@ -2506,10 +2509,9 @@ plot.MxLISRELModel <- function(x = NA, std = FALSE, fixed = TRUE, means = TRUE, 
 
 #' Create and display a graphical path diagram for a model.
 #'
-#' [plot()] produces SEM diagrams in graphviz format, and relies on [DiagrammeR()] (or a 
-#' graphviz application) to create the image. 
+#' [plot()] produces SEM diagrams in graphviz format, and relies on [DiagrammeR::DiagrammeR()] to create the image. 
 #'
-#' \emph{Note:} DiagrammeR is supported out of the box.  By default, plots open in your browser. Other options include pdf SVG etc. 
+#' \emph{Note:} [DiagrammeR::DiagrammeR()] is supported out of the box.  By default, plots open in your browser. Other options include pdf SVG etc. 
 #' 
 #' If you use `umx_set_plot_format("graphviz")`, graphs will open in a graphviz helper app (if installed).
 #' 
@@ -2526,7 +2528,7 @@ plot.MxLISRELModel <- function(x = NA, std = FALSE, fixed = TRUE, means = TRUE, 
 #'
 #' @aliases plot
 #' @rdname plot.MxModel
-#' @param x An [mxModel()] from which to make a path diagram
+#' @param x An [OpenMx::mxModel()] from which to make a path diagram
 #' @param std Whether to standardize the model (default = FALSE).
 #' @param fixed Whether to show fixed paths (defaults to TRUE)
 #' @param means Whether to show means or not (default = TRUE)
@@ -2743,7 +2745,7 @@ plot.MxRAMModel <- plot.MxModel
 #' plot method for [umxACE()] models. Make a graphical display of an ACE model
 #'
 #' @aliases plot.MxModelACE
-#' @param x [mxModel()] to plot (created by umxACE in order to inherit the MxModelACE class)
+#' @param x [OpenMx::mxModel()] to plot (created by umxACE in order to inherit the MxModelACE class)
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param digits How many decimals to include in path loadings (default is 2)
 #' @param means Whether to show means paths (default is FALSE)
@@ -2817,7 +2819,7 @@ plot.MxModelACE <- umxPlotACE
 #' Make a graphical display of an ACE model with covariates.
 #'
 #' @aliases plot.MxModelACEcov
-#' @param x [mxModel()] to plot (created by umxACE in order to inherit the MxModelACE class)
+#' @param x [OpenMx::mxModel()] to plot (created by umxACE in order to inherit the MxModelACE class)
 #' @param file The name of the dot file to write: NA = none; "name" = use the name of the model
 #' @param digits How many decimals to include in path loadings (default is 2)
 #' @param means Whether to show means paths (default is FALSE)
@@ -2908,7 +2910,6 @@ umxPlotACEcov <- function(x = NA, file = "name", digits = 2, means = FALSE, std 
 	   preOut = paste0(preOut, "\t", var, " [shape = square];\n")
 	}
 	rankVariables = paste("\t{rank = same; ", paste(selDVs, collapse = "; "), "};\n") # {rank = same; v1T1; v2T1;}
-	# grep('a', latents, value=T)
 	rankA   = paste("\t{rank = min; ", paste(grep('a'   , latents, value = T), collapse = "; "), "};\n") # {rank=min; a1; a2}
 	rankCE  = paste("\t{rank = max; ", paste(grep('[ce]', latents, value = T), collapse = "; "), "};\n") # {rank=min; c1; e1}
 	label = model$name
@@ -3085,7 +3086,7 @@ plot.MxModelGxE <- umxPlotGxE
 #' Options include digits (rounding), showing means or not, and which output format is desired.
 #'
 #' @aliases plot.MxModelCP
-#' @param x The Common Pathway [mxModel()] to display graphically
+#' @param x The Common Pathway [OpenMx::mxModel()] to display graphically
 #' @param means Whether to show means paths (defaults to FALSE)
 #' @param std Whether to standardize the model (defaults to TRUE)
 #' @param digits How many decimals to include in path loadings (defaults to 2)
@@ -3305,15 +3306,15 @@ plot.MxModelIP <- umxPlotIP
 #' 1. Runs much faster with full = FALSE (but this does not allow the model to re-fit around the newly-
 #' freed parameter).
 #' 2. Compared to mxMI, this function returns top changes, and also suppresses the run message.
-#' 3. Finally, of course: see the requirements for (legitimate) post-hoc modeling in [mxMI()]
+#' 3. Finally, of course: see the requirements for (legitimate) post-hoc modeling in [OpenMx::mxMI()]
 #' You are almost certainly doing better science when testing competing models rather than modifying a model to fit.
-#' @param model An [mxModel()] for which to report modification indices
+#' @param model An [OpenMx::mxModel()] for which to report modification indices
 #' @param matrices which matrices to test. The default (NA) will test A & S for RAM models
 #' @param full Change in fit allowing all parameters to move. If FALSE only the parameter under test can move.
 #' @param numInd How many modifications to report. Use -1 for all. Default (NA) will report all over 6.63 (p = .01)
 #' @param typeToShow Whether to shown additions or deletions (default = "both")
 #' @param decreasing How to sort (default = TRUE, decreasing)
-#' @seealso - [mxMI()]
+#' @seealso - [OpenMx::mxMI()]
 #' @family Model Summary and Comparison
 #' @references - <https://github.com/tbates/umx>
 #' @export
@@ -3388,7 +3389,7 @@ umxMI <- function(model = NA, matrices = NA, full = TRUE, numInd = NA, typeToSho
 #' @param delta A the amount to simulate changing \sQuote{from} by. 
 #' @param to The dependent variable that you want to watch changing.
 #' @param model The model containing variables from and to.
-#' @seealso - [mxCheckIdentification()], [mxCompare()]
+#' @seealso - [OpenMx::mxCheckIdentification()], [umxCompare()]
 #' @family Advanced Model Building Functions
 #' @references - https://github.com/tbates/umx/
 #' @export
@@ -3635,7 +3636,7 @@ umxComputeConditionals <- function(sigma, mu, current, onlyMean = FALSE) {
 #' @details
 #' It is on my TODO list to implement filtering by significance, and to add standardizing.
 #'
-#' @param x an [mxModel()] or model summary from which to report parameter estimates.
+#' @param x an [OpenMx::mxModel()] or model summary from which to report parameter estimates.
 #' @param thresh optional: Filter out estimates 'below' or 'above' a certain value (default = "all").
 #' @param b Combine with thresh to set a minimum or maximum for which estimates to show.
 #' @param pattern Optional string to match in the parameter names. Default '.*' matches all. [regex()] allowed!
@@ -3737,20 +3738,20 @@ parameters <- umxParameters
 
 #' Get parameters from a model, with support for pattern matching!
 #'
-#' umxGetParameters retrieves parameter labels from a model, like [omxGetParameters()].
+#' umxGetParameters retrieves parameter labels from a model, like [OpenMx::omxGetParameters()].
 #' However, it is supercharged with regular expressions, so you can get labels that match a pattern.
 #' 
 #' In addition, if regex contains a vector, this is treated as a list of raw labels to search for, 
 #' and return if all are found.
 #' \emph{note}: To return all labels, just leave regex as is.
 #'
-#' @param inputTarget An object to get parameters from: could be a RAM [mxModel()]
+#' @param inputTarget An object to get parameters from: could be a RAM [OpenMx::mxModel()]
 #' @param regex A regular expression to filter the labels. Default (NA) returns all labels. If vector, treated as raw labels to find.
 #' @param free  A Boolean determining whether to return only free parameters.
 #' @param fetch What to return: "labels" (default) or "values", "free", "lbound", "ubound", or "all"
 #' @param verbose How much feedback to give
 #' @export
-#' @seealso [omxGetParameters()], [parameters()]
+#' @seealso [OpenMx::omxGetParameters()], [parameters()]
 #' @family Reporting Functions
 #' @references - <https://github.com/tbates/umx>
 #' @md
@@ -3829,14 +3830,13 @@ umxGetParameters <- function(inputTarget, regex = NA, free = NA, fetch = c("labe
 #' @method extractAIC MxModel
 #' @rdname extractAIC.MxModel
 #' @export
-#' @param fit an fitted [mxModel()] from which to get the AIC
+#' @param fit an fitted [OpenMx::mxModel()] from which to get the AIC
 #' @param scale not used
 #' @param k not used
 #' @param ... any other parameters (not used)
 #' @return - AIC value
 #' @seealso - [AIC()], [umxCompare()], [logLik()]
 #' @family Reporting functions
-#' @references - \url{https://openmx.ssri.psu.edu/thread/931#comment-4858}
 #' @md
 #' @examples
 #' \dontrun{
@@ -3860,10 +3860,10 @@ extractAIC.MxModel <- function(fit, scale, k, ...) {
 
 #' Get the expected vcov matrix
 #'
-#' Extract the expected covariance matrix from an [mxModel()]
+#' Extract the expected covariance matrix from an [OpenMx::mxModel()]
 #'
 #' @aliases vcov.MxModel
-#' @param object an [mxModel()] to get the covariance matrix from
+#' @param object an [OpenMx::mxModel()] to get the covariance matrix from
 #' @param latents Whether to select the latent variables (defaults to TRUE)
 #' @param manifests Whether to select the manifest variables (defaults to TRUE)
 #' @param digits precision of reporting. NULL (Default) = no rounding.
@@ -3871,8 +3871,6 @@ extractAIC.MxModel <- function(fit, scale, k, ...) {
 #' @return - expected covariance matrix
 #' @export
 #' @family Reporting functions
-#' @references - \url{https://openmx.ssri.psu.edu/thread/2598}
-#' Original written by \url{https://openmx.ssri.psu.edu/users/bwiernik}
 #' @seealso - [umxRun()], [umxCI_boot()]
 #' @md
 #' @examples
@@ -3937,22 +3935,20 @@ umxExpCov <- function(object, latents = FALSE, manifests = TRUE, digits = NULL, 
 # vcov.MxModel <- umxExpCov
 
 
-#' Extract the expected means matrix from an [mxModel()]
+#' Extract the expected means matrix from an [OpenMx::mxModel()]
 #'
-#' Extract the expected means matrix from an [mxModel()]
+#' Extract the expected means matrix from an [OpenMx::mxModel()]
 #'
-#' @param model an [mxModel()] to get the means from
+#' @param model an [OpenMx::mxModel()] to get the means from
 #' @param latents Whether to select the latent variables (defaults to TRUE)
 #' @param manifests Whether to select the manifest variables (defaults to TRUE)
 #' @param digits precision of reporting. Default (NULL) will not round at all.
 #' @return - expected means
 #' @export
 #' @family Reporting functions
-#' @references - <https://openmx.ssri.psu.edu/thread/2598>
 #' @md
 #' @examples
 #' \dontrun{
-#' 
 #' require(umx)
 #' data(demoOneFactor)
 #' manifests = names(demoOneFactor)
@@ -4015,7 +4011,7 @@ RMSEA <- function(x, ci.lower, ci.upper, digits) UseMethod("RMSEA", x)
 #' RMSEA(tmp, silent=TRUE)$RMSEA
 #'
 #' @rdname RMSEA.MxModel
-#' @param x an [mxModel()] from which to get RMSEA
+#' @param x an [OpenMx::mxModel()] from which to get RMSEA
 #' @param ci.lower the lower CI to compute (only 95%, i.e., .025 supported)
 #' @param ci.upper the upper CI to compute (only 95%, i.e., .975 supported)
 #' @param digits digits to show (default = 3)
@@ -4078,7 +4074,7 @@ RMSEA.MxModel <- function(x, ci.lower = .025, ci.upper = .975, digits = 3) {
 #' Extract the RMSEA and confidence interval from a model summary and returns it as an RMSEA object.
 #' To report just the RMSEA, you can use `RMSEA(model)$RMSEA`
 #' 
-#' @param x an [mxModel()] summary from which to get RMSEA
+#' @param x an [OpenMx::mxModel()] summary from which to get RMSEA
 #' @param ci.lower the lower CI to compute (only 95% CI (.025) is implemented)
 #' @param ci.upper the upper CI to compute (only 95% CI (.975) is implemented)
 #' @param digits The number of digits to round data (defaults to 3)
@@ -4188,29 +4184,30 @@ FishersMethod <- function(pvalues, ...){
 #' Geometric Mean
 #'
 #' @description
-#' The Geometric mean is the nth-root of the product of `n` input values.
-#' Common uses include computing economic utility.  That is to say, the utility of 
-#' `c(1, 2, 10)` is \deqn{(1 * 2 * 10)/3} = 6.6 not 6.3 (the arithmetic mean).
-#' 
+#' The Geometric mean is the nth-root of the product of \code{n} input values.
+#' Common uses include computing economic utility. For example, the geometric mean utility of
+#' \code{c(1, 2, 10)} is \deqn{(1 * 2 * 10)^\frac{1}{3}} = 2.7 not 4.3 (the arithmetic mean of utility).
+#'
 #' @param x A vector of values.
 #' @param na.rm remove NAs by default.
 #' @return - Geometric mean of x
 #' @export
+#' @seealso - [harmonic_mean()], [mean()]
 #' @family Miscellaneous Stats Functions
 #' @references - <https://en.wikipedia.org/wiki/Geometric_mean>
 #' @md
 #' @examples
 #' geometric_mean(c(50, 100))
 #'
-#' # For a given sum, geometric mean is maximised with equality
+#' # For a given sum, geometric mean is maximised when all values are equal:
 #' geometric_mean(c(75,75))
 #'
 #' v = c(1, 149); c(sum(v), geometric_mean(v), mean(v), median(v))
 #' # 150.00000  12.20656  75.00000  75.00000
-#' 
+#'
 #' # Underlying logic
 #' sqrt(50 * 100)
-#' 
+#'
 #' # Alternate form using logs
 #' exp(mean(log(c(50 *100))))
 #' 
@@ -4234,6 +4231,7 @@ geometric_mean = function(x, na.rm = c(TRUE, FALSE)){
 #' @param na.rm remove NAs (default = TRUE).
 #' @return - Harmonic mean of x
 #' @export
+#' @seealso - [geometric_mean()], [aggregate()]
 #' @family Miscellaneous Stats Functions
 #' @references - <https://en.wikipedia.org/wiki/Harmonic_mean>
 #' @md
@@ -4486,7 +4484,7 @@ umx_APA_pval <- function(p, min = .001, digits = 3, addComparison = NA) {
 #'   }
 #'
 #' @aliases summaryAPA
-#' @param obj A model (e.g. [lm()], [lme()], [glm()], [t.test()]), beta-value, or [data.frame]
+#' @param obj A model (e.g. [lm()], [nlme::lme()], [glm()], [t.test()]), beta-value, or [data.frame]
 #' @param se If obj is a beta, se treated as standard-error (returning a CI). 
 #' If obj is a model, used to select effect of interest (blank for all effects). 
 #' Finally, set se to the CI c(lower, upper), to back out the SE.
@@ -4885,14 +4883,17 @@ umxSummarizeTwinData <- function(data = NULL, selVars = NULL, sep = "_T", zyg = 
 			rDZ = cor.test(data = data[data[,zyg] %in% DZ,], as.formula(paste0("~ ", varName, sep, 1, "+", varName, sep, 2)))
 			df[n, "rMZ"] = paste0(round(rMZ$estimate, digits), " (", round((rMZ$conf.int[2] - rMZ$conf.int[1])/(1.96 * 2), digits), ")")
 			df[n, "rDZ"] = paste0(round(rDZ$estimate, digits), " (", round((rDZ$conf.int[2] - rDZ$conf.int[1])/(1.96 * 2), digits), ")")
+			df[n, "Var"] = paste0(df[n, "Var"], " (", rMZ$parameter, "/", rDZ$parameter, ")")
 			n = n+1
 		}
 		nPerZyg = data.frame(table(data[, zyg]))
+		print(names(df))
 		names(df) = namez(df, "(rMZ)", paste0("\\1 (", sum(nPerZyg[nPerZyg$Var1 %in% MZ,"Freq"]),")"))
 		names(df) = namez(df, "(rDZ)", paste0("\\1 (", sum(nPerZyg[nPerZyg$Var1 %in% DZ,"Freq"]),")"))
 	}
 
 	umx_print(df, digits=digits, report = report)
+	print("note (n/n) = MZ/DZ complete pairs")
 	
 	# return(df)
 	# Calculate Mean Age and SD for men and women

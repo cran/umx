@@ -43,12 +43,17 @@ harmonic_mean(c(1,10)) # 1.81 mph
 }
 }
 \seealso{
+\itemize{
+\item \code{\link[=geometric_mean]{geometric_mean()}}, \code{\link[=aggregate]{aggregate()}}
+}
+
 Other Miscellaneous Stats Functions: 
 \code{\link{FishersMethod}()},
 \code{\link{SE_from_p}()},
 \code{\link{geometric_mean}()},
 \code{\link{oddsratio}()},
 \code{\link{reliability}()},
+\code{\link{umx}},
 \code{\link{umxCov2cor}()},
 \code{\link{umxHetCor}()},
 \code{\link{umxParan}()},
@@ -59,7 +64,6 @@ Other Miscellaneous Stats Functions:
 \code{\link{umx_r_test}()},
 \code{\link{umx_round}()},
 \code{\link{umx_scale}()},
-\code{\link{umx_var}()},
-\code{\link{umx}}
+\code{\link{umx_var}()}
 }
 \concept{Miscellaneous Stats Functions}

@@ -7,7 +7,7 @@
 \method{RMSEA}{summary.mxmodel}(x, ci.lower = 0.025, ci.upper = 0.975, digits = 3)
 }
 \arguments{
-\item{x}{an \code{\link[=mxModel]{mxModel()}} summary from which to get RMSEA}
+\item{x}{an \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} summary from which to get RMSEA}
 
 \item{ci.lower}{the lower CI to compute (only 95\% CI (.025) is implemented)}
 
@@ -46,16 +46,16 @@ RMSEA(tmp)
 }
 \seealso{
 Other Reporting functions: 
-\code{\link{RMSEA.MxModel}()},
 \code{\link{RMSEA}()},
+\code{\link{RMSEA.MxModel}()},
 \code{\link{extractAIC.MxModel}()},
-\code{\link{loadings.MxModel}()},
 \code{\link{loadings}()},
+\code{\link{loadings.MxModel}()},
 \code{\link{residuals.MxModel}()},
-\code{\link{tmx_show.MxMatrix}()},
 \code{\link{tmx_show}()},
-\code{\link{umxCI_boot}()},
+\code{\link{tmx_show.MxMatrix}()},
 \code{\link{umxCI}()},
+\code{\link{umxCI_boot}()},
 \code{\link{umxConfint}()},
 \code{\link{umxExpCov}()},
 \code{\link{umxExpMeans}()},

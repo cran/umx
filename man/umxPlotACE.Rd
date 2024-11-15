@@ -17,7 +17,7 @@ umxPlotACE(
 )
 }
 \arguments{
-\item{x}{\code{\link[=mxModel]{mxModel()}} to plot (created by umxACE in order to inherit the MxModelACE class)}
+\item{x}{\code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} to plot (created by umxACE in order to inherit the MxModelACE class)}
 
 \item{file}{The name of the dot file to write: NA = none; "name" = use the name of the model}
 
@@ -68,19 +68,19 @@ plot(m1, std = FALSE) # don't standardize
 Other Plotting functions: 
 \code{\link{ggAddR}()},
 \code{\link{plot.MxLISRELModel}()},
-\code{\link{plot.MxModelTwinMaker}()},
 \code{\link{plot.MxModel}()},
+\code{\link{plot.MxModelTwinMaker}()},
+\code{\link{umx}},
+\code{\link{umxPlot}()},
 \code{\link{umxPlotACEcov}()},
 \code{\link{umxPlotACEv}()},
 \code{\link{umxPlotCP}()},
 \code{\link{umxPlotDoC}()},
 \code{\link{umxPlotFun}()},
-\code{\link{umxPlotGxEbiv}()},
 \code{\link{umxPlotGxE}()},
+\code{\link{umxPlotGxEbiv}()},
 \code{\link{umxPlotIP}()},
 \code{\link{umxPlotSexLim}()},
-\code{\link{umxPlotSimplex}()},
-\code{\link{umxPlot}()},
-\code{\link{umx}}
+\code{\link{umxPlotSimplex}()}
 }
 \concept{Plotting functions}

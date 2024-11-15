@@ -8,6 +8,7 @@ umxReduce(
   model,
   report = c("markdown", "inline", "html"),
   intervals = TRUE,
+  testD = TRUE,
   baseFileName = "tmp",
   tryHard = "yes",
   silent = FALSE,
@@ -15,11 +16,13 @@ umxReduce(
 )
 }
 \arguments{
-\item{model}{The \code{\link[=mxModel]{mxModel()}} which will be reduced.}
+\item{model}{The \code{\link[OpenMx:mxModel]{OpenMx::mxModel()}} which will be reduced.}
 
 \item{report}{How to report the results. "html" = open in browser}
 
 \item{intervals}{Recompute CIs (if any included) on the best model (default = TRUE)}
+
+\item{testD}{Whether to test ADE and DE models (TRUE)}
 
 \item{baseFileName}{(optional) custom filename for html output (defaults to "tmp")}
 
@@ -44,8 +47,7 @@ Specialized functions are called for different type of input:
 \code{\link[=umx_set_table_format]{umx_set_table_format()}}, or set \code{report= "html"} to open a
 table for pasting into a word processor.
 
-\code{umxReduce} is a work in progress, with more automatic reductions coming as demand emerges.
-I am thinking for RAM models to drop NS paths, and report that test.
+\code{umxReduce} can be extended to new cases as demand emerges.
 }
 \references{
 \itemize{
@@ -57,26 +59,27 @@ I am thinking for RAM models to drop NS paths, and report that test.
 \code{\link[=umxReduceGxE]{umxReduceGxE()}}, \code{\link[=umxReduceACE]{umxReduceACE()}}
 
 Other Model Summary and Comparison: 
+\code{\link{umx}},
 \code{\link{umxCompare}()},
 \code{\link{umxEquate}()},
 \code{\link{umxMI}()},
 \code{\link{umxSetParameters}()},
-\code{\link{umxSummary}()},
-\code{\link{umx}}
+\code{\link{umxSummary}()}
 
 Other Twin Modeling Functions: 
 \code{\link{power.ACE.test}()},
+\code{\link{umx}},
+\code{\link{umxACE}()},
 \code{\link{umxACEcov}()},
 \code{\link{umxACEv}()},
-\code{\link{umxACE}()},
 \code{\link{umxCP}()},
 \code{\link{umxDiffMZ}()},
 \code{\link{umxDiscTwin}()},
-\code{\link{umxDoCp}()},
 \code{\link{umxDoC}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxGxE}()},
 \code{\link{umxGxE_window}()},
 \code{\link{umxGxEbiv}()},
-\code{\link{umxGxE}()},
 \code{\link{umxIP}()},
 \code{\link{umxMRDoC}()},
 \code{\link{umxReduceACE}()},
@@ -85,14 +88,13 @@ Other Twin Modeling Functions:
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
 \code{\link{umxSummarizeTwinData}()},
-\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryDoC}()},
 \code{\link{umxSummaryGxEbiv}()},
 \code{\link{umxSummarySexLim}()},
 \code{\link{umxSummarySimplex}()},
-\code{\link{umxTwinMaker}()},
-\code{\link{umx}}
+\code{\link{umxTwinMaker}()}
 }
 \concept{Model Summary and Comparison}
 \concept{Twin Modeling Functions}

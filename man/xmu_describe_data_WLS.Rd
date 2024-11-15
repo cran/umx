@@ -11,7 +11,7 @@ xmu_describe_data_WLS(
 )
 }
 \arguments{
-\item{data}{The raw data being used in a \code{\link[=mxFitFunctionWLS]{mxFitFunctionWLS()}} model.}
+\item{data}{The raw data being used in a \code{\link[OpenMx:mxFitFunctionWLS]{OpenMx::mxFitFunctionWLS()}} model.}
 
 \item{allContinuousMethod}{the method used to process data when all columns are continuous (default = "cumulants")}
 
@@ -23,7 +23,7 @@ xmu_describe_data_WLS(
 }
 }
 \description{
-Given either a data.frame or raw \code{mxData}, this function determines whether \code{\link[=mxFitFunctionWLS]{mxFitFunctionWLS()}}
+Given either a data.frame or raw \code{mxData}, this function determines whether \code{\link[OpenMx:mxFitFunctionWLS]{OpenMx::mxFitFunctionWLS()}}
 will generate expectations for means.
 }
 \details{
@@ -61,7 +61,7 @@ xmu_describe_data_WLS(tmp, allContinuousMethod= "marginals")$hasMeans # TRUE
 }
 \seealso{
 \itemize{
-\item \code{\link[=mxFitFunctionWLS]{mxFitFunctionWLS()}}, \code{\link[=omxAugmentDataWithWLSSummary]{omxAugmentDataWithWLSSummary()}}
+\item \code{\link[OpenMx:mxFitFunctionWLS]{OpenMx::mxFitFunctionWLS()}}, \code{\link[OpenMx:omxAugmentDataWithWLSSummary]{OpenMx::omxAugmentDataWithWLSSummary()}}
 }
 
 Other xmu internal not for end user: 
@@ -117,13 +117,14 @@ Other xmu internal not for end user:
 \code{\link{xmu_path_regex}()},
 \code{\link{xmu_print_algebras}()},
 \code{\link{xmu_rclabel_2_bracket_address}()},
+\code{\link{xmu_relevel_factors}()},
 \code{\link{xmu_safe_run_summary}()},
 \code{\link{xmu_set_sep_from_suffix}()},
 \code{\link{xmu_show_fit_or_comparison}()},
 \code{\link{xmu_simplex_corner}()},
+\code{\link{xmu_standardize_ACE}()},
 \code{\link{xmu_standardize_ACEcov}()},
 \code{\link{xmu_standardize_ACEv}()},
-\code{\link{xmu_standardize_ACE}()},
 \code{\link{xmu_standardize_CP}()},
 \code{\link{xmu_standardize_IP}()},
 \code{\link{xmu_standardize_RAM}()},

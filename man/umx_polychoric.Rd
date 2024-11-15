@@ -37,7 +37,7 @@ cor(mtcars[, c("am", "vs")])
 
 }
 \references{
-- Barendse, M. T., Ligtvoet, R., Timmerman, M. E., & Oort, F. J. (2016). Model Fit after Pairwise Maximum Likelihood. *Frontiers in psychology*, **7**, 528. \doi{10.3389/fpsyg.2016.00528}.
+- Barendse, M. T., Ligtvoet, R., Timmerman, M. E., & Oort, F. J. (2016). Model Fit after Pairwise Maximum Likelihood. *Frontiers in Psychology*, **7**, 528. \doi{10.3389/fpsyg.2016.00528}.
 }
 \seealso{
 Other Data Functions: 
@@ -45,6 +45,7 @@ Other Data Functions:
 \code{\link{prolific_anonymize}()},
 \code{\link{prolific_check_ID}()},
 \code{\link{prolific_read_demog}()},
+\code{\link{umx}},
 \code{\link{umxFactor}()},
 \code{\link{umxHetCor}()},
 \code{\link{umx_as_numeric}()},
@@ -63,7 +64,6 @@ Other Data Functions:
 \code{\link{umx_score_scale}()},
 \code{\link{umx_select_valid}()},
 \code{\link{umx_stack}()},
-\code{\link{umx_strings2numeric}()},
-\code{\link{umx}}
+\code{\link{umx_strings2numeric}()}
 }
 \concept{Data Functions}

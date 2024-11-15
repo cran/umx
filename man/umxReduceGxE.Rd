@@ -8,6 +8,7 @@ umxReduceGxE(
   model,
   report = c("markdown", "inline", "html", "report"),
   intervals = TRUE,
+  testD = TRUE,
   baseFileName = "tmp_gxe",
   tryHard = c("yes", "no", "ordinal", "search"),
   silent = FALSE,
@@ -20,6 +21,8 @@ umxReduceGxE(
 \item{report}{How to report the results. default = "markdown". "html" = open in browser.}
 
 \item{intervals}{Recompute CIs (if any included) on the best model (default = TRUE)}
+
+\item{testD}{Whether to test ADE and DE models (TRUE)}
 
 \item{baseFileName}{(optional) custom filename for html output (default = "tmp").}
 
@@ -58,32 +61,32 @@ model = umxReduce(model)
 
 Other Twin Modeling Functions: 
 \code{\link{power.ACE.test}()},
+\code{\link{umx}},
+\code{\link{umxACE}()},
 \code{\link{umxACEcov}()},
 \code{\link{umxACEv}()},
-\code{\link{umxACE}()},
 \code{\link{umxCP}()},
 \code{\link{umxDiffMZ}()},
 \code{\link{umxDiscTwin}()},
-\code{\link{umxDoCp}()},
 \code{\link{umxDoC}()},
+\code{\link{umxDoCp}()},
+\code{\link{umxGxE}()},
 \code{\link{umxGxE_window}()},
 \code{\link{umxGxEbiv}()},
-\code{\link{umxGxE}()},
 \code{\link{umxIP}()},
 \code{\link{umxMRDoC}()},
-\code{\link{umxReduceACE}()},
 \code{\link{umxReduce}()},
+\code{\link{umxReduceACE}()},
 \code{\link{umxRotate.MxModelCP}()},
 \code{\link{umxSexLim}()},
 \code{\link{umxSimplex}()},
 \code{\link{umxSummarizeTwinData}()},
-\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryACE}()},
+\code{\link{umxSummaryACEv}()},
 \code{\link{umxSummaryDoC}()},
 \code{\link{umxSummaryGxEbiv}()},
 \code{\link{umxSummarySexLim}()},
 \code{\link{umxSummarySimplex}()},
-\code{\link{umxTwinMaker}()},
-\code{\link{umx}}
+\code{\link{umxTwinMaker}()}
 }
 \concept{Twin Modeling Functions}

@@ -7,7 +7,7 @@
 umxJiggle(matrixIn, mean = 0, sd = 0.1, dontTouch = 0)
 }
 \arguments{
-\item{matrixIn}{an \code{\link[=mxMatrix]{mxMatrix()}} to jiggle the values of}
+\item{matrixIn}{an \code{\link[OpenMx:mxMatrix]{OpenMx::mxMatrix()}} to jiggle the values of}
 
 \item{mean}{the mean value to add to each value}
 
@@ -17,7 +17,7 @@ umxJiggle(matrixIn, mean = 0, sd = 0.1, dontTouch = 0)
 }
 \value{
 \itemize{
-\item \code{\link[=mxMatrix]{mxMatrix()}}
+\item \code{\link[OpenMx:mxMatrix]{OpenMx::mxMatrix()}}
 }
 }
 \description{
@@ -35,12 +35,12 @@ mat1 = umxJiggle(mat1)
 }
 \seealso{
 Other Advanced Model Building Functions: 
+\code{\link{umx}},
 \code{\link{umxAlgebra}()},
 \code{\link{umxFixAll}()},
 \code{\link{umxRun}()},
 \code{\link{umxThresholdMatrix}()},
 \code{\link{umxUnexplainedCausalNexus}()},
-\code{\link{umx}},
 \code{\link{xmuLabel}()},
 \code{\link{xmuValues}()}
 }
