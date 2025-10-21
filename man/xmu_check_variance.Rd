@@ -6,8 +6,8 @@
 \usage{
 xmu_check_variance(
   data,
-  minVar = umx_set_data_variance_check(silent = T)$minVar,
-  maxVarRatio = umx_set_data_variance_check(silent = T)$maxVarRatio
+  minVar = umx_set_data_variance_check(silent = TRUE)$minVar,
+  maxVarRatio = umx_set_data_variance_check(silent = TRUE)$maxVarRatio
 )
 }
 \arguments{
@@ -103,6 +103,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_twin_check}()},
 \code{\link{xmu_twin_get_var_names}()},
 \code{\link{xmu_twin_make_def_means_mats_and_alg}()},
-\code{\link{xmu_twin_upgrade_selDvs2SelVars}()}
+\code{\link{xmu_twin_upgrade_selDvs2SelVars}()},
+\code{\link{xmu_update_covar}()}
 }
 \concept{xmu internal not for end user}

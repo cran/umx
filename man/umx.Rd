@@ -172,7 +172,7 @@ Other Twin Data functions:
 \code{\link{umx_make_twin_data_nice}()},
 \code{\link{umx_residualize}()},
 \code{\link{umx_scale_wide_twin_data}()},
-\code{\link{umx_wide2long}()}
+\code{\link{umx_wide2longTwinData}()}
 
 Other Miscellaneous Stats Functions: 
 \code{\link{FishersMethod}()},
@@ -198,6 +198,7 @@ Other Teaching and testing Functions:
 \code{\link{tmx_is.identified}()}
 
 Other Get and set: 
+\code{\link{umx_get_alphas}()},
 \code{\link{umx_get_checkpoint}()},
 \code{\link{umx_get_options}()},
 \code{\link{umx_set_auto_plot}()},
@@ -211,7 +212,6 @@ Other Get and set:
 \code{\link{umx_set_optimizer}()},
 \code{\link{umx_set_plot_file_suffix}()},
 \code{\link{umx_set_plot_format}()},
-\code{\link{umx_set_plot_use_hrbrthemes}()},
 \code{\link{umx_set_separator}()},
 \code{\link{umx_set_silent}()},
 \code{\link{umx_set_table_format}()}
@@ -239,6 +239,7 @@ Other Plotting functions:
 \code{\link{umxPlotGxE}()},
 \code{\link{umxPlotGxEbiv}()},
 \code{\link{umxPlotIP}()},
+\code{\link{umxPlotPredict}()},
 \code{\link{umxPlotSexLim}()},
 \code{\link{umxPlotSimplex}()}
 
@@ -302,7 +303,9 @@ Other Miscellaneous Utility Functions:
 \code{\link{umx_msg}()},
 \code{\link{umx_open_CRAN_page}()},
 \code{\link{umx_pad}()},
-\code{\link{umx_print}()}
+\code{\link{umx_print}()},
+\code{\link{umx_wide2long}()},
+\code{\link{umx_wide4lmer}()}
 
 Other datasets: 
 \code{\link{Fischbein_wt}},

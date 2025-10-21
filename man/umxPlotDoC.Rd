@@ -87,7 +87,7 @@ plot(a2b)
 }
 \seealso{
 \itemize{
-\item \code{\link[=umxDoC]{umxDoC()}}, \code{\link[=umxSummary.MxModelDoC]{umxSummary.MxModelDoC()}}, \code{\link[=umxModify]{umxModify()}}
+\item \code{\link[=umxDoC]{umxDoC()}}, \code{\link[=umxSummary.MxModelDoC]{umxSummary.MxModelDoC()}}, \code{\link[=umxModify]{umxModify()}}, \code{\link[=umxDiscTwin]{umxDiscTwin()}}, \code{\link[=umxDiffMZ]{umxDiffMZ()}}, \code{\link[=umxMR]{umxMR()}}
 }
 
 Other Plotting functions: 
@@ -105,6 +105,7 @@ Other Plotting functions:
 \code{\link{umxPlotGxE}()},
 \code{\link{umxPlotGxEbiv}()},
 \code{\link{umxPlotIP}()},
+\code{\link{umxPlotPredict}()},
 \code{\link{umxPlotSexLim}()},
 \code{\link{umxPlotSimplex}()}
 }

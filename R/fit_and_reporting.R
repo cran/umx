@@ -30,8 +30,8 @@
 #' @param xlab X-axis label (default y).
 #' @param ylab Y-axis label (default y).
 #' @param title Graph title. Default =  paste0(y, " as a function of ", x)
-#' @param fitx x location for the fit summary (default 1).
-#' @param fity y location for the fit summary (default 2).
+#' @param r2x x location for the fit summary (default 1).
+#' @param r2y y location for the fit summary (default 2).
 #' @param geom_point  show points? (TRUE) 
 #' @param method Method for fitting curve (default = lm)
 #' @param family for glm default = "gaussian"
@@ -42,9 +42,9 @@
 #' @md
 #' @examples
 #' data(mtcars)
-#' umxPlot(mpg ~ wt, data = mtcars, fitx = 2, fity = 10)
-#' umxPlot(x = "wt", y = "mpg", mtcars, fitx = 2, fity = 10)
-umxPlot <- function(x, y= NULL, data, xlab= x, ylab = y, title = paste0(y, " as a function of ", x), fitx=NA, fity=NA, geom_point = TRUE, method = c("lm", "auto", "loess", "glm", "gam"), family = c("gaussian","binomial", "Gamma", "inverse", "poisson", "quasi", "quasibinomial", "quasipoisson")) {
+#' umxPlot(mpg ~ wt, data = mtcars, r2x = 2, r2y = 10)
+#' umxPlot(x = "wt", y = "mpg", mtcars, r2x = 2, r2y = 10)
+umxPlot <- function(x, y= NULL, data, xlab= x, ylab = y, title = paste0(y, " as a function of ", x), r2x=NA, r2y=NA, geom_point = TRUE, method = c("lm", "auto", "loess", "glm", "gam"), family = c("gaussian","binomial", "Gamma", "inverse", "poisson", "quasi", "quasibinomial", "quasipoisson")) {
 	method = match.arg(method)
 	family = match.arg(family)
 	if(inherits(x, "formula")){
@@ -68,9 +68,9 @@ umxPlot <- function(x, y= NULL, data, xlab= x, ylab = y, title = paste0(y, " as 
 		p = ggplot(data = data, aes_string(x, y)) + geom_smooth(method = method)
 	}
 	# data[,x]
-	if(is.na(fitx)){
-		fitx = min(data[,x])
-		fity = max(data[,y])
+	if(is.na(r2x)){
+		r2x = min(data[,x])
+		r2y = max(data[,y])
 	}
 
 	if(method == "lm"){
@@ -78,16 +78,55 @@ umxPlot <- function(x, y= NULL, data, xlab= x, ylab = y, title = paste0(y, " as 
 		r2  = round(summary(m1)$r.squared, 3)
 		lab = bquote(R^2 == .(r2))
 		p = p + labs(x= xlab, y= ylab, title= title)
-		p = p + cowplot::draw_label(lab, x = fitx, y = fity, fontfamily = "Times", size = 12)
+		p = p + cowplot::draw_label(lab, x = r2x, y = r2y, fontfamily = "Times", size = 12)
 	}else if (method == "glm"){
 		# m1  = glm(.formula, data = data, family=family)
+		message("polite note: Currently, I only know how to do method = lm")
 	}else{
 		message("polite note: Currently, I only know how to do method = lm or glm")
 	}
-	p = p + theme_gray() # gray, bw, linedraw, light, dark, minimal, classic
+	p = p + theme_minimal() # gray, bw, linedraw, light, dark, minimal, classic
 	p
 	# p + annotate("text", 3, 30, label = expression(R^2 == beta + 1 ~ hello), family="Optima")
 }
+
+
+#' `umxPlotPredict` Take a model and plot the y against predicted(y)
+#' @description
+#' `umxPlotPredict` is a function which
+#' @param model lm or other model that understands predict()
+#' @param xlab X-axis label (default x).
+#' @param ylab Y-axis label (default y).
+#' @param r2x x location for the fit summary.
+#' @param r2y y location for the fit summary.
+#' @param font_size Default 13
+#' @param font Default "Times"
+#' @param rsq R^2 or r (defaults to FALSE = r) 
+#' @return - plot you can edit.
+#' @export
+#' @family Plotting functions
+#' @seealso - [ggplot2::qplot()]
+#' @md
+#' @examples
+#' data(mtcars)
+#' tmp = lm(mpg ~ wt, data = mtcars)
+#' umxPlotPredict(tmp, r2x = 2, r2y = 10)
+umxPlotPredict <- function(model, xlab= "Predicted Y", ylab= "Observed Y", r2x= 1.5, r2y= 4.5, font_size = 13, rsq = FALSE, font= "Times") {
+	if(rsq){
+		# lab = paste0("R\u00B2 = ", round(summary(model)$adj.r.squared, 2))
+		lab = paste0("italic(R) ^ 2 == ", round(summary(model)$adj.r.squared, 2))
+	} else {
+		lab = paste0("italic(r) == ", round(summary(model)$adj.r.squared^.5, 2))
+	}
+	y_var = model.frame(model)[, 1]	
+	p = ggplot() + geom_point(aes(x = predict(model), y = y_var))
+	p = p + geom_smooth(aes(x = predict(model), y = y_var), method = "lm", se = TRUE, color = "blue")
+	p = p + labs(x= xlab, y= ylab)
+	p = p + annotate("text", x = r2x, y = r2y, label = lab, parse = TRUE, family = font, size = (font_size/2))
+	# p = p + cowplot::draw_label(lab, x = r2x, y = r2y, fontfamily = font, size = (font_size+1))
+	p + theme_minimal(base_size = font_size, base_family= font)	
+}
+
 
 # =====================
 # = Model Diagnostics =
@@ -703,6 +742,7 @@ umxConfint <- function(object, parm = c("existing", "all", "or one or more label
 			e_cp_free = gsub(pattern = patt, replacement= "top.e_cp[\\1,\\2]", template)[which(object$top$e_cp$free)]
 
 			CIs2Add = c(a_cp_free, c_cp_free, e_cp_free, cp_loadings_free, as_free, cs_free, es_free)
+			umx_msg(CIs2Add)
 			object = mxModel(object, mxCI(CIs2Add, interval = level))
 			message("added ", length(CIs2Add), " CIs")
 		} else {
@@ -777,7 +817,7 @@ umxConfint <- function(object, parm = c("existing", "all", "or one or more label
 		'7' = 'The function derivatives returned by funcon or funobj appear to be incorrect.',
 		'8' = 'not used',
 		'9' = 'An input parameter was invalid')
-		if(!is.null(model_CI_OK) && any(model_CI_OK !=0) && showErrorCodes){
+		if(!all(is.null(model_CI_OK)) && (any(model_CI_OK !=0) |any(is.na(model_CI_OK))) && showErrorCodes){
 			codeList = c(model_CI_OK[,"lbound Code"], model_CI_OK[,"ubound Code"])
 			relevantCodes = unique(codeList); relevantCodes = relevantCodes[relevantCodes !=0]
 			for(i in relevantCodes) {
@@ -2154,20 +2194,15 @@ umxCompare <- function(base = NULL, comparison = NULL, all = TRUE, digits = 3, r
 		}
 	}
 	
-	# Rename for printing to console
+	# Rename for printing
 	names(tablePub) = c("Model", "EP", "\u0394 Fit" , "\u0394 df" , "p", "AIC", "\u0394 AIC", "Compare with Model", "Fit units")
 
 	if(report == "inline"){ report= "markdown"}
 	if(!silent){
 		umx_print(tablePub, digits = digits, zero.print = "0", caption = "Table of Model Comparisons", report = report)
+		cat("\n*Note*: EP = Estimated (i.e. free) parameters; \u0394-2LL = change in -2 \u00D7 Log-Likelihood of the model; \u0394 df = Change in degrees of freedom with respect to the comparison model; \u0394 AIC = Change in Akaike Information Criterion; 'Compared to' = The baseline model for this comparison.\n")
 	}
-	# htmlNames       = c("Model", "EP", "&Delta; -2LL", "&Delta; df", "p", "AIC", "&Delta AIC", "Compare with Model")
-	# if(report == "html"){
-	# 	tableHTML = tablePub
-	# 	names(tableHTML) = htmlNames
-	# 	print(xtable::xtable(tableHTML), type = "HTML", file = file, sanitize.text.function = function(x){x})
-	# 	umx_open(file)
-	# }
+
 	if(compareWeightedAIC){
 		modelList = c(base, comparison)
 		# get list of AICs
@@ -3120,12 +3155,21 @@ plot.MxModelGxE <- umxPlotGxE
 #' plot(m1) # No need to remember a special name: plot works fine!
 #' }
 umxPlotCP <- function(x = NA, means = FALSE, std = TRUE, digits = 2, showFixed = TRUE, file = "name", format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, strip_zero = TRUE, ...) {
+	# TODO umxPlotCP: Add CIs to parameters!!
+	# Could get xmu_standardize_CP(model) to stash "x(SE)" string as values 
+	# OR
+	# look these up in this code
+	# model@submodels$top$cp_loadings@values = model$top$algebras$cp_loadings_std$result
+	# model@submodels$top$as@values = model$top$as_std$result # standardized as
+	# model@submodels$top$cs@values = model$top$cs_std$result # standardized cs
+	# model@submodels$top$es@values = model$top$es_std$result # standardized es
+	
 	format = match.arg(format)
 	model  = x # just to emphasise that x has to be a model 
 	umx_check_model(model, "MxModelCP", callingFn = "umxPlotCP")
 
 	if(std){ model = xmu_standardize_CP(model) }
-
+		
 	nFac   = dim(model$top$a_cp$labels)[[1]]
 	nVar   = dim(model$top$as$values)[[1]]
 	selDVs = dimnames(model$MZ$data$observed)[[2]]
@@ -3179,11 +3223,14 @@ umxPlotCP <- function(x = NA, means = FALSE, std = TRUE, digits = 2, showFixed =
 		out$str, "\n}"
 	)
 	
-	if(format != "current"){ umx_set_plot_format(format) }
-	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
-	# TODO umxPlotCP could tabulate thresholds?
-	# Process "_dev" (where are these?)
-	# cat(out$str)
+	if(format != "current"){
+		tmp = umx_set_plot_format(silent=TRUE)
+		umx_set_plot_format(format)
+		xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
+		umx_set_plot_format(tmp)
+	}else{
+		xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)		
+	}
 }
 
 #' @export
@@ -3290,8 +3337,14 @@ umxPlotIP <- function(x = NA, file = "name", digits = 2, means = FALSE, std = TR
 		out$str, "\n}"
 	)
 
-	if(format != "current"){ umx_set_plot_format(format) }
-	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
+	if(format != "current"){
+		tmp = umx_set_plot_format(silent=TRUE)
+		umx_set_plot_format(format)
+		xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
+		umx_set_plot_format(tmp)
+	}else{
+		xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)		
+	}
 }
 
 #' @export
@@ -4603,7 +4656,10 @@ umxAPA <- function(obj = .Last.value, se = NULL, p = NULL, std = FALSE, digits =
 		}
 		cat(o)
 		invisible(o)
-	}else if("data.frame" == class(obj)[[1]]){
+	}else if(class(obj)[[1]] %in% c("data.frame", "tbl_df") ) {
+		if(class(obj)[[1]] =="tbl_df"){
+			obj = data.frame(obj)
+		}
 		# Generate a summary of correlation and means
 		# TODO umxAPA could upgrade strings to factors here (instead of stopping)...
 		if(!any(is.na(cols))){
@@ -4656,24 +4712,30 @@ umxAPA <- function(obj = .Last.value, se = NULL, p = NULL, std = FALSE, digits =
 			# obj = update(obj, data = modelDF)
 			obj = update(obj, data = umx_scale(obj$model))
 		}
-		sumry = summary(obj)
-		conf  = confint(obj)
-		if(is.null(se)){
-			se = dimnames(sumry$coefficients)[[1]]
+		if(report=="html"){
+			tmp= data.frame(summary(obj)$coefficients)
+			names(tmp)= c("Estimate", "SE", "t-value", "p-value")
+			umx_print(tmp, digits= digits, report = "html")
+		} else {
+			sumry = summary(obj)
+			conf  = confint(obj)
+			if(is.null(se)){
+				se = dimnames(sumry$coefficients)[[1]]
+			}
+			for (i in se) {
+				lower   = conf[i, 1]
+				upper   = conf[i, 2]
+				b_and_p = sumry$coefficients[i, ]
+				b       = b_and_p["Estimate"]
+				tval    = b_and_p["t value"]
+				pval    = b_and_p["Pr(>|t|)"]
+				cat(paste0(i, betaSymbol, round(b, digits), 
+					" ["  , round(lower, digits), commaSep, round(upper, digits), "], ",
+					"t = ", round(tval , digits), ", p ", umx_APA_pval(pval, addComparison = TRUE), "\n"
+				))
+			}
+			cat(paste0("R\u00B2 = ", round(sumry$r.squared, 3), " (adj = ", round(sumry$adj.r.squared, 3), ")"))
 		}
-		for (i in se) {
-			lower   = conf[i, 1]
-			upper   = conf[i, 2]
-			b_and_p = sumry$coefficients[i, ]
-			b       = b_and_p["Estimate"]
-			tval    = b_and_p["t value"]
-			pval    = b_and_p["Pr(>|t|)"]
-			cat(paste0(i, betaSymbol, round(b, digits), 
-				" ["  , round(lower, digits), commaSep, round(upper, digits), "], ",
-				"t = ", round(tval , digits), ", p ", umx_APA_pval(pval, addComparison = TRUE), "\n"
-			))
-		}
-		cat(paste0("R\u00B2 = ", round(sumry$r.squared, 3), " (adj = ", round(sumry$adj.r.squared, 3), ")"))
 		invisible(obj)
 	} else if("glm" == class(obj)[[1]]) {
 		# report glm summary table
@@ -4830,6 +4892,8 @@ umxSummarizeTwinData <- function(data = NULL, selVars = NULL, sep = "_T", zyg = 
 	report = match.arg(report)
 	# TODO cope with two group case.
 	# data = twinData; selVars = c("wt", "ht"); zyg = "zygosity"; sep = ""; digits = 2
+	
+	# Print the age
 	if(umx_check_names(age, data= data, die=FALSE)){
 		ageCol = data[, age]
 	} else if(umx_check_names(paste0(age, sep, 1), data= data, die=FALSE)){
@@ -4838,11 +4902,34 @@ umxSummarizeTwinData <- function(data = NULL, selVars = NULL, sep = "_T", zyg = 
 		stop("Sorry: I can't find an age column called ", omxQuotes(age), " or ", omxQuotes(paste0(age, sep, 1)), " Set age= <name of your age column>")
 	}
 	cat(paste0("mean age ", round(mean(ageCol, na.rm = TRUE), 2), " (SD= ", round(sd(ageCol, na.rm = TRUE), 2), ")"))
+
+	junk = tryCatch({
+		cat(paste0("\n", sum(c(data[,"sex_T1"], data[,"sex_T2"]) == "F", na.rm=TRUE), " female\n"))
+		cat(paste0("\n", sum(c(data[,"sex_T1"], data[,"sex_T2"]) == "M", na.rm=TRUE), " male\n"))
+	}, warning = function(x) {
+	    print("polite note: I tried computing M F count using sex_T1 and sex_T2 but failed")
+	}, error = function(x) {
+	    print("polite note: I tried computing M F count using sex_T1 and sex_T2 but failed")
+	}, finally={
+	    # ignored
+	})
 	
-	
+	# Set up long data
 	selDVs = tvars(selVars, sep)
 	umx_check_names(selDVs, data = data, die = TRUE)
 	long = umx_wide2long(data= data[,selDVs], sep =sep)
+	
+	# Print Non-NA data for each pair of variables
+	pair_counts = matrix(NA, nrow = length(selVars), ncol = length(selVars), dimnames = list(selVars, selVars))
+	# Loop through all pairs of variables
+	for (i in 1:length(selVars)) {
+	  for (j in 1:length(selVars)) {
+	    # Count non-NA pairs
+	    pair_counts[i, j] <- sum(complete.cases(long[[selVars[i]]], long[[selVars[j]]]))
+	  }
+	}
+	print(kable(pair_counts, format = "markdown", align = "c"))
+
 	blob = rep(NA, length(selVars))	
 	if(is.null(MZ)){
 		df = data.frame(Var = blob, Mean = blob, SD = blob, rMZFF = blob, rMZMM = blob, rDZFF = blob, rDZMM = blob, rDZOS = blob, stringsAsFactors = FALSE)

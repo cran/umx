@@ -47,7 +47,7 @@ umxDiffMZ <- function(x, y, data, sep = "_T", mzZygs = c("MZFF", "MZMM"), zyg = 
 	# 3. Make diff scores
 	df$xDiff = df[, x_T1] - df[, x_T2]
 	df$yDiff = df[, y_T1] - df[, y_T2]
-	df$xMean = df[, x_T1] + df[, x_T2]
+	df$xSum = abs(df[, x_T1] + df[, x_T2])
 	validRows = df[, zyg] %in% mzZygs
 	mzData = df[validRows, ]
 	
@@ -66,7 +66,9 @@ umxDiffMZ <- function(x, y, data, sep = "_T", mzZygs = c("MZFF", "MZMM"), zyg = 
 	}else{
 		p = p + coord_cartesian(xlim = xylim, ylim = xylim, expand = FALSE)
 	}
-	
+	# tmp = lm(yDiff ~ xDiff, data = mzData, weights = xSum)
+	# print(summary(tmp))
+
 	# model = lm(yDiff ~ xDiff, data = mzData)
 	sumry  = summary(lm(yDiff ~ xDiff, data = mzData))
 	beta   = sumry$coefficients["xDiff", "Estimate"]
@@ -75,8 +77,8 @@ umxDiffMZ <- function(x, y, data, sep = "_T", mzZygs = c("MZFF", "MZMM"), zyg = 
 	R2     = round(sumry$r.squared, 3)
 	pvalStr = paste0(", p ", umxAPA(pvalue, addComparison = TRUE, digits = digits, report = "none"))
 	blurb  = umxAPA(beta, se=SE, report = "expression", suffix = pvalStr)
-	p = p + annotate("text", x = labxy[1], y = labxy[2], label = blurb)
-	p = p + theme_bw() # + hrbrthemes::theme_ipsum()
+	p = p + annotate("text", x = labxy[1], y = labxy[2], label = deparse(blurb), parse = TRUE)
+	p = p + theme_bw()
 	print(p)
 }
 
@@ -211,8 +213,8 @@ umxDiscTwin <- function(x, y, data, mzZygs = c("MZFF", "MZMM"), dzZygs = c("DZFF
 	# obj = lme(IQ ~ deltaX   , random = ~ FamMeanX|FAMID, data = umx_scale(mzData) , na.action = "na.omit", control = list(opt= "optim")); r_df = updateDB(xLevel = "MZ" , model= obj, x= "deltaX", input = r_df)
 
 	# Begg & Parides (2008) Model #3 
-	# h(E[Yij|Xij;X􏰄i)=􏰀2 +􏰁2Xij +􏰂2X􏰄i
-	# X&‌#772;
+	# h(E[Yij|Xij;X.i)=.2 +.2Xij +.2X.i
+	# X&772;
 	
 	obj = lme(IQ ~ SOSeffort           , random = ~        1|FAMID, data = umx_scale(popData), na.action = "na.omit", control = list(opt= "optim")); r_df = updateDB(xLevel = "Pop", model= obj, x= x, input = r_df)
 	obj = lme(IQ ~ SOSeffort + FamMeanX, random = ~ FamMeanX|FAMID, data = umx_scale(dzData) , na.action = "na.omit", control = list(opt= "optim")); r_df = updateDB(xLevel = "DZ" , model= obj, x= x, input = r_df)
@@ -289,8 +291,8 @@ umxDiscTwin <- function(x, y, data, mzZygs = c("MZFF", "MZMM"), dzZygs = c("DZFF
 #' @return - [OpenMx::mxModel()] of subclass MxModelDoC
 #' @export
 #' @family Twin Modeling Functions
-#' @seealso - [umxDiscTwin()]
-#' @references - N.A. Gillespie and N.G. Martin (2005). Direction of Causation Models. In *Encyclopedia of Statistics in Behavioral Science*, **1**. 496–499. Eds. Brian S. Everitt & David C. Howell.
+#' @seealso - [umxDiscTwin()], [umxDiffMZ()], [umxMR()]
+#' @references - Gillespie, N.A. and Martin, N.G. (2005). Direction of Causation Models. In *Encyclopedia of Statistics in Behavioral Science*, **1**. 496-499. Eds. Brian S. Everitt & David C. Howell.
 #' * McGue, M., Osler, M., & Christensen, K. (2010). Causal Inference and Observational Research: The Utility of Twins. *Perspectives on Psychological Science*, **5**, 546-556. \doi{10.1177/1745691610383511}
 #' * Rasmussen, S. H. R., Ludeke, S., & Hjelmborg, J. V. B. (2019). A major limitation of the direction of causation model: non-shared environmental confounding. *Twin Res Hum Genet*, **22**, 1-13. \doi{10.1017/thg.2018.67}
 #' @md
@@ -482,7 +484,7 @@ umxDoC <- function(name = "DoC", var1Indicators, var2Indicators, mzData= NULL, d
 #' @return - Optionally return the dot code
 #' @export
 #' @family Plotting functions
-#' @seealso - [umxDoC()], [umxSummary.MxModelDoC()], [umxModify()]
+#' @seealso - [umxDoC()], [umxSummary.MxModelDoC()], [umxModify()], [umxDiscTwin()], [umxDiffMZ()], [umxMR()]
 #' @md
 #' @examples
 #'
@@ -515,12 +517,12 @@ umxDoC <- function(name = "DoC", var1Indicators, var2Indicators, mzData= NULL, d
 #' }
 umxPlotDoC <- function(x = NA, means = FALSE, std = FALSE, digits = 2, showFixed = TRUE, file = "name", format = c("current", "graphviz", "DiagrammeR"), SEstyle = FALSE, strip_zero = FALSE, ...) {
 	message("beta code")
-	# 1. ✓ draw latents
-	# 2. ✓ draw manifests,
-	# 3. ✓ draw ace to latents
-	# 4. ✓ draw specifics to manifests (? or omit?)
-	# 5. ✓ connect latents to manifests using free elements of columns of FacLoad
-	# 6. add causal paths between latents
+	# 1. draw latents
+	# 2. draw manifests,
+	# 3. draw ace to latents
+	# 4. draw specifics to manifests (? or omit?)
+	# 5. connect latents to manifests using free elements of columns of FacLoad
+	# 6. x add causal paths between latents
 
 	format = match.arg(format)
 	model = x # just to emphasise that x has to be a model 
@@ -580,8 +582,14 @@ umxPlotDoC <- function(x = NA, means = FALSE, std = FALSE, digits = 2, showFixed
 	)
 	
 	cat("\n?umxPlotDoC options: std=, means=, digits=, strip_zero=, file=, min=, max =")
-	if(format != "current"){ umx_set_plot_format(format) }
-	xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
+	if(format != "current"){
+		tmp = umx_set_plot_format(silent=TRUE)
+		umx_set_plot_format(format)
+		xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)
+		umx_set_plot_format(tmp)
+	}else{
+		xmu_dot_maker(model, file, digraph, strip_zero = strip_zero)		
+	}
 }
 
 #' @export
@@ -612,7 +620,7 @@ plot.MxModelDoC <- umxPlotDoC
 #' @return - optional [OpenMx::mxModel()]
 #' @export
 #' @family Twin Modeling Functions
-#' @seealso - [umxDoC()], [plot.MxModelDoC()], [umxModify()], [umxCP()], [plot()], [umxSummary()] work for IP, CP, GxE, SAT, and ACE models.
+#' @seealso - [umxDoC()], [plot.MxModelDoC()], [umxModify()], [umxCP()], [plot()], [umxSummary()]
 #' @md
 #' @examples
 #' \dontrun{
@@ -655,7 +663,7 @@ umxSummaryDoC <- function(model, digits = 2, comparison = NULL, std = TRUE, show
 	if(typeof(model) == "list"){ # call self recursively
 		for(thisFit in model) {
 			message(paste("Output for Model: ", thisFit$name))
-			umxSummaryDoC(thisFit, digits = digits, file = file, returnStd = returnStd, showRg = showRg, comparison = comparison, std = std, CIs = CIs)
+			umxSummaryDoC(thisFit, digits = digits, comparison = comparison, file = file, returnStd = returnStd, showRg = showRg, report = report, std = std, CIs = CIs)
 		}
 	} else {
 		umx_check_model(model, "MxModelDoC", beenRun = TRUE, callingFn = "umxSummaryDoC")
@@ -676,23 +684,21 @@ umxSummaryDoC <- function(model, digits = 2, comparison = NULL, std = TRUE, show
 			# model = xmu_standardize_Doc(model) # Make a standardized copy of model
 		}
 
-		# Chol= umxDoC(var1= var1, var2= var2, mzData= mzData, dzData= dzData, causal= FALSE, auto=F); Chol = mxRun(Chol)
-
 		means = model$top$Means$values
 		colnames(means) = selDVs[1:nVar]
-		umx_print(means)
 		message("Table: Means")
+		umx_print(means)
 		
 		betaNames  = as.vector(model$top$beta$labels)
 		betaValues = as.vector(model$top$beta$values)
-		umx_print(data.frame(beta = betaNames, value = betaValues))
 		message("Table: Causal paths")
+		umx_print(data.frame(beta = betaNames, value = betaValues))
 
 		ptable = summary(model)$parameters
-		umx_print(ptable[, c("name", "Estimate", "Std.Error")])
 		message("Table: Parameter list")
+		umx_print(ptable[, c("name", "Estimate", "Std.Error")])
 
-		return()
+		return("I returned from line 693, which is where implementation of umxSummary for DoC models is up to :-)")
 		# model$top$beta$labels[model$top$beta$free]
 		# umx_print(ptable[, c("name", "Estimate", "Std.Error")])
 

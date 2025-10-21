@@ -4,7 +4,13 @@
 \alias{xmu_make_bin_cont_pair_data}
 \title{Make pairs of  bin & continuous columns to represent censored data}
 \usage{
-xmu_make_bin_cont_pair_data(data, vars = NULL, suffixes = NULL)
+xmu_make_bin_cont_pair_data(
+  data,
+  vars = NULL,
+  suffixes = NULL,
+  censp = NULL,
+  type = "low"
+)
 }
 \arguments{
 \item{data}{A [data.frame()] to convert}
@@ -12,25 +18,30 @@ xmu_make_bin_cont_pair_data(data, vars = NULL, suffixes = NULL)
 \item{vars}{The variables to process}
 
 \item{suffixes}{Suffixes if the data are family (wide, more than one persona on a row)}
+
+\item{censp}{Optional censoring point}
+
+\item{type}{Either "low" or "high" (default = "low"). Low for left-censored, high for right-censored.}
 }
 \value{
 - copy of the dataframe with new binary variables and censoring
 }
 \description{
-Takes a dataframe of left-censored variables (vars with a floor effect) and does two things to it:
+Takes a dataframe of right or left-censored variables (vars with a floor/ceiling effect) and does two things to it:
 1. It creates new binary (1/0) copies of each column (with the suffix "bin"). These contain 0 where
-   the variable is below the minimum and NA otherwise.
-2. In each existing variable, it sets all instances of min for that var to NA
+   the variable is below the minimum and NA otherwise. The second variable receives a suffix "cont".
+2. By default, in each existing variable, it sets all instances of min for that var to NA
 }
 \examples{
 df = xmu_make_bin_cont_pair_data(mtcars, vars = c("mpg"))
 str(df)
-df[order(df$mpg), c(1,12)]
+df[order(df$mpgcont), c("mpgcont","mpgbin")]
+
 # Introduce a floor effect
 tmp = mtcars; tmp$mpg[tmp$mpg<=15]=15
 tmp$mpg_T1 = tmp$mpg_T2 = tmp$mpg
 df = xmu_make_bin_cont_pair_data(tmp, vars = c("mpg"), suffixes = c("_T1", "_T2"))
-df[order(df$mpg), 12:15]
+df[order(df$mpgcont_T1), c("mpgcont_T2", "mpgcont_T1", "mpgbin_T1", "mpgbin_T2")]
 }
 \seealso{
 Other xmu internal not for end user: 
@@ -106,6 +117,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_twin_check}()},
 \code{\link{xmu_twin_get_var_names}()},
 \code{\link{xmu_twin_make_def_means_mats_and_alg}()},
-\code{\link{xmu_twin_upgrade_selDvs2SelVars}()}
+\code{\link{xmu_twin_upgrade_selDvs2SelVars}()},
+\code{\link{xmu_update_covar}()}
 }
 \concept{xmu internal not for end user}

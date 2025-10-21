@@ -6,7 +6,7 @@
 \usage{
 umx_make(
   what = c("load", "quickInst", "install", "spell", "sitrep", "deps_install",
-    "checkCRAN", "testthat", "examples", "win", "rhub", "lastRhub", "release"),
+    "checkCRAN", "testthat", "examples", "win", "rhub", "lastRhub", "release", "git"),
   pkg = "~/bin/umx",
   check = TRUE,
   run = FALSE,
@@ -18,7 +18,7 @@ umx_make(
 )
 }
 \arguments{
-\item{what}{whether to "install", "release" to CRAN, "test", "check" test on "win" or "rhub", "spell", or "examples")).}
+\item{what}{whether to "install", "release" to CRAN, "test", test on "win", "spell", open "git" app, or run "examples")).}
 
 \item{pkg}{the local path to your package. Defaults to my path to umx.}
 
@@ -137,6 +137,7 @@ Other xmu internal not for end user:
 \code{\link{xmu_twin_check}()},
 \code{\link{xmu_twin_get_var_names}()},
 \code{\link{xmu_twin_make_def_means_mats_and_alg}()},
-\code{\link{xmu_twin_upgrade_selDvs2SelVars}()}
+\code{\link{xmu_twin_upgrade_selDvs2SelVars}()},
+\code{\link{xmu_update_covar}()}
 }
 \concept{xmu internal not for end user}

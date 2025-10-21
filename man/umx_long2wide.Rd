@@ -51,7 +51,7 @@ You can \emph{drop} the last 2 digits with integer div: \code{famID = df$TWID \%
 
 \emph{Note}: The functions assumes that if zygosity or any passalong variables are NA in the first
 family member, they are NA everywhere. i.e., it does not hunt for values that
-are present elsewhere to try and self-heal missing data.
+are present elsewhere or try and self-heal missing data.
 }
 \examples{
 \dontrun{
@@ -122,6 +122,6 @@ Other Twin Data functions:
 \code{\link{umx_make_twin_data_nice}()},
 \code{\link{umx_residualize}()},
 \code{\link{umx_scale_wide_twin_data}()},
-\code{\link{umx_wide2long}()}
+\code{\link{umx_wide2longTwinData}()}
 }
 \concept{Twin Data functions}

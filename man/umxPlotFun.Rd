@@ -12,6 +12,7 @@ umxPlotFun(
   ylab = NULL,
   title = NULL,
   logY = c("no", "log", "log10"),
+  logX = c("no", "log", "log10"),
   p = NULL
 )
 }
@@ -29,6 +30,8 @@ umxPlotFun(
 \item{title}{Optional title for the plot.}
 
 \item{logY}{Set to, e.g. "log" to set COORDINATE of y to log.}
+
+\item{logX}{Set to, e.g. "log" to set COORDINATE of x to log.}
 
 \item{p}{Optional plot onto which to draw the function.}
 }
@@ -77,6 +80,7 @@ Other Plotting functions:
 \code{\link{umxPlotGxE}()},
 \code{\link{umxPlotGxEbiv}()},
 \code{\link{umxPlotIP}()},
+\code{\link{umxPlotPredict}()},
 \code{\link{umxPlotSexLim}()},
 \code{\link{umxPlotSimplex}()}
 }

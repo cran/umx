@@ -38,6 +38,7 @@ umx_get_checkpoint(model = m1)
 \seealso{
 Other Get and set: 
 \code{\link{umx}},
+\code{\link{umx_get_alphas}()},
 \code{\link{umx_get_options}()},
 \code{\link{umx_set_auto_plot}()},
 \code{\link{umx_set_auto_run}()},
@@ -50,7 +51,6 @@ Other Get and set:
 \code{\link{umx_set_optimizer}()},
 \code{\link{umx_set_plot_file_suffix}()},
 \code{\link{umx_set_plot_format}()},
-\code{\link{umx_set_plot_use_hrbrthemes}()},
 \code{\link{umx_set_separator}()},
 \code{\link{umx_set_silent}()},
 \code{\link{umx_set_table_format}()}

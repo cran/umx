@@ -102,6 +102,8 @@ Other Miscellaneous Utility Functions:
 \code{\link{umx_lower.tri}()},
 \code{\link{umx_msg}()},
 \code{\link{umx_open_CRAN_page}()},
-\code{\link{umx_pad}()}
+\code{\link{umx_pad}()},
+\code{\link{umx_wide2long}()},
+\code{\link{umx_wide4lmer}()}
 }
 \concept{Miscellaneous Utility Functions}
