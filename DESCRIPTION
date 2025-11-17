@@ -1,6 +1,6 @@
 Package: umx
-Version: 4.59.0
-Date: 2025-10-20
+Version: 4.60.0
+Date: 2025-11-19
 Title: Structural Equation Modeling and Twin Modeling in R
 Authors@R: c(
 	person(c("Timothy", "C."), "Bates"    , role = c("aut", "cre"), email = "timothy.c.bates@gmail.com", comment = c(ORCID = "0000-0002-1153-9007")),
@@ -32,7 +32,7 @@ BugReports: https://github.com/tbates/umx/issues
 LazyData: true
 RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2025-10-20 20:03:54 UTC; timothybates
+Packaged: 2025-11-16 08:41:41 UTC; timothybates
 Author: Timothy C. Bates [aut, cre] (ORCID:
     <https://orcid.org/0000-0002-1153-9007>),
   Nathan Gillespie [wit],
@@ -43,4 +43,4 @@ Author: Timothy C. Bates [aut, cre] (ORCID:
   Brenton Wiernik [ctb],
   Michael Zakharin [wit]
 Repository: CRAN
-Date/Publication: 2025-10-21 09:10:02 UTC
+Date/Publication: 2025-11-17 21:50:02 UTC

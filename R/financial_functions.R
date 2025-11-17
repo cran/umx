@@ -137,6 +137,66 @@ fin_expected <- function(current=89, fair=140, ticker = "NVDA", capital=.15, ver
 	invisible(expectedGain)
 }
 
+#' Calculate Compound Annual Growth Rate (CAGR)
+#'
+#' @description
+#' Calculates the constant, period-over-period growth rate required for an
+#' investment to grow from a beginning value to an ending value over a
+#' specified number of periods.
+#'
+#' The Compound Annual Growth Rate (CAGR) is computed as:
+#'  CAGR = (End value/Start value)^(1/t) - 1
+#' 
+#' Where \emph{t} is the number of years (periods).
+#'
+#' @param beginningValue Starting value of investment
+#' @param endingValue Ending value of investment
+#' @param numYears Number of periods (e.g., years) elapsing from begin to end
+#' @param digits rounding the returned value (default = 3)
+#'
+#' @return A numeric value representing the Compound Annual Growth Rate as a 
+#'   decimal (e.g., 0.096 for 9.6%).
+#'
+#' @note This function includes input validation and will `stop()` with an error
+#'   if any inputs are non-numeric or non-positive.
+#'
+#' @export
+#'
+#' @examples
+#' # --- Basic Usage ---
+#' rate = fin_CAGR(beginningValue = 100, endingValue = 190, numYears = 7)
+#' print(rate)
+#' 
+#' # --- Formatting as Percentage ---
+#' percent = paste0(round(rate * 100, 2), "%")
+#' print(percent)
+#'
+#' # --- Example with a Loss ---
+#' fin_CAGR(100, 50, 5) 
+#' 
+#' \dontrun{
+#' # --- Examples of what will fail ---
+#' fin_CAGR(0, 100, 5)  # Error: Inputs must be positive
+#' fin_CAGR(100, 150, -1) # Error: Inputs must be positive
+#' fin_CAGR("100", 150, 5) # Error: All inputs must be numeric
+#' }
+fin_CAGR = function(beginningValue, endingValue, numYears, digits=3) {
+  # Ensure inputs are numeric
+  if (!is.numeric(beginningValue) || !is.numeric(endingValue) || !is.numeric(numYears)) {
+    stop("All inputs must be numeric.")
+  }
+  
+  # Ensure values are valid
+  if (beginningValue <= 0 || endingValue <= 0 || numYears <= 0) {
+    stop("Inputs must be positive values.")
+  }
+
+  # Calculate the rate
+  cagr = (endingValue / beginningValue)^(1 / numYears) - 1
+  
+  return(round(cagr, digits))
+}
+
 
 #' Compute the value of a principal & annual deposits at a compound interest over a number of years
 #' @description
